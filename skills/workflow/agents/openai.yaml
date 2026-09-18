@@ -1,0 +1,3 @@
+interface:
+  display_name: "Workflow"
+  short_description: "Team development flow: subagents, tests, handover doc, audit"
