@@ -1,0 +1,22 @@
+{
+  "name": "gazohhh",
+  "owner": {
+    "name": "Gazohhh",
+    "url": "https://github.com/Gazohhh"
+  },
+  "description": "Our team's agent skills, as installable Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "workflow-axa",
+      "source": "./",
+      "description": "The team development flow: prepared prompt, subagents, tests, a handover document, and an audit of the staged changes.",
+      "category": "engineering",
+      "keywords": [
+        "workflow",
+        "subagents",
+        "testing",
+        "code-review"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "workflow-axa",
+  "version": "1.0.0",
+  "description": "Our development flow as a skill: prepared prompt, subagents, tests, a handover document, and an audit of the staged changes before you commit.",
+  "author": {
+    "name": "Gazohhh",
+    "url": "https://github.com/Gazohhh"
+  },
+  "repository": "https://github.com/Gazohhh/workflow-axa",
+  "keywords": [
+    "workflow",
+    "subagents",
+    "testing",
+    "code-review",
+    "handover"
+  ],
+  "skills": [
+    "./skills/workflow"
+  ]
+}

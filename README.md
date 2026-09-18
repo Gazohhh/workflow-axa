@@ -6,19 +6,28 @@ Every task runs through subagents, writes tests, keeps a handover document, and 
 
 ## Install
 
+Two routes. **Pick one** — installing both leaves you with the skill twice.
+
+### Any agent (Claude Code, Codex, Cursor, …)
+
 ```bash
 npx skills@latest add Gazohhh/workflow-axa --skill=workflow
 ```
 
-Then type `/workflow` in your agent.
+Update later with `npx skills update`.
 
-Update later with:
+### Claude Code as a plugin
 
-```bash
-npx skills update
+```
+/plugin marketplace add Gazohhh/workflow-axa
+/plugin install workflow-axa@gazohhh
 ```
 
-Two things worth knowing before you run either:
+Read-only and updates on its own. Use this one unless you want editable local copies.
+
+Either way, type `/workflow` in your agent afterwards.
+
+Two things worth knowing about the `npx` route:
 
 **On Windows, add `--copy` if the install fails.** The CLI keeps one canonical copy in `.agents/skills/` and symlinks each agent's directory to it. Windows symlinks need Developer Mode or an elevated shell; `--copy` writes independent copies instead and sidesteps it.
 
@@ -77,3 +86,17 @@ Do not symlink them. On Windows, git checks a committed symlink out as a text fi
 Lives at `docs/superpowers/plans/YYYY-MM-DD-<slug>.md`, committed, holding open items and a changelog. It is the point of the whole flow: open a new chat, hand the branch to someone else, come back in three weeks — the document says what was done, what is left, and where the last agent stopped.
 
 A task that skipped its tests says so in the changelog, in writing, with a ⚠️. That is deliberate. Silence there is indistinguishable from success.
+
+## Versioning
+
+Versions are git tags, matched by `.claude-plugin/plugin.json` and described in [`CHANGELOG.md`](./CHANGELOG.md).
+
+The `npx skills` route ignores versions entirely — it tracks the git ref and a content hash, recorded in each project's `skills-lock.json`. The version is for the plugin route and for humans: when someone says "the audit behaves differently than last week", a tag and a changelog entry answer that and a hash does not.
+
+Releasing:
+
+```bash
+# bump "version" in .claude-plugin/plugin.json, add a CHANGELOG entry, then:
+git tag v1.0.0
+git push --tags
+```
