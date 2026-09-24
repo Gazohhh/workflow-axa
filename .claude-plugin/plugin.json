@@ -1,7 +1,7 @@
 {
   "name": "workflow-axa",
-  "version": "1.1.0",
-  "description": "Our development flow as a skill: settle the goal, plan it for approval, then subagents, tests, a handover document, and an audit of the staged changes before you commit.",
+  "version": "1.3.0",
+  "description": "Our development flow as a skill: investigate first, then the plan and every question in one batch, then subagents, tests, a persistent TODO and handover folder, architecture and flow doc updates, and an audit of the staged changes before you commit.",
   "author": {
     "name": "Gazohhh",
     "url": "https://github.com/Gazohhh"

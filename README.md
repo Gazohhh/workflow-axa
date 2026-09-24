@@ -2,7 +2,7 @@
 
 Our development flow, as a skill. One way of working, so a task looks the same whoever picked it up.
 
-Every task runs through subagents, writes tests, keeps a handover document, and ends with an audit of the staged changes — because the failure worth preventing is not a broken test, it is a green suite beside a call site nobody looked at.
+Every task runs through subagents, writes tests, keeps a TODO and handover folder, updates the architecture and flow docs it touches, and ends with an audit of the staged changes — because the failure worth preventing is not a broken test, it is a green suite beside a call site nobody looked at.
 
 ## Install
 
@@ -65,8 +65,8 @@ The skill's description means the agent usually reaches for it on its own. To ma
 ## How we work
 
 All implementation work — features, bugfixes, refactors — follows the team flow:
-prepared prompt, subagents, tests, a task document under `docs/superpowers/plans/`,
-and an audit of the staged changes before committing. In Claude Code, run `/workflow`.
+prepared prompt, subagents, tests, a task folder under `docs/plans/`,
+architecture and flow docs kept in step with the code, and an audit of the staged changes before committing. In Claude Code, run `/workflow`.
 ```
 
 A description is a suggestion the agent weighs. A line in the rules file is an instruction it follows.
@@ -81,11 +81,24 @@ A description is a suggestion the agent weighs. A line in the rules file is an i
 
 Do not symlink them. On Windows, git checks a committed symlink out as a text file containing the word `AGENTS.md` — no error, and every instruction silently gone.
 
-## The task document
+## The task folder
 
-Lives at `docs/superpowers/plans/YYYY-MM-DD-<slug>.md`, committed, holding open items and a changelog. It is the point of the whole flow: open a new chat, hand the branch to someone else, come back in three weeks — the document says what was done, what is left, and where the last agent stopped.
+Lives at `docs/plans/YYYY-MM-DD-<slug>/`, committed. It is the point of the whole flow: open a new chat, hand the branch to someone else, come back in three weeks — the folder says what was done, what is left, what was learned, and where the last agent stopped.
 
-A task that skipped its tests says so in the changelog, in writing, with a ⚠️. That is deliberate. Silence there is indistinguishable from success.
+| File | Holds |
+|---|---|
+| `PLAN.md` | Goal, scope, what done looks like, which docs the task must update |
+| `TODO.md` | `[ ]` not started, `[~]` in progress, `[x]` done with its proof |
+| `FINDINGS.md` | Discoveries, blockers, audit findings, as they happen |
+| `DECISIONS.md` | Choices and their reasons; created on the first one. Hard-to-reverse architecture calls also get an ADR in `docs/adr/` |
+
+When a folder for the work already exists, the skill continues it instead of starting another.
+
+A task that skipped its tests says so in `FINDINGS.md`, in writing, with a ⚠️. That is deliberate. Silence there is indistinguishable from success.
+
+## Docs are part of the change
+
+When a task changes architecture, ownership, dependencies, data flow, user flow, build flow, or runtime behaviour, it updates the project's existing docs that describe it, in the same task. The verifier and the audit both compare docs against code, so a stale diagram counts as a finding just like a missed call site.
 
 ## Versioning
 

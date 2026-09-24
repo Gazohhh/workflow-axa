@@ -2,6 +2,43 @@
 
 Notable changes to the `workflow` skill. Versions are git tags; this file says what each one changed and why.
 
+## 1.3.0 — 2026-09-24
+
+The relay said what was done and what remained, but not what was learned, and nothing kept the project's own docs honest. Tests could pass beside an architecture doc that still described the old system.
+
+### Added
+
+- **Documentation is part of the implementation.** A change to architecture, ownership, dependencies, data flow, user flow, build flow, or runtime behaviour updates the project's existing docs in the same task, before its item is ticked. Stale text is corrected or deleted, not duplicated.
+- **Recon finds the docs and the reach.** Two new recon questions: what the change touches beyond the edited files, and which docs describe the area today.
+- **A task folder replaces the single task document**, and moves from `docs/superpowers/plans/` to `docs/plans/YYYY-MM-DD-<slug>/`. `PLAN.md`, `TODO.md`, `FINDINGS.md`, and `DECISIONS.md` (created on the first decision; ADRs in `docs/adr/` for hard-to-reverse architecture calls).
+- **TODO states with proof.** `[ ]`, `[~]` (one per running lane: where the last agent stopped), and `[x]` only with its proof seen.
+- **Maximum parallel delegation.** The orchestrator delegates every TODO item and fans out to the harness's concurrency limit. Items are grouped into lanes with non-overlapping files; lanes run at once, each as implementer → test writer, and the verifier runs once over the full diff when all lanes are done. Running subagents are never interrupted: cross-lane effects become findings and queued follow-ups.
+- **A seventh audit check.** Docs that no longer match the code, and whether the diff delivers the goal in `PLAN.md`. The verifier checks docs too.
+
+### Changed
+
+- **SKILL.md is roughly half its old length.** Formats moved to `TASK-FOLDER.md`, the audit checks to `AUDIT.md` (now the single copy; `CHATGPT-PROMPTS.md` points to it). Tests folded into the implement step, so there are seven steps instead of eight.
+- **An existing task folder is continued**, not duplicated. Recon looks for one before planning.
+- **Findings are written as they happen**, not at the end; audit findings go to `FINDINGS.md` and become `TODO.md` items.
+- The `⚠️ untested` line moves from the changelog to `FINDINGS.md`.
+
+## 1.2.0 — 2026-09-18
+
+1.1.0 stopped the agent from implementing before its questions were answered, but let the questions leak out one at a time, mid-flight, while subagents were still reporting. And it asked them before reading any code, which made them unanswerable.
+
+### Added
+
+- **An investigation step.** The flow now reads the codebase before it plans: parallel recon subagents map what exists, every call site, what the tests cover, and what constrains the change. This step was in the original team flow document — *"bestaande implementaties en relevante code controleren"* — and was missing from 1.0.0 and 1.1.0. Its absence is why the plan's questions were uninformed.
+- **Two batches, and nothing in between.** The user is interrupted exactly twice: once after investigation with the plan and every question, once at the end with the report and anything that came up. Each batch is one numbered message with a recommendation per item, and it ends the agent's turn.
+- **A parallelism rule.** Subagents run in parallel when they only read or touch different files, sequentially when one needs another's output or they would write the same file. Recon fans out; implementer → test writer → verifier does not.
+
+### Fixed
+
+- **No question is asked while a subagent is running.** Every dispatched agent finishes first. A question arriving beside a half-finished recon report was the reported mess.
+- **Questions found mid-work park instead of interrupting.** Work continues on everything that does not depend on the answer; the agent stops early only when nothing else can move.
+- **The document choice and the go are one round.** They were two separate asks inside a single step, which cost two round-trips.
+- **Test decisions park for batch 2** rather than firing their own interruption.
+
 ## 1.1.0 — 2026-09-18
 
 The 1.0.0 skill would start implementing before its questions were answered. It no longer can.

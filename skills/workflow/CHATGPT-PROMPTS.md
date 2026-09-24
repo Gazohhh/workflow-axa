@@ -12,7 +12,8 @@ Explain the problem or the feature in your own words, then ask for a prompt that
 - Delegate the work to subagents: one to implement, one to write tests, one to verify the result against the project's rules and requirements.
 - Keep the code as simple as the problem allows; no complexity the task did not ask for.
 - Follow the project's `AGENTS.md` (or `CLAUDE.md`), and write one first if it is missing.
-- Keep a task document: open items as bullets, plus a changelog of what changed. The document exists so a new chat or a new person can see what is done, what remains, and where the last agent stopped. Keep it current during the work.
+- Keep a task folder: `PLAN.md` (goal, scope, done), `TODO.md` (`[ ]` / `[~]` / `[x]` with proof), `FINDINGS.md` (discoveries as they happen), and `DECISIONS.md` when a real choice is made. The folder exists so a new chat or a new person can see what is done, what remains, and where the last agent stopped. Keep it current during the work, and continue an existing folder rather than starting a second one.
+- Update the project's architecture and flow docs wherever the change makes them false, as part of the task, not after it.
 
 Read what comes back before you use it. Push back on anything vague, wrong, or missing — a prompt you had to argue with is usually the one worth pasting.
 
@@ -20,15 +21,8 @@ Read what comes back before you use it. Push back on anything vague, wrong, or m
 
 ## Preparing an audit prompt
 
-After implementation, ask for a short prompt that audits the current staged changes against all six:
+After implementation, ask for a short prompt that audits the current staged changes against every check in [`AUDIT.md`](./AUDIT.md).
 
-1. Other places in the codebase using the changed functionality that were missed.
-2. The same functionality reached a different way elsewhere.
-3. Edge cases and dependencies not accounted for.
-4. Best practice for the frameworks in use.
-5. Whether the code is clear, efficient, and maintainable.
-6. Unnecessary complexity or duplication.
+The audit exists for one reason: tests can pass while a second call site, untouched and unnoticed, is now broken — or while the architecture doc still describes the old system.
 
-The audit exists for one reason: tests can pass while a second call site, untouched and unnoticed, is now broken.
-
-The skill runs these six by itself in a fresh subagent. Preparing the prompt elsewhere is worth it when the change is large enough that you want a second opinion on what to even look for.
+The skill runs those checks by itself in a fresh subagent. Preparing the prompt elsewhere is worth it when the change is large enough that you want a second opinion on what to even look for.
