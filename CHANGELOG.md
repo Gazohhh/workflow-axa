@@ -19,6 +19,10 @@ The relay said what was done and what remained, but not what was learned, and no
 
 - **SKILL.md is roughly half its old length.** Formats moved to `TASK-FOLDER.md`, the audit checks to `AUDIT.md` (now the single copy; `CHATGPT-PROMPTS.md` points to it). Tests folded into the implement step, so there are seven steps instead of eight.
 - **An existing task folder is continued**, not duplicated. Recon looks for one before planning.
+
+### Fixed
+
+- **Parallel workflows no longer write to each other's task folders.** With several workflows running in one repo, the agent sometimes guessed which folder or changelog to update. It now claims one folder in batch 1 (`Task folder: <path>`) on evidence only: the user named it, or its `PLAN.md` goal is this exact work. Recency, a similar name, or an in-progress `[~]` item do not count. When unsure it asks. Other task folders are read-only, and shared files like `CHANGELOG.md` are written only when the plan names them.
 - **Findings are written as they happen**, not at the end; audit findings go to `FINDINGS.md` and become `TODO.md` items.
 - The `⚠️ untested` line moves from the changelog to `FINDINGS.md`.
 

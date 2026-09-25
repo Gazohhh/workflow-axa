@@ -1,6 +1,6 @@
 # Task folder
 
-`docs/plans/YYYY-MM-DD-<slug>/`, committed. One folder per piece of work; continue it rather than start a second.
+`docs/plans/YYYY-MM-DD-<slug>/`, committed. One folder per piece of work, claimed once per task (see SKILL.md step 4) and never switched.
 
 | File | Holds |
 |---|---|

@@ -53,11 +53,19 @@ Fan out **recon subagents**, as many at once as the harness allows, one question
 
 ## 4. Plan
 
-Continue the existing task folder if recon found one; otherwise draft `docs/plans/YYYY-MM-DD-<slug>/` per [TASK-FOLDER.md](TASK-FOLDER.md). `TODO.md` is the plan: every piece of work one item, doc updates included, each tagged with its lane.
+**Claim one task folder.** Other workflows may be running in this repo at the same time, so their folders sit beside yours:
+
+- **Continue** a folder only on evidence: the user named it, or its `PLAN.md` goal is this exact work.
+- **Draft new** at `docs/plans/YYYY-MM-DD-<slug>/` per [TASK-FOLDER.md](TASK-FOLDER.md) when no folder matches.
+- **Ask** in batch 1 when more than one could fit, or you are unsure. Being the newest folder, having a similar name, or holding a `[~]` item is not evidence; a `[~]` is another session's work in progress.
+
+Once claimed, the folder is fixed for the whole task. Every `TODO.md`, `FINDINGS.md`, and `DECISIONS.md` write goes there and nowhere else. Other task folders are read-only. Shared files outside it (a `CHANGELOG.md`, a project-wide TODO) are written only when the plan names the exact file, and which one is a batch 1 question when it isn't obvious. If you lose track of which folder is yours, ask; never pick one to keep going.
+
+`TODO.md` is the plan: every piece of work one item, doc updates included, each tagged with its lane.
 
 **Lanes** are groups of items whose files don't overlap. Items writing the same file share a lane; an item needing another's output waits for it. A doc several lanes touch gets its own lane, after them.
 
-**🛑 Batch 1** — the plan, which folder, and every question. Nothing outside the task folder is written until an explicit go.
+**🛑 Batch 1** — the plan, `Task folder: <path>` on its own line, and every question. Nothing outside the task folder is written until an explicit go.
 
 ## 5. Implement
 
@@ -86,7 +94,7 @@ On a trivial task, a real finding means the classification was wrong: open a tas
 
 ## 7. Report
 
-**🛑 Batch 2** — what changed, what the audit found, which docs were updated, where the task folder is, what is still open, and every parked question.
+**🛑 Batch 2** — what changed, what the audit found, which docs were updated, `Task folder: <path>`, what is still open, and every parked question.
 
 Do not commit or push. The commit is the user's.
 
