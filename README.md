@@ -25,7 +25,7 @@ Update later with `npx skills update`.
 
 Read-only and updates on its own. Use this one unless you want editable local copies.
 
-Either way, type `/workflow` in your agent afterwards.
+Invoke it with `$workflow` in Codex or `/workflow` in Claude Code afterwards.
 
 Two things worth knowing about the `npx` route:
 
@@ -45,7 +45,9 @@ Install it once. The skill tells you if it is missing. Pick one install route fo
 
 ## Using it
 
-Type `/workflow`, then describe the task — or paste a prompt you prepared elsewhere.
+In Codex, type `$workflow`, then describe the task — multiline prompts included. In Claude Code, use `/workflow`. If Codex rejects `/workflow` with “only works on a single line”, use `$workflow` instead; skill instructions cannot change the client's slash-command parser.
+
+The plan and final report are batched. When clarification is needed, the agent stops, asks, and waits for an explicit answer. Independent background tasks may continue. Every question must be answered before the final report.
 
 Three ways in, and the skill picks:
 
@@ -87,12 +89,14 @@ Lives at `docs/plans/YYYY-MM-DD-<slug>/`, committed. It is the point of the whol
 
 | File | Holds |
 |---|---|
-| `PLAN.md` | Goal, scope, what done looks like, which docs the task must update |
+| `PLAN.md` | Issue, opened date, status, goal, scope, what done looks like, required doc updates, outcome |
 | `TODO.md` | `[ ]` not started, `[~]` in progress, `[x]` done with its proof |
-| `FINDINGS.md` | Discoveries, blockers, audit findings, as they happen |
+| `FINDINGS.md` | Findings, actions, dead ends, blockers, and audit findings, as they happen |
 | `DECISIONS.md` | Choices and their reasons; created on the first one. Hard-to-reverse architecture calls also get an ADR in `docs/adr/` |
 
 When a folder for the work already exists, the skill continues it instead of starting another.
+
+The folder is opened before investigation. Related task histories inform the work; relevant evidence lives alongside the records. Status and outcome stay current across turns, and completion requires every clarification to be answered.
 
 A task that skipped its tests says so in `FINDINGS.md`, in writing, with a ⚠️. That is deliberate. Silence there is indistinguishable from success.
 

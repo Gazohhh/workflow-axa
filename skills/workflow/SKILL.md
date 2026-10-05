@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: Use when implementing a feature, fixing a bug, or changing behaviour in a codebase. Investigates first, asks the plan and every question in one batch, then delegates to parallel subagents with tests, a persistent TODO and handover folder, architecture and flow doc updates, and a cold audit of the staged changes.
+description: Use when implementing a feature, fixing a bug, or changing behaviour in a codebase. Investigates first, clarifies without assumptions, batches the plan, then delegates to parallel subagents with tests, a persistent TODO and handover folder, architecture and flow doc updates, and a cold audit of the staged changes.
 ---
 
 Every task leaves a **relay**: a task folder the next agent picks up cold and knows what was done, what remains, what was learned, and where you stopped.
@@ -9,11 +9,10 @@ The failure this flow prevents is a green test suite beside a call site nobody l
 
 ## Batches
 
-The user is interrupted exactly twice: **batch 1** (plan + every question, before any code) and **batch 2** (report + everything parked, after the audit).
+Use **batch 1** (plan + known questions, before any code) and **batch 2** (report, after the audit). Clarifications take priority over batching, at every step, including trivial tasks.
 
-- A batch is one message: numbered, a recommendation per item, then **end your turn**. Only the user's words clear it.
-- Ask nothing while a subagent is running.
-- Questions found mid-work **park**. Keep moving on everything that doesn't depend on them.
+- Group known questions: numbered, a recommendation per item, then **end your turn**. Each needs an explicit answer; silence, partial replies, and plan approval do not answer omitted questions.
+- **Never assume.** Use confirmed instructions and verified facts. When anything is unclear, unknown, or unanswered, **stop, ask, and end your turn**. Resume dependent work only after an explicit answer. Independent background tasks may continue while you wait.
 
 ```
 ❓ **Q1** — **<title>**: <question, with options>
@@ -35,9 +34,19 @@ Pick one door and say why in one line:
 
 Run the `grilling` skill to the end, until the user confirms shared understanding. Its outcome is your prepared prompt. If `grilling` is missing, tell the user `/plugin install mattpocock-skills` and end your turn.
 
-## 3. Investigate
+## 3. Open and investigate
 
 Read `AGENTS.md` (else `CLAUDE.md`) and every file it points to; follow it for the whole task. A pointer to a missing file is a defect — say so. No rules file: offer one in batch 1.
+
+**Claim one task folder before investigation or recon dispatch:**
+
+- **Continue** only when the user names it or its `PLAN.md` goal is this exact work. Read it before writing; preserve its history.
+- **Create** `docs/plans/YYYY-MM-DD-<slug>/` per [TASK-FOLDER.md](TASK-FOLDER.md) when no folder matches; use the session's current date.
+- **Ask and wait** if the match is uncertain. Newest, similar names, and `[~]` items are not evidence; `[~]` may belong to another session.
+
+Read related task folders for prior evidence; they remain read-only. Initialize the claimed folder with confirmed facts and explicit unknowns, then tell the user its path and your understanding of the issue. Keep status, findings, and outcome current throughout the task, including later turns.
+
+Once claimed, the folder is fixed. All task records and supporting artifacts go there. Shared files outside it are written only when the approved plan names the exact file; ask if unclear. If you lose track of your folder, ask rather than choose another.
 
 Fan out **recon subagents**, as many at once as the harness allows, one question each:
 
@@ -47,19 +56,10 @@ Fan out **recon subagents**, as many at once as the harness allows, one question
 - Constraints: types, migrations, shared state, public surface.
 - Reach beyond the edited files: APIs, state, data flow, build, deploy, rendering, shared modules.
 - Which docs describe this area (architecture, flows, `CONTEXT.md`, ADRs), and whether they match the code.
-- Whether a task folder for this work already exists.
 
 **Done when:** you can say what exists, what must change, what else it touches, and which docs describe it, without guessing.
 
 ## 4. Plan
-
-**Claim one task folder.** Other workflows may be running in this repo at the same time, so their folders sit beside yours:
-
-- **Continue** a folder only on evidence: the user named it, or its `PLAN.md` goal is this exact work.
-- **Draft new** at `docs/plans/YYYY-MM-DD-<slug>/` per [TASK-FOLDER.md](TASK-FOLDER.md) when no folder matches.
-- **Ask** in batch 1 when more than one could fit, or you are unsure. Being the newest folder, having a similar name, or holding a `[~]` item is not evidence; a `[~]` is another session's work in progress.
-
-Once claimed, the folder is fixed for the whole task. Every `TODO.md`, `FINDINGS.md`, and `DECISIONS.md` write goes there and nowhere else. Other task folders are read-only. Shared files outside it (a `CHANGELOG.md`, a project-wide TODO) are written only when the plan names the exact file, and which one is a batch 1 question when it isn't obvious. If you lose track of which folder is yours, ask; never pick one to keep going.
 
 `TODO.md` is the plan: every piece of work one item, doc updates included, each tagged with its lane.
 
@@ -71,14 +71,14 @@ Once claimed, the folder is fixed for the whole task. Every `TODO.md`, `FINDINGS
 
 You orchestrate; subagents do the work. Run every ready lane at once, up to the harness maximum; start the next as soon as one finishes. Each lane runs sequentially:
 
-1. **Implementer** — task folder, rules file, repo path. Makes the simplest change that works and corrects the docs in its lane.
+1. **Implementer** — task folder, rules file, repo path. Makes the simplest change that works and corrects the docs in its lane. Subagents report uncertainties and pause dependent work for your clarification with the user.
 2. **Test writer** — task folder and the implementer's diff. Tests behaviour, not implementation.
 
 After every lane is done, one **verifier** gets the task folder, rules file, and full diff, and reports every unmet requirement in `PLAN.md`, broken rule, and stale doc.
 
-- **Let every running subagent finish.** Never stop, redirect, or message one mid-run, or touch files its lane owns. A cross-lane effect becomes a finding and a queued follow-up item.
+- **Let every running subagent finish.** No stopping, redirecting, messaging mid-run, or touching its files, except to pause dependent work or relay the user's clarification. Queue cross-lane findings as follow-up items.
 - **The task folder is yours alone.** Subagents report back; you update it as you go, not at the end: `[~]` on start, findings the moment they appear, `[x]` only with proof you have seen.
-- **Tests are never skipped or left failing.** A failing test, a broken runner, or a layer with no framework is the user's call — park it. Skipping tests writes a `⚠️ untested` line to `FINDINGS.md`.
+- **Tests are never skipped or left failing without the user's decision.** A failing test, a broken runner, or a layer with no framework needs clarification immediately. An approved skip writes a `⚠️ untested` line to `FINDINGS.md`.
 
 **Done when:** the verifier reports nothing, the test command has run and its output was seen, and every item is `[x]` with proof or open with its reason in `FINDINGS.md`.
 
@@ -88,13 +88,17 @@ After every lane is done, one **verifier** gets the task folder, rules file, and
 
 Dispatch one audit subagent with **cold eyes**: the repo path, this task's diff, `PLAN.md`, and [AUDIT.md](AUDIT.md) — nothing from this conversation. Findings go to `FINDINGS.md` and become `TODO.md` items. Fix them, audit the new diff once more, then stop.
 
-On a trivial task, a real finding means the classification was wrong: open a task folder and restart from step 4.
+On a trivial task, a real finding means the classification was wrong: restart from step 3.
 
 **Done when:** every check has a verdict and nothing raised is unaddressed or unexplained.
 
 ## 7. Report
 
-**🛑 Batch 2** — what changed, what the audit found, which docs were updated, `Task folder: <path>`, what is still open, and every parked question.
+**Completion gate:** every clarification has an explicit answer and its dependent work is resolved. Unanswered questions block the final report; ask and wait instead.
+
+For tasks with a folder, record the verified outcome and mark `done` only when all approved work is complete; otherwise retain the open status and remaining work.
+
+**🛑 Batch 2** — what changed, what the audit found, which docs were updated, `Task folder: <path>`, and what is still open.
 
 Do not commit or push. The commit is the user's.
 
