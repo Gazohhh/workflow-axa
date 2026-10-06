@@ -2,6 +2,12 @@
 
 Notable changes to the `workflow` skill. Versions are git tags; this file says what each one changed and why.
 
+## Unreleased
+
+### Added
+
+- Optional reader-focused PDF deliverables within `workflow`, using the same development flow and a conditionally loaded PDF procedure. Owner-confirmed audience and terminology, traceable evidence, polished rendering, and accuracy, zero-knowledge reader and product-language reviews gate completion. Ordinary tasks retain their existing behavior; PDF requests use the task-folder and approval path even for otherwise trivial changes.
+
 ## 1.3.0 — 2026-09-24
 
 The relay said what was done and what remained, but not what was learned, and nothing kept the project's own docs honest. Tests could pass beside an architecture doc that still described the old system.

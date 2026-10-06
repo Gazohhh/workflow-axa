@@ -1,11 +1,17 @@
 ---
 name: workflow
-description: Use when implementing a feature, fixing a bug, or changing behaviour in a codebase. Investigates first, clarifies without assumptions, batches the plan, then delegates to parallel subagents with tests, a persistent TODO and handover folder, architecture and flow doc updates, and a cold audit of the staged changes.
+description: Use when implementing a feature, fixing a bug, or changing behaviour in a codebase. Investigates first, clarifies without assumptions, batches the plan, then delegates to parallel subagents with tests, a persistent TODO and handover folder, architecture and flow doc updates, and a cold audit of the staged changes. When a PDF deliverable is requested alongside the work, adds an owner-confirmed, reader-focused PDF with source, comprehension and product-language validation.
 ---
 
 Every task leaves a **relay**: a task folder the next agent picks up cold and knows what was done, what remains, what was learned, and where you stopped.
 
 The failure this flow prevents is a green test suite beside a call site nobody looked at, or beside a doc still describing the old system. **Docs are part of the implementation**: a change to architecture, ownership, dependencies, data flow, user flow, build flow, or runtime behaviour corrects the existing docs that describe it, in the same task.
+
+## Optional PDF mode
+
+When the user requests a PDF deliverable alongside the workflow task, read [PDF-DELIVERABLE.md](PDF-DELIVERABLE.md) before planning or drafting and follow it alongside the seven steps below. Load that reference only for a requested PDF; ordinary tasks follow the existing flow.
+
+PDF work requires a claimed task folder and the normal plan/approval path even when the implementation would otherwise be trivial: use step 3 for a prepared request, or step 2 if the goal is unsettled. In batch 1 present the PDF audience and terminology map for explicit owner confirmation before drafting. Add the PDF, editable source, working records, rendering and review work to the plan and TODO; keep dependent drafting paused until the language gate is satisfied. Include the PDF artifacts in verification and the staged audit, and apply the reference's final-version completion gate before batch 2. The technical relay remains separate from the reader document.
 
 ## Batches
 

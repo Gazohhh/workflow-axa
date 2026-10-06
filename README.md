@@ -59,6 +59,22 @@ Three ways in, and the skill picks:
 
 It stages the result and stops. **Commits stay yours.**
 
+## Optional PDF deliverable
+
+Use the same skill and request a PDF alongside the task:
+
+```text
+$workflow Implement the approved change and deliver a reader-focused PDF.
+```
+
+In Claude Code, use `/workflow` with the same request. There is one maintained workflow; its [PDF procedure](skills/workflow/PDF-DELIVERABLE.md) loads only when you request a PDF. Ordinary tasks keep their current behavior. A PDF request takes the task-folder and approval path even when the underlying change is trivial.
+
+Before drafting, the agent proposes the intended audience, purpose, document language and a reader-language terminology map for your explicit confirmation. The PDF explains the situation, consequences, decisions and next steps in confirmed product language, with facts, measurements, estimates and unknowns distinguished. Internal developer terms stay in the working records unless the reader needs an exact label to act and you have confirmed it.
+
+The deliverable is a polished, readable document, with simple diagrams only where they help explain a process. It requires local PDF rendering, visual inspection of every page and extracted-text checks; an unrendered source does not count. Available PDF skills can help with rendering, but are not a required installation dependency. If a usable renderer is unavailable, the agent reports the blocker.
+
+Before completion, the final version must pass three reviews: accuracy against sources, comprehension by someone unfamiliar with the product, and product terminology and meaning. The final report links the PDF and records its audience and review results. Editable source, audience brief, evidence and validation records stay in the task folder. Creating the PDF does not authorize upload or publication.
+
 ## Making it fire without the command
 
 The skill's description means the agent usually reaches for it on its own. To make that non-negotiable in a given project, paste this into that project's `AGENTS.md` — or its `CLAUDE.md` if it has no `AGENTS.md`:

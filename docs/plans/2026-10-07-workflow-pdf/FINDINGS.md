@@ -1,0 +1,13 @@
+﻿# Findings
+
+- 2026-10-07 — Read installed workflow and all three supporting references. It requires batch 1 approval before writes outside the task folder, delegated implementation, and a cold staged audit.
+- 2026-10-07 — Repository recon found only the workflow skill, no rules file or test framework. Plugin explicitly registers skills. Draft is standalone and preserves workflow body and supporting references exactly.
+- 2026-10-07 — Validator initially failed due to Windows cp1252 default; rerun with Python -X utf8 passed. Baseline-body comparison, byte equality of three references, and Markdown reference closure passed.
+- 2026-10-07 — Independent draft reviewer confirmed baseline body/reference preservation and local reference closure; all six requested scenarios are covered: trivial work, new terminology, unsupported measurement, unfamiliar-reader review, product meaning, and late corrections.
+- 2026-10-07 — Independent review found no blocking defects. Applied its optional clarification: layout-only revisions require explicit final-version verdicts and evidence before carrying forward earlier review conclusions.
+- 2026-10-07 — Owner approved replacing separate skill with optional PDF mode in workflow. Scope and plan updated; standalone draft retained only as historical preparation.
+- 2026-10-07 — Integrated optional PDF mode and inspected all five implementation files. Draft removal was rejected by automatic policy; safely archived it instead as superseded-proposal and renamed its entrypoint SUPERSEDED-DRAFT.md. Only skills/workflow is maintained/installable.
+- 2026-10-07 — Independent verifier passed baseline-preservation, frontmatter, links, metadata and six behavioral scenarios. Found ambiguity around confirmation of purpose/document language; implementer explicitly added both to drafting and final completion gates, aligned README, and reran validator successfully. No PDF generated: this task adds instructions, not an actual PDF deliverable.
+- 2026-10-07 — Removed the six individually named superseded snapshot files with precise patches, avoiding recursive filesystem deletion and duplicated instructions. Decision and review history remains in task records; only one workflow/PDF instruction set remains.
+- 2026-10-07 — Cold audit passed all seven implementation checks and whitespace check. Minor task-record finding: stale draft-disposition wording. Corrected PLAN headings/scope and TODO to clearly show superseded snapshot removal. Follow-up audit pending.
+- 2026-10-07 — Follow-up cold audit passed all seven checks with no remaining issues. Final task status done; implementation and task records staged; no commit/push. Outcome is optional PDF mode in one maintained workflow.
