@@ -9,11 +9,11 @@
     {
       "name": "workflow-axa",
       "source": "./",
-      "description": "The team development flow: prepared prompt, subagents, tests, a handover document, and an audit of the staged changes.",
+      "description": "One workflow coordinates installed specialist skills: investigate, approve, implement, verify and hand off without automatic staging.",
       "category": "engineering",
       "keywords": [
         "workflow",
-        "subagents",
+        "planning",
         "testing",
         "code-review"
       ]

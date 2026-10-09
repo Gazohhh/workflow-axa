@@ -1,28 +1,35 @@
-# Preparing prompts outside the agent
+# Optional prompt preparation
 
-Two moments in the flow benefit from a second assistant: writing the task prompt before you start, and writing the audit prompt after implementation. Neither is required — the skill runs without them — but on a large task a prompt sharpened somewhere else arrives better than one improvised here.
+A prompt prepared in another assistant does not replace investigation, approval, or the task record. Use the invocation supported by the installation: Claude Code plugin `/workflow-axa:workflow`, standalone Claude skill `/workflow`, or Codex `$workflow`.
 
-Use whichever assistant you like. The flow does not care which one wrote the prompt.
+## Start a task
 
-## Preparing a task prompt
+```text
+/workflow-axa:workflow Investigate <problem> in <repository/area>. Goal: <observable outcome>. Constraints/protected areas: <limits>. Read the existing code and project rules first; establish the task record before substantial discovery. Map callers, alternatives, cleanup, tests, and affected docs. Verify and invoke the relevant installed specialists using SPECIALISTS.md. Batch nonblocking decisions; ask early only where a decision blocks useful progress. Present the bounded plan for approval before implementation.
+```
 
-Explain the problem or the feature in your own words, then ask for a prompt that carries these:
+Replace placeholders with known information, not assumptions. Do not invent a solution merely to make the prompt look prepared. Include a reproduction and expected behavior when known. For research-only work, explicitly say that no implementation is authorized.
 
-- Small and specific. Only what the agent needs to do this task well.
-- Delegate the work to subagents: one to implement, one to write tests, one to verify the result against the project's rules and requirements.
-- Keep the code as simple as the problem allows; no complexity the task did not ask for.
-- Follow the project's `AGENTS.md` (or `CLAUDE.md`), and write one first if it is missing.
-- Open the task folder before investigation per [TASK-FOLDER.md](TASK-FOLDER.md). Keep its issue, status, outcome, TODO, investigation history, and decisions current across turns. Resume an exact matching task; use related histories as evidence. Ask and wait on uncertainty; every clarification needs an answer before completion.
-- Update the project's architecture and flow docs wherever the change makes them false, as part of the task, not after it.
+## Approve and execute
 
-Read what comes back before you use it. Push back on anything vague, wrong, or missing — a prompt you had to argue with is usually the one worth pasting.
+```text
+/workflow-axa:workflow Continue <task-folder>. Approve plan R2 and the recommendations for Q1 and Q2. Implement the agreed scope, including its tests, docs, direct replacement cleanup and task-caused fixes. Keep checkpoints current. Ask again only for new reserved decisions or scope changes. Do not stage, commit, push or deploy.
+```
 
-**Run it to completion:** if you want the task finished without check-ins along the way, say so in the prompt. It is a sentence, not a command.
+Use the actual revision and question IDs; "finish without check-ins" does not authorize new behavior, architecture decisions, or dependencies outside the approval.
 
-## Preparing an audit prompt
+## Resume after an interruption
 
-After implementation, ask for a short prompt that audits the current staged changes against every check in [`AUDIT.md`](./AUDIT.md).
+```text
+/workflow-axa:workflow Continue <task-folder> in <repository>. The previous session is stopped; take ownership. Read the records and existing approval, reconcile them with the actual worktree and interrupted step, then continue the next approved action. Preserve unrelated edits and staging. Recheck specialist availability in this host and update the checkpoint before coding.
+```
 
-The audit exists for one reason: tests can pass while a second call site, untouched and unnoticed, is now broken — or while the architecture doc still describes the old system.
+Only say the other session stopped when true. Transfer the working changes as well as the records when moving to another environment.
 
-The skill runs those checks by itself in a fresh subagent. Preparing the prompt elsewhere is worth it when the change is large enough that you want a second opinion on what to even look for.
+## Audit without changing code
+
+```text
+/workflow-axa:workflow Audit the task-attributable changes for <task-folder> against its approval and AUDIT.md. Include relevant untracked files, alternative callers, replacement leftovers, verification freshness and existing docs. Record findings; do not implement fixes or change Git staging.
+```
+
+To prohibit all file writes, explicitly say "read-only; report in the conversation only." For a requested reader PDF, provide the audience/purpose/language and point to any approved glossary; use the same workflow, not a separate PDF workflow skill.

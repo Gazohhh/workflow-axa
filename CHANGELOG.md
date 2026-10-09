@@ -1,12 +1,52 @@
 # Changelog
 
-Notable changes to the `workflow` skill. Versions are git tags; this file says what each one changed and why.
+Historical entries describe previous behavior; current instructions live in skills/workflow. Package version labels do not imply a published Git tag or successful live host evaluation.
 
-## Unreleased
+## 2.0.0 — 2026-10-09
+
+User-requested package release; not published, installed or live host-certified here.
 
 ### Added
 
-- Optional reader-focused PDF deliverables within `workflow`, using the same development flow and a conditionally loaded PDF procedure. Owner-confirmed audience and terminology, traceable evidence, polished rendering, and accuracy, zero-knowledge reader and product-language reviews gate completion. Ordinary tasks retain their existing behavior; PDF requests use the task-folder and approval path even for otherwise trivial changes.
+- Explicit routes to 11 of Matt Pocock's reusable specialist skills, with `grilling` for structured questions rather than optional interview assistance.
+- Full 27-skill installation catalogue, one-route-per-host setup guidance, host/source/availability checks and recorded invocation evidence.
+- Portable read-only checker for selected/full inventories, duplicate copies, invocation policy, known supporting files and approved local content baselines.
+- Compatibility adapters for question timing, existing approval, subagent absence, existing docs, uncommitted review, prototype cleanup and no automatic commits/publication.
+- Specialist tooling regression tests and seven new staged behavioral scenarios (22 main scenarios total).
+
+### Changed
+
+- Workflow, questions, records, audit, prompt examples and README consistently require the applicable installed specialist rather than silently recreating it.
+- Missing/disabled/ambiguous/changed selected skills block dependent work or use a previously approved explicit fallback; unrelated work may continue.
+- Reuse approved test seams and task scope across specialist calls; host changes recheck capability without reopening settled product approval.
+- The synthetic approved fixture explicitly records test seams for the TDD integration exercise.
+
+### Boundaries
+
+- One user-facing workflow, no vendored upstream skill stack, automatic installations, invented native dependency keys or commits/pushes.
+- `grill-me` and other user-only upstream workflows stay user-invoked. Installation and a successful disk check are not evidence of runtime invocation.
+- Upstream 1.3.1 metadata was observed; no source commit, upstream byte hash or live-tested team baseline is fabricated. See VALIDATION.md.
+
+## 2.0.0-rc.1 — 2026-10-09
+
+Local-test candidate; not a published release. Live Claude Code/Codex behavior remains to be evaluated.
+
+### Changed
+
+- One shorter core workflow with conditional references; no mandatory external grilling or subagents.
+- Discover facts independently, batch nonblocking questions, and interrupt only at a meaningful decision boundary.
+- Persist approval revision/scope and delegate ordinary execution without repeated micro-approvals; scope expansions and reserved decisions still need the user.
+- Create task records before substantial discovery or implementation. Add lightweight records, before/after checkpoints, ownership, worktree reconciliation and cold recovery.
+- Audit the task-attributable final state without automatic staging. Preserve unrelated staged/unstaged edits; Git publication actions remain separately authorized.
+- Classify regression, task-caused, baseline and environment failures; retain final-state verification after the last repair and honest partial reporting.
+- Make abstraction/comment standards and directly superseded-code cleanup concrete, without banning helper names or deleting unrelated code.
+- Retain optional reader-focused PDFs, with reuse of applicable owner-approved language and honest reviewer limitations.
+- Align README, prompt examples, plugin descriptions and Codex metadata with these defaults.
+
+### Added
+
+- Standard-library structural validation, safe disposable fixtures and tooling tests; behavioral scenario guide for local baseline/candidate comparison.
+- Candidate verification report and source/design notes. No automatic CI, service, installation, staging, commit, push or release action.
 
 ## 1.3.0 — 2026-09-24
 

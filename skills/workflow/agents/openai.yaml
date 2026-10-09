@@ -1,3 +1,3 @@
 interface:
   display_name: "Workflow"
-  short_description: "Team development flow with optional reader-focused PDF"
+  short_description: "Plan, approve, implement, verify, and hand off work"

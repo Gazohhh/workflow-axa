@@ -1,0 +1,15 @@
+# Findings
+
+- 2026-10-09 — Input inspected: 14 source files plus embedded .git data. The working copy excludes .git; no uploaded Git history was executed or used.
+- 2026-10-09 — Original active instructions conflict on question batching, create records after early clarification, mandate subagents, stage entire files, and permit a final fix to retain stale verification. README and prompt helper repeat obsolete behavior. Changes must address references and metadata, not only SKILL.md.
+- 2026-10-09 — Original PDF procedure already uses conditional loading; retain reader/evidence/rendering/final-version gates while reusing explicitly approved unchanged terminology.
+- 2026-10-09 — Python and Git are available. Claude Code and Codex executables are absent. Package/fixture checks can run locally; host-native validation and live model behavior cannot be claimed. See the final validation report for observed results.
+
+- V1 — 2026-10-09 — `python -X utf8 tools/validate.py` in the package root: exit 0. Manifest/metadata/registration, relative links, separately installable reference closure and core budget passed. This is a package-specific structural check, not Claude host validation.
+- V2 — 2026-10-09 — `python -X utf8 -m unittest discover -s tests -p "test_*.py" -v`: 18 tests passed after the final validator/reference-safety change. All seven generator variants were exercised; the clean fixture's three tests pass; the intentionally failing fixture fails for its documented reason.
+- 2026-10-09 — Final source self-review added explicit initial diff/index evidence for mixed ownership and an installable-skill reference-closure regression. Active docs and metadata no longer retain mandatory subagents, automatic staging, repeated glossary approval, or a fixed two-pass audit escape. Historical task records remain byte-preserved and non-authoritative.
+- UNTESTED — Native Claude/Codex validation, actual model behavior, Windows execution and cross-account recovery; executables/hosts unavailable. No independent subagent review occurred. Scenario protocols must not be reported as executed agent tests.
+
+- V3 — 2026-10-09 — Built a source-only archive with 37 files. ZIP CRC checks and byte equality against source passed; .git and generated caches/fixtures were absent. Extracted it into a fresh directory and reran structural validation successfully.
+- 2026-10-09 — Two combined archive-check invocations were interrupted by the execution tool's timeout while the suite was running; they are not counted as passes. A clean-fixture spot check passed, then an instrumented run of the same full extracted unittest suite passed all 18 tests in 7.568 seconds. No assertion failure or reproducible package defect was found; the timeout cause was not established. No test was removed or weakened.
+- V4 — 2026-10-09 — Final delivery includes the candidate, local validation results and explicit live-host limitations. Archive integrity/source equality and the extracted test suite are rechecked after final record updates before delivery. No application repository, host installation, global policy or remote was changed.
