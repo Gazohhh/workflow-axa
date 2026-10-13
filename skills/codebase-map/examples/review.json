@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "title": "Reject negative scores without changing valid output",
+  "revision": "P1",
+  "mode": "compare",
+  "state": "awaiting-approval",
+  "snapshot": {
+    "repository": "Synthetic scoreboard fixture — example only",
+    "branch": "Local illustrative files; no application branch",
+    "basis": "Based on the bundled fixture and named source files. Current flow is statically inspected; proposed behavior is not implemented."
+  },
+  "understanding": "You want both display paths to reject negative scores, while keeping every nonnegative score formatted exactly as before. Reuse the existing formatter rather than adding another feature or validation layer.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Reject a negative home or away score in both display paths.",
+      "origin": "Synthetic request in PLAN.md; not an actual product change."
+    },
+    {
+      "id": "R2",
+      "text": "Keep zero and positive score formatting unchanged.",
+      "origin": "Explicit compatibility constraint in the synthetic request."
+    }
+  ],
+  "boundaries": [
+    "No new features, UI redesign or score history.",
+    "No dependencies, extra configuration or automatic Git actions.",
+    "Only the shared score behavior, required caller, tests, scoped cleanup and existing documentation change."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "src/scoreboard.py",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "The web path uses an existing shared formatter without validation.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "src/scoreboard.py: format_score, web_score",
+      "limits": "Static inspection only; no runtime result claimed."
+    },
+    {
+      "id": "E2",
+      "claim": "The player calls a separate formatter and bypasses the shared owner.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "src/scoreboard.py: _legacy_score, player_score",
+      "limits": "Static fixture only; not a complete application call graph."
+    },
+    {
+      "id": "E3",
+      "claim": "Both supplied paths format scores but neither rejects negatives.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "Both entrypoints and their directly called formatters",
+      "limits": "Only the tiny supplied fixture was inspected."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Add behavior-level regression tests",
+      "kind": "prerequisite",
+      "reason": "Prove the requested rejection and preserve existing output.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "tests/test_scoreboard.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2",
+      "title": "Validate at the existing shared formatter",
+      "kind": "requested",
+      "reason": "The shared owner already formats the same score values.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "src/scoreboard.py: format_score"
+      ],
+      "depends_on": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Route player through shared validation; remove old helper",
+      "kind": "prerequisite",
+      "reason": "Fixing only the shared formatter would leave the player bypass.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "src/scoreboard.py: player_score, _legacy_score"
+      ],
+      "depends_on": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Verify both paths and update existing usage documentation",
+      "kind": "prerequisite",
+      "reason": "Complete acceptance evidence and remove stale behavior descriptions.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "tests/test_scoreboard.py",
+        "README.md"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "Negative scores are rejected through all affected entrypoints.",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "Add/run tests for negative home and negative away at shared, web and player entrypoints; expect ValueError."
+    },
+    {
+      "id": "A2",
+      "text": "Nonnegative scores still render exactly as before.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Run zero/positive examples through both display paths and compare exact strings; verify obsolete-helper references are removed."
+    }
+  ],
+  "graphs": [
+    {
+      "kind": "current",
+      "title": "01  Current — two separate formatting paths",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Web display",
+          "note": "Receives home and away scores.",
+          "col": 0,
+          "row": 0,
+          "group": "WEB PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N2",
+          "label": "Shared formatter",
+          "note": "No negative-score check.",
+          "col": 1,
+          "row": 0,
+          "group": "WEB PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N3",
+          "label": "Score text",
+          "note": "Negative values are not rejected.",
+          "col": 2,
+          "row": 0,
+          "group": "WEB PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N4",
+          "label": "Player display",
+          "note": "Uses its separate formatting path.",
+          "col": 0,
+          "row": 1,
+          "group": "PLAYER PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N5",
+          "label": "Legacy formatter",
+          "note": "Duplicates the formatting behavior.",
+          "col": 1,
+          "row": 1,
+          "group": "PLAYER PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N6",
+          "label": "Score text",
+          "note": "Bypasses the shared formatter.",
+          "col": 2,
+          "row": 1,
+          "group": "PLAYER PATH",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "calls",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": []
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "returns text",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": []
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "calls",
+          "evidence": [
+            "E2"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": []
+        },
+        {
+          "from": "N5",
+          "to": "N6",
+          "label": "returns text",
+          "evidence": [
+            "E2"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "kind": "proposed",
+      "title": "02  Proposed — validate once, preserve valid output",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Both display paths",
+          "note": "Web and player share one owner.",
+          "col": 0,
+          "row": 0,
+          "group": "REQUESTED BEHAVIOR",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1",
+            "E2"
+          ],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "id": "N2",
+          "label": "Shared validation",
+          "note": "Reject either negative score.",
+          "col": 1,
+          "row": 0,
+          "group": "REQUESTED BEHAVIOR",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "id": "N3",
+          "label": "Existing score text",
+          "note": "Zero/positive formatting stays the same.",
+          "col": 2,
+          "row": 0,
+          "group": "REQUESTED BEHAVIOR",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N4",
+          "label": "Legacy helper removed",
+          "note": "Remove the superseded player helper.",
+          "col": 0,
+          "row": 1,
+          "group": "ERROR PATH AND CLEANUP",
+          "basis": "observed",
+          "change": "removed",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "id": "N5",
+          "label": "Reject invalid score",
+          "note": "Raise ValueError; do not format it.",
+          "col": 1,
+          "row": 1,
+          "group": "ERROR PATH AND CLEANUP",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T2"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "calls shared",
+          "evidence": [
+            "E1",
+            "E2"
+          ],
+          "change": "modified",
+          "basis": "proposed",
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "nonnegative",
+          "evidence": [],
+          "change": "modified",
+          "basis": "proposed",
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N5",
+          "label": "negative",
+          "evidence": [],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "T2"
+          ]
+        }
+      ]
+    }
+  ]
+}

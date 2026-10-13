@@ -44,3 +44,7 @@ An intentionally staged migration may retain old code only with a recorded reaso
 Separate expected regression-test failures before the fix, failures caused by this task, unrelated baseline failures, and unavailable environments. A new test should fail for the intended reason before a bug fix when feasible; a missing import alone does not establish reproduction. Never weaken tests or acceptance criteria to manufacture a green result.
 
 Repair task-caused defects under the existing approval when behavior and scope remain agreed. After each material repair, rerun affected checks and re-inspect affected audit categories. Stop with a documented blocker when new authority, missing infrastructure or a genuine limit prevents completion; do not loop indefinitely or reuse stale proof. User acceptance of a coverage limit remains `NOT VERIFIED`, even when the task can close under that explicit exception.
+
+## Grounding and visual approval
+
+Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm a real user approval of the presented visual revision (or recorded explicit exception), before application writes. Compare delivered behavior and relevant error/permission paths to that revision. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.

@@ -9,7 +9,7 @@
     {
       "name": "workflow-axa",
       "source": "./",
-      "description": "One workflow coordinates installed specialist skills: investigate, approve, implement, verify and hand off without automatic staging.",
+      "description": "One workflow and an on-demand codebase-map: inspect evidence, prepare a visual review, obtain approval, implement and verify without automatic Git actions.",
       "category": "engineering",
       "keywords": [
         "workflow",

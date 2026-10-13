@@ -68,7 +68,7 @@ an approved fallback. Never edit an installed upstream skill to hide the conflic
 - **Q — Questions:** limit the tree to unresolved user-owned decisions for this task.
   Investigate facts first and defer nonblocking batches as [QUESTIONS.md](QUESTIONS.md)
   defines. Ask early for a direction blocker. Reuse settled answers; no infinite scope
-  expansion or repeated approval. The plan approval can also confirm shared understanding.
+  expansion or repeated approval. Shared understanding and implementation approval are confirmed through VISUAL-REVIEW.md after the decision batch, not assumed from interview completion.
 - **R — Research:** return cited findings to the owner for FINDINGS.md; no second competing
   report unless requested. A subagent can research in the active host session when useful;
   without that capability, run sequentially and label it. Promise no later/background result.
@@ -115,3 +115,7 @@ PLAN/TODO records remain authoritative; the package does not require a parallel 
 When the user explicitly chooses a manual workflow, confirm only unresolved integration
 boundaries and use their existing approvals. Installation setup is a separate authorized
 operation; [SETUP.md](SETUP.md) explains how to keep its output compatible with this workflow.
+
+## Local visualization route
+
+Invoke this package's **`codebase-map`** for an explicit flowchart/map request and automatically for the substantive preimplementation visual review in [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Resolve its actual qualified identifier and verify availability during setup/handoff. Pass inspected evidence, requirements/tasks/acceptance, mode, revision and artifact permissions. It returns the local source/report paths, freshness result and opener result; it never implements, approves, grills or calls back into workflow. Do not invoke Matt's user-only `improve-codebase-architecture` merely to draw a current flow. Missing visualizer/render capability follows the explicit setup/fallback decision path; never skip approval silently.

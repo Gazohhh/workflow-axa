@@ -23,13 +23,13 @@ class PackageTests(unittest.TestCase):
             (root / "skills/workflow/QUESTIONS.md").unlink()
             self.assertTrue(any("QUESTIONS.md" in error for error in validate_package(root)))
 
-    def test_unregistered_second_skill_is_rejected(self):
+    def test_unregistered_extra_skill_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self.copy_package(Path(tmp) / "candidate")
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly one installable SKILL.md is required.", validate_package(root))
+            self.assertIn("Exactly the registered workflow and codebase-map SKILL.md files are required.", validate_package(root))
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

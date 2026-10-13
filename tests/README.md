@@ -28,7 +28,7 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 Keep the original uploaded package as the baseline; exclude its embedded `.git` when preparing a test copy. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
-constant. For 2.0.0, complete SETUP.md and confirm the relevant specialists are enabled.
+constant. For 2.1.0, complete SETUP.md and confirm the relevant specialists are enabled.
 Dependency-failure scenarios deliberately vary only the named capability. Inventory
 fixtures in test_specialists.py are synthetic; they are not installed upstream skills. Run the same staged user replies. Save observed paths/commands, traces, final files and actual results in a private location outside the package or `.artifacts/`. Sanitize before sharing. Record model, host version, scenario, package version/hash, repetition, question rounds, authority violations, record ordering, recovery outcome, cleanup, and evidence freshness. Token/cost/runtime measurements are observations, not guessed scores.
 
@@ -58,4 +58,19 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The user-selected package version is 2.0.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.1.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+
+
+## 2.1.0 visual and activation checks
+
+The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
+
+Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install both local skills plus the approved relevant Matt specialists. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
+
+An optional browser smoke runner uses already installed Python Playwright and a supplied Chromium executable:
+
+```powershell
+python -X utf8 tools/browser_smoke.py --browser "C:\Path\To\Chromium\chrome.exe" --output "C:\Dev\workflow-browser-results"
+```
+
+This does not install dependencies. Browser sandboxing remains enabled by default; an explicit `--no-sandbox` switch is available only for a trusted disposable container that requires it, not normal desktop use. It opens a fresh headless browser context, supplies rendered content directly with the network offline, and checks viewport layout, zoom/fit/pan, evidence anchors, escaped malicious text and absence of approval controls/network requests. It can save screenshots and JSON results in a new directory. Direct `file://` opening and desktop default-browser behavior require a separate manual check; managed browser policies may prohibit them. The actual renderer still produces a standalone file and needs no web server.

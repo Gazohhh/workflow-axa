@@ -35,3 +35,7 @@ Default delegated details follow the core approval boundary: ordinary implementa
 ## Close research honestly
 
 A research or plan-only deliverable can be complete while implementation decisions remain open, provided its requested investigation and reporting are complete. Present findings, supported recommendations, unknowns, and the decisions required for a later phase. For implementation, leave affected work blocked and describe completed independent work. Neither route permits inventing an answer to make the report look finished.
+
+## Understanding is reviewed, not assumed
+
+Grilling resolves necessary decisions; it does not replace the final visual review or authorize implementation. Once material questions are answered, show the outcome, scope, flow and tasks through [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Do not ask an extra empty “did I understand?” round before the same review. Corrections there return to the affected requirement/decision; settled answers remain settled.

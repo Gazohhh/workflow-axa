@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "browser": "144.0.7559.96",
+  "checks": [
+    "Current and proposed graphs rendered offline",
+    "Pending state visible; no approval/submission controls",
+    "Toolbar zoom/fit, keyboard pan/fit and pointer drag",
+    "Desktop layout has no horizontal document overflow",
+    "Evidence/source anchors reveal details",
+    "Mobile layout has no horizontal document overflow",
+    "Malicious-looking labels remain inert; no network requests or script errors"
+  ],
+  "requests": [],
+  "errors": [],
+  "limits": [
+    "HTML supplied through set_content with network offline, not direct file:// navigation.",
+    "Default desktop opener and actual Claude/Codex agent behavior not tested.",
+    "Schema/content tests cannot prove diagram semantic completeness or real user approval."
+  ]
+}

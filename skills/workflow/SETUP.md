@@ -47,6 +47,13 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
+**2.1.0 also requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+
+For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
+
+Record the workflow version/source, both resolved local skill identifiers, routing-policy location/scope, actual load evidence and specialist snapshot. Test a plain request **without** `/workflow` or `$workflow`, an explicitly invoked task and a negative trigger. If routing fails, fix setup before relying on implicit use. There is no guarantee of model obedience from Markdown alone.
+
+
 Matt's `setup-matt-pocock-skills` is **user-invoked**. Run its actual qualified command when
 repository setup is necessary and authorized, not automatically inside every workflow.
 It can edit agent policy files and configure tracker labels, including remote writes.
@@ -127,7 +134,7 @@ not silently accept `latest` or invent an upstream commit hash from a version st
 ## 5. Run a runtime smoke test, then normal tasks
 
 In a disposable project with only the intended workflow version and Matt installation,
-request a research/plan task with one genuine decision. Verify the trace shows the
+first make a plain behavioral-change request with no skill name. Verify workflow loaded, code was inspected, requirements/evidence/tasks were mapped and the visual review was shown before application changes. Test rejection/correction and subsequent approval. Then request a research/plan task with one genuine decision. Verify the trace shows the
 qualified `grilling` specialist actually loaded, facts investigated rather than asked,
 and the question batch saved to the existing task record. Approve a bounded code fix
 with explicit test seams; verify the diagnosis/TDD/review routes, no repeated approval,

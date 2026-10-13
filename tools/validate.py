@@ -21,7 +21,13 @@ REQUIRED = (
     "skills/workflow/agents/openai.yaml", "tests/README.md", "tests/SCENARIOS.md",
     "tools/create_fixture.py", "skills/workflow/SPECIALISTS.md", "skills/workflow/SETUP.md",
     "skills/workflow/specialists.json", "skills/workflow/scripts/check_specialists.py",
-    "tests/test_specialists.py",
+    "tests/test_specialists.py", "tests/test_reports.py", "tools/browser_smoke.py",
+    "skills/workflow/GROUNDING.md", "skills/workflow/VISUAL-REVIEW.md",
+    "skills/workflow/templates/PROJECT-ROUTING.md", "skills/codebase-map/SKILL.md",
+    "skills/codebase-map/REPORT.md", "skills/codebase-map/agents/openai.yaml",
+    "skills/codebase-map/scripts/render_report.py", "skills/codebase-map/assets/report.css",
+    "skills/codebase-map/assets/report.js", "skills/codebase-map/examples/review.json",
+    "skills/codebase-map/examples/review.html",
 )
 
 
@@ -45,8 +51,8 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Plugin version must use the package's semantic-version format.")
         elif f"## {version} —" not in (root / "CHANGELOG.md").read_text(encoding="utf-8"):
             errors.append("Plugin version has no matching changelog entry.")
-        if plugin.get("skills") != ["./skills/workflow"]:
-            errors.append("Register only ./skills/workflow.")
+        if plugin.get("skills") != ["./skills/workflow", "./skills/codebase-map"]:
+            errors.append("Register workflow and codebase-map exactly once.")
         entries = market.get("plugins", [])
         if len(entries) != 1 or entries[0].get("name") != "workflow-axa" or entries[0].get("source") != "./":
             errors.append("Marketplace must point to this one local plugin.")
@@ -73,35 +79,35 @@ def validate_package(root: Path) -> list[str]:
     except (ValueError, TypeError, AttributeError, KeyError, OSError) as exc:
         errors.append(f"Specialist catalogue error: {exc}")
 
-    skills = list((root / "skills").rglob("SKILL.md"))
-    if skills != [root / "skills/workflow/SKILL.md"]:
-        errors.append("Exactly one installable SKILL.md is required.")
-    core = (root / "skills/workflow/SKILL.md").read_text(encoding="utf-8")
-    header = re.match(r'\A---\nname: workflow\ndescription: ("[^\n]+")\n---\n', core)
-    if not header:
-        errors.append("Skill metadata must contain the expected name and JSON-quoted description.")
-    else:
-        try:
-            description = json.loads(header[1])
-            if not description.strip() or len(description) > 1024 or "<" in description or ">" in description:
-                errors.append("Skill description is empty, too long, or contains markup.")
-        except ValueError as exc:
-            errors.append(f"Invalid quoted description: {exc}")
-    if len(core.split()) > 1200:
-        errors.append("Core exceeds the team's 1,200-word maintenance budget; review conditional content.")
+    expected_skills = {root / f"skills/{name}/SKILL.md" for name in ("workflow", "codebase-map")}
+    if set((root / "skills").rglob("SKILL.md")) != expected_skills:
+        errors.append("Exactly the registered workflow and codebase-map SKILL.md files are required.")
+    for name, budget in (("workflow", 1200), ("codebase-map", 800)):
+        core = (root / f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
+        header = re.match(r'\A---\nname: ' + re.escape(name) + r'\ndescription: ("[^\n]+")\n---\n', core)
+        if not header:
+            errors.append(f"{name}: skill metadata needs its name and JSON-quoted description.")
+        else:
+            try:
+                description = json.loads(header[1])
+                if not description.strip() or len(description) > 1024 or "<" in description or ">" in description:
+                    errors.append(f"{name}: invalid description length/markup.")
+            except ValueError as exc:
+                errors.append(f"{name}: invalid quoted description: {exc}")
+        if len(core.split()) > budget:
+            errors.append(f"{name}: exceeds the team's {budget}-word maintenance budget.")
+        metadata = (root / f"skills/{name}/agents/openai.yaml").read_text(encoding="utf-8")
+        match = re.fullmatch(r'interface:\n  display_name: ("[^\n]+")\n  short_description: ("[^\n]+")\n', metadata)
+        if not match:
+            errors.append(f"{name}: unexpected minimal OpenAI metadata shape.")
+        else:
+            try:
+                if not all(json.loads(value).strip() for value in match.groups()):
+                    errors.append(f"{name}: empty OpenAI display string.")
+            except (ValueError, AttributeError) as exc:
+                errors.append(f"{name}: invalid OpenAI string: {exc}")
 
-    metadata = (root / "skills/workflow/agents/openai.yaml").read_text(encoding="utf-8")
-    match = re.fullmatch(r'interface:\n  display_name: ("[^\n]+")\n  short_description: ("[^\n]+")\n', metadata)
-    if not match:
-        errors.append("Unexpected shape for the package's minimal OpenAI metadata.")
-    else:
-        try:
-            if not all(json.loads(value).strip() for value in match.groups()):
-                errors.append("OpenAI display strings must not be empty.")
-        except (ValueError, AttributeError) as exc:
-            errors.append(f"Invalid OpenAI display string: {exc}")
-
-    skill_root = root / "skills/workflow"
+    skill_roots = [root / "skills/workflow", root / "skills/codebase-map"]
     for path in sorted(root.rglob("*.md")):
         if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
@@ -115,7 +121,7 @@ def validate_package(root: Path) -> list[str]:
             resolved = (path.parent / unquote(parsed.path)).resolve()
             if not resolved.is_relative_to(root) or not resolved.exists():
                 errors.append(f"Broken/outside relative link in {path.relative_to(root)}: {target}")
-            elif path.is_relative_to(skill_root) and not resolved.is_relative_to(skill_root):
+            elif any(path.is_relative_to(sr) and not resolved.is_relative_to(sr) for sr in skill_roots):
                 errors.append(f"Skill reference escapes the separately installable skill folder: {target}")
     return errors
 
@@ -134,7 +140,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
-    print(f"PASS: package structure, manifest consistency, minimal metadata, one skill, relative links, core budget ({words} words).")
+    print(f"PASS: package structure, manifest consistency, minimal metadata, two skills, relative links, core budget ({words} words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
     return 0
 

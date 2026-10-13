@@ -1,5 +1,30 @@
 # Design decisions and sources
 
+## 2.1.0 — grounded understanding and visual approval
+
+The user's approved change adds current-code evidence before proposals and a visible check of understanding after PLAN/TODO preparation, before implementation. Structured decisions stay with grilling; the final review and approval are separate. One workflow entry point invokes a separately useful codebase-map skill. Plain requests need a verified host-loaded routing rule, not merely a plugin installed somewhere on disk.
+
+PLAN/TODO/FINDINGS/DECISIONS remain authoritative; the JSON/HTML projection is revisioned and evidence-linked. The renderer is original Python-standard-library code with inline SVG/CSS and a small local viewer. It borrows the visual-report concept, not upstream text, code, dependencies or the architecture-improvement workflow. The source-fingerprint checker detects changes only to named supplied bytes. Neither it nor Markdown enforces model understanding, identity or permissions.
+
+The renderer was kept dependency-free and intentionally is not a full editable whiteboard. Host policy and model behavior need live integration tests. A file-opening request does not prove display, and no HTML controls approve or execute work.
+
+Primary sources actually checked for this update (2026-10-13):
+
+| Source | Specific relevance |
+|---|---|
+| [Claude skills](https://code.claude.com/docs/en/skills) | Skill discovery, explicit/implicit use and conditional body loading; support-file instructions. |
+| [Claude project instructions](https://code.claude.com/docs/en/memory) | Applicable persistent project rules for ordinary prompts. |
+| [Claude plugin manifest](https://code.claude.com/docs/en/plugins-reference) | Register the two local skill directories. |
+| [OpenAI skills](https://developers.openai.com/codex/skills/) | Current skill activation and local packaging guidance. |
+| [OpenAI AGENTS guidance](https://developers.openai.com/codex/guides/agents-md/) | Host-loaded repository instructions and scope. |
+| [Matt's architecture command](https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md) | Visual candidates followed by questions; do not chain its refactor process for inspection maps. |
+| [Matt's HTML reference](https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/HTML-REPORT.md) | Visual before/after concept; CDN and loose-rendering choices are not inherited. |
+
+This update did not re-audit or execute all upstream skills. The 2.0.0 specialist inventory retains its historical provenance. Package test counts and browser limits belong in [VALIDATION.md](../VALIDATION.md), not implied claims of live agent reliability.
+
+## Historical 2.0.0 design and source notes
+
+
 ## Scope
 
 This rebuild applies the user's approval of the supplied workflow review. It retains one entrypoint and task-scoped documentation, while changing conflicting approval, questions, delegation, staging and recovery defaults. The historical review reported reading Matt Pocock's 27 catalogue entrypoints. The

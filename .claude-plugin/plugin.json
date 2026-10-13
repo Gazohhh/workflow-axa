@@ -1,7 +1,7 @@
 {
   "name": "workflow-axa",
-  "version": "2.0.0",
-  "description": "Document-first team workflow with explicit specialist routing, dependency checks, bounded approval, recoverable tasks, scoped cleanup and verification.",
+  "version": "2.1.0",
+  "description": "Code-grounded team workflow with specialist routing, visual preimplementation approval, offline codebase maps and recoverable task records.",
   "author": {
     "name": "Gazohhh",
     "url": "https://github.com/Gazohhh"
@@ -12,9 +12,12 @@
     "planning",
     "testing",
     "code-review",
-    "handover"
+    "handover",
+    "visual-review",
+    "codebase-map"
   ],
   "skills": [
-    "./skills/workflow"
+    "./skills/workflow",
+    "./skills/codebase-map"
   ]
 }

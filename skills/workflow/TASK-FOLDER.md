@@ -31,6 +31,8 @@ Omit irrelevant fields for lightweight work; use `unknown` or `not applicable` r
 - Repository / branch / worktree: <actual locations>
 - Approved revision and scope: <revision or not approved>
 - Active tasks: <TODO IDs, or the lightweight work item>
+- Current understanding / evidence: <R/E/A mapping; inspected state and unresolved limits>
+- Visual review: <draft/awaiting/approved/waived; revision; report/source path; shown/open result>
 - Specialists: <capability evidence / selected routes / approved adapters or exceptions>
 - Last completed step and observed evidence: <reference>
 - Next safe action: <specific step and prerequisites>
@@ -44,7 +46,7 @@ Omit irrelevant fields for lightweight work; use `unknown` or `not applicable` r
 required existing doc updates; verification strategy.>
 
 ## Approval
-<Revision, approving user response and date, selected decision options,
+<Revision, visual report reference or explicit exemption/waiver, approving user response and date, selected decision options,
 included work, exclusions, and what requires renewed approval.>
 
 ## Outcome
@@ -57,10 +59,10 @@ For a multi-step plan, retain earlier approval records and describe later change
 
 Before touching shared files, capture initial status and enough local diff/index evidence to distinguish existing edits from this task. Keep sensitive diffs in an approved private location rather than copying them into committed records.
 
-Use stable IDs and work units that another agent could complete. Name affected areas, dependencies, verification, and ownership when parallel work exists. Include documentation, tests, integration, and replacement cleanup rather than treating them as optional finishing work.
+Use stable requirement (R), evidence (E), acceptance (A) and task (T) IDs; every implementation task supports a user requirement or an evidenced prerequisite. Use work units that another agent could complete. Name affected areas, dependencies, verification, and ownership when parallel work exists. Include documentation, tests, integration, and replacement cleanup rather than treating them as optional finishing work.
 
 ```markdown
-- [ ] T1 — <work>; depends on: none; verify: <check>.
+- [ ] T1 — <work>; supports: R1; evidence: E1; acceptance: A1; depends on: none; verify: <check>.
 - [~] T2 — <work>; owner/lane: <identifier>; next: <step>.
 - [x] T3 — <work>; evidence: FINDINGS.md V2, <observed result>.
 ```
@@ -96,10 +98,15 @@ Only the task owner updates these records. Subagents return findings and evidenc
 2. Confirm repository, branch/worktree, and task ownership. A user saying "continue this task" can authorize takeover; record it and establish that overlapping writes are stopped or isolated. Resolve uncertain concurrent ownership before writing.
 3. Recheck specialist availability in this host and compare any saved installation fingerprint. An old session's availability is not proof for a new account. Reuse task approval; resolve only changed capability/compatibility.
 4. Inspect current staged/unstaged/untracked files and the previously active unit. Preserve unrelated work. Determine what completed, what is partial, and which checks no longer apply.
-5. Update the checkpoint and continue the next covered step. Ask only for missing authority, a genuine decision blocker, or an unresolved ownership conflict—not for routine reapproval.
+5. Reconcile the inspected-code evidence, understood outcome and visual review revision with current files. Classify expected approved progress versus material changes; do not treat a new report or source hash as approval. An awaiting-approval task stays paused for implementation.
+6. Update the checkpoint and continue the next covered step. Ask only for missing authority, a genuine decision blocker, or an unresolved ownership conflict—not for routine reapproval.
 
 Across accounts on the same worktree, records and edits may already be present. Across machines or cloud environments, documentation alone is not the code: transfer the actual working changes through an explicitly authorized method. Do not silently create commits, push a branch, upload logs, or assume a remote contains uncommitted work. Use separate worktrees for overlapping tasks where available, with coordinated integration and no global index manipulation.
 
 ## Evidence privacy
 
 Never copy credentials, access tokens, raw personal data, or unrelated production records into task documents, prompts, screenshots, or committed fixtures. Redact before saving. Store only what supports a finding. Large/private raw artifacts stay outside tracked content in an approved location, with a sanitized reference. Ignore rules reduce accidental tracking; they do not make a file secret or authorize an upload.
+
+## Visual artifacts
+
+For substantive implementation follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Keep revisioned report input and HTML under the task artifact directory, linked from PLAN. They project the authoritative records; do not maintain another task list inside an independent design. Preserve the report shown for each approval and mark later material proposals separately. No unrequested HANDOFF file or remote whiteboard is needed.

@@ -1,75 +1,71 @@
 ---
 name: workflow
-description: "Use for repository features, bug fixes, refactors, or explicitly requested workflow research, planning, audits, and task resumption. Records work before implementation, separates user decisions from delegated execution, and verifies scoped changes. Do not turn explanation-only requests into repository work."
+description: "Use for repository feature requests, bug fixes, refactors, research, planning, audits and task resumption, including ordinary requests without a skill name. Inspect current code before proposals; prepare an evidence-backed visual review and wait for approval before substantive implementation. Explanation-only requests stay read-only."
 ---
 
 # Workflow
 
-Investigate facts, obtain approval for user-owned decisions, and execute the agreed work without repeated permission requests. Leave records that another agent can reconcile with the actual files after an unexpected interruption.
+Establish current facts, show the requested change back to the user, obtain approval, then execute within it. Keep recoverable records. Installed instructions and past conversation are not proof of current repository understanding.
 
 ## 1. Establish context and mode
 
-Read applicable repository instructions, including relevant `AGENTS.md`, `CLAUDE.md`, directory overrides, and required references. Respect the host's instruction precedence. Report missing required guidance; do not create policy files without approval. Inspect the repository root and, where Git is available, the branch/worktree and staged, unstaged, and untracked changes. State the working location; other repositories are outside scope.
+Read applicable repository instructions and required references with the host's precedence. Inspect the actual root, branch/worktree, staged/unstaged/untracked changes and relevant directory rules. State the working location. Preserve user edits; other repositories are outside scope. Never create policy files without setup approval.
 
-Choose the smallest suitable mode:
-- **Explain:** answer without scaffolding or mutations.
-- **Research / plan / audit only:** investigate and record; no implementation or automatic audit fixes.
-- **Implement:** investigate, propose, obtain approval, then execute.
-- **Lightweight edit:** an explicit, unambiguous low-risk request authorizes that exact edit. Record first, then edit and verify without another approval round. File count is not a risk test; behavior, dependencies, interfaces, security, or uncertain impact require the normal route.
+Choose the smallest mode:
+- **Explain:** repository-specific claims require relevant code inspection; no scaffolding or mutations. General explanations need no repository scan.
+- **Research / plan / audit only:** investigate and record; no implementation or automatic fixes.
+- **Implement:** investigate, clarify, prepare the plan and visual approval review, then stop before implementation.
+- **Lightweight edit:** an explicit, unambiguous low-risk request authorizes that exact edit after a short record. Behavior, architecture, dependencies, public interfaces, security or uncertain impact require the normal route. Small file count is not an exemption.
 
-Explicit read-only/no-file instructions override record creation: provide a continuation summary instead and disclose that nothing was persisted. Resumption starts with step 2, not blind continuation of a checked TODO.
+Explicit no-file instructions override persistence: disclose the limitation and provide a continuation summary. A visual-only request authorizes report artifacts, not application edits; route it to the installed `codebase-map` without creating an implementation project.
 
-## 2. Establish the task record
+## 2. Establish the record and capabilities
 
-Before substantial discovery or any implementation, read [TASK-FOLDER.md](TASK-FOLDER.md) and create or claim `docs/plans/YYYY-MM-DD-<slug>/`, respecting an established project location. Match existing work by its goal and scope, never recency alone. Resolve ambiguous ownership before writes. One active owner maintains the records; related task histories remain evidence, not authority.
+Read [TASK-FOLDER.md](TASK-FOLDER.md). Before substantial discovery or implementation, create or claim the exact goal/scope task at the established location, otherwise `docs/plans/YYYY-MM-DD-<slug>/`. Resolve ambiguous ownership before writes. One owner maintains records; interrupted work is uncertain until inspected.
 
-Record confirmed context, unknowns, scope, active work, and the next safe action. On resumption reconcile the record with actual files, approval, worktree changes, and verification freshness. Mark interrupted work uncertain until inspected. Never infer that a stopped subagent finished. Sanitize stored evidence; do not record secrets or unnecessary personal data.
+Save the goal, constraints, unknowns, active unit and next safe action. Reconcile resumed records, approval and evidence with actual files, not checkboxes. Sanitize evidence. Read [SPECIALISTS.md](SPECIALISTS.md); verify and use the applicable installed routes, including the local visualizer, rather than pretending they ran. Recheck after host/account or dependency changes. [SETUP.md](SETUP.md) is for authorized setup, not automatic installation.
 
-Read [SPECIALISTS.md](SPECIALISTS.md) and verify the relevant installed specialists before the next phase. Use its explicit routes and adapters, not optional suggestions. Record resolved skills and availability; recheck on host/account or dependency changes. Follow [SETUP.md](SETUP.md) only when setup is needed and authorized.
+**Ready:** task, owner, checkpoint and next phase's capabilities are known.
 
-**Ready:** the task location, owner, checkpoint and next phase's specialist readiness are known.
+## 3. Ground the request before designing
 
-## 3. Investigate and settle decisions
+Read [GROUNDING.md](GROUNDING.md). Inspect existing owners, behavior, entrypoints/callers, alternate paths, reusable implementations, tests/runner, relevant data/configuration and authoritative docs. Scale inspection to impact. Record file/symbol evidence, contradictions, missing access and static-versus-runtime limits. Establish a useful test baseline without unauthorized installs or diagnostic writes.
 
-Inspect the behavior's owner, existing implementations, callers and alternative paths, tests and their runner, relevant data/configuration, and current project documentation. Identify replacements and their possible leftovers. Establish a useful test baseline before changing behavior; record inaccessible environments rather than guessing. Use the routed research/diagnosis/design specialist when applicable and authoritative guidance matching actual versions.
+State the understood outcome in plain language. Map requirements to their user source, current evidence, actual gap and acceptance criteria. Find existing/partial capabilities before adding another implementation. Every proposed task must serve a requested requirement or demonstrated prerequisite; attractive extras are not prerequisites. No speculative features in the plan.
 
-Discoverable facts are the agent's job. Batch nonblocking decisions after useful investigation; ask early only when a user-owned answer blocks meaningful progress or changes the authorized direction. Read [QUESTIONS.md](QUESTIONS.md) when handling missing information or approval ambiguity. Do not repeat answered questions. Unresolved choices can remain in a research report without authorizing implementation.
+Investigate discoverable facts independently. Read [QUESTIONS.md](QUESTIONS.md): batch nonblocking user decisions; ask early for direction blockers. Use `grilling` for structured unresolved choices, reuse answered questions, and persist answers. Research may finish with open choices; dependent implementation may not.
 
-**Ready:** explain what exists, what must change, affected paths/docs, evidence, and the remaining decision boundaries.
+**Ready:** explain what exists, what the user wants, what must change, evidence and remaining boundaries—not merely “code reviewed.”
 
-## 4. Record the plan and approval
+## 4. Prepare the visual review and obtain approval
 
-Write acceptance criteria, the approach, bounded file areas, protected areas, risks, verification, documentation, and directly superseded code to remove. Map actionable TODOs, dependencies, specialist routes and test seams; avoid a second competing task list. Present the plan and currently answerable decisions together.
+Record a revisioned PLAN, acceptance criteria, approach, bounded/protected areas, risks, verification, existing doc updates and directly superseded code to remove. TODOs reference requirements, evidence, acceptance and dependencies. Resolve decisions material to the next implementation scope.
 
-The user owns changed behavior, material architecture tradeoffs, new dependencies/services/costs, schema/public-interface changes, destructive actions, and publication. Within an approved approach, delegate local names, established file placement, implementation details, required callers/tests/docs, scoped replacement cleanup, and task-caused fixes.
+Read [VISUAL-REVIEW.md](VISUAL-REVIEW.md). For substantive features, behavioral fixes and architecture changes, invoke `codebase-map` after PLAN/TODO preparation, not after executing tasks. Generate the current/proposed HTML review, validate its evidence and source freshness, request local opening when supported, report its path and **STOP for user approval**. Opening, rendering, answering questions or liking the diagram is not implementation permission. A blocked draft cannot masquerade as approval-ready.
 
-Record the approved revision, user response, selected options, included work, and exclusions **before implementation**. Reuse already explicit approval of the same settled scope; a prepared prompt alone does not settle unchosen tradeoffs. A recommendation or edited plan is not approval. Expansion or a new user-owned choice pauses only dependent work; independently approved work may continue. Do not keep asking permission for actions already covered.
+Record the approving response, exact revision, report reference, selected options, included work and exclusions before coding. Reuse approval of the same already presented scope; do not replay the gate on every TODO or handoff. Never assume a blanket request waived an unseen review. An explicit user waiver is recorded, not invented.
 
-**Ready:** each next implementation step is covered by recorded approval or the exact lightweight request, with no unresolved decision on which it depends.
+User-owned choices include changed behavior, material architecture, dependencies/services/costs, schema/public interfaces, destructive actions and publication. Delegate ordinary local details, established placement, required callers/tests/docs, scoped cleanup and task-caused fixes. Material changes require a revised review and approval; independent already-approved work may continue.
 
-## 5. Execute bounded work units
+**Ready:** each next implementation step has valid recorded authority and no blocking choice or material unresolved mismatch.
 
-Before each unit, update its active TODO, intended change, and verification checkpoint. Afterwards record actual changes, observed results, and the next action. Keep units small enough to recover after a hard stop; never defer recordkeeping until credits run low.
+## 5. Execute recoverable work units
 
-Use the routed implementation/reference specialist for this unit. Keep behavior with its existing owner. Helpers should express a real operation or remove meaningful repetition; names such as `normalize` are neither automatically justified nor banned. Comments explain non-obvious reasons or constraints, not obvious syntax. Avoid speculative layers, fallback paths, and unrelated refactoring. Update existing authoritative docs and remove directly superseded callers/config/tests/debug code within scope; track approved temporary migration leftovers explicitly.
+Before each unit, checkpoint its task, intended change and verification. Afterwards save actual changes, results and next action; do not wait for credits to run out. Use applicable specialists with the approved scope, evidence, allowed writes and output contract.
 
-Use subagents only when useful and available. Give each the approved scope, task IDs, rules, evidence, write ownership, and verification expectations. Parallelize independent work; serialize shared-file changes and dependencies. Subagents report to the owner rather than editing task records. Without them, perform the same work and reviews yourself and label the limitation honestly. Install no helper merely to satisfy this workflow.
+Keep behavior at its owner. Helpers must express a real operation or remove meaningful duplication; `normalize` is neither banned nor automatically justified. Comments explain non-obvious reasons, not syntax. Avoid speculative layers, fallbacks and unrelated refactors. Update authoritative docs; remove superseded callers/config/tests/debug code within scope. Track approved temporary migration leftovers explicitly.
 
-Expected failing regression tests are part of debugging. Fix task-caused failures within scope. Classify unrelated baseline failures and environment blockers separately; record coverage gaps and ask only for decisions needed to proceed or waive required verification.
+Use available subagents only for useful independent work with clear write ownership. They return evidence to the record owner. Sequential work is valid; never label self-review independent. Expected failing regression tests are normal; fix task-caused failures within scope, separate baseline/environment failures, and ask only for a needed decision or verification waiver.
 
-## 6. Verify and audit the final state
+## 6. Verify, audit and close
 
-Run relevant checks and inspect their results, including the original symptom, alternative paths, cleanup, and updated docs. Read [AUDIT.md](AUDIT.md) and review the task-attributable final diff, including relevant untracked files. Invoke the routed `code-review` for code changes; never describe self-review as independent.
+Read [AUDIT.md](AUDIT.md). Check the original symptom, alternate paths, requirements, cleanup and docs; inspect task-attributable staged/unstaged/untracked changes. Invoke routed `code-review` for code changes. Repair in-scope findings and rerun affected checks after the last repair. Missing coverage is not a pass.
 
-Do not automatically stage, commit, push, upload, deploy, reset, or discard changes. Separately authorized Git actions must preserve existing user edits and staging intent; file-level staging cannot isolate mixed ownership. If attribution is uncertain, pause that action rather than guessing.
+Do not automatically stage, commit, push, upload, deploy, reset or discard. Separately authorized Git actions preserve user edits and staging intent; file-level staging cannot isolate mixed ownership. Pause uncertain attribution.
 
-Fix in-scope findings and rerun affected checks after the last repair. If evidence remains unavailable or review stops with open issues, retain an incomplete status instead of claiming success.
-
-## 7. Close or hand off
-
-Update outcome, remaining work, verification, approval, ownership, and the next safe action. Report changes, docs updated, actual checks, limitations, and task/artifact paths. A blocked or partial report is valid; mark `done` only when approved acceptance criteria and required verification are satisfied. Explicitly accepted verification limits remain visible, not relabelled as passes.
+Update outcome, acceptance evidence, remaining work, ownership, approval and next safe action. Report actual checks and artifact paths. Mark done only when acceptance and required verification are satisfied; partial/blocked reports are valid. Retain explicitly accepted limits.
 
 ## Conditional references
 
-- **Requested PDF:** read [PDF-DELIVERABLE.md](PDF-DELIVERABLE.md) before planning or drafting. Its evidence, language, rendering, and final-version reviews add to this workflow; ordinary work does not load it.
-- **Preparing a prompt elsewhere:** use [CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md). It is optional, not another workflow phase.
+- Requested PDF: read [PDF-DELIVERABLE.md](PDF-DELIVERABLE.md); preserve its reader/language/rendering reviews without adding an irrelevant code-flow gate.
+- Preparing a request elsewhere: [CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md).

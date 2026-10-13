@@ -1,3 +1,3 @@
 interface:
   display_name: "Workflow"
-  short_description: "Plan, approve, implement, verify, and hand off work"
+  short_description: "Inspect code, review a visual plan, approve and implement"

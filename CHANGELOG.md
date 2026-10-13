@@ -2,6 +2,15 @@
 
 Historical entries describe previous behavior; current instructions live in skills/workflow. Package version labels do not imply a published Git tag or successful live host evaluation.
 
+## 2.1.0 — 2026-10-13
+
+- Ground repository-specific proposals and explanations in inspected current code, with requirement/evidence/gap/task/acceptance mapping and scope limits.
+- Add the automatic substantive-work visual approval gate after PLAN/TODO preparation; keep grilling for unresolved decisions, not implementation authorization.
+- Add independently callable codebase-map for current/proposed/compare views. Original offline HTML/SVG renderer, editable JSON, safe text handling, pan/zoom/fit, evidence/task links and supplied-source drift checks; no Miro account or CDN.
+- Add a reviewed project-routing template and fresh-session implicit-invocation setup tests. Template files do not configure a user's project automatically.
+- Register/install two local skills; retain Matt's 27-entry historical inventory, 11 explicit specialist routes and no automatic installs or Git actions.
+- Extend recovery, approval provenance, auditing, negative test fixtures and browser/package validation. Live Claude/Codex model behavior is not asserted by tooling tests.
+
 ## 2.0.0 — 2026-10-09
 
 User-requested package release; not published, installed or live host-certified here.
