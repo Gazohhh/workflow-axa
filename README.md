@@ -1,12 +1,19 @@
 # workflow-axa
 
-**2.2.0 — flowchart-first visual reviews.** One team workflow plus an on-demand `codebase-map` skill. This ZIP updates the skill package; it does not install itself, configure your project or change application code. [VALIDATION.md](VALIDATION.md) records actual tests and limits.
+**2.2.1 — local flowchart design; Matt specialists retained.** One team workflow plus an on-demand `codebase-map` skill. This ZIP updates the skill package; it does not install itself, configure your project or change application code. [VALIDATION.md](VALIDATION.md) records actual tests and limits.
 
-## What changed in 2.2.0
+## What changed in 2.2.1
 
-The approved diagram-design sample is now the report direction: a real feature flow opens first, with typed start/action/decision/result shapes, labelled branches, orthogonal connectors and restrained editorial styling. Separate delivery/structure views are used when relevant; technical evidence stays below. There is no fixed-height fit that makes labels unreadable and no replacement of the flowchart with cards.
+Only the flowchart dependency changes. `codebase-map` now follows its bundled
+[FLOWCHART-DESIGN.md](skills/codebase-map/FLOWCHART-DESIGN.md) and existing local renderer.
+No external `diagram-design` install, skill lookup or invocation is needed. The approved
+flowchart styling, geometry, separate feature/build/structure views and report schema
+are unchanged. Historical source attribution remains informational.
 
-`codebase-map` explicitly routes visual design to **Cathryn Lavery’s `diagram-design`**. It supplies the approved style and content, then uses the local renderer for a source-linked report. Matt’s `grilling`, all existing specialist routes, current-code grounding, recoverable docs and user approval gates are retained.
+Matt's **research, diagnosing-bugs, tdd, code-review, grilling and other existing routes
+remain external and unchanged**. They are not replaced by condensed local methods.
+All 27 Matt catalogue entries, eleven reusable routes and their adapters are preserved.
+Current-code grounding, questions, checkpoints and user approval still precede coding.
 
 ## Workflow behavior
 
@@ -28,15 +35,9 @@ Every repository-specific proposal must connect the request to inspected owners/
 
 1. Extract to a separate candidate folder, preserving your previous version and `.git`/unrelated work. For Claude plugin use the root containing `.claude-plugin/plugin.json`; both skills are registered there. For direct Codex/Claude installs copy the **complete** `skills/workflow` and `skills/codebase-map` folders into the appropriate skill root. Do not retain duplicate active copies.
 2. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that both local skills actually load.
-3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes plus the new diagram-design dependency; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
+3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
 
-4. Install or verify the separate `diagram-design` skill once through approved setup. For example:
-
-   ```powershell
-   npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design
-   ```
-
-   Do not create duplicate active copies. The ZIP does **not** contain or silently install upstream skills. Follow [the integration contract](skills/codebase-map/DIAGRAM-DESIGN.md) and use the actual host’s identifier. The approved report style needs no new branding interview or global profile edits.
+4. **No flowchart dependency to install.** Replace the complete package-owned codebase-map folder with this version, retaining any unrelated local files separately. Remove its old `DIAGRAM-DESIGN.md` integration reference; `FLOWCHART-DESIGN.md` replaces it. Update any previously added project-routing sentence that explicitly calls the external design skill. Keep Matt's setup and approved fingerprints. An existing external diagram skill can remain for unrelated tasks; this package does not invoke it or uninstall it.
 5. Old HTML stays readable and checkable. New report generation uses **schema 2** for explicit layout; migrate old JSON with [REPORT.md](skills/codebase-map/REPORT.md), preserving records and reviewed artifacts. Do not silently reinterpret an old architecture graph as a user flow.
 
 ## Local commands
@@ -52,7 +53,7 @@ Claude plugin:
 
 Codex: `$workflow` and `$codebase-map`. Standalone Claude skills: `/workflow` and `/codebase-map`. Explicit commands remain available even after ordinary-prompt routing is configured. A map-only request never starts implementation or Matt's architecture-improvement workflow.
 
-The viewer is local HTML/SVG with native-size scrolling, view selection, zoom/Fit, evidence links and editable JSON source, not a collaborative Miro board. The renderer uses Python 3.10+ standard library; the separately installed design specialist supplies the visual design. Reports use no CDN, server, font download or external upload. [Open the bundled synthetic example](skills/codebase-map/examples/review.html). [Renderer commands and input contract](skills/codebase-map/REPORT.md).
+The viewer is local HTML/SVG with native-size scrolling, view selection, zoom/Fit, evidence links and editable JSON source, not a collaborative Miro board. The renderer uses Python 3.10+ standard library; the bundled FLOWCHART-DESIGN.md supplies the approved visual-design procedure. Reports use no CDN, server, font download or external upload. [Open the bundled synthetic example](skills/codebase-map/examples/review.html). [Renderer commands and input contract](skills/codebase-map/REPORT.md).
 
 ## Test before pushing
 

@@ -24,6 +24,6 @@
   "limits": [
     "Default desktop opener and Claude/Codex skill invocation/behavior were not tested.",
     "Geometry and browser assertions do not prove semantic completeness, real approval or a complete accessibility audit.",
-    "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-update/qa-extracted-candidate/tested-report.html\nCall log:\n  - navigating to \"file:///"
+    "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-local-flowchart/qa-local/tested-report.html\nCall log:\n  - navigating to \"file:///mnt/d"
   ]
 }

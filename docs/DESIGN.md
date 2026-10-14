@@ -91,7 +91,9 @@ Additional primary sources reviewed on 9 October 2026:
 - [Skill mechanics](https://github.com/mattpocock/skills/blob/main/skills/productivity/writing-for-agents/SKILL-MECHANICS.md), [Claude skill invocation](https://code.claude.com/docs/en/skills), and [Claude installation management](https://code.claude.com/docs/en/discover-plugins).
 
 
-## 2.2.0 — approved flowchart design integration
+## 2.2.0 — approved flowchart design integration (historical)
+
+The external diagram-design dependency below is superseded by the 2.2.1 decision; the approved visual contract is retained.
 
 The owner rejected the first wireflow/card sample and approved the second diagram-design flowchart. The requirement is a real flowchart first, not just a simplified report. Actual source-derived feature behavior is separate from delivery order and structural containment; all needed evidence remains in the same records.
 
@@ -102,3 +104,19 @@ Sources reviewed 2026-10-14: https://github.com/cathrynlavery/diagram-design/tre
 Schema 2 intentionally replaces fixed grid positions and cubic automatic routing. It validates explicit orthogonal geometry, text budgets, focal limits and source/task relationships; browser inspection is still needed for actual type metrics, and semantic source fidelity is an agent/human responsibility. Reports from 2.1 remain unchanged and checkable; silent topology conversion is prohibited.
 
 The approved style is reused without repeat onboarding. No network fonts, brand-site fetching, global profile writes or upstream installs are authorized by preparing a preview. No visual control approves or starts the application change. Existing uncertainties are not resolved by a restyle.
+
+
+## 2.2.1 — local flowchart only; preserve Matt specialists
+
+The owner clarified that research, debugging, testing, review and other Matt routes
+should stay as they were. Only diagram design moves inside codebase-map. The existing
+local design contract becomes FLOWCHART-DESIGN.md, with offline assets, renderer and
+checks still bundled. No separate diagram skill, upstream self-check, network reference
+fetch or first-run style questionnaire is required. Historical attribution is retained,
+not treated as a live dependency. This is not a redistribution of the full upstream skill.
+
+The external design entry/adapter/install instructions are removed. Matt's historical
+27 entries, eleven model routes and adapters are retained exactly; no METHODS.md
+substitutes are introduced. Renderer logic, CSS/JS, schema and example input remain
+unchanged apart from the package version emitted in the output manifest. Reports still
+need code evidence, resolved material decisions and real user approval before coding.

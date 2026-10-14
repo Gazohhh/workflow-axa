@@ -15,7 +15,7 @@ installation change or revised route—not before every tool call.
 Resolve the source, installed identifier/path, revision or content fingerprint, enabled
 state, model-invocation policy, required references/tools and project configuration.
 Use the qualified identifier advertised by the host, especially for generic names such
-as `research`, `tdd` and `code-review`. An unrelated skill with the same name is not the selected provider's. `diagram-design` comes from Cathryn Lavery, not Matt's collection.
+as `research`, `tdd` and `code-review`. An unrelated skill with the same name is not the selected provider's.
 Do not infer absence from a user-facing slash menu alone; model-only skills can be hidden.
 
 The read-only [checker](scripts/check_specialists.py) helps inventory explicitly supplied
@@ -57,7 +57,6 @@ invoke it for every TODO or comment. Nested specialist calls use these same boun
 | The user authorizes a throwaway prototype to settle a design question | `prototype` | Evidence and a bounded disposable artifact; P adapter. Research approval alone does not authorize prototype code. |
 | A pull-request description is requested | `pr` | Draft from real evidence; do not open, publish or merge a PR without separate authorization. |
 | An approved procedure requires human-only setup/migration steps | `wizard` | A reviewed human-run procedure using its template; W adapter. Not for work the agent can perform itself. |
-| Creating a visual approval report or an explicitly requested codebase flowchart | `diagram-design` | Through `codebase-map`, design the actual flow, typed nodes and explicit routing; V adapter. Never replace the flowchart with cards or start application work. |
 
 ### Explicit adapters
 
@@ -94,16 +93,6 @@ an approved fallback. Never edit an installed upstream skill to hide the conflic
 - **P — Prototype:** agree the branch of the design question rather than guessing when
   ambiguous. Bound files, runtime and cleanup in the plan. Keep evidence in approved task
   artifacts; no automatic capture commit, branch publication or production integration.
-- **V — Visual design:** `codebase-map` owns evidence, revision, paths and approval boundaries;
-  `diagram-design` owns the visual grammar. Pass the user-approved editorial/system-font style,
-  audience, 1280px default canvas and scoped feature flow. The style was approved in sample v2;
-  do not repeat brand onboarding or write global profiles. Use separate delivery/structure views
-  only when useful. Follow its taste/connector checks and the local geometry checks. No online
-  fonts, telemetry, arbitrary scripts, uploads, external rendering or installs for a preview.
-  No new requirements or suppressed unresolved questions to make a diagram tidy. The specialist
-  designs the schema-2 graph; the bundled renderer packages it with authoritative task evidence.
-  A renderer is not a substitute for invoking the available specialist. If missing or incompatible,
-  report once and follow the existing approved-fallback rule; never silently revert to the old grid.
 - **W — Wizard:** author only the approved stages; inspect before execution, protect secrets,
   and let the human run interactive steps. Bash/WSL availability is a prerequisite. Reuse
   approved stages, but retain actual safety confirmations. No automatic commit, external
@@ -130,3 +119,5 @@ operation; [SETUP.md](SETUP.md) explains how to keep its output compatible with 
 ## Local visualization route
 
 Invoke this package's **`codebase-map`** for an explicit flowchart/map request and automatically for the substantive preimplementation visual review in [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Resolve its actual qualified identifier and verify availability during setup/handoff. Pass inspected evidence, requirements/tasks/acceptance, mode, revision and artifact permissions. It returns the local source/report paths, freshness result and opener result; it never implements, approves, grills or calls back into workflow. Do not invoke Matt's user-only `improve-codebase-architecture` merely to draw a current flow. Missing visualizer/render capability follows the explicit setup/fallback decision path; never skip approval silently.
+
+The visual design procedure, assets and renderer are local to `codebase-map`. It reads its bundled FLOWCHART-DESIGN.md; no external diagram skill or separate diagram-design preflight is required. Matt's routes and adapters above are unchanged. A local render is not logged as an external specialist invocation.

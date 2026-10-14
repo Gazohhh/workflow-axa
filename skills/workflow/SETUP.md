@@ -1,9 +1,9 @@
 # Team setup and dependency checks
 
-This skill uses Matt Pocock's collection and Cathryn Lavery's `diagram-design` as separate dependencies. Installing
-`workflow-axa` alone does **not** install either dependency. Keep one collection installation route per
+This skill uses Matt Pocock's collection as a separate dependency. Installing
+`workflow-axa` alone does **not** install that collection. Flowchart design is local to codebase-map. Keep one collection installation route per
 agent; plugin plus copied skills can create duplicate names. The catalogue records the
-27 names observed on 2026-10-09, including 11 model-invocable routes, plus diagram-design as the 12th routed specialist. Upstream metadata
+27 names observed on 2026-10-09, including 11 model-invocable routes. Upstream metadata
 was 1.3.1; no immutable source commit or live-tested installation is asserted here.
 [Upstream setup and catalogue](https://github.com/mattpocock/skills#installation-30-second-setup)
 
@@ -47,7 +47,7 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.2.0 also requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.2.1 requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
@@ -78,7 +78,7 @@ all historical plugin caches. An omitted root cannot be checked.
 From the extracted workflow package root, with the actual path substituted:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --root "C:\Path\To\Installed\DiagramDesign" --profile collection
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --profile collection
 ```
 
 For a standalone skill copy, use the same `scripts/check_specialists.py` relative to that
@@ -88,7 +88,7 @@ skill directory. To check only the routes needed for the next phase:
 python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only grilling research
 ```
 
-`--profile routed` checks 12 automatic routes; `collection` checks 28 names (27 Matt entries and diagram-design). The per-skill provider field distinguishes their sources.
+`--profile routed` checks 11 automatic Matt routes; `collection` checks the 27 historically recorded Matt names. Local visualization files are validated with the package, not as external specialists.
 Repeat `--root` for separate active roots. Overlapping roots pointing to the same physical
 files are deduplicated; two physical copies of the same name are reported as ambiguous.
 The host inventory must still identify whether two aliases point to one physical copy.
@@ -110,7 +110,7 @@ access to tools, correct invocation or model obedience. Record these distinction
 At approved setup, capture a report to a private local path. PowerShell example:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --root "C:\Path\To\Installed\DiagramDesign" --json | Set-Content -Encoding utf8 "C:\Path\To\Private\inventory.json"
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --json | Set-Content -Encoding utf8 "C:\Path\To\Private\inventory.json"
 ```
 
 Choose an existing parent directory and a new report filename; the shell redirection
@@ -146,17 +146,31 @@ simulated “skill executed” log. A read-only file check is not this runtime s
 The package's behavioral scenarios describe the expected observations; perform them
 locally before a wider team rollout.
 
-## Diagram-design setup (2.2.0)
+## Local flowchart setup (2.2.1)
 
-One new dependency, not a replacement for grilling:
+No additional specialist installation is required for diagrams. Copy the complete
+`codebase-map` folder, including FLOWCHART-DESIGN.md, REPORT.md, scripts, assets and
+examples. The local renderer uses Python 3.10+ standard library. Local browser checks
+are optional when the browser tools already exist; do not install them silently.
 
-```powershell
-npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\DiagramDesign" --only diagram-design
-```
+For a 2.2.0 upgrade, replace the old package-owned DIAGRAM-DESIGN.md with the bundled
+FLOWCHART-DESIGN.md. Preserve unrelated files. Remove any custom project instruction
+that explicitly routes our reports to the external diagram-design skill; retain Matt's
+instructions and verify the local codebase-map identifier. An existing external diagram
+skill may remain for unrelated work; do not uninstall it automatically. This workflow
+neither selects nor requires it.
 
-Source: https://github.com/cathrynlavery/diagram-design . The catalogue records main/metadata 2.6 reviewed 2026-10-14, not an immutable pin. Installation is a user-authorized setup action, never an automatic preapproval fix. Select the actual agent/scope and verify enabled state and invocation. A package update changes the inventory version: review a new baseline; do not overwrite the previous approval snapshot.
+The catalogue delta removes only the external design entry. Matt's 27 records, source
+snapshot and adapters are retained. Review the package change while preserving the
+existing approved Matt fingerprints; do not reinstall or refresh the collection just
+because this dependency changed. The checker deliberately rejects inventories with a different workflow_version. Keep
+the old approved baseline unchanged. Generate a new candidate inventory, compare Matt's
+unchanged fingerprints against the old report as part of the upgrade review, verify the
+actual host, and approve the new baseline explicitly. Do not just relabel the old report
+or reinstall the collection to make a version check pass.
 
-`codebase-map/DIAGRAM-DESIGN.md` supplies the owner-approved editorial/system-font style and scoped schema-2 output contract. Pass that context to the specialist; no repeated branding gate, Google Fonts, profile writes or external rendering. Its checklist complements local geometry/browser tests; neither proves source semantics. Missing/incompatible design skill pauses only the dependent visual phase unless an explicit fallback is approved, never the implementation-approval boundary.
-
-Test a real visual request in a fresh agent session: inspect trace for codebase-map → diagram-design, then verify a readable flowchart, evidence, unresolved choices and the stop before coding. A local Python render does not count as this specialist invocation.
+In a fresh session with no external diagram skill available, request a visual review.
+Verify codebase-map loads its local design guide, produces the approved flowchart, and
+stops before application implementation. Necessary questions still use grilling; actual
+research, diagnosis, TDD and review continue to use Matt's installed skills when relevant.
+A local Python render does not prove that this host-level behavior passed.

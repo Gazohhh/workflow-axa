@@ -1,5 +1,14 @@
 # Changelog
 
+
+## 2.2.1 — local flowchart dependency correction
+
+- Keep Matt Pocock's research, diagnosing-bugs, TDD, code-review, grilling and all other established entries/routes/adapters unchanged. Do not replace their methods with local summaries.
+- Move the approved flowchart contract into codebase-map/FLOWCHART-DESIGN.md. Use the bundled renderer/assets directly; no separate diagram-design installation, lookup or invocation.
+- Remove only the external diagram-design catalogue entry and visual adapter. Update setup, routing, audit and regression scenarios; retain historical design attribution.
+- Preserve schema 2, example source, rendered geometry, editorial CSS/JS and the stop for explicit approval. Bump only the renderer's tool-version metadata.
+- Add regression coverage for local guide completeness, Matt-only inventories, old-baseline rejection and standalone no-dependency rendering. Actual checks and host limits are recorded in VALIDATION.md.
+
 ## 2.2.0 — flowchart-first editorial reviews (2026-10-14)
 
 - Replace the fixed-height generic component grid with explicit, typed flowchart geometry and the approved editorial style. The feature flow opens first; current comparison, delivery dependencies and structure are separate where useful.

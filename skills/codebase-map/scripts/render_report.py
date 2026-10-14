@@ -562,7 +562,7 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     records = [{'id': key, 'role': value['role'], 'path': value['path'], 'sha256': digest(safe_source(root, value['path']))}
                for key, value in sources.items()]
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
-    manifest = {'schema_version': 1, 'tool_version': '2.2.0', 'layout_version': 2, 'style': 'workflow-editorial-v1',
+    manifest = {'schema_version': 1, 'tool_version': '2.2.1', 'layout_version': 2, 'style': 'workflow-editorial-v1',
                 'revision': data['revision'], 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])

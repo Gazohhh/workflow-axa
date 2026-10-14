@@ -1,0 +1,70 @@
+{
+  "baseline_archive": "workflow-axa-2.2.0.zip",
+  "baseline_sha256": "301d71158a5e32795060eef024b6f66ecb45431c193eb6a6f8f00f7694c98ff7",
+  "candidate_version": "2.2.1",
+  "matt_entries_unchanged": 27,
+  "matt_model_routes_unchanged": 11,
+  "matt_adapters_unchanged": [
+    "Q",
+    "R",
+    "D",
+    "T",
+    "M",
+    "C",
+    "P",
+    "W"
+  ],
+  "matt_source_snapshot_unchanged": true,
+  "unchanged_files": [
+    {
+      "file": "skills/workflow/QUESTIONS.md",
+      "sha256": "c8ce34b223dcddafb817580c1b98cb85e1bf474a3a9631693e5e021cb333f3f6",
+      "unchanged": true
+    },
+    {
+      "file": "skills/workflow/GROUNDING.md",
+      "sha256": "a209c24ac831b061d51b97b989545d4de5fdf9222f141fb05e062c62dbb288cc",
+      "unchanged": true
+    },
+    {
+      "file": "skills/workflow/TASK-FOLDER.md",
+      "sha256": "06da3205b1110a88e0565c9b6a1fe7751edf872386f2a211aedee08148f00744",
+      "unchanged": true
+    },
+    {
+      "file": "skills/workflow/PDF-DELIVERABLE.md",
+      "sha256": "c29bfd13596f733c76449ef504f8bc1d0bc14e70d1d8252fee18e7cc1bde6a7d",
+      "unchanged": true
+    },
+    {
+      "file": "skills/workflow/CHATGPT-PROMPTS.md",
+      "sha256": "b2babaa0b3e7a6ff2acc3e59d02a8c18bba5102876ca69b2f2ae233aa00a6aaa",
+      "unchanged": true
+    },
+    {
+      "file": "skills/workflow/scripts/check_specialists.py",
+      "sha256": "6c724dfec6596ba8ee28a41e565f455559e0da9401284ec5aed1587dc1377c06",
+      "unchanged": true
+    },
+    {
+      "file": "skills/codebase-map/assets/report.css",
+      "sha256": "191f4c112c8550413deb68b8ffed07ab6b56a17bbe374a13383173b05f666d76",
+      "unchanged": true
+    },
+    {
+      "file": "skills/codebase-map/assets/report.js",
+      "sha256": "0adff806060818b5eaefcdd455be01e25885bc61e752cd63498386173cb742c6",
+      "unchanged": true
+    },
+    {
+      "file": "skills/codebase-map/examples/review.json",
+      "sha256": "6190635b735ba5da5eff380ed7ccc691a8e9ebe24e6abd6bda247b5bc84675eb",
+      "unchanged": true
+    }
+  ],
+  "workflow_core_delta": "Only external design route text changed to local codebase-map route.",
+  "renderer_delta": "Only output tool_version metadata changed; code otherwise byte-identical.",
+  "external_design_catalogue_removed": true,
+  "external_skill_invocation_tested": false,
+  "example_html_delta": "Only tool-version and generated timestamp differ from 2.2.0."
+}

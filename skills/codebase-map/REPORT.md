@@ -1,6 +1,6 @@
 # Offline flowchart report contract
 
-The design is supplied by the installed `diagram-design` specialist under [DIAGRAM-DESIGN.md](DIAGRAM-DESIGN.md). Python 3.10+ standard library packages that explicit layout into local HTML/SVG; it does not install or invoke skills. Copy this complete skill folder for a standalone installation. The output has no CDN, fonts, telemetry, uploads or approval action. Edit the JSON and render a new revision; this is not a collaborative whiteboard.
+Design the flow locally using [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md); no separately installed diagram skill is required. Python 3.10+ standard library packages that explicit layout into local HTML/SVG; it does not install or invoke skills. Copy this complete skill folder for a standalone installation. The output has no CDN, fonts, telemetry, uploads or approval action. Edit the JSON and render a new revision; this is not a collaborative whiteboard.
 
 ## Run
 
@@ -69,7 +69,7 @@ Existing HTML remains unchanged and its schema-1 source manifest is still accept
 
 1. Preserve the old reviewed HTML/JSON and authoritative plan revision. Do not overwrite a reviewed artifact.
 2. Reuse requirements, evidence, tasks, acceptance, limits and source paths after reconciling freshness. Correct material source ambiguities only through the owner’s decision process.
-3. Have `diagram-design` produce focused views with ids, purpose, explicit positions/shapes/routes, `default_view`, and aligned `comparison`. Remove old `row`/`col`/`group` layout fields; no stale renderer fallback.
+3. Use the local FLOWCHART-DESIGN.md guide to produce focused views with ids, purpose, explicit positions/shapes/routes, `default_view`, and aligned `comparison`. Remove old `row`/`col`/`group` layout fields; no stale renderer fallback.
 4. Save a new presentation revision/path, render and inspect. A presentation-only restyle does not create application approval or require reapproving unchanged application scope already approved. A semantic change does.
 
 ## Source of truth, safety and limits

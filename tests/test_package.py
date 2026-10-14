@@ -62,6 +62,34 @@ class PackageTests(unittest.TestCase):
                 stream.write("\n[Not bundled with a direct skill copy](../../README.md)\n")
             self.assertTrue(any("escapes the separately installable" in error for error in validate_package(root)))
 
+    def test_local_flowchart_guide_is_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            (root / "skills/codebase-map/FLOWCHART-DESIGN.md").unlink()
+            self.assertTrue(any("FLOWCHART-DESIGN.md" in error for error in validate_package(root)))
+
+    def test_retired_external_design_adapter_is_not_shipped(self):
+        self.assertFalse((ROOT / "skills/codebase-map/DIAGRAM-DESIGN.md").exists())
+        self.assertFalse((ROOT / "skills/diagram-design").exists())
+        self.assertFalse((ROOT / "skills/workflow/METHODS.md").exists())
+
+    def test_visual_skill_loads_local_guide_and_preserves_style(self):
+        core = (ROOT / "skills/codebase-map/SKILL.md").read_text(encoding="utf-8")
+        guide = (ROOT / "skills/codebase-map/FLOWCHART-DESIGN.md").read_text(encoding="utf-8")
+        self.assertIn("[FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md)", core)
+        self.assertIn("no external diagram-design installation, lookup or invocation is required", core)
+        for term in ("workflow-editorial-v1", "#f5f5f5", "#2d3142", "#bf4520",
+                     "18px", "13px", "diamond", "grilling", "user approval"):
+            self.assertIn(term, guide)
+
+    def test_external_design_install_commands_are_not_active_setup(self):
+        for name in ("README.md", "skills/workflow/SETUP.md", "skills/codebase-map/SKILL.md",
+                     "skills/codebase-map/REPORT.md", "skills/workflow/templates/PROJECT-ROUTING.md"):
+            text = (ROOT / name).read_text(encoding="utf-8")
+            self.assertNotIn("npx skills add https://github.com/cathrynlavery", text, name)
+            self.assertNotIn("--only diagram-design", text, name)
+            self.assertNotIn("codebase-map → diagram-design", text, name)
+
 
 if __name__ == "__main__":
     unittest.main()

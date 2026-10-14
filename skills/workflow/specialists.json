@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "workflow_version": "2.2.0",
+  "workflow_version": "2.2.1",
   "source": {
     "repository": "https://github.com/mattpocock/skills",
     "observed_ref": "main",
@@ -214,31 +214,6 @@
       "required_files": [
         "SKILL.md"
       ]
-    },
-    "diagram-design": {
-      "source_repository": "https://github.com/cathrynlavery/diagram-design",
-      "source_path": "skills/diagram-design",
-      "invocation": "model",
-      "required_files": [
-        "SKILL.md",
-        "references/style-guide.md",
-        "references/type-flowchart.md",
-        "references/semantic-patterns.md",
-        "references/primitives-core.md",
-        "references/output-spec.md",
-        "references/layout-budget.md",
-        "scripts/self_check.py"
-      ]
-    }
-  },
-  "additional_sources": {
-    "diagram-design": {
-      "repository": "https://github.com/cathrynlavery/diagram-design",
-      "observed_ref": "main",
-      "observed_skill_version": "2.6",
-      "checked_on": "2026-10-14",
-      "immutable_commit": null,
-      "note": "Source instructions reviewed through web. Not an installed invocation or a team-tested content lock."
     }
   }
 }

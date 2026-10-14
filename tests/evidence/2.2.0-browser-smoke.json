@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "browser": "144.0.7559.96",
+  "checks": [
+    "Supplied source/input fingerprints match before browser inspection",
+    "Feature flow is default; pending approval is visible and no approval controls exist",
+    "Technical details are secondary; exclusions and acceptance stay visible",
+    "All three views switch correctly and every rendered label fits its node/diamond",
+    "Each SVG has a nonempty accessible title/description and unique IDs",
+    "Default diagram uses natural size with 18px node titles, not fixed-height fit",
+    "Desktop report has no document-wide horizontal overflow",
+    "Native zoom controls and progressive keyboard shortcuts operate",
+    "Evidence and source links reveal the relevant nested details",
+    "Narrow-screen initial view shows the entry node instead of empty canvas",
+    "Narrow viewport scrolls only the diagram; keyboard and mouse pan preserve readable text",
+    "Fit is optional on mobile and 100% restores the readable canvas",
+    "Print presentation includes every diagram, not only the selected tab",
+    "With JavaScript disabled, diagram selection, zoom and technical disclosure still work",
+    "Script-like input remains inert; no external requests or page errors"
+  ],
+  "direct_file_navigation": false,
+  "external_requests": [],
+  "page_errors": [],
+  "limits": [
+    "Default desktop opener and Claude/Codex skill invocation/behavior were not tested.",
+    "Geometry and browser assertions do not prove semantic completeness, real approval or a complete accessibility audit.",
+    "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-update/qa-extracted-candidate/tested-report.html\nCall log:\n  - navigating to \"file:///"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: codebase-map
-description: "Create an evidence-linked local flowchart or codebase map when the user requests one, or workflow requests its visual approval report. Use diagram-design for the approved editorial diagrams; inspect current code and preserve tasks/evidence. Visualization only: never implement, approve work or launch an architecture-refactoring workflow."
+description: "Create an evidence-linked local flowchart or codebase map when the user requests one, or workflow requests its visual approval report. Use the bundled flowchart design guide for the approved editorial diagrams; inspect current code and preserve tasks/evidence. Visualization only: never implement, approve work or launch an architecture-refactoring workflow."
 ---
 
 # Codebase map
@@ -15,21 +15,19 @@ Choose **current** for “show how it works”, **proposed** for a supplied/requ
 
 Reuse existing requirements, answers, PLAN, TODO, FINDINGS and decisions. No new refactor candidates or product features merely to enrich the map. Standalone inspection needs no implementation scaffold.
 
-## 2. Use the design specialist
+## 2. Apply the local flowchart design
 
-Read [DIAGRAM-DESIGN.md](DIAGRAM-DESIGN.md). Resolve and invoke the installed Cathryn Lavery `diagram-design` through the host’s actual mechanism with the approved style, type, size, evidence, allowed artifact paths and boundaries. Matt’s architecture-improvement command is not the visualizer. Do not claim invocation from a README mention or disk presence.
+Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md). This guide, report assets and renderer are bundled in this skill. Follow them directly; no external diagram-design installation, lookup or invocation is required. Matt's architecture-improvement command is not the visualizer. Missing local guide/assets/runtime are installation or rendering issues, not a reason to install a third-party skill or waive approval.
 
-Missing, disabled, ambiguous or incompatible specialist: record and report it once; pause the dependent visualization unless an existing explicit fallback applies. No silent installation, replacement or return to the old generic grid. Keep independently authorized investigation moving; implementation approval is never waived.
+Use the inspected evidence, approved answers, type, audience, revision and allowed artifact paths. Choose the geometry, not new product behavior. Main flow: start/actions/real decisions/results, short domain labels and labelled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
 
-Let the specialist choose the geometry, not the product behavior. Main flow: start/actions/real decisions/results, short domain labels and labelled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
-
-The approved sample fixes editorial light styling and offline/system fonts; no repeated styling interview. Follow the specialist’s relevant references and taste gate, using [DIAGRAM-DESIGN.md](DIAGRAM-DESIGN.md) for integration differences.
+Reuse the approved workflow-editorial-v1 light styling and offline/system fonts. No repeated branding interview, online references or external checker is needed. Do not replace the requested flowchart with cards or the old generic grid.
 
 ## 3. Render, inspect and open
 
 Read [REPORT.md](REPORT.md). Derive schema-2 JSON from authoritative task records. Explicit node geometry and connector routes are validated; each change retains requirement/task/evidence traceability. Approval-ready compare requires the resolved revision, PLAN/TODO/acceptance and no material open decisions; otherwise use draft.
 
-Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the specialist’s design; it does not invoke the specialist, understand code or authenticate approval. No application edits, tests written, migrations, dependency installation, uploads or publication. Explicit no-file instructions take precedence.
+Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the explicit local design; it does not understand code or authenticate approval. No application edits, tests written, migrations, dependency installation, uploads or publication. Explicit no-file instructions take precedence.
 
 Check source freshness and semantic fidelity. Inspect actual desktop and narrow-window output when a browser is available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. Disclose unavailable checks instead of claiming them.
 
@@ -37,4 +35,4 @@ Request local opening with `--open` when supported and give the absolute artifac
 
 ## 4. Return without implementing
 
-Return report/source paths, mode, revision, specialist contribution, checks and limits. There is no approval button or agent connection. Workflow shows the report, stops, then records the user’s real approval before coding. A standalone map ends with artifact delivery. Visual approval never replaces necessary grilling, and settled questions are not reopened here.
+Return report/source paths, mode, revision, local design/renderer version, checks and limits. There is no approval button or agent connection. Workflow shows the report, stops, then records the user’s real approval before coding. A standalone map ends with artifact delivery. Visual approval never replaces necessary grilling, and settled questions are not reopened here.

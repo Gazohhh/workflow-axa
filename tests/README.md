@@ -28,7 +28,7 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 Keep the original uploaded package as the baseline; exclude its embedded `.git` when preparing a test copy. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
-constant. For 2.2.0, complete SETUP.md and confirm the relevant specialists are enabled.
+constant. For 2.2.1, complete SETUP.md and confirm the relevant specialists are enabled.
 Dependency-failure scenarios deliberately vary only the named capability. Inventory
 fixtures in test_specialists.py are synthetic; they are not installed upstream skills. Run the same staged user replies. Save observed paths/commands, traces, final files and actual results in a private location outside the package or `.artifacts/`. Sanitize before sharing. Record model, host version, scenario, package version/hash, repetition, question rounds, authority violations, record ordering, recovery outcome, cleanup, and evidence freshness. Token/cost/runtime measurements are observations, not guessed scores.
 
@@ -58,14 +58,14 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.2.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.2.1; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
-## 2.2.0 visual and activation checks
+## 2.2.1 visual and activation checks
 
 The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
 
-Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install both local skills plus the approved relevant Matt specialists and diagram-design. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
+Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install both local skills plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
 
 An optional browser smoke runner uses already installed Python Playwright and a supplied Chromium executable:
 
@@ -84,8 +84,8 @@ Schema-1 HTML remains freshness-checkable; new schema-1 renders fail with migrat
 guidance. The renderer never infers feature flow from old row/column positions.
 
 The approved visual direction is implemented in the local assets and documented in
-`skills/codebase-map/DIAGRAM-DESIGN.md`. Synthetic specialist inventories test detection,
-not actual upstream loading. For live evaluation verify codebase-map invokes the actual
-installed diagram-design, receives the existing approved style, preserves grilling and
+`skills/codebase-map/FLOWCHART-DESIGN.md`. Synthetic specialist inventories test detection,
+not actual upstream loading. For live evaluation leave external diagram skills unavailable. Verify codebase-map
+reads its bundled flowchart guide, uses the existing approved style, preserves grilling and
 stops at approval. Do not grade a card layout or generic research/plan/code chart as a
 passing feature flow. See E32–E37 in SCENARIOS.md.

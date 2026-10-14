@@ -1,6 +1,6 @@
 {
   "name": "workflow-axa",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Code-grounded team workflow with specialist routing, visual preimplementation approval, offline codebase maps and recoverable task records.",
   "author": {
     "name": "Gazohhh",
