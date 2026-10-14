@@ -9,6 +9,34 @@ test_mixed_staged_and_unstaged_edits_share_a_file (test_fixtures.FixtureTests.te
 test_package_destination_is_refused (test_fixtures.FixtureTests.test_package_destination_is_refused) ... ok
 test_repository_ancestor_is_refused (test_fixtures.FixtureTests.test_repository_ancestor_is_refused) ... ok
 test_worktree_git_file_is_refused (test_fixtures.FixtureTests.test_worktree_git_file_is_refused) ... ok
+test_build_plan_cannot_replace_feature_as_default (test_flowcharts.FlowchartTests.test_build_plan_cannot_replace_feature_as_default) ... ok
+test_change_summary_must_reference_existing_tasks (test_flowcharts.FlowchartTests.test_change_summary_must_reference_existing_tasks) ... ok
+test_compare_requires_current_proposed_summary (test_flowcharts.FlowchartTests.test_compare_requires_current_proposed_summary) ... ok
+test_compound_node_ids_cannot_collide_across_views (test_flowcharts.FlowchartTests.test_compound_node_ids_cannot_collide_across_views) ... ok
+test_connector_through_unrelated_node_is_rejected (test_flowcharts.FlowchartTests.test_connector_through_unrelated_node_is_rejected) ... ok
+test_crossing_routes_are_rejected (test_flowcharts.FlowchartTests.test_crossing_routes_are_rejected) ... ok
+test_default_is_proposed_feature_flow_and_first_tab (test_flowcharts.FlowchartTests.test_default_is_proposed_feature_flow_and_first_tab) ... ok
+test_delivery_must_keep_explicit_approval_precondition (test_flowcharts.FlowchartTests.test_delivery_must_keep_explicit_approval_precondition) ... ok
+test_delivery_node_cannot_claim_an_unknown_task (test_flowcharts.FlowchartTests.test_delivery_node_cannot_claim_an_unknown_task) ... ok
+test_delivery_order_cannot_invent_dependency (test_flowcharts.FlowchartTests.test_delivery_order_cannot_invent_dependency) ... ok
+test_diagonal_connector_is_rejected (test_flowcharts.FlowchartTests.test_diagonal_connector_is_rejected) ... ok
+test_duplicate_decision_labels_are_rejected (test_flowcharts.FlowchartTests.test_duplicate_decision_labels_are_rejected) ... ok
+test_every_view_has_a_native_start_link (test_flowcharts.FlowchartTests.test_every_view_has_a_native_start_link) ... ok
+test_existing_schema_one_html_manifest_remains_checkable (test_flowcharts.FlowchartTests.test_existing_schema_one_html_manifest_remains_checkable) ... ok
+test_group_view_preserves_items_without_faking_process_steps (test_flowcharts.FlowchartTests.test_group_view_preserves_items_without_faking_process_steps) ... ok
+test_important_unknowns_are_not_buried_in_appendix (test_flowcharts.FlowchartTests.test_important_unknowns_are_not_buried_in_appendix) ... ok
+test_label_mask_over_node_is_rejected (test_flowcharts.FlowchartTests.test_label_mask_over_node_is_rejected) ... ok
+test_label_on_its_stroke_is_rejected (test_flowcharts.FlowchartTests.test_label_on_its_stroke_is_rejected) ... ok
+test_more_than_two_highlights_is_rejected (test_flowcharts.FlowchartTests.test_more_than_two_highlights_is_rejected) ... ok
+test_native_view_controls_exist_without_submit_actions (test_flowcharts.FlowchartTests.test_native_view_controls_exist_without_submit_actions) ... ok
+test_new_render_rejects_legacy_schema_with_migration_guidance (test_flowcharts.FlowchartTests.test_new_render_rejects_legacy_schema_with_migration_guidance) ... ok
+test_node_outside_canvas_is_rejected (test_flowcharts.FlowchartTests.test_node_outside_canvas_is_rejected) ... ok
+test_off_grid_geometry_is_rejected (test_flowcharts.FlowchartTests.test_off_grid_geometry_is_rejected) ... ok
+test_oversized_view_requires_splitting (test_flowcharts.FlowchartTests.test_oversized_view_requires_splitting) ... ok
+test_reused_attachment_port_is_rejected (test_flowcharts.FlowchartTests.test_reused_attachment_port_is_rejected) ... ok
+test_source_and_acceptance_anchors_survive_redesign (test_flowcharts.FlowchartTests.test_source_and_acceptance_anchors_survive_redesign) ... ok
+test_unknown_default_view_is_rejected (test_flowcharts.FlowchartTests.test_unknown_default_view_is_rejected) ... ok
+test_unlabelled_decision_branch_is_rejected (test_flowcharts.FlowchartTests.test_unlabelled_decision_branch_is_rejected) ... ok
 test_broken_relative_link_is_rejected (test_package.PackageTests.test_broken_relative_link_is_rejected) ... ok
 test_current_package (test_package.PackageTests.test_current_package) ... ok
 test_link_outside_package_is_rejected (test_package.PackageTests.test_link_outside_package_is_rejected) ... ok
@@ -60,6 +88,10 @@ test_checker_does_not_modify_input_or_execute_support_scripts (test_specialists.
 test_cli_reports_nonzero_for_missing_and_zero_for_files_only (test_specialists.SpecialistTests.test_cli_reports_nonzero_for_missing_and_zero_for_files_only) ... ok
 test_complete_collection_in_nested_layout (test_specialists.SpecialistTests.test_complete_collection_in_nested_layout) ... ok
 test_complete_directory_symlink_is_supported (test_specialists.SpecialistTests.test_complete_directory_symlink_is_supported) ... ok
+test_design_missing_does_not_remove_grilling (test_specialists.SpecialistTests.test_design_missing_does_not_remove_grilling) ... ok
+test_design_provider_change_in_baseline_requires_review (test_specialists.SpecialistTests.test_design_provider_change_in_baseline_requires_review) ... ok
+test_design_support_reference_is_required (test_specialists.SpecialistTests.test_design_support_reference_is_required) ... ok
+test_diagram_design_provider_is_not_matt_collection (test_specialists.SpecialistTests.test_diagram_design_provider_is_not_matt_collection) ... ok
 test_duplicate_physical_copies_are_ambiguous (test_specialists.SpecialistTests.test_duplicate_physical_copies_are_ambiguous) ... ok
 test_malformed_frontmatter_cannot_pass (test_specialists.SpecialistTests.test_malformed_frontmatter_cannot_pass) ... ok
 test_manual_workflow_must_not_be_silently_made_automatic (test_specialists.SpecialistTests.test_manual_workflow_must_not_be_silently_made_automatic) ... ok
@@ -76,6 +108,6 @@ test_wrapper_is_not_an_alias_for_missing_grilling (test_specialists.SpecialistTe
 test_wrong_baseline_source_is_refused (test_specialists.SpecialistTests.test_wrong_baseline_source_is_refused) ... ok
 
 ----------------------------------------------------------------------
-Ran 76 tests in 9.107s
+Ran 108 tests in 8.478s
 
 OK

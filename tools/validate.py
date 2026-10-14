@@ -24,7 +24,7 @@ REQUIRED = (
     "tests/test_specialists.py", "tests/test_reports.py", "tools/browser_smoke.py",
     "skills/workflow/GROUNDING.md", "skills/workflow/VISUAL-REVIEW.md",
     "skills/workflow/templates/PROJECT-ROUTING.md", "skills/codebase-map/SKILL.md",
-    "skills/codebase-map/REPORT.md", "skills/codebase-map/agents/openai.yaml",
+    "skills/codebase-map/REPORT.md", "skills/codebase-map/DIAGRAM-DESIGN.md", "skills/codebase-map/agents/openai.yaml",
     "skills/codebase-map/scripts/render_report.py", "skills/codebase-map/assets/report.css",
     "skills/codebase-map/assets/report.js", "skills/codebase-map/examples/review.json",
     "skills/codebase-map/examples/review.html",

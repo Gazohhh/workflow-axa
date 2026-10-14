@@ -48,3 +48,7 @@ Repair task-caused defects under the existing approval when behavior and scope r
 ## Grounding and visual approval
 
 Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm a real user approval of the presented visual revision (or recorded explicit exception), before application writes. Compare delivered behavior and relevant error/permission paths to that revision. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.
+
+## Visual-review regression
+
+For changed reports/visualizer code, verify that the actual feature flow remains primary (not cards or generic workflow phases), branches preserve source meaning, build dependencies and containment are separate, source ambiguities stay visible, and no style approval grants application authority. Check the selected diagram-design provider/contribution and actual browser geometry/readability when available. Retain evidence/acceptance/exclusions and safe offline behavior. Native-size overflow must stay within the diagram wrapper; Fit is optional.

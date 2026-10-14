@@ -89,3 +89,16 @@ Additional primary sources reviewed on 9 October 2026:
 - [Code review](https://github.com/mattpocock/skills/blob/main/skills/engineering/code-review/SKILL.md), [TDD](https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md), [research](https://github.com/mattpocock/skills/blob/main/skills/engineering/research/SKILL.md), and [diagnosing bugs](https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md).
 - [Domain modeling](https://github.com/mattpocock/skills/blob/main/skills/engineering/domain-modeling/SKILL.md), [prototype](https://github.com/mattpocock/skills/blob/main/skills/engineering/prototype/SKILL.md), [PR writing](https://github.com/mattpocock/skills/blob/main/skills/engineering/pr/SKILL.md), and [wizard](https://github.com/mattpocock/skills/blob/main/skills/engineering/wizard/SKILL.md).
 - [Skill mechanics](https://github.com/mattpocock/skills/blob/main/skills/productivity/writing-for-agents/SKILL-MECHANICS.md), [Claude skill invocation](https://code.claude.com/docs/en/skills), and [Claude installation management](https://code.claude.com/docs/en/discover-plugins).
+
+
+## 2.2.0 — approved flowchart design integration
+
+The owner rejected the first wireflow/card sample and approved the second diagram-design flowchart. The requirement is a real flowchart first, not just a simplified report. Actual source-derived feature behavior is separate from delivery order and structural containment; all needed evidence remains in the same records.
+
+The local workflow still owns context, grilling, plan/task mapping, handoff, cleanup and approval. The local codebase-map now invokes the separate diagram-design specialist for editorial geometry. It packages that design through a deterministic schema-2 renderer, rather than treating renderer output as a specialist invocation. Only diagram-design is added to the catalogue; Matt’s historical entries are not silently upgraded.
+
+Sources reviewed 2026-10-14: https://github.com/cathrynlavery/diagram-design/tree/main/skills/diagram-design , especially SKILL.md, flowchart conventions and style guide. Web review returned skill metadata 2.6. Container DNS prevented a local checkout; no upstream scripts were executed, no upstream license/font assets are bundled, and no immutable revision is asserted. The palette/treatments are referenced from the owner-approved sample, not a claim of brand-font fidelity.
+
+Schema 2 intentionally replaces fixed grid positions and cubic automatic routing. It validates explicit orthogonal geometry, text budgets, focal limits and source/task relationships; browser inspection is still needed for actual type metrics, and semantic source fidelity is an agent/human responsibility. Reports from 2.1 remain unchanged and checkable; silent topology conversion is prohibited.
+
+The approved style is reused without repeat onboarding. No network fonts, brand-site fetching, global profile writes or upstream installs are authorized by preparing a preview. No visual control approves or starts the application change. Existing uncertainties are not resolved by a restyle.

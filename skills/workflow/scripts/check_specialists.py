@@ -126,7 +126,8 @@ def check(roots: list[Path], catalogue: dict, selected: list[str], baseline: dic
         spec = entries[name]
         candidates = index.get(name, [])
         result = {"status": "MISSING", "expected_invocation": spec["invocation"],
-                  "paths": [str(path) for path, _ in candidates], "issues": [], "fingerprint": None}
+                  "paths": [str(path) for path, _ in candidates], "issues": [], "fingerprint": None,
+                  "source_repository": spec.get("source_repository", catalogue["source"]["repository"])}
         results[name] = result
         if not candidates:
             continue
@@ -152,6 +153,10 @@ def check(roots: list[Path], catalogue: dict, selected: list[str], baseline: dic
         if baseline is not None:
             previous = baseline["skills"].get(name, {})
             old_hash = previous.get("fingerprint")
+            if (spec.get("source_repository") and previous.get("source_repository") != result["source_repository"]):
+                result["issues"].append("Different or missing provider in baseline; review source identity")
+                if result["status"] == "ON_DISK":
+                    result["status"] = "CHANGED"
             if (previous.get("status") != "ON_DISK" or not isinstance(old_hash, str)
                     or not re.fullmatch(r"[0-9a-f]{64}", old_hash)):
                 result["issues"].append("No usable entry in the approved baseline")

@@ -1,20 +1,22 @@
-# Validation — workflow-axa 2.1.0
+# Validation — workflow-axa 2.2.0
 
 ## Observed checks
 
-Tested on Linux with Python 3.13.5, Git 2.47.3 and Chromium 144.0.7559.96. Runtime renderer/checker target: Python 3.10+ standard library. The browser smoke runner additionally uses already installed Playwright/Chromium; nothing was installed during this build.
+Tested on Linux with Python 3.13.5, Git 2.47.3 and Chromium 144.0.7559.96. Renderer/checker target: Python 3.10+ standard library. The optional browser runner uses already installed Playwright/Chromium. No upstream skills, browsers, libraries or fonts were installed during this build.
 
 | Check | Observed result | What it establishes |
 |---|---|---|
-| Package validator | PASS; workflow core 1,004 words, codebase-map 620 words | Both registered skills, required files, package version/catalogue consistency, minimal metadata, internal links and local word budgets. |
-| Python unit suite | **76 tests passed** | Package/fixture tooling, existing specialist checker, report states/modes, evidence/task/requirement references, cycles, unsafe paths, source drift, label escaping, saved-projection agreement, portable renderer, CLI/overwrite behavior and truthful opener results. |
-| Chromium offline-content smoke | **7 checks passed** | Current/proposed rendering, visible pending approval, no submission controls, zoom/fit/pan, desktop/mobile overflow, evidence anchors and inert malicious-looking labels. Zero page errors and zero network requests observed. |
-| Supplied-source example check | PASS | Bundled report input and named source file bytes match its manifest. No assertion about omitted files or complete repository coverage. |
-| Final archive integrity and re-extraction | PASS | ZIP integrity checked; package validation, the 76-test suite, example freshness and 7 browser checks rerun from the extracted final archive. |
+| Baseline before edits | 76 tests passed | The supplied 2.1.0 package's existing tooling suite ran before changes. |
+| Package validator | PASS; workflow core 1,009 words; codebase-map 634 words | Two registered local skills, required files, minimal metadata, internal links, version/catalogue consistency and core word budgets. |
+| Python unit suite | **108 tests passed** | Existing package/fixture/report checks plus explicit flow geometry, labelled decisions, ports/crossings/masks, default feature flow, delivery dependency fidelity, start links, source uncertainty disclosure and additional-provider inventory checks. |
+| Chromium offline browser suite | **15 checks passed** | View selection, actual node/diamond label fit, natural-size text, desktop/mobile overflow, mobile entry centering, keyboard/drag/Fit, evidence anchors, no-script native navigation, print views and inert hostile-looking text. Zero external requests and page errors observed. |
+| Bundled schema-2 example freshness | MATCH | Input and all supplied source bytes match the report manifest; not complete code coverage, semantic correctness or approval authentication. |
+| Actual 2.1.0 example compatibility | MATCH | The new checker successfully checked the original example from an untouched extraction of the supplied 2.1.0 ZIP. New generation deliberately requires schema 2. |
+| Final archive integrity and re-extraction | PASS | ZIP integrity and paths checked; package validation, 108 unit tests, bundled-example freshness and 15 browser checks rerun from extracted release contents. |
 
-Actual candidate output: [unit log](tests/evidence/tooling-tests.txt) and [browser results](tests/evidence/browser-smoke.json). Final-archive reruns use the same included commands. Browser screenshots were visually inspected during the build; the working HTML example is included rather than bundling multiple large screenshots.
+Candidate evidence: [unit log](tests/evidence/tooling-tests.txt) and [browser results](tests/evidence/browser-smoke.json). Browser screenshots of the default, current, build and narrow-window views were visually inspected; the working generic HTML example is included instead of large QA images or private application reports.
 
-Commands from the package root:
+Commands from the plugin root:
 
 ```text
 python -X utf8 tools/validate.py
@@ -23,13 +25,14 @@ python -X utf8 skills/codebase-map/scripts/render_report.py --root skills/codeba
 python -X utf8 tools/browser_smoke.py --browser <installed-chromium> --output <new-results-directory>
 ```
 
-The isolated root-container browser run explicitly used `--no-sandbox`; normal desktop use keeps the browser sandbox enabled. Direct `file://` navigation was attempted and blocked by this environment's managed Chromium policy. The successful visual/interaction tests supplied the same rendered HTML through Playwright `set_content` with networking offline. This does not establish successful desktop default-browser opening or direct-file policy compatibility.
+The isolated root-container browser run explicitly used `--no-sandbox`; normal desktop use keeps sandboxing enabled. Direct `file://` navigation was attempted and blocked by this environment's managed policy. A new context then received the identical HTML through Playwright `set_content` with networking offline. The suite reports that limitation rather than claiming direct-file opening succeeded. A manual desktop default-browser check remains necessary.
 
 ## Not executed or not proven
 
-- **Live Claude Code/Codex evaluations and native plugin validation:** neither CLI was present. The 31 behavioral scenarios are authored protocols, not passed agent tests. Ordinary-prompt activation, real specialist invocation, code-grounding quality, semantic diagram correctness, approval compliance and cross-account handoff must be tested in the actual host.
-- **Windows/macOS desktop opening, OS permissions and Python 3.10 runtime:** command/path support is designed for these environments, but this build did not execute their platform-specific integrations. An accepted `--open` request is not proof that a viewer displayed.
-- **Matt collection installation or full new upstream audit:** no installation, automatic update or bundled upstream collection. Its historical inventory provenance is preserved. Disk hashes do not prove host availability, source identity or actual skill use.
-- **Hard enforcement:** schema checks, hashes and instructions cannot prove a requirement was really requested, authenticate user approval or prevent every model mistake. The real user response and task records remain authoritative; host permissions remain separate.
+- **Live Claude Code/Codex evaluation and native plugin validation:** neither CLI was present. The 37 named behavioral scenarios are authored protocols, not passed agent runs. Ordinary-prompt activation, actual specialist invocation, question quality, current-code understanding, approval compliance and recovery require testing in the actual host.
+- **Upstream specialist execution:** diagram-design source/references were reviewed through the public repository. No installed invocation or upstream self-check execution is claimed. Its canonical-script checker is not the contract for this report shell; the integration documents the difference. Matt's historical inventory is preserved, not re-certified as a current installed collection.
+- **Windows/macOS default opening and Python 3.10 execution:** supported by design but not exercised here. An opener accepting a request is not proof that the user saw the report.
+- **Full accessibility/usability and semantic verification:** browser assertions check selected behaviors, not every assistive technology or real user comprehension. Geometry cannot determine whether an inferred route is true or whether a required branch was omitted. Source paths/hashes do not authenticate origin or prove complete repository coverage.
+- **Hard enforcement:** neither instructions nor a schema can authenticate real user approval or guarantee agent obedience. Existing host permissions and the user's recorded response remain authoritative.
 
-This is a local release artifact. It was not installed into a user's repository, remotely published, tagged, pushed or deployed. Read README's upgrade checklist, install both local skills, merge the reviewed routing block into the actual host instructions, and run the local behavior pilot before wider team rollout.
+Only the candidate skill package, its examples, documentation and tests changed. The user's application, original R3 report and approved presentation sample remain unchanged. The release is not installed, remotely published, tagged, pushed or deployed. Follow README's upgrade checklist, verify both local skills and the separate diagram-design dependency, then run the local host pilot.

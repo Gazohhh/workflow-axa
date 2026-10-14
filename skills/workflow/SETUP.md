@@ -1,9 +1,9 @@
 # Team setup and dependency checks
 
-This skill uses Matt Pocock's collection as a separate dependency. Installing
-`workflow-axa` alone does **not** install it. Keep one collection installation route per
+This skill uses Matt Pocock's collection and Cathryn Lavery's `diagram-design` as separate dependencies. Installing
+`workflow-axa` alone does **not** install either dependency. Keep one collection installation route per
 agent; plugin plus copied skills can create duplicate names. The catalogue records the
-27 names observed on 2026-10-09, including 11 model-invocable routes. Upstream metadata
+27 names observed on 2026-10-09, including 11 model-invocable routes, plus diagram-design as the 12th routed specialist. Upstream metadata
 was 1.3.1; no immutable source commit or live-tested installation is asserted here.
 [Upstream setup and catalogue](https://github.com/mattpocock/skills#installation-30-second-setup)
 
@@ -47,7 +47,7 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.1.0 also requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.2.0 also requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
@@ -78,7 +78,7 @@ all historical plugin caches. An omitted root cannot be checked.
 From the extracted workflow package root, with the actual path substituted:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --profile collection
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --root "C:\Path\To\Installed\DiagramDesign" --profile collection
 ```
 
 For a standalone skill copy, use the same `scripts/check_specialists.py` relative to that
@@ -88,7 +88,7 @@ skill directory. To check only the routes needed for the next phase:
 python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only grilling research
 ```
 
-`--profile routed` checks the 11 automatic routes; `collection` checks all 27 names.
+`--profile routed` checks 12 automatic routes; `collection` checks 28 names (27 Matt entries and diagram-design). The per-skill provider field distinguishes their sources.
 Repeat `--root` for separate active roots. Overlapping roots pointing to the same physical
 files are deduplicated; two physical copies of the same name are reported as ambiguous.
 The host inventory must still identify whether two aliases point to one physical copy.
@@ -110,7 +110,7 @@ access to tools, correct invocation or model obedience. Record these distinction
 At approved setup, capture a report to a private local path. PowerShell example:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --json | Set-Content -Encoding utf8 "C:\Path\To\Private\inventory.json"
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --root "C:\Path\To\Installed\DiagramDesign" --json | Set-Content -Encoding utf8 "C:\Path\To\Private\inventory.json"
 ```
 
 Choose an existing parent directory and a new report filename; the shell redirection
@@ -133,7 +133,7 @@ not silently accept `latest` or invent an upstream commit hash from a version st
 
 ## 5. Run a runtime smoke test, then normal tasks
 
-In a disposable project with only the intended workflow version and Matt installation,
+In a disposable project with only the intended workflow version and approved specialist installations,
 first make a plain behavioral-change request with no skill name. Verify workflow loaded, code was inspected, requirements/evidence/tasks were mapped and the visual review was shown before application changes. Test rejection/correction and subsequent approval. Then request a research/plan task with one genuine decision. Verify the trace shows the
 qualified `grilling` specialist actually loaded, facts investigated rather than asked,
 and the question batch saved to the existing task record. Approve a bounded code fix
@@ -145,3 +145,18 @@ unavailable subagents. Apply [SPECIALISTS.md](SPECIALISTS.md), not guessed alias
 simulated “skill executed” log. A read-only file check is not this runtime smoke test.
 The package's behavioral scenarios describe the expected observations; perform them
 locally before a wider team rollout.
+
+## Diagram-design setup (2.2.0)
+
+One new dependency, not a replacement for grilling:
+
+```powershell
+npx skills add https://github.com/cathrynlavery/diagram-design --skill diagram-design
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\DiagramDesign" --only diagram-design
+```
+
+Source: https://github.com/cathrynlavery/diagram-design . The catalogue records main/metadata 2.6 reviewed 2026-10-14, not an immutable pin. Installation is a user-authorized setup action, never an automatic preapproval fix. Select the actual agent/scope and verify enabled state and invocation. A package update changes the inventory version: review a new baseline; do not overwrite the previous approval snapshot.
+
+`codebase-map/DIAGRAM-DESIGN.md` supplies the owner-approved editorial/system-font style and scoped schema-2 output contract. Pass that context to the specialist; no repeated branding gate, Google Fonts, profile writes or external rendering. Its checklist complements local geometry/browser tests; neither proves source semantics. Missing/incompatible design skill pauses only the dependent visual phase unless an explicit fallback is approved, never the implementation-approval boundary.
+
+Test a real visual request in a fresh agent session: inspect trace for codebase-map → diagram-design, then verify a readable flowchart, evidence, unresolved choices and the stop before coding. A local Python render does not count as this specialist invocation.

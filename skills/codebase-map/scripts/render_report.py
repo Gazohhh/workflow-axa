@@ -13,7 +13,6 @@ import html
 import json
 import re
 import sys
-import textwrap
 import webbrowser
 from datetime import datetime, timezone
 from pathlib import Path
@@ -93,8 +92,8 @@ def load_json(path: Path) -> dict:
 
 
 def validate(data: dict, root: Path) -> dict[str, dict]:
-    if data.get('schema_version') != 1:
-        raise ValueError('schema_version must be 1')
+    if data.get('schema_version') != 2:
+        raise ValueError('New renders require schema_version 2; migrate the layout using REPORT.md. Existing HTML remains checkable with --check.')
     for key in ('title', 'revision', 'understanding'):
         text(data.get(key), key)
     mode, state = data.get('mode'), data.get('state')
@@ -161,38 +160,25 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
             raise ValueError('Task dependency cycle')
         pending = {k: v - ready for k, v in pending.items() if k not in ready}
 
-    graphs = rows(data.get('graphs'), 'graphs', empty=False)
-    kinds = [g.get('kind') for g in graphs]
+    graphs = indexed(data.get('graphs'), 'graphs', empty=False)
+    if len(graphs) > 6:
+        raise ValueError('Use at most six focused views per report')
+    kinds = {g.get('kind') for g in graphs.values()}
     expected = {'current', 'proposed'} if mode == 'compare' else {mode}
-    if set(kinds) != expected or len(kinds) != len(expected):
-        raise ValueError('Graphs must match mode, without duplicates')
-    for graph in graphs:
+    if kinds != expected:
+        raise ValueError('Graphs must match mode; compare requires current and proposed')
+    for graph in graphs.values():
         text(graph.get('title'), 'graph.title')
         nodes = indexed(graph.get('nodes'), 'nodes', empty=False)
-        if len(nodes) > 16:
-            raise ValueError('Split maps with more than 16 nodes into focused views')
-        cells: set[tuple[int, int]] = set()
-        groups: dict[int, str] = {}
         for node in nodes.values():
-            text(node.get('label'), 'node.label', 64)
-            text(node.get('note'), 'node.note', 112)
-            text(node.get('group'), 'node.group', 40)
-            if len(textwrap.wrap(node['label'], width=28)) > 2 or len(textwrap.wrap(node['note'], width=36)) > 4:
-                raise ValueError('Shorten node label/note; move detail to evidence')
-            for coord in ('col', 'row'):
-                if type(node.get(coord)) is not int or not 0 <= node[coord] <= 8:
-                    raise ValueError('Node row/col must be integers from 0 to 8')
-            cell = node['col'], node['row']
-            if cell in cells:
-                raise ValueError('Overlapping node positions')
-            cells.add(cell)
-            if node['row'] in groups and groups[node['row']] != node['group']:
-                raise ValueError('Use one group label per row')
-            groups[node['row']] = node['group']
+            text(node.get('label'), 'node.label', 80)
+            if node.get('note') != '':
+                text(node.get('note'), 'node.note', 112)
         for edge in rows(graph.get('edges'), 'edges'):
             if edge.get('from') not in nodes or edge.get('to') not in nodes:
                 raise ValueError('Edge endpoint does not exist')
-            text(edge.get('label'), 'edge.label', 48)
+            if edge.get('label') != '':
+                text(edge.get('label'), 'edge.label', 48)
         for item in list(nodes.values()) + graph['edges']:
             if item.get('basis') not in BASIS or item.get('change') not in CHANGE:
                 raise ValueError('Each node/edge needs valid basis and change')
@@ -210,7 +196,21 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
                 raise ValueError('Current flow cannot contain future behavior/change labels')
             if graph['kind'] == 'proposed' and item['change'] in ('added', 'modified') and basis != 'proposed':
                 raise ValueError('Added/modified future behavior must be marked proposed')
-
+        validate_geometry(graph, nodes)
+        validate_delivery(graph, tasks)
+    if data.get('default_view') not in graphs:
+        raise ValueError('default_view must identify a graph in this report')
+    if mode == 'compare' and (graphs[data['default_view']]['kind'] != 'proposed' or graphs[data['default_view']]['purpose'] != 'flow'):
+        raise ValueError('Approval comparison opens with the proposed feature flow, not a build plan or structural map')
+    comparison = rows(data.get('comparison'), 'comparison')
+    for row in comparison:
+        for key in ('label', 'current', 'proposed'):
+            text(row.get(key), f'comparison.{key}')
+        references(row.get('requirements'), requirements, 'comparison.requirements', required=True)
+        references(row.get('evidence'), evidence, 'comparison.evidence', required=True)
+        references(row.get('tasks'), tasks, 'comparison.tasks', required=True)
+    if mode == 'compare' and not comparison:
+        raise ValueError('Comparison needs an evidence-linked current/proposed change summary')
     if state in ('awaiting-approval', 'approved'):
         if mode != 'compare' or data['open_decisions']:
             raise ValueError('Approval-ready reviews need compare mode and no blocking decisions')
@@ -240,69 +240,316 @@ def links(ids: list[str], prefix: str) -> str:
     return ' '.join(f'<a href="#{prefix}-{esc(v)}">{esc(v)}</a>' for v in ids) or '—'
 
 
-def svg_lines(value: str, x: float, y: float, width: int, css: str, line_height: int) -> str:
-    lines = textwrap.wrap(value, width=width, break_long_words=True, break_on_hyphens=False)
-    return f'<text class="{css}" x="{x}" y="{y}">' + ''.join(
-        f'<tspan x="{x}" dy="{0 if i == 0 else line_height}">{esc(line)}</tspan>'
-        for i, line in enumerate(lines)) + '</text>'
+def coordinate(value: Any, name: str, lower: int = 0, upper: int = 2400) -> int:
+    if type(value) is not int or not lower <= value <= upper or value % 4:
+        raise ValueError(f'{name}: use a 4px-grid integer from {lower} to {upper}')
+    return value
+
+
+def boxes_overlap(a: tuple, b: tuple, gap: float = 0) -> bool:
+    x, y, w, h = a
+    xx, yy, ww, hh = b
+    return x < xx + ww + gap and xx < x + w + gap and y < yy + hh + gap and yy < y + h + gap
+
+
+def segment_hits_box(a: list, b: list, box: tuple, inset: float = 0) -> bool:
+    x, y, w, h = box
+    if a[0] == b[0]:
+        return x + inset < a[0] < x + w - inset and max(min(a[1], b[1]), y + inset) < min(max(a[1], b[1]), y + h - inset)
+    return y + inset < a[1] < y + h - inset and max(min(a[0], b[0]), x + inset) < min(max(a[0], b[0]), x + w - inset)
+
+
+def segments_meet(a: list, b: list, c: list, d: list) -> bool:
+    if a[0] == b[0] and c[0] == d[0]:
+        return a[0] == c[0] and max(min(a[1], b[1]), min(c[1], d[1])) <= min(max(a[1], b[1]), max(c[1], d[1]))
+    if a[1] == b[1] and c[1] == d[1]:
+        return a[1] == c[1] and max(min(a[0], b[0]), min(c[0], d[0])) <= min(max(a[0], b[0]), max(c[0], d[0]))
+    if a[0] != b[0]:
+        a, b, c, d = c, d, a, b
+    return min(c[0], d[0]) <= a[0] <= max(c[0], d[0]) and min(a[1], b[1]) <= c[1] <= max(a[1], b[1])
+
+
+def port_side(node: dict, point: list) -> str:
+    x, y, w, h = (node[k] for k in ('x', 'y', 'width', 'height'))
+    px, py = point
+    if node['shape'] == 'decision':
+        for side, port in (('top', [x+w/2, y]), ('right', [x+w, y+h/2]), ('bottom', [x+w/2, y+h]), ('left', [x, y+h/2])):
+            if point == port:
+                return side
+    else:
+        if py == y and x+16 <= px <= x+w-16: return 'top'
+        if py == y+h and x+16 <= px <= x+w-16: return 'bottom'
+        if px == x and y+16 <= py <= y+h-16: return 'left'
+        if px == x+w and y+16 <= py <= y+h-16: return 'right'
+    raise ValueError('Connector endpoint must attach to an allowed node boundary port')
+
+
+def outward(side: str, point: list, adjacent: list) -> bool:
+    return {'top': adjacent[1] < point[1] and adjacent[0] == point[0],
+            'bottom': adjacent[1] > point[1] and adjacent[0] == point[0],
+            'left': adjacent[0] < point[0] and adjacent[1] == point[1],
+            'right': adjacent[0] > point[0] and adjacent[1] == point[1]}[side]
+
+
+def edge_label_box(edge: dict) -> tuple:
+    x, y = edge['label_position']
+    width = 16 + len(edge['label']) * 7
+    return x - width/2, y - 15, width, 22
+
+
+def validate_geometry(graph: dict, nodes: dict) -> None:
+    width = coordinate(graph.get('width'), 'graph.width', 400, 1600)
+    height = coordinate(graph.get('height'), 'graph.height', 240, 1600)
+    if graph.get('purpose') not in ('flow', 'delivery', 'structure', 'technical'):
+        raise ValueError('Graph purpose must be flow, delivery, structure or technical')
+    for field in ('tab', 'description'):
+        text(graph.get(field), f'graph.{field}', 700 if field == 'description' else 36)
+    if len(nodes) > 9 or len(graph['edges']) > 12:
+        raise ValueError('Split the diagram: at most 9 nodes and 12 connectors per view')
+    if sum(n.get('highlight', False) is True for n in nodes.values()) > 2:
+        raise ValueError('Use at most two focal nodes per view')
+    boxes = {}
+    for key, node in nodes.items():
+        for field, low, high in (('x', 0, width), ('y', 0, height), ('width', 128, width), ('height', 48, height)):
+            coordinate(node.get(field), f'node.{field}', low, high)
+        if node.get('shape') not in ('start', 'action', 'decision', 'result', 'group'):
+            raise ValueError('Node needs a start/action/decision/result/group shape')
+        if 'highlight' in node and type(node['highlight']) is not bool:
+            raise ValueError('node.highlight must be boolean')
+        box = tuple(node[k] for k in ('x', 'y', 'width', 'height'))
+        x, y, w, h = box
+        if x+w > width-16 or y+h > height-16 or x < 16 or y < 16:
+            raise ValueError('Node exceeds the diagram bounds/padding')
+        if any(boxes_overlap(box, other, gap=12) for other in boxes.values()):
+            raise ValueError('Overlapping nodes or less than 12px separation')
+        boxes[key] = box
+        lines = node['label'].split('\n')
+        notes = node['note'].split('\n') if node['note'] else []
+        available = w * .62 if node['shape'] == 'decision' else w-40
+        # Conservative character budgets catch obvious clipping; browser measurements remain required.
+        if len(lines) > 2 or any(len(line) * 10 > available for line in lines):
+            raise ValueError('Shorten node label or widen its shape; never shrink type')
+        if len(notes) > 2 or any(len(line) * 7 > w-40 for line in notes):
+            raise ValueError('Shorten node note or move detail below the diagram')
+        if node['shape'] == 'decision' and (notes or h < 128):
+            raise ValueError('Decision diamond needs >=128px height and no note; detail belongs below')
+        items = node.get('items', [])
+        if not isinstance(items, list) or len(items) > 9 or (items and node['shape'] != 'group'):
+            raise ValueError('Only group nodes have items, at most nine')
+        for item in items:
+            text(item, 'node.items', 60)
+            if len(item) * 8 > w-48:
+                raise ValueError('Shorten group item or widen the group')
+        needed = 36 + 24*len(lines) + 20*len(notes) + (36*len(items)+12 if items else 0)
+        if node['shape'] != 'decision' and h < needed-12:
+            raise ValueError('Node height is too small for its text')
+    all_segments = []
+    ports: dict[str, list[list]] = {}
+    masks = []
+    for edge in graph['edges']:
+        points = edge.get('points')
+        if not isinstance(points, list) or not 2 <= len(points) <= 16:
+            raise ValueError('Connector needs 2–16 explicit orthogonal points')
+        for point in points:
+            if not isinstance(point, list) or len(point) != 2:
+                raise ValueError('Connector point must be [x, y]')
+            coordinate(point[0], 'point.x', 4, width-4)
+            coordinate(point[1], 'point.y', 4, height-4)
+        segments = list(zip(points, points[1:]))
+        for a, b in segments:
+            if a == b or (a[0] != b[0] and a[1] != b[1]):
+                raise ValueError('Connectors must be orthogonal with distinct consecutive points')
+            if abs(a[0]-b[0]) + abs(a[1]-b[1]) < 12:
+                raise ValueError('Connector segments need at least 12px for clear elbows')
+            for box in boxes.values():
+                if segment_hits_box(a, b, box):
+                    raise ValueError('Connector crosses a node; route outside boxes')
+        for key, point, neighbor in ((edge['from'], points[0], points[1]), (edge['to'], points[-1], points[-2])):
+            side = port_side(nodes[key], point)
+            if not outward(side, point, neighbor):
+                raise ValueError('Connector must leave/enter the node outward, not along its boundary')
+            if any(abs(point[0]-p[0]) + abs(point[1]-p[1]) < 12 for p in ports.get(key, [])):
+                raise ValueError('Give connectors distinct ports at least 12px apart')
+            ports.setdefault(key, []).append(point)
+        for i, (a, b) in enumerate(segments):
+            if any(segments_meet(a, b, c, d) for c, d in segments[i+2:]):
+                raise ValueError('Connector doubles back or crosses itself')
+            if any(segments_meet(a, b, c, d) for c, d in all_segments):
+                raise ValueError('Connectors cross or share a stroke; reroute or split the view')
+        all_segments.extend(segments)
+        if edge['label']:
+            if len(edge['label']) > 14 or '\n' in edge['label']:
+                raise ValueError('Keep connector labels within 14 characters, one line')
+            position = edge.get('label_position')
+            if not isinstance(position, list) or len(position) != 2:
+                raise ValueError('Labelled connectors need label_position [x, baseline_y]')
+            for i, value in enumerate(position):
+                coordinate(value, 'label_position', 0, width if i == 0 else height)
+            mask = edge_label_box(edge)
+            mx, my, mw, mh = mask
+            if mx < 0 or my < 0 or mx+mw > width or my+mh > height:
+                raise ValueError('Connector label falls outside the view')
+            if any(boxes_overlap(mask, box, gap=4) for box in boxes.values()):
+                raise ValueError('Connector label overlaps a node')
+            if any(boxes_overlap(mask, other, gap=4) for other in masks):
+                raise ValueError('Connector labels overlap')
+            masks.append(mask)
+        elif nodes[edge['from']]['shape'] == 'decision':
+            raise ValueError('Every decision branch needs an explicit label')
+    for mask in masks:
+        x, y, w, h = mask
+        padded = (x-6, y-6, w+12, h+12)
+        if any(segment_hits_box(a, b, padded) for a, b in all_segments):
+            raise ValueError('Connector label needs at least a 6px gap from routes')
+    for key, node in nodes.items():
+        outgoing = [e for e in graph['edges'] if e['from'] == key]
+        if node['shape'] == 'decision':
+            if not 2 <= len(outgoing) <= 3 or len({e['label'].casefold() for e in outgoing}) != len(outgoing):
+                raise ValueError('A decision needs two or three distinctly labelled exits')
+
+
+def validate_delivery(graph: dict, tasks: dict) -> None:
+    if graph['purpose'] != 'delivery':
+        return
+    if graph['kind'] != 'proposed':
+        raise ValueError('Delivery view describes proposed work, not current application behavior')
+    nodes = {n['id']: n for n in graph['nodes']}
+    task_nodes, approvals = {}, []
+    for node in nodes.values():
+        if node.get('precondition') == 'approval':
+            if node['shape'] != 'start' or node['tasks']:
+                raise ValueError('Approval precondition is a start node, not a task or recorded approval')
+            approvals.append(node['id'])
+        else:
+            task = node.get('task_id')
+            if task not in tasks or node['tasks'] != [task] or task in task_nodes:
+                raise ValueError('Delivery nodes need a unique task_id matching their task reference')
+            task_nodes[task] = node['id']
+    if len(approvals) != 1:
+        raise ValueError('Delivery view needs exactly one explicit approval precondition')
+    selected = set(task_nodes)
+    external = {dep for key in selected for dep in tasks[key]['depends_on'] if dep not in selected}
+    declared = graph.get('external_dependencies', [])
+    references(declared, tasks, 'external_dependencies')
+    if set(declared) != external:
+        raise ValueError('Partial delivery view must declare external_dependencies; do not hide prerequisites')
+    expected = {(task_nodes[dep], task_nodes[key]) for key in selected for dep in tasks[key]['depends_on'] if dep in selected}
+    roots = {task_nodes[key] for key in selected if not set(tasks[key]['depends_on']) & selected}
+    expected |= {(approvals[0], key) for key in roots}
+    actual = [(edge['from'], edge['to']) for edge in graph['edges']]
+    if len(actual) != len(set(actual)) or set(actual) != expected:
+        raise ValueError('Delivery edges must match the task dependencies and approval precondition')
+
+
+def graph_records(graph: dict) -> str:
+    details = []
+    for node in graph['nodes']:
+        details.append(f'<li><strong>{esc(node["id"])} — {esc(node["label"])}</strong>: {esc(node["note"])} '
+                       f'({esc(node["basis"])}, {esc(node["change"])}) {esc(node.get("uncertainty", ""))} '
+                       f'Evidence {links(node["evidence"], "e")}; tasks {links(node["tasks"], "t")}.</li>')
+    for edge in graph['edges']:
+        details.append(f'<li><strong>{esc(edge["from"])} → {esc(edge["to"])}</strong>: {esc(edge["label"] or "continues")} '
+                       f'({esc(edge["basis"])}, {esc(edge["change"])}) {esc(edge.get("uncertainty", ""))} '
+                       f'Evidence {links(edge["evidence"], "e")}; tasks {links(edge["tasks"], "t")}.</li>')
+    return f'<details><summary>{esc(graph["tab"])} — nodes and relationships</summary><ol>{"".join(details)}</ol></details>'
+
+
+def elbow_path(points: list) -> str:
+    result = f'M {points[0][0]} {points[0][1]}'
+    for i in range(1, len(points)-1):
+        previous, corner, following = points[i-1:i+2]
+        length_in = abs(corner[0]-previous[0]) + abs(corner[1]-previous[1])
+        length_out = abs(following[0]-corner[0]) + abs(following[1]-corner[1])
+        radius = min(8, length_in/2, length_out/2)
+        before = [corner[j] + (previous[j]-corner[j])/length_in*radius for j in (0, 1)]
+        after = [corner[j] + (following[j]-corner[j])/length_out*radius for j in (0, 1)]
+        result += f' L {before[0]:g} {before[1]:g} Q {corner[0]} {corner[1]} {after[0]:g} {after[1]:g}'
+    return result + f' L {points[-1][0]} {points[-1][1]}'
 
 
 def graph_html(graph: dict) -> str:
-    kind = graph['kind']
-    nodes = {n['id']: n for n in graph['nodes']}
-    xstep, ystep, w, h = 348, 242, 254, 184
-    pos = {k: (70 + n['col'] * xstep, 70 + n['row'] * ystep) for k, n in nodes.items()}
-    width = max(x for x, _ in pos.values()) + w + 70
-    height = max(y for _, y in pos.values()) + h + 45
-    parts = [f'<svg class="map" viewBox="0 0 {width} {height}" data-original="0 0 {width} {height}" '
-             f'role="img" tabindex="0" aria-label="{esc(graph["title"])}. Use toolbar to zoom and fit.">',
-             f'<defs><marker id="arrow-{kind}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>']
-    for row in sorted({n['row'] for n in nodes.values()}):
-        label = next(n['group'] for n in nodes.values() if n['row'] == row)
-        y = 70 + row * ystep
-        parts.append(f'<rect class="lane" x="28" y="{y-36}" width="{width-56}" height="{h+62}" rx="18"/>')
-        parts.append(f'<text class="lane-title" x="48" y="{y-13}">{esc(label)}</text>')
+    key = graph['id']
+    start = min(graph['nodes'], key=lambda node: (node['shape'] != 'start', node['y'], node['x']))
+    start_id = f'node-{len(key)}-{key}-{start["id"]}'
+    parts = [f'<svg class="map" xmlns="http://www.w3.org/2000/svg" width="{graph["width"]}" height="{graph["height"]}" '
+             f'viewBox="0 0 {graph["width"]} {graph["height"]}" role="img" aria-labelledby="{key}-title {key}-desc">'
+             f'<title id="{key}-title">{esc(graph["title"])}</title><desc id="{key}-desc">{esc(graph["description"])}</desc>'
+             f'<defs><marker id="arrow-{key}" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto">'
+             '<path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs>']
     for edge in graph['edges']:
-        x1, y1 = pos[edge['from']]; x2, y2 = pos[edge['to']]
-        if x2 > x1 and y1 == y2:
-            a, b = (x1+w, y1+h/2), (x2, y2+h/2)
-            d = f'M {a[0]} {a[1]} L {b[0]} {b[1]}'
-            tx, ty = (a[0]+b[0])/2, a[1]-24
-        elif y2 > y1:
-            a, b = (x1+w/2, y1+h), (x2+w/2, y2)
-            middle = (a[1]+b[1])/2
-            d = f'M {a[0]} {a[1]} C {a[0]} {middle}, {b[0]} {middle}, {b[0]} {b[1]}'
-            tx, ty = (a[0]+b[0])/2+10, middle-10
-        elif y2 < y1:
-            a, b = (x1, y1+h/2), (x2, y2+h/2)
-            bend = min(x1,x2)-25
-            d = f'M {a[0]} {a[1]} C {bend} {a[1]}, {bend} {b[1]}, {b[0]} {b[1]}'
-            tx, ty = bend, (a[1]+b[1])/2
-        else:
-            a, b = (x1+w/2, y1), (x2+w/2, y2)
-            top = min(y1,y2)-25
-            d = f'M {a[0]} {a[1]} C {a[0]} {top}, {b[0]} {top}, {b[0]} {b[1]}'
-            tx, ty = (a[0]+b[0])/2, top-2
-        parts.append(f'<path class="edge {edge["basis"]} {edge["change"]}" d="{d}" marker-end="url(#arrow-{kind})"><title>{esc(edge["label"])} · {esc(edge["basis"])} · evidence {esc(", ".join(edge["evidence"]))}</title></path>')
-        parts.append(svg_lines(edge['label'], tx, ty, 17, 'edge-label', 14))
-    for key, node in nodes.items():
-        x,y = pos[key]
-        parts.append(f'<g class="node {node["change"]}"><title>{esc(key)}: {esc(node["label"])}. {esc(node["note"])}. {esc(node["basis"])}</title><rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12"/>')
-        parts.append(f'<text class="node-meta" x="{x+16}" y="{y+23}">{esc(node["change"].upper())} · {esc(node["basis"])}</text>')
-        parts.append(svg_lines(node['label'], x+16, y+49, 28, 'node-title', 19))
-        parts.append(svg_lines(node['note'], x+16, y+98, 36, 'node-note', 15))
-        parts.append(f'<text class="node-refs" x="{x+16}" y="{y+h-12}">{esc(key)} · {esc(" ".join(node["evidence"] + node["tasks"]))}</text></g>')
-    parts.append('</svg>')
-    details=[]
+        parts.append(f'<path class="connector {edge["basis"]}" data-from="{esc(edge["from"])}" data-to="{esc(edge["to"])}" '
+                     f'data-points="{esc(json.dumps(edge["points"]))}" d="{elbow_path(edge["points"])}" marker-end="url(#arrow-{key})"/>' )
+    for edge in graph['edges']:
+        if edge['label']:
+            x, y, w, h = edge_label_box(edge)
+            cx, baseline = edge['label_position']
+            parts.append(f'<g class="arrow-label"><rect x="{x:g}" y="{y:g}" width="{w:g}" height="{h:g}"/>'
+                         f'<text class="edge-label" text-anchor="middle" x="{cx}" y="{baseline}">{esc(edge["label"].upper())}</text></g>')
     for node in graph['nodes']:
-        details.append(f'<li><strong>{esc(node["id"])} — {esc(node["label"])}</strong>: {esc(node["note"])} '
-                       f'<span class="muted">{esc(node["basis"])} / {esc(node["change"])}</span> '
-                       f'{esc(node.get("uncertainty", ""))} Evidence {links(node["evidence"],"e")}; work {links(node["tasks"],"t")}.</li>')
-    for edge in graph['edges']:
-        details.append(f'<li><strong>{esc(edge["from"])} → {esc(edge["to"])}</strong>: {esc(edge["label"])} '
-                       f'({esc(edge["basis"])}, {esc(edge["change"])}) {esc(edge.get("uncertainty", ""))} '
-                       f'Evidence {links(edge["evidence"],"e")}; work {links(edge["tasks"],"t")}.</li>')
-    return f'<section class="graph-card"><div class="graph-heading"><h2>{esc(graph["title"])}</h2><div class="toolbar"><button type="button" data-action="out" aria-label="Zoom out">−</button><button type="button" data-action="in" aria-label="Zoom in">+</button><button type="button" data-action="fit">Fit view</button></div></div><div class="canvas">{"".join(parts)}</div><details><summary>Evidence and relationships · {len(nodes)} nodes</summary><ul class="detail-list">{"".join(details)}</ul></details></section>'
+        x, y, w, h = (node[v] for v in ('x', 'y', 'width', 'height'))
+        cx, cy = x+w/2, y+h/2
+        shape = node['shape']
+        classes = f'node {shape} {node["basis"]} {"focal" if node.get("highlight") else ""}'
+        parts.append(f'<g id="node-{len(key)}-{key}-{esc(node["id"])}" class="{classes}" data-id="{esc(node["id"])}" data-box="{x},{y},{w},{h}">'
+                     f'<title>{esc(node["label"])}. {esc(node["basis"])} / {esc(node["change"])}. '
+                     f'{esc(node.get("uncertainty", ""))}</title>')
+        if shape == 'decision':
+            parts.append(f'<polygon class="node-shape" points="{cx:g},{y} {x+w},{cy:g} {cx:g},{y+h} {x},{cy:g}"/>')
+        else:
+            radius = 20 if shape in ('start', 'result') else 6
+            parts.append(f'<rect class="node-shape" x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}"/>')
+        lines = node['label'].split('\n')
+        notes = node['note'].split('\n') if node['note'] else []
+        items = node.get('items', [])
+        tx = x+24 if shape == 'group' else cx
+        anchor = 'start' if shape == 'group' else 'middle'
+        baseline = y+36 if shape == 'group' else cy-(len(lines)-1)*12-len(notes)*10+6
+        for i, line in enumerate(lines):
+            parts.append(f'<text class="node-title" x="{tx:g}" y="{baseline+i*24:g}" text-anchor="{anchor}">{esc(line)}</text>')
+        for i, line in enumerate(notes):
+            parts.append(f'<text class="node-note" x="{tx:g}" y="{baseline+len(lines)*24+i*20:g}" text-anchor="{anchor}">{esc(line)}</text>')
+        for i, line in enumerate(items):
+            iy = baseline + len(lines)*24 + len(notes)*20 + 20+i*36
+            parts.append(f'<text class="node-item" x="{x+24}" y="{iy:g}">{esc(line)}</text>')
+        parts.append('</g>')
+    parts.append('</svg>')
+    shapes = {n['shape'] for n in graph['nodes']}
+    legend = []
+    for shape, label in (('start', 'Start / result'), ('action', 'Action'), ('decision', 'Decision'), ('group', 'Group')):
+        if shape in shapes or (shape == 'start' and 'result' in shapes):
+            legend.append(f'<span><i class="legend-{shape}" aria-hidden="true"></i>{label}</span>')
+    if any(n.get('highlight') for n in graph['nodes']):
+        legend.append('<span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span>')
+    external_note = f'<p>Other required tasks outside this view: {links(graph["external_dependencies"], "t")}</p>' if graph.get('external_dependencies') else ''
+    return (f'<figure class="panel" id="panel-{key}"><div class="figure-head"><h2>{esc(graph["title"])}</h2>'
+            f'<span>{esc(graph["kind"])} · {esc(graph["purpose"])}</span></div><p class="figure-description">{esc(graph["description"])}</p>'
+            f'<p class="hint">Scroll sideways to explore. <a href="#{start_id}">Go to start</a>. Fit is an optional overview.</p>'
+            f'<div class="canvas" tabindex="0" role="region" aria-label="{esc(graph["tab"])} diagram, scroll to explore" '
+            f'data-start-id="{start_id}" style="--board-width:{graph["width"]}px">{"".join(parts)}</div>'
+            f'<figcaption><div class="legend">{"".join(legend)}</div>'
+            f'{external_note}<span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure>')
+
+
+def view_controls(graphs: list, default: str) -> tuple[str, str]:
+    inputs, labels, rules = [], [], []
+    for graph in graphs:
+        key = graph['id']
+        inputs.append(f'<input class="sr-radio" type="radio" name="diagram-view" id="view-{key}" aria-label="{esc(graph["tab"])}" '
+                      f'aria-controls="panel-{key}" {"checked" if key == default else ""}>')
+        labels.append(f'<label for="view-{key}">{esc(graph["tab"])}</label>')
+        rules.extend([f'#view-{key}:checked~.figures #panel-{key}{{display:block}}',
+                      f'#view-{key}:checked~.viewbar label[for="view-{key}"]{{border-color:var(--accent);color:var(--ink)}}',
+                      f'#view-{key}:focus-visible~.viewbar label[for="view-{key}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
+    zooms = []
+    for value, label in (('100', '100%'), ('125', '125%'), ('150', '150%'), ('fit', 'Fit')):
+        inputs.append(f'<input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-{value}" '
+                      f'aria-label="{label} diagram size" {"checked" if value == "100" else ""}>')
+        zooms.append(f'<label for="zoom-{value}">{label}</label>')
+        rules.extend([f'#zoom-{value}:checked~.viewbar label[for="zoom-{value}"]{{border-color:var(--ink);color:var(--ink)}}',
+                      f'#zoom-{value}:focus-visible~.viewbar label[for="zoom-{value}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
+    controls = (''.join(inputs) + '<div class="viewbar"><div class="view-tabs" role="group" aria-label="Diagram views">' +
+                ''.join(labels) + '</div><div class="zoom-tabs" role="group" aria-label="Diagram size">' + ''.join(zooms) + '</div></div>')
+    return controls, '\n'.join(rules)
 
 
 def render(data: dict, root: Path, input_path: Path) -> str:
@@ -312,46 +559,78 @@ def render(data: dict, root: Path, input_path: Path) -> str:
         raise ValueError('Input JSON must be inside the supplied source root')
     if data != load_json(input_path):
         raise ValueError('Projection data must match saved input JSON before rendering')
-    records = [{'id':k, 'role':v['role'], 'path':v['path'], 'sha256':digest(safe_source(root,v['path']))} for k,v in sources.items()]
-    records.append({'id':'report-input','role':'projection','path':input_path.relative_to(root.resolve()).as_posix(),'sha256':digest(input_path)})
-    manifest = {'schema_version':1, 'tool_version':'2.1.0', 'revision':data['revision'],
-                'generated_utc':datetime.now(timezone.utc).isoformat(), 'sources':records}
-    raw_manifest = json.dumps(manifest,ensure_ascii=True).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
-    css = (ASSETS/'report.css').read_text(encoding='utf-8')
+    records = [{'id': key, 'role': value['role'], 'path': value['path'], 'sha256': digest(safe_source(root, value['path']))}
+               for key, value in sources.items()]
+    records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
+    manifest = {'schema_version': 1, 'tool_version': '2.2.0', 'layout_version': 2, 'style': 'workflow-editorial-v1',
+                'revision': data['revision'], 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
+    raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])
+    controls, view_css = view_controls(ordered, data['default_view'])
+    css = (ASSETS/'report.css').read_text(encoding='utf-8') + '\n' + view_css
     js = (ASSETS/'report.js').read_text(encoding='utf-8')
     script_hash = base64.b64encode(hashlib.sha256(js.encode('utf-8')).digest()).decode('ascii')
     state = data['state']
-    status = {'draft':'DRAFT — decisions or review still pending', 'awaiting-approval':'AWAITING USER APPROVAL — implementation not authorized',
-              'approved':'APPROVAL RECORDED — verify the task record before continuing', 'inspection':'CURRENT STATE — inspection only, no implementation authority',
-              'superseded':'SUPERSEDED — not authority for new implementation'}[state]
-    req=''.join(f'<li id="r-{esc(r["id"])}"><strong>{esc(r["id"])}.</strong> {esc(r["text"])}<small>Source: {esc(r["origin"])}</small></li>' for r in data['requirements'])
-    bounds=''.join(f'<li>{esc(b)}</li>' for b in data['boundaries']) or '<li>No additional boundaries recorded.</li>'
-    task_rows=''.join(f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td><strong>{esc(t["title"])}</strong><small>{esc(t["kind"])}: {esc(t["reason"])}<br>Areas: {esc(", ".join(t["areas"]))}</small></td><td>{links(t["requirements"],"r")}<br>{links(t["evidence"],"e")}<br>{links(t["acceptance"],"a")}</td><td>{links(t["depends_on"],"t")}</td></tr>' for t in data['tasks'])
-    acceptance=''.join(f'<li id="a-{esc(a["id"])}"><strong>{esc(a["id"])} — {esc(a["text"])}</strong><small>Verify: {esc(a["verification"])} · {links(a["requirements"],"r")}</small></li>' for a in data['acceptance'])
-    ev=''.join(f'<article id="e-{esc(e["id"])}" class="evidence"><strong>{esc(e["id"])} · {esc(e["kind"])} — {esc(e["claim"])}</strong><p>{esc(e["locator"])}</p><small>Sources: {links(e["sources"],"s")}<br>Limits: {esc(e["limits"])}</small></article>' for e in data['evidence'])
-    source_rows=''.join(f'<tr id="s-{esc(s["id"])}"><td>{esc(s["id"])}</td><td><code>{esc(s["path"])}</code></td><td>{esc(s["role"])}</td><td><code>{s["sha256"][:16]}…</code></td></tr>' for s in records)
-    issues=''.join(f'<li>{esc(v)}</li>' for v in data['open_decisions'])
+    status = {'draft': 'DRAFT — decisions or review still pending',
+              'awaiting-approval': 'AWAITING USER APPROVAL — implementation not authorized',
+              'approved': 'APPROVAL RECORDED — verify the task record before continuing',
+              'inspection': 'CURRENT STATE — inspection only, no implementation authority',
+              'superseded': 'SUPERSEDED — not authority for new implementation'}[state]
+    req = ''.join(f'<li id="r-{esc(r["id"])}"><strong>{esc(r["id"])}.</strong> {esc(r["text"])}<small>Source: {esc(r["origin"])}</small></li>' for r in data['requirements'])
+    bounds = ''.join(f'<li>{esc(b)}</li>' for b in data['boundaries']) or '<li>No additional boundaries recorded.</li>'
+    task_rows = ''.join(f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td><strong>{esc(t["title"])}</strong>'
+                        f'<small>{esc(t["kind"])}: {esc(t["reason"])}<br>Areas: {esc(", ".join(t["areas"]))}</small></td>'
+                        f'<td>{links(t["requirements"], "r")}<br>{links(t["evidence"], "e")}<br>{links(t["acceptance"], "a")}</td>'
+                        f'<td>{links(t["depends_on"], "t")}</td></tr>' for t in data['tasks'])
+    task_summary = ''.join(f'<li><a href="#t-{esc(t["id"])}">{esc(t["id"])}</a> {esc(t["title"])}'
+                           f'<small>Depends on: {esc(", ".join(t["depends_on"]) or "No prior task")}</small></li>' for t in data['tasks'])
+    acceptance = ''.join(f'<li id="a-{esc(a["id"])}"><strong>{esc(a["id"])} — {esc(a["text"])}</strong>'
+                         f'<small>Verify: {esc(a["verification"])} · {links(a["requirements"], "r")}</small></li>' for a in data['acceptance'])
+    ev = ''.join(f'<article id="e-{esc(e["id"])}" class="evidence"><strong>{esc(e["id"])} · {esc(e["kind"])} — {esc(e["claim"])}</strong>'
+                 f'<p>{esc(e["locator"])}</p><small>Sources: {links(e["sources"], "s")}<br>Limits: {esc(e["limits"])}</small></article>' for e in data['evidence'])
+    source_rows = ''.join(f'<tr id="s-{esc(s["id"])}"><td>{esc(s["id"])}</td><td><code>{esc(s["path"])}</code></td>'
+                          f'<td>{esc(s["role"])}</td><td><code>{s["sha256"][:16]}…</code></td></tr>' for s in records)
+    issues = ''.join(f'<li>{esc(v)}</li>' for v in data['open_decisions'])
     issues = f'<section class="warning"><h2>Unresolved decisions — not approval-ready</h2><ul>{issues}</ul></section>' if issues else ''
+    uncertainty = sorted({item.get('uncertainty', '') for g in data['graphs'] for item in g['nodes'] + g['edges'] if item.get('uncertainty')})
+    if uncertainty:
+        issues += '<section class="warning"><h2>Evidence limits</h2><ul>' + ''.join(f'<li>{esc(v)}</li>' for v in uncertainty) + '</ul></section>'
+    comparison_rows = ''.join(f'<tr><td><strong>{esc(row["label"])}</strong><small>{links(row["requirements"], "r")}</small></td>'
+                              f'<td>{esc(row["current"])}<small>{links(row["evidence"], "e")}</small></td>'
+                              f'<td>{esc(row["proposed"])}<small>{links(row["tasks"], "t")}</small></td></tr>' for row in data['comparison'])
+    comparison = (f'<section class="comparison"><h2>What changes</h2><div class="table-scroll"><table><thead><tr>'
+                  '<th>Area</th><th>Current — recorded evidence</th><th>Proposed — not implemented</th></tr></thead>'
+                  f'<tbody>{comparison_rows}</tbody></table></div></section>') if comparison_rows else ''
     if state == 'awaiting-approval':
-        gate=f'<section class="approval"><h2>Confirm the understanding before code changes</h2><p>Does this match what you want built? Approve this plan in the agent conversation, or describe what needs changing.</p><p><strong>Plan revision: {esc(data["revision"])}</strong></p><p>Opening or interacting with this report does not approve anything. There is no approve button, agent connection or background implementation.</p></section>'
+        gate = (f'<section class="approval"><h2>Review before code.</h2><div><p>Does this match what you want built? '
+                f'Approve plan {esc(data["revision"])} in the agent conversation, or describe what needs changing.</p>'
+                '<p>Opening or interacting with this report does not approve anything. There is no approve button, '
+                'agent connection or background implementation.</p></div></section>')
     elif state == 'approved':
-        gate=f'<section class="approval"><h2>Recorded approval reference</h2><p>{esc(data["approval"]["record"])}</p><blockquote>{esc(data["approval"]["response"])}</blockquote><p>This renderer does not authenticate the approving user or grant permission. Reconcile with the actual task record.</p></section>'
+        gate = (f'<section class="approval"><h2>Recorded approval reference</h2><div><p>{esc(data["approval"]["record"])}</p>'
+                f'<blockquote>{esc(data["approval"]["response"])}</blockquote><p>This renderer does not authenticate the approving '
+                'user or grant permission. Reconcile with the actual task record.</p></div></section>')
     else:
-        gate='<section class="approval"><h2>No implementation permission</h2><p>This view alone authorizes no code changes. Resolve any decisions and use the workflow approval gate before substantive implementation.</p></section>'
+        gate = ('<section class="approval"><h2>No implementation permission</h2><div><p>This view alone authorizes no code changes. '
+                'Resolve any decisions and use the workflow approval gate before substantive implementation.</p></div></section>')
+    viewer_note = ('<p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p>')
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><main>
-<header><p class="eyebrow">WORKFLOW AXA · VISUAL REVIEW</p><h1>{esc(data['title'])}</h1><p class="status {state}">{esc(status)}</p><p class="meta">Plan {esc(data['revision'])} · {esc(data['snapshot']['repository'])} · {esc(data['snapshot'].get('branch','No branch recorded'))}</p><p class="muted">{esc(data['snapshot']['basis'])}</p></header>
-<section class="understanding"><p class="eyebrow">WHAT I UNDERSTOOD</p><p class="lead">{esc(data['understanding'])}</p></section>
-<div class="two-col"><section><h2>Requested outcome</h2><ul class="plain">{req or '<li>No implementation requirements in this inspection.</li>'}</ul></section><section><h2>What will not change</h2><ul>{bounds}</ul></section></div>
-{issues}<div class="legend"><span>Unchanged</span><span class="added">Added</span><span class="modified">Modified</span><span class="removed">Removed</span><small>Observed = inspected code, not necessarily runtime-tested. Dashed arrows = inference, unknown or proposed.</small></div>
-{''.join(graph_html(g) for g in data['graphs'])}
+<header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>Plan {esc(data['revision'])}</span></div>
+<h1>{esc(data['title'])}</h1><p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
+{issues}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}</div></section>
+{comparison}<section class="boundaries"><h2>What will not change</h2><ul>{bounds}</ul></section>
+<div class="two-col"><section><h2>Changes and cleanup</h2><ul class="plain">{task_summary or '<li>Inspection only; no implementation tasks.</li>'}</ul></section>
+<section><h2>How completion will be checked</h2><ul class="plain">{acceptance or '<li>No implementation acceptance criteria for this inspection.</li>'}</ul></section></div>
+{gate}<details class="appendix" id="technical-details"><summary>Technical evidence and task details</summary><div class="appendix-body">
+<section><h2>Requested outcome</h2><ul class="plain">{req or '<li>No implementation requirements in this inspection.</li>'}</ul></section>
 <section><h2>Changes and mapped tasks</h2><div class="table-scroll"><table><thead><tr><th>Task</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody>{task_rows or '<tr><td colspan="4">Inspection only; no implementation tasks.</td></tr>'}</tbody></table></div></section>
-<section><h2>How completion will be checked</h2><ul class="plain">{acceptance or '<li>No implementation acceptance criteria for this inspection.</li>'}</ul></section>
-{gate}<section><h2>Evidence and limits</h2>{ev}</section>
-<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>Generated {esc(manifest['generated_utc'])}. Hashes cover only these supplied files, including their current local contents. They do not prove complete code coverage or correctness. This is a saved view, not a live repository map.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table></div></details>
-<footer>Local HTML + SVG · no external assets, uploads or approval actions · source JSON remains editable · verify against authoritative task records</footer>
+<section><h2>Evidence and limits</h2>{ev}</section>{''.join(graph_records(g) for g in data['graphs'])}
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>{esc(data['snapshot']['repository'])} · {esc(data['snapshot'].get('branch', 'No branch recorded'))}</p>
+<p>{esc(data['snapshot']['basis'])}</p><p>Generated {esc(manifest['generated_utc'])}. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table></div></details>
+</div></details>{viewer_note}<footer>Local HTML + SVG · no external assets, uploads or approval actions · edit source JSON and render a new revision</footer>
 </main><script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
 
 

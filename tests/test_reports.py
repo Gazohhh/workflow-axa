@@ -44,13 +44,13 @@ class ReportTests(unittest.TestCase):
     def test_full_example_validates_and_renders(self):
         content = self.render()
         self.assertIn('AWAITING USER APPROVAL',content)
-        self.assertEqual(content.count('class="map"'),2)
+        self.assertEqual(content.count('class="map"'),3)
         self.assertIn('implementation not authorized',content)
         self.assertNotIn('<button type="submit"',content)
         self.assertIn('no approve button',content)
 
     def test_current_map_needs_no_implementation_scaffold(self):
-        self.data.update(mode='current',state='inspection',graphs=[self.data['graphs'][0]],tasks=[],acceptance=[],requirements=[])
+        self.data.update(mode='current',state='inspection',graphs=[self.data['graphs'][0]],tasks=[],acceptance=[],requirements=[],comparison=[],default_view='current')
         self.assertIn('inspection only',self.render())
 
     def test_proposed_design_can_remain_draft(self):
@@ -142,7 +142,7 @@ class ReportTests(unittest.TestCase):
             self.render()
 
     def test_overlapping_nodes_are_rejected(self):
-        self.data['graphs'][0]['nodes'][1]['col']=0
+        self.data['graphs'][0]['nodes'][1]['x']=48
         with self.assertRaisesRegex(ValueError,'Overlapping'):
             self.render()
 

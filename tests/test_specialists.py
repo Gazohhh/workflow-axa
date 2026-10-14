@@ -36,10 +36,10 @@ def make_skill(root: Path, name: str, *, disabled: bool | None = None) -> Path:
 
 class SpecialistTests(unittest.TestCase):
     def test_catalogue_has_complete_collection_and_expected_routes(self):
-        self.assertEqual(len(CATALOGUE['skills']), 27)
+        self.assertEqual(len(CATALOGUE['skills']), 28)
         routes = {n for n, row in CATALOGUE['skills'].items() if row['invocation'] == 'model'}
         self.assertEqual(routes, {'grilling', 'research', 'diagnosing-bugs', 'tdd', 'codebase-design',
-                                 'writing-for-agents', 'code-review', 'domain-modeling', 'prototype', 'pr', 'wizard'})
+                                 'writing-for-agents', 'code-review', 'domain-modeling', 'prototype', 'pr', 'wizard', 'diagram-design'})
         self.assertEqual(CATALOGUE['skills']['grill-me']['invocation'], 'manual')
         self.assertIsNone(CATALOGUE['source']['immutable_commit'])
 
@@ -226,6 +226,39 @@ class SpecialistTests(unittest.TestCase):
             result = subprocess.run(command, capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout)['runtime_status'], 'NOT_CHECKED')
+
+    def test_diagram_design_provider_is_not_matt_collection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            make_skill(root, 'diagram-design')
+            result = checker.check([root], CATALOGUE, ['diagram-design'])
+            self.assertEqual(result['skills']['diagram-design']['source_repository'], 'https://github.com/cathrynlavery/diagram-design')
+            self.assertEqual(result['runtime_status'], 'NOT_CHECKED')
+
+    def test_design_missing_does_not_remove_grilling(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            make_skill(root, 'grilling')
+            result = checker.check([root], CATALOGUE, ['diagram-design', 'grilling'])
+            self.assertEqual(result['skills']['diagram-design']['status'], 'MISSING')
+            self.assertEqual(result['skills']['grilling']['status'], 'ON_DISK')
+
+    def test_design_support_reference_is_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = make_skill(root, 'diagram-design')
+            (folder/'references/type-flowchart.md').unlink()
+            result = checker.check([root], CATALOGUE, ['diagram-design'])
+            self.assertEqual(result['skills']['diagram-design']['status'], 'INCOMPLETE')
+
+    def test_design_provider_change_in_baseline_requires_review(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            make_skill(root, 'diagram-design')
+            baseline = checker.check([root], CATALOGUE, ['diagram-design'])
+            baseline['skills']['diagram-design']['source_repository'] = 'https://example.invalid/not-the-provider'
+            result = checker.check([root], CATALOGUE, ['diagram-design'], baseline)
+            self.assertEqual(result['skills']['diagram-design']['status'], 'CHANGED')
 
 
 if __name__ == '__main__':

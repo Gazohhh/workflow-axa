@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0 — flowchart-first editorial reviews (2026-10-14)
+
+- Replace the fixed-height generic component grid with explicit, typed flowchart geometry and the approved editorial style. The feature flow opens first; current comparison, delivery dependencies and structure are separate where useful.
+- Add explicit Cathryn Lavery diagram-design routing, provider-aware inventory, dependency/setup instructions and the preapproved offline/system-font design brief. All 27 Matt catalogue entries and grilling are retained.
+- Introduce schema 2 for explicit nodes/routes/views and aligned change summaries. Reject overlaps, unsafe connectors/masks, repeated ports and unlabelled decision branches. Preserve existing HTML source-manifest checks; old JSON regeneration requires documented migration.
+- Native view/zoom controls and scrolling work without JavaScript; optional script enhances evidence navigation and mouse drag. Source records, requirements, exclusions, acceptance, visible uncertainties and approval authority remain intact.
+- Replace old renderer/assets/examples rather than keeping a silent generic-grid fallback. Add regression/browser scenarios and documented validation limits. No upstream installation, application work, Git publication or live-agent pass is implied.
+
+
 Historical entries describe previous behavior; current instructions live in skills/workflow. Package version labels do not imply a published Git tag or successful live host evaluation.
 
 ## 2.1.0 — 2026-10-13
