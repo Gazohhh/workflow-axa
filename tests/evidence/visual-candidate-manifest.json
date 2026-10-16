@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "kind": "visual-capture",
+  "cases": [
+    {
+      "name": "desktop-proposed",
+      "file": "desktop-proposed.png",
+      "width": 1280,
+      "height": 988,
+      "sha256": "8af38d5246e596ee47bbb8c56b814ecf8e217badb749c137d29f904636316d7f",
+      "viewport": [
+        1440,
+        1100
+      ]
+    },
+    {
+      "name": "desktop-current",
+      "file": "desktop-current.png",
+      "width": 1280,
+      "height": 892,
+      "sha256": "636094846829df95ddc09a7796a228254859110823c4ab5f5c937f63204f5902",
+      "viewport": [
+        1440,
+        1100
+      ]
+    },
+    {
+      "name": "desktop-build",
+      "file": "desktop-build.png",
+      "width": 1280,
+      "height": 1100,
+      "sha256": "1d1840d350a399cc9622cb5ac24838d17adbe76a7008800ba559cad71e51f199",
+      "viewport": [
+        1440,
+        1100
+      ]
+    },
+    {
+      "name": "mobile-proposed",
+      "file": "mobile-proposed.png",
+      "width": 350,
+      "height": 1149,
+      "sha256": "0e3acf93e518089e96da2afa3ec0b6d800498d25291966602d1a145196ab2c8b",
+      "viewport": [
+        390,
+        844
+      ]
+    }
+  ],
+  "provenance": {
+    "package_version": "2.3.0",
+    "renderer_sha256": "8d980f908198617e641fa4b5cb3f8be9d0f76390aea6bbf1a0d6901d0f7ff994",
+    "input_sha256": "6190635b735ba5da5eff380ed7ccc691a8e9ebe24e6abd6bda247b5bc84675eb",
+    "reference_authority": "Capture only. Generation does not approve or replace a reference."
+  },
+  "environment": {
+    "harness_version": 1,
+    "system": "Linux",
+    "machine": "x86_64",
+    "browser": "144.0.7559.96",
+    "playwright": "1.57.0",
+    "device_scale_factor": 1,
+    "locale": "en-US",
+    "timezone": "UTC",
+    "headless": true,
+    "color_scheme": "light",
+    "reduced_motion": "reduce",
+    "font_raster_sha256": "dd17f7fae7c9af2d6bc572b60d09773677cb27c4141b118c2be68872f74c3b26"
+  },
+  "direct_file_navigation": false,
+  "external_requests": [],
+  "page_errors": []
+}

@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "baseline": "tests/visual-baselines/2.2.1",
+  "candidate": "local capture recorded separately",
+  "checks": [
+    {
+      "case": "desktop-proposed",
+      "expected_size": [
+        1280,
+        988
+      ],
+      "actual_size": [
+        1280,
+        988
+      ],
+      "status": "PASS",
+      "changed_pixels": 0
+    },
+    {
+      "case": "desktop-current",
+      "expected_size": [
+        1280,
+        892
+      ],
+      "actual_size": [
+        1280,
+        892
+      ],
+      "status": "PASS",
+      "changed_pixels": 0
+    },
+    {
+      "case": "desktop-build",
+      "expected_size": [
+        1280,
+        1100
+      ],
+      "actual_size": [
+        1280,
+        1100
+      ],
+      "status": "PASS",
+      "changed_pixels": 0
+    },
+    {
+      "case": "mobile-proposed",
+      "expected_size": [
+        350,
+        1149
+      ],
+      "actual_size": [
+        350,
+        1149
+      ],
+      "status": "PASS",
+      "changed_pixels": 0
+    }
+  ],
+  "limits": [
+    "Image equality checks appearance of these fixtures only, not user comprehension, accessibility or plan correctness.",
+    "Environment fingerprints reduce accidental mismatch; they are not proof of identical hardware or all rendering settings."
+  ]
+}

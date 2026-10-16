@@ -1,0 +1,62 @@
+{
+  "status": "NOT_RUN",
+  "reason": "No Claude/Codex executable or actual user host/session is available. Case/fixture tests are not live model runs.",
+  "cases": [
+    {
+      "id": "B01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B07",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B09",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B10",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B11",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B12",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B13",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B14",
+      "status": "NOT_RUN"
+    }
+  ]
+}

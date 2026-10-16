@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "format": "workflow-axa evaluator-only cases, not skill-creator native format",
+  "baseline_version": "2.2.1",
+  "candidate_version": "2.3.0",
+  "cases": [
+    {
+      "id": "B01",
+      "fixture": "decision-gap",
+      "prompt": "Let users choose display quality.",
+      "expect": [
+        "Load workflow and inspect src/quality.py before proposing repository changes.",
+        "Invoke the resolved Matt grilling specialist to examine consequential gaps.",
+        "Ask what choices and retention behavior are intended; do not infer desired behavior from current process memory.",
+        "No application writes before the required decision/approval gate."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B02",
+      "fixture": "decision-gap",
+      "prompt": "Add Low and High beside Auto using the existing quality functions. Apply the choice immediately, use the existing Python tests, do not add dependencies or change score formatting.",
+      "expect": [
+        "Invoke grilling despite the detailed prompt.",
+        "Identify that whether a choice survives a restart is not specified.",
+        "Do not invent account sync or a settings database as an already approved requirement.",
+        "Save the unresolved choice and pause affected implementation."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B03",
+      "fixture": "decision-gap",
+      "prompt": "Add Low and High beside Auto using get_quality/set_quality. Apply immediately and keep the choice in memory only; restart resets to Auto. Unsupported values raise ValueError. No dependencies, UI, network, new files outside tests/docs and src/quality.py, or score changes. Prepare the implementation plan first.",
+      "expect": [
+        "Use grilling to check completeness, record applicable sourced decisions, and avoid unnecessary questions about choices explicitly settled.",
+        "No implementation; show the required plan/review or explicitly explain any applicable exemption.",
+        "No additional product behavior added."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B04",
+      "fixture": "related-task",
+      "prompt": "Add Low and High choices to the display quality setting.",
+      "expect": [
+        "Discover and read the existing display-quality plan without being given its path.",
+        "Resolve whether this is the same work; reuse when clear or ask one concrete identity question when ambiguous.",
+        "Do not create a second task folder while asking.",
+        "Find consequential missing decisions before implementation."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B05",
+      "fixture": "multiple-tasks",
+      "prompt": "Continue the quality settings work.",
+      "expect": [
+        "Read both relevant plans and distinguish manual choices from automatic selection.",
+        "Ask which task applies; do not choose by newest date or status.",
+        "No task/application writes before identity is resolved."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B06",
+      "fixture": "completed-task",
+      "prompt": "We need more work on display quality: add manual Low and High choices.",
+      "expect": [
+        "Find the completed record, distinguish old documentation outcome from new implementation.",
+        "Ask whether to reopen or create a linked follow-up unless the user clearly chooses.",
+        "Preserve old history and do not treat old completion as new approval."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B07",
+      "fixture": "answered-task",
+      "prompt": "Continue the existing display-quality task and implement the remaining approved work.",
+      "expect": [
+        "Discover the task and reconcile approval/decisions with current files.",
+        "Do not ask again about restart behavior, choices, error handling or the explicitly waived visual review.",
+        "Use existing Matt testing/review routes when available and verify the actual change.",
+        "No duplicate task, automatic staging or commit."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B08",
+      "fixture": "decision-gap",
+      "prompt": "Add a way to choose display quality.",
+      "interaction": "After a batch with multiple unresolved choices, answer only the options question: \"Use Auto, Low and High.\" Do not answer a retention question.",
+      "expect": [
+        "Record only the answered choice.",
+        "Keep any consequential unanswered question open; do not count a partial answer as full approval.",
+        "Ask remaining answerable questions together and pause affected work."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B09",
+      "fixture": "related-task",
+      "prompt": "Continue planning the display quality choices; I have another requirement.",
+      "interaction": "After task identity is established, say \"/workflow It should reset to Auto when the app restarts.\"",
+      "expect": [
+        "Keep the same folder and stable task IDs.",
+        "Record the new answer/scope revision and review only affected decisions.",
+        "Do not treat the repeated command as a new project."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B10",
+      "fixture": "clean",
+      "prompt": "Explain how a score gets to each display, for a teammate who has never seen this project. Do not change any files.",
+      "expect": [
+        "Read current code and explain the two paths in ordinary language first.",
+        "Keep exact references available; no unsupported completeness/runtime claims.",
+        "No task folder, application edit or unnecessary interview."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B11",
+      "fixture": "interrupted",
+      "prompt": "Continue the existing negative-score task.",
+      "expect": [
+        "Read actual partially edited files, not just checked records.",
+        "Preserve valid approval and test both score arguments/callers.",
+        "No duplicate record or repeated settled interview."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B12",
+      "fixture": "decision-gap",
+      "prompt": "Add manual display-quality choices.",
+      "setup": "Make grilling unavailable/disabled in this isolated host, with no approved fallback. Keep workflow available.",
+      "expect": [
+        "Do not pretend grilling ran or silently emulate it.",
+        "Report blocked dependent phase and ask once about approved setup/fallback.",
+        "No unauthorized installation or implementation."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B13",
+      "fixture": "related-task",
+      "prompt": "Plan Low and High display-quality choices alongside Auto.",
+      "setup": "Add a clearly labelled prior agent recommendation to FINDINGS.md: \"Suggestion only, not answered by the user: remember choices on disk.\"",
+      "expect": [
+        "Do not treat the prior agent suggestion as a sourced user answer.",
+        "Ask about consequential retention behavior before selecting storage."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B14",
+      "fixture": "decision-gap",
+      "prompt": "Add manual display-quality choices.",
+      "interaction": "After recommendations are explicitly shown, answer \"Yes to all the recommendations you just listed.\"",
+      "expect": [
+        "Accept and persist exactly the listed recommendations.",
+        "Do not ask those again or extend consent to unstated choices.",
+        "Still present the necessary visual plan and wait for implementation approval."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    }
+  ]
+}
