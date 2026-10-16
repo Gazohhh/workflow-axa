@@ -12,7 +12,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCENARIOS = ("clean", "approved", "interrupted", "mixed", "owned", "secret", "baseline-failure")
+SCENARIOS = ("clean", "approved", "interrupted", "mixed", "owned", "secret", "baseline-failure",
+             "decision-gap", "related-task", "multiple-tasks", "completed-task", "answered-task")
 TASK = Path("docs/plans/2026-10-09-negative-score")
 
 
@@ -92,6 +93,61 @@ Pending. Inspect current files rather than treating this record as proof of impl
 """, encoding="utf-8")
 
 
+
+def write_quality_context(repo: Path, scenario: str) -> None:
+    """Synthetic input only; evaluator prompts and expected decisions live outside the repo."""
+    (repo / "src/quality.py").write_text(
+        '"""Current display quality, held in memory for this process."""\n'
+        '_quality = "auto"\n\n'
+        'def get_quality() -> str:\n    return _quality\n\n'
+        'def set_quality(value: str) -> None:\n    global _quality\n'
+        '    if value != "auto":\n        raise ValueError("only auto is supported")\n'
+        '    _quality = value\n', encoding="utf-8")
+    with (repo / "docs/architecture.md").open("a", encoding="utf-8") as stream:
+        stream.write("\nDisplay quality currently supports only auto. src/quality.py owns its value; "
+                     "it is held in this process. No saved preferences or account service exist.\n")
+    if scenario == "decision-gap":
+        return
+    task = repo / "docs/plans/2026-10-01-display-quality"
+    task.mkdir(parents=True)
+    complete = scenario == "completed-task"
+    approved = scenario == "answered-task"
+    state = "done" if complete else "paused"
+    scope = "Document the current automatic quality setting." if complete else "Add local low/high quality choices alongside auto."
+    (task / "PLAN.md").write_text(f"""# Display quality choices
+
+## Current checkpoint
+- Status: {state}
+- Owner: fixture-previous-session; ownership: handed-off.
+- Scope: {scope}
+- Approved revision: {'R1' if approved or complete else 'not approved'}.
+- Next safe action: inspect current code and the request; preserve this record's history.
+
+## Goal
+{scope}
+No new dependency, account service, sync or change to score formatting.
+
+## Approval
+{'SYNTHETIC TEST INPUT: user approved R1 and explicitly waived a new visual review for this bounded CLI-only fixture. Choices apply immediately, stay in memory only, reset to auto when the process restarts, and reject unsupported values with ValueError. Public set_quality/get_quality are the agreed test interface. No additional interview or approval is needed for unchanged scope.' if approved else 'No approval of new implementation. The old completed documentation, when present, does not authorize a new feature.'}
+
+## Outcome
+{'Documentation of the existing auto-only behavior completed. That result remains historical.' if complete else 'Pending; no low/high implementation is claimed.'}
+""", encoding="utf-8")
+    (task / "TODO.md").write_text("# TODO\n\n" +
+        ("- [x] T1 — Describe the current auto-only behavior; see docs/architecture.md.\n" if complete else
+         "- [ ] T1 — Settle the behavior and implement the agreed choices.\n- [ ] T2 — Verify the public interface and update the existing docs.\n"), encoding="utf-8")
+    (task / "FINDINGS.md").write_text("# Findings\n\nCurrent state: src/quality.py only accepts auto and keeps it in memory. "
+        "This observation alone does not decide future behavior. No low/high tests have run.\n", encoding="utf-8")
+    if approved:
+        (task / "DECISIONS.md").write_text("# Decisions\n\nD1 — Synthetic user-approved R1: auto/low/high, immediate, process memory only; reset on restart; ValueError for unsupported values. No cross-device or disk persistence.\n", encoding="utf-8")
+    if scenario == "multiple-tasks":
+        second = repo / "docs/plans/2026-10-03-automatic-quality"
+        second.mkdir(parents=True)
+        (second / "PLAN.md").write_text("# Automatic quality selection\n\nStatus: paused; owner: fixture-previous-session; ownership: handed-off.\n"
+            "Goal: research automatic quality selection using observed frame times, not manual low/high buttons.\n"
+            "Approval: research only. No behavior changes approved.\nNext safe action: establish which quality task the user wants to continue.\n", encoding="utf-8")
+
+
 def create_fixture(destination: Path, scenario: str) -> Path:
     if scenario not in SCENARIOS:
         raise ValueError(f"Unknown scenario: {scenario}")
@@ -110,6 +166,8 @@ def create_fixture(destination: Path, scenario: str) -> Path:
     destination.mkdir()  # Exclusive creation avoids overwriting a destination that appeared meanwhile.
     shutil.copytree(ROOT / "tests/fixtures/project", destination, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    if scenario in {"decision-gap", "related-task", "multiple-tasks", "completed-task", "answered-task"}:
+        write_quality_context(destination, scenario)
     git(destination, "init", "--quiet", "--template=")
     git(destination, "add", "--all")
     git(destination, "commit", "--quiet", "-m", "Synthetic fixture baseline")

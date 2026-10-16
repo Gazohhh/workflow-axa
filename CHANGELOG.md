@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.0 — 2026-10-16
+
+- Proactive grilling for new substantive intent and material scope changes, with sourced decision coverage, partial-answer protection and no repeated interview for unchanged approved work.
+- Resolve current/named/related/completed tasks before folder creation; reuse stable records through revisions and ask on ambiguous identity/ownership.
+- Plain-language-first questions, plans, HTML and reviews; concrete code/document/report quality examples and cold-reader checks.
+- Read-only controlled screenshot capture/comparison and regression cases; preserve the approved local flowchart assets and renderer behavior.
+- Evaluator-only behavioral cases and safe task-discovery fixtures for comparing real Claude/Codex sessions against 2.2.1. Live runs are not claimed.
+- Optional skill-creator/webapp-testing compatibility notes, not new dependencies; all Matt catalogue entries retained.
+
+
 
 ## 2.2.1 — local flowchart dependency correction
 

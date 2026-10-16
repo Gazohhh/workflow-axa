@@ -2,6 +2,8 @@
 
 Load only when a PDF is requested. This adds document work to the core workflow; it is not a second workflow or a developer handoff exported unchanged. Keep agent records separate from the reader's document. Include the PDF, editable source and review work in the approved scope and TODO, even when the associated code edit is small.
 
+Use the shared [writing policy](WRITING.md); the PDF-specific evidence and rendering requirements below add to it rather than replacing it.
+
 ## 1. Establish the reader and reuse approved language
 
 Create `PDF-BRIEF.md` inside the task folder. Record the audience, purpose, document language, scope, source material, and a map for product concepts that need careful wording:

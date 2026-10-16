@@ -9,7 +9,7 @@ python -X utf8 tools/validate.py
 python -X utf8 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-Python 3.10+ and Git are enough; no package installation, API account or network is needed. The first command checks this repository's deliberately small metadata format, registration, relative links and core word budget. It is not a general YAML/schema validator. The unit tests check those diagnostics, fixture isolation, all fixture variants, clean/failing baselines, synthetic mixed staging, and the read-only specialist checker. Checker tests cover complete/missing/duplicate/policy-mismatched skills, support files, baseline changes, and honest runtime-status reporting.
+Python 3.10+ and Git are enough for the original/core tests; optional image-comparison tests skip when Pillow is unavailable; no package installation, API account or network is needed. The first command checks this repository's deliberately small metadata format, registration, relative links and core word budget. It is not a general YAML/schema validator. The unit tests check those diagnostics, fixture isolation, all fixture variants, clean/failing baselines, synthetic mixed staging, and the read-only specialist checker. Checker tests cover complete/missing/duplicate/policy-mismatched skills, support files, baseline changes, and honest runtime-status reporting.
 
 These are **package/tooling tests, not agent behavioral tests**. They cannot prove documentation-before-code ordering, question quality, approval compliance, code quality, or recovery. Those require actual host runs and inspection of their traces/files. See [SCENARIOS.md](SCENARIOS.md).
 
@@ -19,16 +19,16 @@ These are **package/tooling tests, not agent behavioral tests**. They cannot pro
 python -X utf8 tools/create_fixture.py --output "C:\Dev\workflow-case-01" --scenario clean
 ```
 
-Use a fresh destination for each run. Available variants: `clean`, `approved`, `interrupted`, `mixed`, `owned`, `secret`, `baseline-failure`. The generator creates a local baseline commit inside the new synthetic repository and no remote; it refuses existing paths, paths inside this package and paths beneath another `.git` directory/file. It does not reset or clean an existing project. A failed creation may leave a partial new fixture; inspect it before manually removing it.
+Use a fresh destination for each run. Available variants: `clean`, `approved`, `interrupted`, `mixed`, `owned`, `secret`, `baseline-failure`, `decision-gap`, `related-task`, `multiple-tasks`, `completed-task`, `answered-task`. The generator creates a local baseline commit inside the new synthetic repository and no remote; it refuses existing paths, paths inside this package and paths beneath another `.git` directory/file. It does not reset or clean an existing project. A failed creation may leave a partial new fixture; inspect it before manually removing it.
 
 `.fixture-state.json` records the starting commit, staged diff, unstaged diff and status. It is local evaluation metadata, not the agent's handoff record. Preserve it to compare later ownership/staging effects. The secret scenario contains an unmistakably fake credential, never a real one. The intentionally partial/failing scenarios are not expected to have complete behavior or green tests.
 
 ## Run the current skill and candidate fairly
 
-Keep the original uploaded package as the baseline; exclude its embedded `.git` when preparing a test copy. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
+For this release use 2.2.1 as the comparison baseline, not the original first workflow. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
-constant. For 2.2.1, complete SETUP.md and confirm the relevant specialists are enabled.
+constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
 Dependency-failure scenarios deliberately vary only the named capability. Inventory
 fixtures in test_specialists.py are synthetic; they are not installed upstream skills. Run the same staged user replies. Save observed paths/commands, traces, final files and actual results in a private location outside the package or `.artifacts/`. Sanitize before sharing. Record model, host version, scenario, package version/hash, repetition, question rounds, authority violations, record ordering, recovery outcome, cleanup, and evidence freshness. Token/cost/runtime measurements are observations, not guessed scores.
 
@@ -58,10 +58,10 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.2.1; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.3.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
-## 2.2.1 visual and activation checks
+## Retained visual and activation checks
 
 The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
 
@@ -89,3 +89,10 @@ not actual upstream loading. For live evaluation leave external diagram skills u
 reads its bundled flowchart guide, uses the existing approved style, preserves grilling and
 stops at approval. Do not grade a card layout or generic research/plan/code chart as a
 passing feature flow. See E32–E37 in SCENARIOS.md.
+
+
+## New in 2.3.0
+
+[Live-host decision/task-reuse cases](behavioral/README.md) cover overlooked decisions, complete requests, partial answers, recommendation consent, related/ambiguous/completed task discovery, no-file explanations, interrupted work and missing grilling. Their JSON is evaluator-only; do not paste expected outcomes into agent prompts. No live model run is asserted by validating that JSON or constructing fixtures.
+
+[Visual regression instructions](VISUAL-REGRESSION.md) describe read-only captures and exact screenshot comparisons. The original browser smoke suite remains for geometry, semantics represented by fixtures and interaction checks. Screenshot references preserve prior styling; they are not proof of pixel perfection on other devices. No new dependency is installed by either tool.

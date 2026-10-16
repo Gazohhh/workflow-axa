@@ -7,13 +7,15 @@ description: "Create an evidence-linked local flowchart or codebase map when the
 
 Create offline HTML/SVG with an actual flowchart as the primary view. Do not replace it with summary cards, UI mockups or generic research/plan/build boxes. A local report is not an editable Miro board. This skill can be invoked independently; never call workflow recursively.
 
+Write for a reader new to the project: explain the requested behavior and its consequence before implementation terminology. Keep exact references accessible underneath. Show essential risks, exclusions and unresolved choices openly. Plain language must not erase technical precision.
+
 ## 1. Establish the view and current evidence
 
 Read applicable project rules. Resolve the repository/worktree and relevant local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
 
 Choose **current** for “show how it works”, **proposed** for a supplied/requested future design, **compare** for an implementation review. In compare mode the proposed feature flow opens first; current behavior and an aligned change comparison remain available. For greenfield work show the verified integration point or absence, not a fictional old feature.
 
-Reuse existing requirements, answers, PLAN, TODO, FINDINGS and decisions. No new refactor candidates or product features merely to enrich the map. Standalone inspection needs no implementation scaffold.
+Identify and reuse the current/named task and its requirements, answers, PLAN, TODO, FINDINGS and decisions. If a likely existing record is ambiguous, ask before creating another artifact location; a new command is not a new task. No new refactor candidates or product features merely to enrich the map. Standalone inspection needs no implementation scaffold.
 
 ## 2. Apply the local flowchart design
 
@@ -30,6 +32,8 @@ Read [REPORT.md](REPORT.md). Derive schema-2 JSON from authoritative task record
 Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the explicit local design; it does not understand code or authenticate approval. No application edits, tests written, migrations, dependency installation, uploads or publication. Explicit no-file instructions take precedence.
 
 Check source freshness and semantic fidelity. Inspect actual desktop and narrow-window output when a browser is available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. Disclose unavailable checks instead of claiming them.
+
+Before delivery, check that someone without the prior conversation can explain the change, exclusions and decision. For renderer/style edits, compare stable screenshots with the reviewed reference in a controlled environment; never replace a failed baseline automatically.
 
 Request local opening with `--open` when supported and give the absolute artifact path. Report the actual accepted/failed/unverified result; launch acceptance is not proof of display. A headless host may deliver the file. Do not install or upload to work around an opener.
 

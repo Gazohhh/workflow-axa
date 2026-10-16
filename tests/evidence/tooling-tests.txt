@@ -1,3 +1,15 @@
+test_ambiguous_tasks_really_differ (test_behavioral_cases.EvaluationInputTests.test_ambiguous_tasks_really_differ) ... ok
+test_answered_task_has_actual_synthetic_answers (test_behavioral_cases.EvaluationInputTests.test_answered_task_has_actual_synthetic_answers) ... ok
+test_behavior_results_not_mislabelled_as_tool_passes (test_behavioral_cases.EvaluationInputTests.test_behavior_results_not_mislabelled_as_tool_passes) ... ok
+test_cases_are_unique_supported_and_unrun (test_behavioral_cases.EvaluationInputTests.test_cases_are_unique_supported_and_unrun) ... ok
+test_completed_task_preserves_historical_outcome (test_behavioral_cases.EvaluationInputTests.test_completed_task_preserves_historical_outcome) ... ok
+test_related_task_context_is_discoverable_without_oracle (test_behavioral_cases.EvaluationInputTests.test_related_task_context_is_discoverable_without_oracle) ... ok
+test_shipped_visual_reference_integrity (test_behavioral_cases.EvaluationInputTests.test_shipped_visual_reference_integrity) ... ok
+test_approval_and_partial_answers_are_separate (test_behavioral_cases.InstructionRegressionTests.test_approval_and_partial_answers_are_separate) ... ok
+test_existing_task_match_not_restricted_to_exact_scope (test_behavioral_cases.InstructionRegressionTests.test_existing_task_match_not_restricted_to_exact_scope) ... ok
+test_optional_helpers_not_required_inventory (test_behavioral_cases.InstructionRegressionTests.test_optional_helpers_not_required_inventory) ... ok
+test_plain_language_is_in_both_entrypoints (test_behavioral_cases.InstructionRegressionTests.test_plain_language_is_in_both_entrypoints) ... ok
+test_proactive_trigger_and_no_quota_are_explicit (test_behavioral_cases.InstructionRegressionTests.test_proactive_trigger_and_no_quota_are_explicit) ... ok
 test_all_scenarios_have_local_baselines_and_no_remotes (test_fixtures.FixtureTests.test_all_scenarios_have_local_baselines_and_no_remotes) ... ok
 test_baseline_failure_is_explicit (test_fixtures.FixtureTests.test_baseline_failure_is_explicit) ... ok
 test_clean_baseline_tests_pass (test_fixtures.FixtureTests.test_clean_baseline_tests_pass) ... ok
@@ -111,8 +123,26 @@ test_same_content_can_move_between_accounts (test_specialists.SpecialistTests.te
 test_unknown_name_and_missing_root_are_errors (test_specialists.SpecialistTests.test_unknown_name_and_missing_root_are_errors) ... ok
 test_wrapper_is_not_an_alias_for_missing_grilling (test_specialists.SpecialistTests.test_wrapper_is_not_an_alias_for_missing_grilling) ... ok
 test_wrong_baseline_source_is_refused (test_specialists.SpecialistTests.test_wrong_baseline_source_is_refused) ... ok
+test_case_set_mismatch_is_not_verified (test_visual_regression.VisualRegressionTests.test_case_set_mismatch_is_not_verified) ... ok
+test_changed_pixels_fail_and_emit_difference (test_visual_regression.VisualRegressionTests.test_changed_pixels_fail_and_emit_difference) ... /mnt/data/workflow-update-2.3.0/workflow-axa/tools/visual_regression.py:112: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  changed = sum(1 for pixel in difference.getdata() if pixel != (0, 0, 0))
+ok
+test_duplicate_case_is_rejected (test_visual_regression.VisualRegressionTests.test_duplicate_case_is_rejected) ... ok
+test_environment_mismatch_is_not_verified (test_visual_regression.VisualRegressionTests.test_environment_mismatch_is_not_verified) ... ok
+test_existing_output_refused (test_visual_regression.VisualRegressionTests.test_existing_output_refused) ... ok
+test_false_dimensions_are_rejected (test_visual_regression.VisualRegressionTests.test_false_dimensions_are_rejected) ... ok
+test_identical_pixels_pass (test_visual_regression.VisualRegressionTests.test_identical_pixels_pass) ... ok
+test_inputs_never_rewritten (test_visual_regression.VisualRegressionTests.test_inputs_never_rewritten) ... ok
+test_missing_baseline_does_not_create_one (test_visual_regression.VisualRegressionTests.test_missing_baseline_does_not_create_one) ... ok
+test_missing_image_refused (test_visual_regression.VisualRegressionTests.test_missing_image_refused) ... ok
+test_modified_image_hash_refused (test_visual_regression.VisualRegressionTests.test_modified_image_hash_refused) ... ok
+test_nonobject_manifest_rejected (test_visual_regression.VisualRegressionTests.test_nonobject_manifest_rejected) ... ok
+test_one_pixel_change_fails (test_visual_regression.VisualRegressionTests.test_one_pixel_change_fails) ... ok
+test_output_inside_input_refused (test_visual_regression.VisualRegressionTests.test_output_inside_input_refused) ... ok
+test_size_change_fails (test_visual_regression.VisualRegressionTests.test_size_change_fails) ... ok
+test_unsafe_manifest_path_refused (test_visual_regression.VisualRegressionTests.test_unsafe_manifest_path_refused) ... ok
 
 ----------------------------------------------------------------------
-Ran 113 tests in 9.435s
+Ran 141 tests in 9.957s
 
 OK

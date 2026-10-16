@@ -1,5 +1,16 @@
 # Design decisions and sources
 
+## 2.3.0 — decisions, task identity and reader clarity
+
+The approved update strengthens the existing workflow rather than adding another orchestrator. New substantive goals and material revisions invoke Matt's grilling to discover missing decisions; unchanged approved resumes reuse sourced answers. Task identity is resolved before folder creation, with explicit cases for continuations, extensions, ambiguous candidates and completed work. These rules are auditable instructions, not hard enforcement or live-model proof.
+
+Plain-language-first communication now applies to both skills and all outputs. The approved local flowchart assets/geometry remain unchanged. New maintenance tooling compares stable screenshots without rewriting references. Optional skill-creator and webapp-testing contracts do not alter the required Matt inventory or authorize installations.
+
+Primary sources reviewed 16 October 2026: [Matt grilling](https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md), [writing-for-agents](https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/writing-for-agents/SKILL.md), [Claude skills](https://code.claude.com/docs/en/skills), [Agent Skills evaluation](https://agentskills.io/skill-creation/evaluating-skills), [Playwright visual comparisons](https://playwright.dev/docs/test-snapshots), [page readiness](https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state), and Anthropic's [skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) / [webapp-testing](https://github.com/anthropics/skills/tree/main/skills/webapp-testing). These were source reviews, not installed-skill invocation. API and host behavior should be verified against the actual team installation.
+
+[Validation](../VALIDATION.md) and [the live-host protocol](../tests/behavioral/README.md) distinguish executed checks from authored scenarios. The existing workflow-v2 maintenance record contains R2 approval and current findings; no new per-invocation task folder was added.
+
+
 ## 2.1.0 — grounded understanding and visual approval
 
 The user's approved change adds current-code evidence before proposals and a visible check of understanding after PLAN/TODO preparation, before implementation. Structured decisions stay with grilling; the final review and approval are separate. One workflow entry point invokes a separately useful codebase-map skill. Plain requests need a verified host-loaded routing rule, not merely a plugin installed somewhere on disk.

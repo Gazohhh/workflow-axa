@@ -70,3 +70,10 @@ Historical design references, reviewed in the 2.2.0 work on 2026-10-14:
 These are attribution only, not required reading during a task or an instruction to
 follow upstream changes. Review changes to this local contract through the team's
 normal versioned workflow.
+
+
+## Explain and preserve the approved view
+
+Use everyday action/result labels and explain necessary technical terms in visible context. Do not assume the reader knows the project, but retain precise evidence and original requirement terms in the technical section. A reader should be able to describe the proposed behavior and approval decision without the prior conversation. Report an unresolved meaning rather than guessing it to simplify the diagram.
+
+For renderer/style maintenance, compare deterministic screenshots against a reviewed prior example with the same browser, fonts, viewport and data. Missing or mismatched references are not verification. Reference replacement requires deliberate review; do not make a test pass by automatically accepting its output. Pixel equality only addresses that fixture's appearance, not correctness, accessibility or human comprehension. Keep semantic checks and the real user approval boundary.

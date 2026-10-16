@@ -7,7 +7,7 @@ proof of a correct result. The host's permissions and instruction precedence sti
 
 ## Preflight
 
-After creating the minimal task record, check the current host's actual skill inventory.
+After resolving and creating or resuming the minimal task record, check the current host's actual skill inventory.
 At team setup verify the collection in [specialists.json](specialists.json); during work
 verify only routes needed by the next phase. Recheck after a host/account switch, reload,
 installation change or revised route—not before every tool call.
@@ -46,13 +46,13 @@ invoke it for every TODO or comment. Nested specialist calls use these same boun
 
 | Trigger | Invoke | Required contribution / adapter |
 |---|---|---|
-| A structured decision batch, design clarification or explicitly requested grilling | `grilling` | Decision tree and recommendations for the unresolved approved scope; Q adapter. Ordinary single factual/access questions need no interview. |
+| Every new substantive goal, material scope change, or requested grilling; also newly uncovered consequential decisions | `grilling` | Inspect for missing decisions even when none were initially noticed; reuse sourced settled branches; Q adapter. No question quota or repeated interview for an unchanged approved resume. |
 | External technical research, documentation/API checks or source investigation | `research` | Primary-source findings and citations into the existing task evidence; R adapter. Local code inspection alone need not launch research. |
 | A bug, failing behavior or performance regression needs diagnosis | `diagnosing-bugs` | Symptom-specific feedback loop, evidence, causal diagnosis and cleanup; D adapter. Stop before an unauthorized fix. |
 | Test-first feature/fix work or integration tests at agreed observable interfaces | `tdd` | One behavioral test and implementation slice at a time; T adapter. Propose seams during planning and reuse their approval. |
 | Module interfaces, abstractions or test boundaries need design review | `codebase-design` | Apply its design reference to the bounded choice; no new architecture interview when the design is settled. |
 | Project terminology, glossary or an architecture decision is being changed | `domain-modeling` | Clarify terms and capture approved changes at their authoritative location; M adapter. Merely reading a glossary does not trigger it. |
-| Creating/revising skills, agent instructions or the structure of agent-facing records | `writing-for-agents` | Apply its writing/reference mechanics; ordinary checkpoint status updates do not require a new invocation. |
+| Creating/revising skills, agent instructions or the structure of agent-facing records | `writing-for-agents` | Apply its writing/reference mechanics plus the local plain-language policy; ordinary checkpoint updates need no new invocation. |
 | Task code changes are ready for review, or a code review is requested | `code-review` | Separate Standards and Spec findings on the actual task changes; C adapter. Docs-only work still gets the workflow audit. |
 | The user authorizes a throwaway prototype to settle a design question | `prototype` | Evidence and a bounded disposable artifact; P adapter. Research approval alone does not authorize prototype code. |
 | A pull-request description is requested | `pr` | Draft from real evidence; do not open, publish or merge a PR without separate authorization. |
@@ -65,10 +65,14 @@ them in the call brief. If the host cannot apply the contract without conflictin
 instructions, do not invoke the specialist unchanged: record incompatibility and use
 an approved fallback. Never edit an installed upstream skill to hide the conflict.
 
-- **Q — Questions:** limit the tree to unresolved user-owned decisions for this task.
-  Investigate facts first and defer nonblocking batches as [QUESTIONS.md](QUESTIONS.md)
-  defines. Ask early for a direction blocker. Reuse settled answers; no infinite scope
-  expansion or repeated approval. Shared understanding and implementation approval are confirmed through VISUAL-REVIEW.md after the decision batch, not assumed from interview completion.
+- **Q — Questions:** inspect the bounded goal for unstated consequential decisions, not
+  only an already-written question list. Use the decision areas and answer-source checks
+  in [QUESTIONS.md](QUESTIONS.md). Research facts; batch nonblocking questions, ask early
+  for direction blockers, and reuse sourced settled branches. No invented scope or question
+  quota. A detailed prompt is not an exemption; unchanged approved work is not re-interviewed.
+  Apply [WRITING.md](WRITING.md) to questions and consequences. The owner persists partial
+  answers and returns them to the specialist. Shared understanding and implementation
+  approval are confirmed through VISUAL-REVIEW.md, not assumed from interview completion.
 - **R — Research:** return cited findings to the owner for FINDINGS.md; no second competing
   report unless requested. A subagent can research in the active host session when useful;
   without that capability, run sequentially and label it. Promise no later/background result.
@@ -120,4 +124,8 @@ operation; [SETUP.md](SETUP.md) explains how to keep its output compatible with 
 
 Invoke this package's **`codebase-map`** for an explicit flowchart/map request and automatically for the substantive preimplementation visual review in [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Resolve its actual qualified identifier and verify availability during setup/handoff. Pass inspected evidence, requirements/tasks/acceptance, mode, revision and artifact permissions. It returns the local source/report paths, freshness result and opener result; it never implements, approves, grills or calls back into workflow. Do not invoke Matt's user-only `improve-codebase-architecture` merely to draw a current flow. Missing visualizer/render capability follows the explicit setup/fallback decision path; never skip approval silently.
 
-The visual design procedure, assets and renderer are local to `codebase-map`. It reads its bundled FLOWCHART-DESIGN.md; no external diagram skill or separate diagram-design preflight is required. Matt's routes and adapters above are unchanged. A local render is not logged as an external specialist invocation.
+The visual design procedure, assets and renderer are local to `codebase-map`. It reads its bundled FLOWCHART-DESIGN.md; no external diagram skill or separate diagram-design preflight is required. Matt's established specialist providers remain; the Q adapter above strengthens decision discovery. A local render is not logged as an external specialist invocation.
+
+## Optional maintenance/browser helpers
+
+[OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md) covers skill-creator and webapp-testing as opt-in candidates. They are not part of the required Matt catalogue, not installed automatically, and not prerequisites for normal workflow or diagram delivery.

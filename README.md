@@ -1,44 +1,46 @@
 # workflow-axa
 
-**2.2.1 — local flowchart design; Matt specialists retained.** One team workflow plus an on-demand `codebase-map` skill. This ZIP updates the skill package; it does not install itself, configure your project or change application code. [VALIDATION.md](VALIDATION.md) records actual tests and limits.
+**2.3.0 — stronger questioning, existing-task reuse and clearer reviews.** One team workflow and one local `codebase-map` skill. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
 
-## What changed in 2.2.1
+## What changed
 
-Only the flowchart dependency changes. `codebase-map` now follows its bundled
-[FLOWCHART-DESIGN.md](skills/codebase-map/FLOWCHART-DESIGN.md) and existing local renderer.
-No external `diagram-design` install, skill lookup or invocation is needed. The approved
-flowchart styling, geometry, separate feature/build/structure views and report schema
-are unchanged. Historical source attribution remains informational.
+| Improvement | What the agent must now do |
+|---|---|
+| Proactive grilling | Use Matt's grilling to look for unstated decisions in every new substantive goal or material change, even when the prompt looks complete. Reuse sourced answers; no fixed question quota or repeated interview for an unchanged approved task. |
+| Existing work | Search current/named/related task records before creating a folder. Keep a clear continuation in the same folder through revisions; ask about ambiguous matches, completed work or ownership. |
+| Clear language | Explain concrete behavior and consequences before technical details in questions, plans, reports and completion messages. Keep exact evidence accessible. |
+| No-slop review | Review unnecessary helpers, silent coercion, repetitive comments/docs and unsupported claims against specific examples, not a vague label. |
+| Visual protection | Keep the approved flowchart local and unchanged. Compare stable reference screenshots; never automatically replace a failing baseline. |
+| Actual-agent tests | New hidden-decision and task-discovery fixtures/protocol compare 2.2.1 with this version. Their results remain NOT_RUN until a real host run is observed. |
 
-Matt's **research, diagnosing-bugs, tdd, code-review, grilling and other existing routes
-remain external and unchanged**. They are not replaced by condensed local methods.
-All 27 Matt catalogue entries, eleven reusable routes and their adapters are preserved.
-Current-code grounding, questions, checkpoints and user approval still precede coding.
+Matt's research, diagnosing-bugs, tdd, code-review, grilling and other established specialists remain separately installed. All 27 catalogue entries are retained; the grilling trigger/adapter is strengthened. The local flowchart needs no external diagram-design skill. Optional skill-creator and webapp-testing guidance is available only for approved maintenance/browser work; neither becomes a dependency.
 
 ## Workflow behavior
 
 ```text
-Inspect current code → establish the requested outcome → resolve necessary decisions
-→ prepare PLAN + TODO + acceptance → generate/open current-versus-proposed HTML
-→ STOP for user approval → record approval → implement and verify within that scope
+Find the right task → inspect current code → uncover missing decisions with grilling
+→ prepare PLAN + TODO + acceptance → show the local flowchart review
+→ STOP for approval → implement within scope → verify and leave a checkpoint
 ```
 
-The HTML shows what the agent understood, existing flow, proposed behavior, tasks/cleanup, exclusions, and completion checks. It is generated after the task list is **prepared**, not executed. Opening it or answering grilling does not approve implementation. The user's response in the agent conversation approves the identified plan revision. Corrections update the records and diagram together before coding.
+The HTML is generated after the task list is written, not executed. It shows what the agent understood, current/proposed behavior, changes, cleanup, exclusions and completion checks. Opening it, answering questions or liking its appearance does not authorize implementation. The user's response approves the identified revision. Corrections update records and diagram together.
 
-Substantive features, behavioral fixes and architectural changes use the gate automatically. Lightweight low-risk edits, general explanations and PDF/docs-only deliverables keep their proportionate routes. Existing valid approval is reused on handoff; an explicit bounded waiver is recorded, never assumed. No automatic staging, commits, pushes, publication, dependency installs or application changes during preview.
+A new date, session or slash command is not a new task folder. A task match is also not approval of a new requirement: keep the folder and revise the affected decisions/scope. A complete request can need zero extra questions after the decision check. Important unanswered choices still block dependent work.
 
-Every repository-specific proposal must connect the request to inspected owners/callers/tests, the actual gap, mapped tasks and acceptance. Existing/partial capabilities are investigated before adding another implementation. New product ideas do not silently enter scope. Read-only explanations still need code evidence when they make repository-specific claims.
+Substantive features, behavioral fixes and architecture changes retain the visual gate. Lightweight low-risk edits, explanations, PDF/docs-only and visual-only requests keep proportionate routes. Existing approval is reused after checking actual files. No automatic installs, staging, commits, pushes, uploads or deployment.
+
+For a short installation handoff, start with [UPGRADE.md](UPGRADE.md).
 
 ## Upgrade checklist — important for plain prompts
 
 **Install both local skills and merge the project routing block once.** Updating a ZIP alone cannot ensure an ordinary prompt enters the workflow.
 
 1. Extract to a separate candidate folder, preserving your previous version and `.git`/unrelated work. For Claude plugin use the root containing `.claude-plugin/plugin.json`; both skills are registered there. For direct Codex/Claude installs copy the **complete** `skills/workflow` and `skills/codebase-map` folders into the appropriate skill root. Do not retain duplicate active copies.
-2. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that both local skills actually load.
+2. **Update, do not duplicate, your existing routing block** so ordinary prompts use the new task-selection and proactive-grilling rules. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that both local skills actually load.
 3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
 
-4. **No flowchart dependency to install.** Replace the complete package-owned codebase-map folder with this version, retaining any unrelated local files separately. Remove its old `DIAGRAM-DESIGN.md` integration reference; `FLOWCHART-DESIGN.md` replaces it. Update any previously added project-routing sentence that explicitly calls the external design skill. Keep Matt's setup and approved fingerprints. An existing external diagram skill can remain for unrelated tasks; this package does not invoke it or uninstall it.
-5. Old HTML stays readable and checkable. New report generation uses **schema 2** for explicit layout; migrate old JSON with [REPORT.md](skills/codebase-map/REPORT.md), preserving records and reviewed artifacts. Do not silently reinterpret an old architecture graph as a user flow.
+4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update both complete local skill folders while preserving unrelated custom files. When upgrading from 2.2.0, remove its retired package-owned DIAGRAM-DESIGN.md reference; later releases already use FLOWCHART-DESIGN.md. Do not uninstall unrelated external skills automatically.
+5. No report-schema migration is needed from 2.2.1; the same schema-2 JSON and approved assets are retained. Older schema-1 inputs use the existing [migration guide](skills/codebase-map/REPORT.md). Keep previously reviewed HTML. Complete the new [live-host pilot](tests/behavioral/README.md) before team-wide reliance on the changed interviewing behavior.
 
 ## Local commands
 
@@ -68,9 +70,9 @@ cd "C:\Dev\workflow-sandbox"
 claude --plugin-dir "C:\Dev\workflow-axa-candidate"
 ```
 
-Substitute real paths and check installed CLI help when needed. Python/Git fixture tests create one local baseline commit only in a **new synthetic repository**, not in your project; they never create a remote. The browser smoke test is separate and optional, using already installed Playwright/Chromium. [Testing guide](tests/README.md).
+Substitute real paths and check installed CLI help when needed. Python/Git fixture tests create one local baseline commit only in a **new synthetic repository**, not in your project; they never create a remote. The browser smoke test is separate and optional, using already installed Playwright/Chromium. [Testing guide](tests/README.md). [Visual comparisons](tests/VISUAL-REGRESSION.md) use optional installed Playwright/Pillow, not new application dependencies.
 
-Test a **plain request with no skill name**, then inspect the trace: workflow loaded, current-code evidence read, no expanded features, visual report shown, implementation paused. Reject/correct the plan, then approve the revised view. Test hard interruption and fresh-agent continuation. Also test explicit invocation and general-question/diagram-only negative triggers. [Behavioral scenarios](tests/SCENARIOS.md) are authored test cases, not evidence that model behavior has passed.
+Test a **plain request with no skill name**, then inspect the trace: workflow loaded, current-code evidence read, no expanded features, visual report shown, implementation paused. Reject/correct the plan, then approve the revised view. Test hard interruption and fresh-agent continuation. Also test explicit invocation and general-question/diagram-only negative triggers. [Behavioral scenarios](tests/SCENARIOS.md) and the [new evaluator-only cases](tests/behavioral/README.md) are authored test cases, not evidence that model behavior has passed. Keep expected answers outside the agent workspace.
 
 ## Records and retained behavior
 

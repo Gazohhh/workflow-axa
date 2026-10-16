@@ -13,3 +13,10 @@ All policies below were recommended in the prior review and accepted by the user
 - D9 — Approved: reuse owner-approved unchanged audience/purpose/language/terminology when applicable; ask only for missing or changed meaning.
 - D10 — Implementation choice within R1: label the package 2.0.0-rc.1 because defaults change materially and live team-host evaluations have not run. This creates no Git tag or release.
 - D11 — Implementation choice within R1: standard-library Python local checks and a disposable fixture, no new package dependency, background service or CI workflow.
+
+## R2 decisions — 16 October 2026
+- D12 — Approved: the user's latest request accepts the seven improvements summarized immediately beforehand. Prior historical D6's lack of a mandatory external dependency is superseded by the subsequent specialist-integration task; Matt's current integrations remain external and intact.
+- D13 — Approved: only flowchart guidance/rendering is local; do not restore the diagram-design dependency or replace Matt's research/debugging/TDD/review with condensed local methods.
+- D14 — Within R2: use version 2.3.0 for the changed interview/task-resolution behavior. Reuse this established maintenance record and preserve prior approvals/outcomes below it.
+- D15 — Within R2: assess skill-creator and webapp-testing as optional, separately approved helpers, not new startup prerequisites. No installation, API calls or paid model runs.
+- D16 — Within R2: retain report CSS/JS and renderer behavior; build screenshots from the previous 2.2.1 example as carry-forward references. Those images are test references, not newly obtained individual human approvals. Never automatically replace them after a failure.

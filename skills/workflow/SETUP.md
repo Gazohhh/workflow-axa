@@ -47,7 +47,7 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.2.1 requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.3.0 requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
@@ -146,7 +146,7 @@ simulated “skill executed” log. A read-only file check is not this runtime s
 The package's behavioral scenarios describe the expected observations; perform them
 locally before a wider team rollout.
 
-## Local flowchart setup (2.2.1)
+## Retained local flowchart setup (since 2.2.1)
 
 No additional specialist installation is required for diagrams. Copy the complete
 `codebase-map` folder, including FLOWCHART-DESIGN.md, REPORT.md, scripts, assets and
@@ -160,8 +160,7 @@ instructions and verify the local codebase-map identifier. An existing external 
 skill may remain for unrelated work; do not uninstall it automatically. This workflow
 neither selects nor requires it.
 
-The catalogue delta removes only the external design entry. Matt's 27 records, source
-snapshot and adapters are retained. Review the package change while preserving the
+The historical 2.2.1 migration removed the external design entry. In 2.3.0 Matt's 27 records and source snapshot remain unchanged; the workflow's Q adapter now triggers proactive decision discovery. Other providers are retained. Review the package change while preserving the
 existing approved Matt fingerprints; do not reinstall or refresh the collection just
 because this dependency changed. The checker deliberately rejects inventories with a different workflow_version. Keep
 the old approved baseline unchanged. Generate a new candidate inventory, compare Matt's
@@ -174,3 +173,12 @@ Verify codebase-map loads its local design guide, produces the approved flowchar
 stops before application implementation. Necessary questions still use grilling; actual
 research, diagnosis, TDD and review continue to use Matt's installed skills when relevant.
 A local Python render does not prove that this host-level behavior passed.
+
+
+## 2.3.0 runtime check for questions and task reuse
+
+Update the existing project-routing block once during approved setup; do not append another copy. In a fresh Claude session verify which qualified workflow and grilling identifiers actually load, their source paths/revisions and model/host versions. A slash-menu entry or installed folder alone is insufficient; avoid same-name shadowing. After compaction/account changes, restore the recorded phase and references, not a fresh task folder.
+
+Test a vague feature without asking for an interview, a detailed request with a hidden consequential omission, a partial answer, and an existing related task without providing its path. Check actual grilling load, relevant questions, preserved answers, task selection and no preapproval application writes. Compare with 2.2.1 under the same configuration. If grilling does not load, inspect identity/visibility/tool permission/compaction before blaming prompt length. Do not disable permissions or claim the file checker proves behavior. See the package tests/behavioral protocol for evaluator-only cases.
+
+Keep the existing approved Matt installation. A package version change alone is not a reason to reinstall it. The optional helpers are described in [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md); no extra installation is needed for this update.

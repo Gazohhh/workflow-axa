@@ -15,7 +15,8 @@ For each category record `PASS`, `ISSUE`, `NOT APPLICABLE` with a reason, or `NO
 | Replacement cleanup | Old implementation/callers/exports/flags/config/tests/assets/docs/debugging scaffolding accounted for; no competing behavior left accidentally. |
 | Maintainability | Existing owner, clear data flow, justified helpers, useful comments, no speculative wrappers or unrelated churn. |
 | Verification | Actual commands and outputs, behavioral tests through meaningful interfaces, original reproduction, integration where relevant, final-state evidence. |
-| Documentation and recovery | Existing authoritative docs match; task state, decisions, TODO evidence and next step allow a fresh agent to continue. |
+| Documentation and recovery | Correct existing task reused or a new one justified; meaningful questions and answer sources recorded; existing authoritative docs match; task state, decisions, TODO evidence and next step allow a fresh agent to continue. |
+| Reader clarity | Apply [WRITING.md](WRITING.md): concrete goal/change/consequence first, technical evidence accessible, no concealed material uncertainty or duplicate boilerplate. |
 | Specialist integration | Correct resolved skill actually loaded/invoked; selected routes covered, adapters honored, changed/missing dependencies and exceptions explicit, outputs inspected. |
 | Worktree and privacy | User edits/index intent preserved, ownership clear, no secrets or unapproved external actions. |
 
@@ -52,3 +53,10 @@ Verify requirement → current evidence → actual gap → task → acceptance t
 ## Visual-review regression
 
 For changed reports/visualizer code, verify that the actual feature flow remains primary (not cards or generic workflow phases), branches preserve source meaning, build dependencies and containment are separate, source ambiguities stay visible, and no style approval grants application authority. Check that codebase-map uses its bundled FLOWCHART-DESIGN.md and actual browser geometry/readability when available; no external diagram skill is required. Retain evidence/acceptance/exclusions and safe offline behavior. Native-size overflow must stay within the diagram wrapper; Fit is optional.
+
+
+## Evidence of no-slop and visual fidelity
+
+Use the examples above and in WRITING.md. Reject duplicate task folders for the same continuing work, empty copied sections, unnecessary helper layers, silent coercion and comments that restate syntax. Preserve useful contracts, boundary parsers and comments explaining non-obvious constraints. Do not invent a numeric comment ratio or ban a function name. Label synthetic examples; add real team-approved examples only when supplied.
+
+When report/UI rendering changes, compare stable screenshots against a reviewed reference in the same environment. The package maintenance tools capture and compare images without replacing a baseline. Missing references or incompatible environments are NOT VERIFIED, not passes. A deliberate visual change needs the user's review before a new baseline is adopted. A passing comparison does not replace branch/meaning checks, manual accessibility review or a cold-reader check. Keep an application's own design system; the report theme is not permission to redesign the app.

@@ -12,7 +12,7 @@ Do not inspect the entire repository for a small task. Widen the slice only when
 
 ## Show the request back
 
-Before solution design, record a short plain-language understanding: actor/trigger, requested outcome, affected behavior, important constraints and exclusions. Give requirements stable IDs and attribute each to the user request, a settled answer or approved policy. Inferred requirements remain proposals until confirmed. Empty boilerplate is not understanding.
+Before solution design, follow [WRITING.md](WRITING.md) and record a short plain-language understanding: actor/trigger, requested outcome, affected behavior, important constraints and exclusions. Give requirements stable IDs and attribute each to the user request, a settled answer or approved policy. Inferred requirements remain proposals until confirmed. Current code is not a source of user intent; use grilling to inspect for missing decisions under [QUESTIONS.md](QUESTIONS.md), even when an implementation seems obvious. Empty boilerplate is not understanding.
 
 Use one compact mapping in PLAN, with evidence details in FINDINGS:
 

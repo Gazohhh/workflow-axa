@@ -1,5 +1,8 @@
 # Behavioral scenarios
 
+For the 2.3.0 priority regressions, start with [the evaluator-only case protocol](behavioral/README.md). It adds cases where the prompt does not disclose the missing decision or existing task path; the older scenarios below remain useful.
+
+
 These are test protocols, not reports of completed agent runs. Use [README.md](README.md) for fixture creation and version comparisons. For explicitly invoked cases prefix prompts with `/workflow-axa:workflow` or `$workflow`. **Do not prefix the plain-prompt/negative-trigger cases below.** Use the actual generated repository path. Before each run, inspect its initial state; use a fresh fixture for each version/repetition.
 Except explicit dependency-failure cases, use reviewed Matt installations and this package's complete local codebase-map
 with the relevant routes available in the host. Record real load/invocation traces. A simulated fixture with

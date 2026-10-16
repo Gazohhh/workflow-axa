@@ -17,6 +17,8 @@ REQUIRED = (
     "README.md", "CHANGELOG.md", "VALIDATION.md", "docs/DESIGN.md",
     "skills/workflow/SKILL.md", "skills/workflow/TASK-FOLDER.md",
     "skills/workflow/QUESTIONS.md", "skills/workflow/AUDIT.md",
+    "skills/workflow/WRITING.md", "skills/workflow/OPTIONAL-HELPERS.md",
+    "tools/visual_regression.py", "tests/behavioral/cases.json", "tests/behavioral/README.md",
     "skills/workflow/PDF-DELIVERABLE.md", "skills/workflow/CHATGPT-PROMPTS.md",
     "skills/workflow/agents/openai.yaml", "tests/README.md", "tests/SCENARIOS.md",
     "tools/create_fixture.py", "skills/workflow/SPECIALISTS.md", "skills/workflow/SETUP.md",

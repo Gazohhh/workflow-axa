@@ -1,10 +1,26 @@
 # Task records and recovery
 
-## Claim and scale
+## Resolve identity before creating records
 
-Use the repository's established task-record location, otherwise `docs/plans/YYYY-MM-DD-<slug>/` with the current date. Inspect candidate records before writing. Continue only an exact goal/scope match that is unowned, handed off, or explicitly assigned by the user. A stale timestamp or in-progress checkbox does not prove that another owner stopped. When ownership is ambiguous, ask before changing that task or its files.
+A task follows the user's goal, not the conversation, date or `/workflow` invocation. Start with a brief read-only lookup in the established task location and any named/current record. Inspect goal, latest checkpoint, outcome, ownership and decisions for plausible candidates; filenames and recency alone are not enough. A related scope extension is not automatically a separate task.
 
-Create a small record before substantial discovery; it can honestly say that scope or answers are unknown. Do not finish a long interview and only then save its conclusions. Report the task path once established.
+| Situation | Action before writes |
+|---|---|
+| User names a record or clearly continues the current task | Read and reuse it after checking current files, scope and ownership. Do not ask the same identity question again. |
+| A likely related task is found but intent is unclear | Ask whether to extend it or create separate work; explain the connection and recommend an option. Do not create a provisional duplicate folder while waiting. |
+| Several plausible tasks | Show their goals/status briefly and ask which applies. Do not choose the newest. |
+| Clear extension of the same active task | Keep its folder, add the new requirement as a proposed revision, and reopen only affected decisions/approval. |
+| Related task is complete | An explicit correction/reopening can reuse it, preserving the completed outcome. Otherwise clarify reopening versus a linked follow-up before creating either. |
+| No relevant record after checking, or user explicitly requests separate work | Create at the repository's established location, otherwise `docs/plans/YYYY-MM-DD-<slug>/`. Link a relevant earlier task when useful. |
+| Record location unavailable or ownership contested | Explain the limitation and ask; do not equate an unreadable location with no match. |
+
+Example: “I found the graphics-settings plan. Is this another requirement for that work, or a separate task? I recommend extending it because it changes the same settings flow.” Do not ask the user to search folders the agent can inspect.
+
+Identity is not authority: a match does not approve new behavior or allow taking another person's edits. A stale timestamp or in-progress checkbox does not establish a handoff. Resolve unclear ownership before writing the record or shared files. Read related tasks without mutating them unless assigned.
+
+Once resolved, report the reused/new path and reason; create or update a small checkpoint **before substantial discovery or a lengthy interview**. Save unknown scope honestly. The folder then remains stable through sessions and approved revisions. A conflicting explicitly requested destination needs clarification, not silent relocation.
+
+## Scale the record
 
 | File | Authoritative content |
 |---|---|
@@ -31,6 +47,8 @@ Omit irrelevant fields for lightweight work; use `unknown` or `not applicable` r
 - Repository / branch / worktree: <actual locations>
 - Approved revision and scope: <revision or not approved>
 - Active tasks: <TODO IDs, or the lightweight work item>
+- Task identity: <reused/new; relevant earlier task; reason or user answer>
+- Decision check: <FINDINGS reference, settled sources, open Q-IDs; rechecked only where changed>
 - Current understanding / evidence: <R/E/A mapping; inspected state and unresolved limits>
 - Visual review: <draft/awaiting/approved/waived; revision; report/source path; shown/open result>
 - Specialists: <capability evidence / selected routes / approved adapters or exceptions>
@@ -99,7 +117,8 @@ Only the task owner updates these records. Subagents return findings and evidenc
 3. Recheck specialist availability in this host and compare any saved installation fingerprint. An old session's availability is not proof for a new account. Reuse task approval; resolve only changed capability/compatibility.
 4. Inspect current staged/unstaged/untracked files and the previously active unit. Preserve unrelated work. Determine what completed, what is partial, and which checks no longer apply.
 5. Reconcile the inspected-code evidence, understood outcome and visual review revision with current files. Classify expected approved progress versus material changes; do not treat a new report or source hash as approval. An awaiting-approval task stays paused for implementation.
-6. Update the checkpoint and continue the next covered step. Ask only for missing authority, a genuine decision blocker, or an unresolved ownership conflict—not for routine reapproval.
+6. Reuse the applicable decision check. Run grilling only for new substantive intent, changed material branches or requested further challenge; do not restart an unchanged approved interview.
+7. Update the checkpoint and continue the next covered step. Ask only for missing authority, a genuine decision blocker, or an unresolved ownership conflict—not for routine reapproval.
 
 Across accounts on the same worktree, records and edits may already be present. Across machines or cloud environments, documentation alone is not the code: transfer the actual working changes through an explicitly authorized method. Do not silently create commits, push a branch, upload logs, or assume a remote contains uncommitted work. Use separate worktrees for overlapping tasks where available, with coordinated integration and no global index manipulation.
 

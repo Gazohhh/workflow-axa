@@ -77,3 +77,8 @@ Existing HTML remains unchanged and its schema-1 source manifest is still accept
 PLAN/TODO/FINDINGS/DECISIONS remain authoritative. Hashes include saved input JSON and all supplied sources, including uncommitted bytes. `--check` detects changes/missing supplied files, not omitted/new files, fabricated evidence, semantic correctness, trustworthy approval or malicious manifest modification. Source paths and report text may be sensitive; sanitize evidence before sharing.
 
 The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed. Geometry checks catch common defects; actual browser label measurements and review remain required. Print displays all diagrams; expand required technical details before printing. No PDF export or browser installation is implied. A successful structural check is not a complete accessibility/usability audit or proof of agent obedience.
+
+
+## Maintaining the approved presentation
+
+The package's tools/visual_regression.py captures the stable bundled fixture and compares screenshots read-only. See package tests/VISUAL-REGRESSION.md for the controlled-environment protocol. These maintenance tools are not required by a standalone map installation; retain existing browser/manual checks when unavailable. Never update an approved screenshot automatically, substitute image equality for semantic review, or claim screenshots establish user comprehension. Keep generated timestamps outside the compared view.
