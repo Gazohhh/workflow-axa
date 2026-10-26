@@ -18,7 +18,7 @@ class EvaluationInputTests(unittest.TestCase):
                 self.assertTrue(case['prompt'].strip())
                 self.assertTrue(case['expect'])
                 self.assertEqual(case['result'],'NOT_RUN')
-        self.assertEqual(suite['baseline_version'],'2.2.1')
+        self.assertEqual(suite['baseline_version'],'2.4.0')
 
     def test_shipped_visual_reference_integrity(self):
         from tools.visual_regression import load_capture

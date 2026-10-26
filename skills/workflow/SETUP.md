@@ -47,7 +47,7 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.3.0 requires this package's two local skills: `workflow` and `codebase-map`.** The Claude plugin registers both. Direct installations must copy both complete folders into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.5.0 requires this package's six local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, and `plan-review`.** The Claude plugin registers all six. Direct installations must copy each complete folder into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
@@ -160,7 +160,7 @@ instructions and verify the local codebase-map identifier. An existing external 
 skill may remain for unrelated work; do not uninstall it automatically. This workflow
 neither selects nor requires it.
 
-The historical 2.2.1 migration removed the external design entry. In 2.3.0 Matt's 27 records and source snapshot remain unchanged; the workflow's Q adapter now triggers proactive decision discovery. Other providers are retained. Review the package change while preserving the
+The historical 2.2.1 migration removed the external design entry. In 2.4.0 Matt's 27 records and source snapshot remain unchanged; the package adds local workflow utilities without adding external dependencies. Other providers are retained. Review the package change while preserving the
 existing approved Matt fingerprints; do not reinstall or refresh the collection just
 because this dependency changed. The checker deliberately rejects inventories with a different workflow_version. Keep
 the old approved baseline unchanged. Generate a new candidate inventory, compare Matt's
@@ -175,10 +175,30 @@ research, diagnosis, TDD and review continue to use Matt's installed skills when
 A local Python render does not prove that this host-level behavior passed.
 
 
-## 2.3.0 runtime check for questions and task reuse
+## 2.4.0 runtime check for questions, task reuse and utilities
 
 Update the existing project-routing block once during approved setup; do not append another copy. In a fresh Claude session verify which qualified workflow and grilling identifiers actually load, their source paths/revisions and model/host versions. A slash-menu entry or installed folder alone is insufficient; avoid same-name shadowing. After compaction/account changes, restore the recorded phase and references, not a fresh task folder.
 
 Test a vague feature without asking for an interview, a detailed request with a hidden consequential omission, a partial answer, and an existing related task without providing its path. Check actual grilling load, relevant questions, preserved answers, task selection and no preapproval application writes. Compare with 2.2.1 under the same configuration. If grilling does not load, inspect identity/visibility/tool permission/compaction before blaming prompt length. Do not disable permissions or claim the file checker proves behavior. See the package tests/behavioral protocol for evaluator-only cases.
 
 Keep the existing approved Matt installation. A package version change alone is not a reason to reinstall it. The optional helpers are described in [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md); no extra installation is needed for this update.
+
+## Global artifact policy — all projects (2.5.0)
+
+The maintained source is [ARTIFACTS.md](ARTIFACTS.md). During approved setup, the bundled [global policy helper](scripts/global_policy.py) deploys one versioned, byte-checked copy to `~/.workflow-axa/ARTIFACTS.md` and merges a short marked block into each host's global instructions. Do not maintain separate policy bodies per project. Updating the skill alone does not update the deployed copy; rerun this setup when the policy changes.
+
+Run from the package root in Git Bash or a terminal with Python 3.10+:
+
+```bash
+python -X utf8 skills/workflow/scripts/global_policy.py
+python -X utf8 skills/workflow/scripts/global_policy.py --apply
+python -X utf8 skills/workflow/scripts/global_policy.py --check
+```
+
+The first command previews without writing; review it and ARTIFACTS.md before `--apply`. Standalone installs run `scripts/global_policy.py` inside their workflow folder. The helper keeps unrelated global-file bytes and newline style, replaces only its marked block, and creates no per-run logs/backups. It does not install skills or touch projects. Malformed markers, modified/unowned policy, downgrade, linked/hard-linked config or stale reads stop the merge for manual review. Writes are atomic per file, not a transaction across files; after an interrupted setup rerun `--check` and complete the reviewed merge.
+
+Default destinations: `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. CLAUDE_CONFIG_DIR/CODEX_HOME and explicit `--claude-dir`/`--codex-home` absolute overrides select actual profiles. A nonempty Codex AGENTS.override.md receives the same small block because it shadows the base file; no override is created. Preview prints all destinations. Custom instruction discovery, an organization policy, WSL/cloud homes or permission restrictions need separate inspection. Never copy the Altinstar-specific project files into a global location.
+
+Claude's block imports the policy; Codex's instructs the agent to read it before output-producing work. Verify actual loading in fresh sessions, not merely checker success. Each machine/account environment and each teammate needs its own setup. The policy grants no access that the host otherwise denies; no permission changes or hooks are installed. Project protections remain effective, and contradictions require clarification.
+
+References checked 26 October 2026: [Claude instruction scopes/imports](https://code.claude.com/docs/en/memory), [Codex global instructions and overrides](https://developers.openai.com/codex/guides/agents-md/). These support loading locations, not guaranteed model obedience or automatic retention by project scripts.

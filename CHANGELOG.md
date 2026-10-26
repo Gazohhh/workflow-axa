@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.5.0 — 2026-10-26
+
+- Add one shared ARTIFACTS.md policy: stable task parents, concurrency-safe child runs, required evidence, reuse of tools and narrowly authorized own-scratch cleanup. No legacy sweep or automatic producer changes.
+- Add preview/apply/check global setup for Claude/Codex, preserving existing user instructions, CRLF/BOM and Codex override handling. One deployed policy copy is verified against the packaged source.
+- Route all six local skills and delegated workers through the same boundaries; preserve grilling, approval, Matt's routes and local flowchart design.
+- Define durable review destinations separately from ignored test output; keep approved reviews and reference images.
+- Add setup safety tests and evaluator-only artifact scenarios. Host obedience and project script retention remain explicitly unverified.
+
+## 2.4.0 — workflow utilities and anti-slop review
+
+- Added local `task-status`, `resume-task`, `workflow-doctor` and `plan-review` skills.
+- Added `codebase-map explain` for no-assumed-context current-flow explanations.
+- Strengthened domain-modeling use before inventing terminology or ownership.
+- Added an explicit necessity check for new abstractions/fallbacks/config layers and reinforced the cold-reader check.
+- Kept Matt Pocock specialist integrations and the bundled local flowchart unchanged as dependencies.
+
 ## 2.3.0 — 2026-10-16
 
 - Proactive grilling for new substantive intent and material scope changes, with sourced decision coverage, partial-answer protection and no repeated interview for unchanged approved work.

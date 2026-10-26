@@ -17,6 +17,7 @@ REQUIRED = (
     "README.md", "CHANGELOG.md", "VALIDATION.md", "docs/DESIGN.md",
     "skills/workflow/SKILL.md", "skills/workflow/TASK-FOLDER.md",
     "skills/workflow/QUESTIONS.md", "skills/workflow/AUDIT.md",
+    "skills/workflow/ARTIFACTS.md", "skills/workflow/scripts/global_policy.py",
     "skills/workflow/WRITING.md", "skills/workflow/OPTIONAL-HELPERS.md",
     "tools/visual_regression.py", "tests/behavioral/cases.json", "tests/behavioral/README.md",
     "skills/workflow/PDF-DELIVERABLE.md", "skills/workflow/CHATGPT-PROMPTS.md",
@@ -30,6 +31,10 @@ REQUIRED = (
     "skills/codebase-map/scripts/render_report.py", "skills/codebase-map/assets/report.css",
     "skills/codebase-map/assets/report.js", "skills/codebase-map/examples/review.json",
     "skills/codebase-map/examples/review.html",
+    "skills/task-status/SKILL.md", "skills/task-status/agents/openai.yaml",
+    "skills/resume-task/SKILL.md", "skills/resume-task/agents/openai.yaml",
+    "skills/workflow-doctor/SKILL.md", "skills/workflow-doctor/agents/openai.yaml",
+    "skills/plan-review/SKILL.md", "skills/plan-review/agents/openai.yaml",
 )
 
 
@@ -53,8 +58,9 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Plugin version must use the package's semantic-version format.")
         elif f"## {version} —" not in (root / "CHANGELOG.md").read_text(encoding="utf-8"):
             errors.append("Plugin version has no matching changelog entry.")
-        if plugin.get("skills") != ["./skills/workflow", "./skills/codebase-map"]:
-            errors.append("Register workflow and codebase-map exactly once.")
+        expected_registered = ["./skills/workflow", "./skills/codebase-map", "./skills/task-status", "./skills/resume-task", "./skills/workflow-doctor", "./skills/plan-review"]
+        if plugin.get("skills") != expected_registered:
+            errors.append("Register the six workflow-axa skills exactly once in the approved order.")
         entries = market.get("plugins", [])
         if len(entries) != 1 or entries[0].get("name") != "workflow-axa" or entries[0].get("source") != "./":
             errors.append("Marketplace must point to this one local plugin.")
@@ -81,10 +87,13 @@ def validate_package(root: Path) -> list[str]:
     except (ValueError, TypeError, AttributeError, KeyError, OSError) as exc:
         errors.append(f"Specialist catalogue error: {exc}")
 
-    expected_skills = {root / f"skills/{name}/SKILL.md" for name in ("workflow", "codebase-map")}
+    registered_names = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review")
+    expected_skills = {root / f"skills/{name}/SKILL.md" for name in registered_names}
     if set((root / "skills").rglob("SKILL.md")) != expected_skills:
-        errors.append("Exactly the registered workflow and codebase-map SKILL.md files are required.")
-    for name, budget in (("workflow", 1200), ("codebase-map", 800)):
+        errors.append("Exactly the six registered workflow-axa SKILL.md files are required.")
+    budgets = {"workflow": 1250, "codebase-map": 850, "task-status": 450, "resume-task": 500, "workflow-doctor": 450, "plan-review": 550}
+    for name in registered_names:
+        budget = budgets[name]
         core = (root / f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
         header = re.match(r'\A---\nname: ' + re.escape(name) + r'\ndescription: ("[^\n]+")\n---\n', core)
         if not header:
@@ -109,7 +118,7 @@ def validate_package(root: Path) -> list[str]:
             except (ValueError, AttributeError) as exc:
                 errors.append(f"{name}: invalid OpenAI string: {exc}")
 
-    skill_roots = [root / "skills/workflow", root / "skills/codebase-map"]
+    skill_roots = [root / f"skills/{name}" for name in ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review")]
     for path in sorted(root.rglob("*.md")):
         if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
@@ -142,7 +151,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
-    print(f"PASS: package structure, manifest consistency, minimal metadata, two skills, relative links, core budget ({words} words).")
+    print(f"PASS: package structure, manifest consistency, minimal metadata, six local skills, relative links, core budget ({words} workflow words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
     return 0
 

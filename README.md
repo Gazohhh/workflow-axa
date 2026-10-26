@@ -1,8 +1,17 @@
 # workflow-axa
 
-**2.3.0 — stronger questioning, existing-task reuse and clearer reviews.** One team workflow and one local `codebase-map` skill. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
+**2.5.0 — global test-output rules with safe retention.** One main workflow plus focused local utilities. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
 
-## What changed
+## New: global test-output rules
+
+One policy now covers ordinary testing/build/device prompts as well as `/workflow`: stable task output parents, selective evidence, reuse of tools, and safe cleanup of only the current work's eligible scratch. No new skill, external dependency or blanket cleanup. Plans, approved flowcharts, reference images and protected tool outputs stay intact.
+
+Read [UPGRADE.md](UPGRADE.md) to preview/apply global activation for Claude and Codex. This is required for all-project coverage; merely extracting the ZIP or editing one project's AGENTS.md is not enough. The helper never scans or deletes `.artifacts`. Existing producer scripts may still need separate approved retention work.
+
+## Existing workflow capabilities retained
+
+The four independent local utilities added in 2.4.0 remain: `task-status`, `resume-task`, `workflow-doctor` and `plan-review`. `codebase-map` also has an explain mode. They do not replace `/workflow`; they provide read-only/status/recovery/review jobs without forcing a full implementation workflow.
+
 
 | Improvement | What the agent must now do |
 |---|---|
@@ -11,9 +20,9 @@
 | Clear language | Explain concrete behavior and consequences before technical details in questions, plans, reports and completion messages. Keep exact evidence accessible. |
 | No-slop review | Review unnecessary helpers, silent coercion, repetitive comments/docs and unsupported claims against specific examples, not a vague label. |
 | Visual protection | Keep the approved flowchart local and unchanged. Compare stable reference screenshots; never automatically replace a failing baseline. |
-| Actual-agent tests | New hidden-decision and task-discovery fixtures/protocol compare 2.2.1 with this version. Their results remain NOT_RUN until a real host run is observed. |
+| Actual-agent tests | Decision, task-reuse and artifact cases compare 2.4.0 with this version. Their results remain NOT_RUN until a real host run is observed. |
 
-Matt's research, diagnosing-bugs, tdd, code-review, grilling and other established specialists remain separately installed. All 27 catalogue entries are retained; the grilling trigger/adapter is strengthened. The local flowchart needs no external diagram-design skill. Optional skill-creator and webapp-testing guidance is available only for approved maintenance/browser work; neither becomes a dependency.
+Matt's research, diagnosing-bugs, tdd, code-review, grilling and other established specialists remain separately installed. All 27 catalogue entries are retained; the existing proactive grilling trigger/adapter is preserved. The local flowchart needs no external diagram-design skill. Optional skill-creator and webapp-testing guidance is available only for approved maintenance/browser work; neither becomes a dependency.
 
 ## Workflow behavior
 
@@ -33,14 +42,15 @@ For a short installation handoff, start with [UPGRADE.md](UPGRADE.md).
 
 ## Upgrade checklist — important for plain prompts
 
-**Install both local skills and merge the project routing block once.** Updating a ZIP alone cannot ensure an ordinary prompt enters the workflow.
+**Install all six local skills and merge the project routing block once.** Updating a ZIP alone cannot ensure an ordinary prompt enters the workflow.
 
-1. Extract to a separate candidate folder, preserving your previous version and `.git`/unrelated work. For Claude plugin use the root containing `.claude-plugin/plugin.json`; both skills are registered there. For direct Codex/Claude installs copy the **complete** `skills/workflow` and `skills/codebase-map` folders into the appropriate skill root. Do not retain duplicate active copies.
-2. **Update, do not duplicate, your existing routing block** so ordinary prompts use the new task-selection and proactive-grilling rules. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that both local skills actually load.
+1. Extract to a separate candidate folder, preserving your previous version and `.git`/unrelated work. For Claude plugin use the root containing `.claude-plugin/plugin.json`; all six skills are registered there. For direct Codex/Claude installs copy the **complete** six folders under `skills/` into the appropriate skill root. Do not retain duplicate active copies.
+2. **Update, do not duplicate, your existing routing block** so ordinary prompts use the new task-selection and proactive-grilling rules. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that all six local skills actually load.
 3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
 
-4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update both complete local skill folders while preserving unrelated custom files. When upgrading from 2.2.0, remove its retired package-owned DIAGRAM-DESIGN.md reference; later releases already use FLOWCHART-DESIGN.md. Do not uninstall unrelated external skills automatically.
-5. No report-schema migration is needed from 2.2.1; the same schema-2 JSON and approved assets are retained. Older schema-1 inputs use the existing [migration guide](skills/codebase-map/REPORT.md). Keep previously reviewed HTML. Complete the new [live-host pilot](tests/behavioral/README.md) before team-wide reliance on the changed interviewing behavior.
+4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update all six complete local skill folders while preserving unrelated custom files. When upgrading from 2.2.0, remove its retired package-owned DIAGRAM-DESIGN.md reference; later releases already use FLOWCHART-DESIGN.md. Do not uninstall unrelated external skills automatically.
+5. Activate the shared artifact policy globally using the preview/apply/check commands in [UPGRADE.md](UPGRADE.md). Keep project-specific rules in their project, not in the global files.
+6. No report-schema migration is needed from 2.2.1; the same schema-2 JSON and approved assets are retained. Older schema-1 inputs use the existing [migration guide](skills/codebase-map/REPORT.md). Keep previously reviewed HTML. Complete the new [live-host pilot](tests/behavioral/README.md) before team-wide reliance on the changed interviewing behavior.
 
 ## Local commands
 
@@ -51,6 +61,11 @@ Claude plugin:
 /workflow-axa:codebase-map current <feature or subsystem>
 /workflow-axa:codebase-map proposed <task folder or supplied design>
 /workflow-axa:codebase-map compare <task folder>
+/workflow-axa:codebase-map explain <feature or subsystem>
+/workflow-axa:task-status <task or topic>
+/workflow-axa:resume-task <task folder>
+/workflow-axa:workflow-doctor
+/workflow-axa:plan-review <task folder>
 ```
 
 Codex: `$workflow` and `$codebase-map`. Standalone Claude skills: `/workflow` and `/codebase-map`. Explicit commands remain available even after ordinary-prompt routing is configured. A map-only request never starts implementation or Matt's architecture-improvement workflow.

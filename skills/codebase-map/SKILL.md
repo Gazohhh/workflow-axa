@@ -13,7 +13,7 @@ Write for a reader new to the project: explain the requested behavior and its co
 
 Read applicable project rules. Resolve the repository/worktree and relevant local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
 
-Choose **current** for “show how it works”, **proposed** for a supplied/requested future design, **compare** for an implementation review. In compare mode the proposed feature flow opens first; current behavior and an aligned change comparison remain available. For greenfield work show the verified integration point or absence, not a fictional old feature.
+Choose **explain** when the user wants a no-assumed-context walkthrough of how a feature works today; **current** for a concise current-state map, **proposed** for a supplied/requested future design, **compare** for an implementation review. In explain mode, lead with a plain-language story of the real user/system flow, then the flowchart, then exact files/symbols/evidence; do not create a plan or propose improvements unless asked. In compare mode the proposed feature flow opens first; current behavior and an aligned change comparison remain available. For greenfield work show the verified integration point or absence, not a fictional old feature.
 
 Identify and reuse the current/named task and its requirements, answers, PLAN, TODO, FINDINGS and decisions. If a likely existing record is ambiguous, ask before creating another artifact location; a new command is not a new task. No new refactor candidates or product features merely to enrich the map. Standalone inspection needs no implementation scaffold.
 
@@ -40,3 +40,7 @@ Request local opening with `--open` when supported and give the absolute artifac
 ## 4. Return without implementing
 
 Return report/source paths, mode, revision, local design/renderer version, checks and limits. There is no approval button or agent connection. Workflow shows the report, stops, then records the user’s real approval before coding. A standalone map ends with artifact delivery. Visual approval never replaces necessary grilling, and settled questions are not reopened here.
+
+## Output lifetime
+
+Follow the active workflow's ARTIFACTS.md or its installed global policy. Keep requested HTML/JSON at the explicit review destination (project convention, otherwise existing task folder); do not create a new task to store a map. Approved/presented reviews and visual baselines are protected, not test scratch. Reuse permitted unpresented drafts; don't regenerate unchanged reviews on resume. Browser-check captures use the existing task output parent, with only necessary proof retained. No new backup or cleanup report.

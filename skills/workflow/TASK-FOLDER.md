@@ -52,6 +52,7 @@ Omit irrelevant fields for lightweight work; use `unknown` or `not applicable` r
 - Current understanding / evidence: <R/E/A mapping; inspected state and unresolved limits>
 - Visual review: <draft/awaiting/approved/waived; revision; report/source path; shown/open result>
 - Specialists: <capability evidence / selected routes / approved adapters or exceptions>
+- Test output (when needed): <existing parent; owner; retained evidence; scratch/active consumers and cleanup condition>
 - Last completed step and observed evidence: <reference>
 - Next safe action: <specific step and prerequisites>
 - Blocked decisions / interrupted work: <IDs and affected work>
@@ -128,4 +129,10 @@ Never copy credentials, access tokens, raw personal data, or unrelated productio
 
 ## Visual artifacts
 
-For substantive implementation follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Keep revisioned report input and HTML under the task artifact directory, linked from PLAN. They project the authoritative records; do not maintain another task list inside an independent design. Preserve the report shown for each approval and mark later material proposals separately. No unrequested HANDOFF file or remote whiteboard is needed.
+For substantive implementation follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Keep revisioned report input and HTML at the project's review-page location, otherwise inside the existing task folder, linked from PLAN. This durable approval record is separate from ignored test scratch. They project the authoritative records; do not maintain another task list inside an independent design. Preserve the report shown for each approval and mark later material proposals separately. No unrequested HANDOFF file or remote whiteboard is needed.
+
+## Test output is not another task record
+
+Read [ARTIFACTS.md](ARTIFACTS.md) before generating output. Reuse the already recorded output parent; default only when absent to the project's convention or `.artifacts/<full-existing-task-folder-name>/` in this worktree. Create only needed children. Do not create new top-level folders for phases, retries or dates. Tool-owned output paths remain unchanged.
+
+Record retained proof and the current scratch/consumer state in the existing checkpoint/findings. No new per-run manifests, cleanup logs, backups or HANDOFF documents. On resume, reconcile ownership and active consumers before reusing or removing output; an interrupted run is not automatically disposable. A read-only status/doctor/review can return findings in chat without saving anything.

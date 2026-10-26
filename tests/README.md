@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.3.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.4.0; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -96,3 +96,9 @@ passing feature flow. See E32–E37 in SCENARIOS.md.
 [Live-host decision/task-reuse cases](behavioral/README.md) cover overlooked decisions, complete requests, partial answers, recommendation consent, related/ambiguous/completed task discovery, no-file explanations, interrupted work and missing grilling. Their JSON is evaluator-only; do not paste expected outcomes into agent prompts. No live model run is asserted by validating that JSON or constructing fixtures.
 
 [Visual regression instructions](VISUAL-REGRESSION.md) describe read-only captures and exact screenshot comparisons. The original browser smoke suite remains for geometry, semantics represented by fixtures and interaction checks. Screenshot references preserve prior styling; they are not proof of pixel perfection on other devices. No new dependency is installed by either tool.
+
+## Global policy setup and retention checks (2.5.0)
+
+`test_global_policy.py` uses disposable user homes to test preview/check no-write behavior, idempotent merges, override selection, CRLF/BOM preservation, custom profiles, modified policy refusal, symlink/junction boundary checks, hardlinks, concurrent edits and untouched project artifacts. The helper is not a filesystem cleaner. Linux filesystem checks are not evidence of Windows junction or native ACL behavior; test the actual target environment before deployment.
+
+B15–B24 in the live-host suite cover policy loading outside workflow, safe reruns/concurrency, required captures, producer retention limits, ownership and delivery preservation. They are authored but NOT RUN. Existing browser output directories remain isolated for safety: use an owned child under one task parent, retain necessary proof, and clean eligible temporary captures after inspection instead of creating an unrelated root each time.

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Resume task"
+  short_description: "Safely continue an existing workflow task after a session, account or agent switch. Reconcile records, code, approval an"

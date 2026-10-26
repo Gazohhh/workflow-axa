@@ -1,0 +1,17 @@
+---
+name: resume-task
+description: "Safely continue an existing workflow task after a session, account or agent switch. Reconcile records, code, approval and specialist availability before taking the next approved action."
+---
+
+# Resume task
+
+Continue an existing workflow task safely; do not reconstruct progress from conversation memory.
+
+1. Read project rules and the supplied/named task records. If the task identity is ambiguous, ask before writing.
+2. Reconcile PLAN/TODO/FINDINGS/DECISIONS, current branch/worktree, uncommitted changes, relevant files, verification evidence and specialist availability. Treat interrupted work as uncertain until inspected.
+3. Restate in plain language what the task is, what is already approved, what appears complete, what changed since the checkpoint, unresolved decisions and the next safe action.
+4. Reuse valid answers and approval for the same presented revision. Do not restart grilling or visual approval merely because the agent/session changed. If scope materially changed or approval evidence is invalid/stale, return to `workflow` for the necessary questioning/review gate.
+5. If the next unit is already approved, checkpoint it before work, execute it using the applicable workflow specialists, verify it, and update the existing task records. Never create a duplicate handoff system.
+6. Do not stage, commit, push, deploy, reset or discard unless explicitly authorized.
+
+Before output-producing work, read the active workflow ARTIFACTS.md/global policy and reconcile the recorded output parent, pending consumers, retained proof and interrupted scratch. Reuse that parent; a new agent is not a new artifact root. Clean only verified owned disposable output under existing authority, never unknown files from the interrupted session.

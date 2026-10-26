@@ -29,7 +29,7 @@ class PackageTests(unittest.TestCase):
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly the registered workflow and codebase-map SKILL.md files are required.", validate_package(root))
+            self.assertIn("Exactly the six registered workflow-axa SKILL.md files are required.", validate_package(root))
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -89,6 +89,26 @@ class PackageTests(unittest.TestCase):
             self.assertNotIn("npx skills add https://github.com/cathrynlavery", text, name)
             self.assertNotIn("--only diagram-design", text, name)
             self.assertNotIn("codebase-map → diagram-design", text, name)
+
+    def test_registered_utility_skills_exist_and_are_bounded(self):
+        plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+        self.assertEqual(plugin["version"], "2.5.0")
+        for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
+            self.assertIn(f"./skills/{name}", plugin["skills"])
+            text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("---", text)
+        self.assertIn("do not implement", (ROOT/"skills/task-status/SKILL.md").read_text(encoding="utf-8").lower())
+        self.assertIn("do not implement", (ROOT/"skills/plan-review/SKILL.md").read_text(encoding="utf-8").lower())
+        self.assertIn("without changing", (ROOT/"skills/workflow-doctor/SKILL.md").read_text(encoding="utf-8").lower())
+
+    def test_explain_and_anti_slop_contracts_are_explicit(self):
+        workflow=(ROOT/"skills/workflow/SKILL.md").read_text(encoding="utf-8")
+        map_skill=(ROOT/"skills/codebase-map/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("necessity check", workflow)
+        self.assertIn("domain-modeling", workflow)
+        self.assertIn("cold-reader check", workflow)
+        self.assertIn("**explain**", map_skill)
+        self.assertIn("do not create a plan", map_skill)
 
 
 if __name__ == "__main__":

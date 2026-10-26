@@ -1,0 +1,3 @@
+interface:
+  display_name: "Plan review"
+  short_description: "Challenge a workflow plan before approval for unnecessary scope, missing decisions, duplicate features, weak acceptance "

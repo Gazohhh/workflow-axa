@@ -21,7 +21,7 @@ A brief read-only task search precedes record creation. Save a checkpoint before
 
 ## 2. Inspect facts and capabilities
 
-Use [GROUNDING.md](GROUNDING.md): inspect relevant owners, entrypoints/callers, alternate paths, reuse, tests, data/config and authoritative docs. Scale reads to impact. Record paths/symbols, discrepancies, missing access and static-versus-runtime limits. Establish authorized baseline checks; do not invent architecture or duplicate existing features.
+Use [GROUNDING.md](GROUNDING.md): inspect relevant owners, entrypoints/callers, alternate paths, reuse, tests, data/config and authoritative docs. Scale reads to impact. Record paths/symbols, discrepancies, missing access and static-versus-runtime limits. Before tests/builds/captures, read [ARTIFACTS.md](ARTIFACTS.md): reuse the output parent, protect tool-owned paths and plan bounded retention. Establish authorized baseline checks; do not invent architecture or duplicate existing features. When project terms, ownership or boundaries are unclear, invoke `domain-modeling` before inventing new names or concepts.
 
 Read [SPECIALISTS.md](SPECIALISTS.md). Verify and use Matt's applicable routes and the local visualizer. Installation, availability, use and result verification are separate claims. Recheck changed hosts/dependencies, not every call. Missing required skills block dependent work unless a fallback is explicitly approved. [SETUP.md](SETUP.md) is for approved setup, never automatic installation.
 
@@ -47,17 +47,17 @@ Before coding, record the approving response, displayed revision/report, selecte
 
 Before each unit, save intended changes and verification; after it, save actual results and the next safe action. Keep PLAN/TODO/FINDINGS/DECISIONS authoritative; no duplicate handoff system. Reconcile records with files on resumption.
 
-Use applicable specialists within the approved scope. Keep behavior at its owner; justify helpers, normalization and fallback values against real contracts. Comments explain non-obvious reasons, not syntax. Update existing docs and remove directly obsolete callers/config/tests/debug code. Track explicitly approved migration leftovers.
+Use applicable specialists within the approved scope. Before adding a helper, wrapper, service, manager, mapper, fallback, compatibility layer or new configuration surface, run a **necessity check**: name the concrete problem it solves, why existing owners cannot express it clearly, and what complexity would return if it were removed. Prefer the smaller design when behavior stays correct. Keep behavior at its owner; justify normalization and fallback values against real contracts. Comments explain non-obvious reasons, not syntax. Update existing docs and remove directly obsolete callers/config/tests/debug code. Track explicitly approved migration leftovers.
 
-Use subagents only when available and useful, with clear write ownership. They return evidence to the record owner. Sequential work is valid; self-review is not independent review. Expected regression-test failures are normal; distinguish task-caused, baseline and environment failures before asking for a decision.
+Use subagents only when available and useful, with clear write ownership. Pass each worker the same output parent, ownership and artifact limits. They return evidence to the record owner. Sequential work is valid; self-review is not independent review. Expected regression-test failures are normal; distinguish task-caused, baseline and environment failures before asking for a decision.
 
 ## 6. Verify and finish honestly
 
 Use [AUDIT.md](AUDIT.md). Check requested behavior, alternate/error paths, cleanup, records and actual task-attributable staged/unstaged/untracked changes. Invoke `code-review` for code; use `writing-for-agents` for skill/instruction changes. Review helpers and prose against concrete examples, not a vague “no slop” claim. Rerun affected checks after repairs.
 
-For visual changes, compare controlled screenshots against the approved reference and inspect meaning, navigation and readability. Never replace a failed baseline automatically. A screenshot match is not proof of comprehension or correct behavior.
+For visual changes, compare controlled screenshots against the approved reference and inspect meaning, navigation and readability. Never replace a failed baseline automatically. A screenshot match is not proof of comprehension or correct behavior. Before consequential plans/reports/final explanations, apply the cold-reader check in WRITING.md: a new reader must be able to state what exists, what changes, what stays unchanged, why it matters and how success is checked.
 
-Do not automatically stage, commit, push, upload, deploy, reset or discard. Report observed results, untested areas and artifact paths. Mark done only when acceptance is met or an explicit limit is recorded. Preserve a concise checkpoint for another agent.
+Do not automatically stage, commit, push, upload, deploy, reset or discard. Finish the artifact lifecycle under ARTIFACTS.md: clean only eligible own scratch, preserve required evidence and note unresolved consumers. Report observed results, untested areas and retained artifact paths; no extra cleanup report. Mark done only when acceptance is met or an explicit limit is recorded. Preserve a concise checkpoint for another agent.
 
 ## Load only when relevant
 

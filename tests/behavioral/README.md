@@ -6,7 +6,7 @@ The format is local to this package; it is not claimed to be native Claude plugi
 
 ## Prepare a fair old/new comparison
 
-Use trusted copies of 2.2.1 and 2.3.0 in separate fresh sessions. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
+Use trusted copies of 2.4.0 and 2.5.0 in separate fresh sessions. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
 
 Generate the same fixture variant twice in new locations outside valuable repositories:
 
@@ -17,7 +17,7 @@ python -X utf8 tools/create_fixture.py --output "C:\Dev\case-b02-new" --scenario
 
 The new generator can create fixtures for either skill version. It creates one baseline commit only inside each fresh synthetic repository; no remotes or existing worktrees are changed. New variants are decision-gap, related-task, multiple-tasks, completed-task and answered-task. Expected answers remain in this evaluator file, not inside those fixtures. Synthetic approved answers intentionally included in an approved fixture are test inputs, not real application authority.
 
-Install/copy only the two complete local skill folders for the version under test into the fixture's host-supported project skill location, or use the corresponding trusted plugin root. Keep evaluator material outside the permitted agent root, not in an accessible test-data directory. Do not activate both versions or a stale global copy. Leave the reviewed Matt specialists available except in the missing-skill case. No diagram-design installation is required.
+Install/copy only the six complete local skill folders for the version under test into the fixture's host-supported project skill location, or use the corresponding trusted plugin root. Keep evaluator material outside the permitted agent root, not in an accessible test-data directory. Do not activate both versions or a stale global copy. Leave the reviewed Matt specialists available except in the missing-skill case. No diagram-design installation is required.
 
 In approved fixture setup, merge that version's project routing block into the actual host-loaded instructions and preserve existing fixture rules. For Claude use its applicable CLAUDE.md/project rules; do not assume it reads AGENTS.md automatically. Record setup before each session. Test the package+routing version as a pair, and separately rerun with a common explicit invocation to isolate routing from the questioning method.
 
@@ -47,3 +47,9 @@ For interruption, stop a real session mid-unit without requesting a handoff firs
 ## Rollout
 
 Run B01–B09 and B12/B13 on the team's actual Claude configuration before relying on the stronger questioning behavior. Preserve a working previous installation. Add a regression case for any real failure, then change the smallest relevant instruction. No hooks, permissions bypass, mandatory new skill or automatic publication is introduced by this protocol.
+
+## Global output policy cases B15–B24
+
+Run only in disposable project and user-profile directories. Apply the evaluator setup in cases.json before giving the prompt; the setup is not part of the agent prompt and is never real cleanup authority. Use tiny synthetic build/emulator placeholders, not full downloads. Establish active/retained/protected paths explicitly in the fixture. Keep actual production artifact trees out of scope.
+
+Include an ordinary test request without a skill name after global setup, an effective Codex override, concurrent output isolation, requested screenshot coverage, an output-producing tool with no retention, and interrupted ownership. Inspect filesystem changes and reads, not merely the final answer. Required evidence must survive. No live result is claimed by validating the case definitions. Store only the selected run evidence needed for comparison and use a stable evaluator output parent.

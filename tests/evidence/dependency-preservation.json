@@ -1,32 +1,13 @@
 {
-  "baseline_version": "2.2.1",
-  "candidate_version": "2.3.0",
-  "matt_catalogue_entries": 27,
-  "catalogue_other_than_workflow_version_identical": true,
-  "unchanged_route_rows": 9,
-  "question_and_writing_adapters": "intentionally revised",
-  "preserved_files": {
-    "skills/codebase-map/assets/report.css": {
-      "baseline_sha256": "191f4c112c8550413deb68b8ffed07ab6b56a17bbe374a13383173b05f666d76",
-      "candidate_sha256": "191f4c112c8550413deb68b8ffed07ab6b56a17bbe374a13383173b05f666d76",
-      "identical": true
-    },
-    "skills/codebase-map/assets/report.js": {
-      "baseline_sha256": "0adff806060818b5eaefcdd455be01e25885bc61e752cd63498386173cb742c6",
-      "candidate_sha256": "0adff806060818b5eaefcdd455be01e25885bc61e752cd63498386173cb742c6",
-      "identical": true
-    },
-    "skills/codebase-map/examples/review.json": {
-      "baseline_sha256": "6190635b735ba5da5eff380ed7ccc691a8e9ebe24e6abd6bda247b5bc84675eb",
-      "candidate_sha256": "6190635b735ba5da5eff380ed7ccc691a8e9ebe24e6abd6bda247b5bc84675eb",
-      "identical": true
-    },
-    "skills/workflow/scripts/check_specialists.py": {
-      "baseline_sha256": "6c724dfec6596ba8ee28a41e565f455559e0da9401284ec5aed1587dc1377c06",
-      "candidate_sha256": "6c724dfec6596ba8ee28a41e565f455559e0da9401284ec5aed1587dc1377c06",
-      "identical": true
-    }
-  },
-  "renderer_logic": "byte-identical after expected tool_version replacement",
-  "note": "No upstream install or live specialist invocation was performed."
+  "baseline": "2.4.0",
+  "candidate": "2.5.0",
+  "checks": {
+    "Matt_catalogue_and_source_metadata_unchanged": true,
+    "skills/workflow/QUESTIONS.md": true,
+    "skills/codebase-map/FLOWCHART-DESIGN.md": true,
+    "skills/codebase-map/assets/report.css": true,
+    "skills/codebase-map/assets/report.js": true,
+    "skills/codebase-map/examples/review.json": true,
+    "renderer_unchanged_except_version": true
+  }
 }

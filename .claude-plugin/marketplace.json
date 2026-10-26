@@ -9,13 +9,15 @@
     {
       "name": "workflow-axa",
       "source": "./",
-      "description": "One workflow and an on-demand codebase-map: inspect evidence, prepare a visual review, obtain approval, implement and verify without automatic Git actions.",
+      "description": "One implementation workflow plus local codebase-map, task-status, resume-task, workflow-doctor and plan-review utilities.",
       "category": "engineering",
       "keywords": [
         "workflow",
         "planning",
         "testing",
-        "code-review"
+        "code-review",
+        "task-status",
+        "handover"
       ]
     }
   ]

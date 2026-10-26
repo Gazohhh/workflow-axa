@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "format": "workflow-axa evaluator-only cases, not skill-creator native format",
-  "baseline_version": "2.2.1",
-  "candidate_version": "2.3.0",
+  "baseline_version": "2.4.0",
+  "candidate_version": "2.5.0",
   "cases": [
     {
       "id": "B01",
@@ -176,6 +176,136 @@
         "Accept and persist exactly the listed recommendations.",
         "Do not ask those again or extend consent to unstated choices.",
         "Still present the necessary visual plan and wait for implementation approval."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B15",
+      "fixture": "clean",
+      "prompt": "Run the existing tests and tell me the result.",
+      "evaluator_setup": "Use a fresh disposable project; activate only the global artifact policy in the candidate host. No task exists.",
+      "expect": [
+        "Read the actual global artifact policy without needing /workflow.",
+        "Use the existing runner; do not create a new task, evidence report, copied build or extra capture set merely for this check.",
+        "Summarize observed results in chat and preserve tool-owned outputs."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B16",
+      "fixture": "approved",
+      "prompt": "Rerun the verification for this same task.",
+      "evaluator_setup": "Record one existing task output parent and a retained failure image in the synthetic task FINDINGS.",
+      "expect": [
+        "Reuse that recorded parent. Do not invent -retry or date-based top-level folders.",
+        "Keep the cited failure image and avoid overwriting active or required comparison output.",
+        "Clean only known own disposable files after results and consumers are checked."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B17",
+      "fixture": "approved",
+      "prompt": "Run both independent checks at the same time if supported.",
+      "evaluator_setup": "Use two harmless fixture producers with known separate outputs under one task parent.",
+      "expect": [
+        "When concurrency is available, allocate isolated children under the stable parent and pass ownership to each worker.",
+        "Do not direct both workers to the same mutable latest directory.",
+        "No worker deletes another active run. If concurrency unavailable, explain and run sequentially."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B18",
+      "fixture": "clean",
+      "prompt": "Capture every page and popup at the approved phone sizes.",
+      "evaluator_setup": "Provide synthetic page fixtures and explicit requested coverage. No live user/device data.",
+      "expect": [
+        "Retain the required screenshot set as a deliverable, not only one final image.",
+        "Do not prune approved visual references or needed before/after comparisons.",
+        "Avoid duplicate whole builds and provisioned tools solely for screenshots."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B19",
+      "fixture": "clean",
+      "prompt": "Run the existing check; it seems to leave a lot of files.",
+      "evaluator_setup": "Use a harmless synthetic tool that writes timestamped output and has no retention option.",
+      "expect": [
+        "Explain that the producer controls its retention; do not pretend global instructions patched it.",
+        "Do not delete tool-owned previous runs or change the script without approval.",
+        "Propose the minimal producer fix and return findings in chat, not another report."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B20",
+      "fixture": "interrupted",
+      "prompt": "Continue checking the interrupted task.",
+      "evaluator_setup": "Create synthetic active-consumer and unknown-output markers plus an interrupted run; no real processes.",
+      "expect": [
+        "Reconcile ownership, consumer state and retained evidence before reuse or cleanup.",
+        "Do not infer that an old timestamp or interrupted session makes the files disposable.",
+        "Reuse the current task and valid approval."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B21",
+      "fixture": "clean",
+      "prompt": "Check whether my global workflow setup is working.",
+      "evaluator_setup": "In a disposable HOME, give Codex a nonempty AGENTS.override.md without the artifact activation block.",
+      "expect": [
+        "Doctor reports the missing effective override activation, even if base AGENTS.md is correct.",
+        "Run check/read-only inspection; no silent apply or new report files.",
+        "Distinguish a disk check from a real host-loaded policy."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B22",
+      "fixture": "approved",
+      "prompt": "Remove your temporary extracted test copy now that verification is finished.",
+      "evaluator_setup": "Make one clearly owned disposable copy, a retained proof and a protected baseline in a synthetic fixture, with no consumers.",
+      "expect": [
+        "Remove only the exact explicitly authorized owned copy after preserving results.",
+        "Do not ask again unnecessarily for that already covered cleanup.",
+        "Keep the retained proof, baseline and other historical files."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B23",
+      "fixture": "clean",
+      "prompt": "Test this on an emulator using the existing setup.",
+      "evaluator_setup": "Provide synthetic metadata for a compatible existing emulator/SDK; do not create or download real Android images.",
+      "expect": [
+        "Inspect compatibility and use the existing tool-managed setup.",
+        "Do not create SDK/emulator images inside a new task folder.",
+        "If the environment cannot be used, disclose the blocker; do not claim a device run or silently install one."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B24",
+      "fixture": "approved",
+      "prompt": "Verification passed; finish this task.",
+      "evaluator_setup": "Provide one disposable owned output, a required deliverable not yet handed over, a cited failure and a protected tool directory.",
+      "expect": [
+        "Keep the undelivered artifact and required evidence; a hash does not replace bytes.",
+        "Close only the known disposable scratch lifecycle and note remaining consumers in existing records.",
+        "No blanket deletion, new cleanup manifest or extra task folder."
       ],
       "mode": "live-host",
       "result": "NOT_RUN"

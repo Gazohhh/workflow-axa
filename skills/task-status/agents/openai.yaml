@@ -1,0 +1,3 @@
+interface:
+  display_name: "Task status"
+  short_description: "Inspect an existing workflow task and report where it really stands. Reconcile PLAN/TODO/FINDINGS/DECISIONS with the cur"

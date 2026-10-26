@@ -51,7 +51,7 @@ invoke it for every TODO or comment. Nested specialist calls use these same boun
 | A bug, failing behavior or performance regression needs diagnosis | `diagnosing-bugs` | Symptom-specific feedback loop, evidence, causal diagnosis and cleanup; D adapter. Stop before an unauthorized fix. |
 | Test-first feature/fix work or integration tests at agreed observable interfaces | `tdd` | One behavioral test and implementation slice at a time; T adapter. Propose seams during planning and reuse their approval. |
 | Module interfaces, abstractions or test boundaries need design review | `codebase-design` | Apply its design reference to the bounded choice; no new architecture interview when the design is settled. |
-| Project terminology, glossary or an architecture decision is being changed | `domain-modeling` | Clarify terms and capture approved changes at their authoritative location; M adapter. Merely reading a glossary does not trigger it. |
+| Project terminology, ownership, domain boundaries or an architecture decision is unclear or being changed | `domain-modeling` | Reuse established terms before inventing new managers/services/concepts; clarify ambiguity and capture approved changes at the authoritative location; M adapter. Merely reading a glossary does not trigger it. |
 | Creating/revising skills, agent instructions or the structure of agent-facing records | `writing-for-agents` | Apply its writing/reference mechanics plus the local plain-language policy; ordinary checkpoint updates need no new invocation. |
 | Task code changes are ready for review, or a code review is requested | `code-review` | Separate Standards and Spec findings on the actual task changes; C adapter. Docs-only work still gets the workflow audit. |
 | The user authorizes a throwaway prototype to settle a design question | `prototype` | Evidence and a bounded disposable artifact; P adapter. Research approval alone does not authorize prototype code. |
@@ -129,3 +129,7 @@ The visual design procedure, assets and renderer are local to `codebase-map`. It
 ## Optional maintenance/browser helpers
 
 [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md) covers skill-creator and webapp-testing as opt-in candidates. They are not part of the required Matt catalogue, not installed automatically, and not prerequisites for normal workflow or diagram delivery.
+
+## Artifact contract for all routes
+
+Before delegating output-producing work, use [ARTIFACTS.md](ARTIFACTS.md). Pass the exact existing output parent, allowed writes, distinct active-run lanes and retained/protected paths. Return concise results to the owner; do not copy build trees or provision tools per call. Required tests/captures are not skipped to reduce storage. Each worker may clean only its own eligible scratch; one worker cannot prune another's run. Tool-owned destinations and project protections stay intact. This adds output boundaries without changing Matt's specialist methods or installation.

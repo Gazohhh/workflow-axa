@@ -49,12 +49,49 @@ test_reused_attachment_port_is_rejected (test_flowcharts.FlowchartTests.test_reu
 test_source_and_acceptance_anchors_survive_redesign (test_flowcharts.FlowchartTests.test_source_and_acceptance_anchors_survive_redesign) ... ok
 test_unknown_default_view_is_rejected (test_flowcharts.FlowchartTests.test_unknown_default_view_is_rejected) ... ok
 test_unlabelled_decision_branch_is_rejected (test_flowcharts.FlowchartTests.test_unlabelled_decision_branch_is_rejected) ... ok
+test_categories_and_protected_exceptions (test_global_policy.ArtifactInstructionTests.test_categories_and_protected_exceptions) ... ok
+test_doctor_is_read_only_and_checks_globals (test_global_policy.ArtifactInstructionTests.test_doctor_is_read_only_and_checks_globals) ... ok
+test_investigations_and_required_deliverables_not_removed (test_global_policy.ArtifactInstructionTests.test_investigations_and_required_deliverables_not_removed) ... ok
+test_no_new_record_and_no_legacy_purge (test_global_policy.ArtifactInstructionTests.test_no_new_record_and_no_legacy_purge) ... ok
+test_six_skills_include_artifact_boundary (test_global_policy.ArtifactInstructionTests.test_six_skills_include_artifact_boundary) ... ok
+test_apply_creates_only_three_expected_files (test_global_policy.GlobalPolicyTests.test_apply_creates_only_three_expected_files) ... ok
+test_apply_is_idempotent_without_backups (test_global_policy.GlobalPolicyTests.test_apply_is_idempotent_without_backups) ... ok
+test_apply_preserves_existing_mode (test_global_policy.GlobalPolicyTests.test_apply_preserves_existing_mode) ... ok
+test_changed_input_after_plan_is_rejected (test_global_policy.GlobalPolicyTests.test_changed_input_after_plan_is_rejected) ... ok
+test_config_directory_not_file_rejected (test_global_policy.GlobalPolicyTests.test_config_directory_not_file_rejected) ... ok
+test_custom_environment_roots (test_global_policy.GlobalPolicyTests.test_custom_environment_roots) ... ok
+test_empty_override_is_not_changed (test_global_policy.GlobalPolicyTests.test_empty_override_is_not_changed) ... ok
+test_existing_override_and_base_are_both_updated (test_global_policy.GlobalPolicyTests.test_existing_override_and_base_are_both_updated) ... ok
+test_explicit_roots_take_precedence (test_global_policy.GlobalPolicyTests.test_explicit_roots_take_precedence) ... ok
+test_hardlinked_file_is_rejected (test_global_policy.GlobalPolicyTests.test_hardlinked_file_is_rejected) ... ok
+test_managed_replacement_preserves_surrounding_bytes (test_global_policy.GlobalPolicyTests.test_managed_replacement_preserves_surrounding_bytes) ... ok
+test_missing_check_is_read_only (test_global_policy.GlobalPolicyTests.test_missing_check_is_read_only) ... ok
+test_modified_policy_requires_review (test_global_policy.GlobalPolicyTests.test_modified_policy_requires_review) ... ok
+test_new_file_created_after_plan_is_not_overwritten (test_global_policy.GlobalPolicyTests.test_new_file_created_after_plan_is_not_overwritten) ... ok
+test_newer_policy_cannot_be_downgraded (test_global_policy.GlobalPolicyTests.test_newer_policy_cannot_be_downgraded) ... ok
+test_non_utf8_instructions_are_not_rewritten (test_global_policy.GlobalPolicyTests.test_non_utf8_instructions_are_not_rewritten) ... ok
+test_package_version_and_policy_agree (test_global_policy.GlobalPolicyTests.test_package_version_and_policy_agree) ... ok
+test_partial_duplicate_and_reversed_markers_rejected (test_global_policy.GlobalPolicyTests.test_partial_duplicate_and_reversed_markers_rejected) ... ok
+test_preflight_failure_writes_nothing_else (test_global_policy.GlobalPolicyTests.test_preflight_failure_writes_nothing_else) ... ok
+test_preview_does_not_create_home (test_global_policy.GlobalPolicyTests.test_preview_does_not_create_home) ... ok
+test_relative_or_newline_paths_rejected (test_global_policy.GlobalPolicyTests.test_relative_or_newline_paths_rejected) ... ok
+test_single_host_does_not_touch_the_other (test_global_policy.GlobalPolicyTests.test_single_host_does_not_touch_the_other) ... ok
+test_space_escaping_and_codex_plain_read_instruction (test_global_policy.GlobalPolicyTests.test_space_escaping_and_codex_plain_read_instruction) ... ok
+test_stale_host_block_detected_without_writes (test_global_policy.GlobalPolicyTests.test_stale_host_block_detected_without_writes) ... ok
+test_symlinked_file_is_rejected (test_global_policy.GlobalPolicyTests.test_symlinked_file_is_rejected) ... ok
+test_symlinked_parent_is_rejected (test_global_policy.GlobalPolicyTests.test_symlinked_parent_is_rejected) ... ok
+test_unowned_policy_is_not_overwritten (test_global_policy.GlobalPolicyTests.test_unowned_policy_is_not_overwritten) ... ok
+test_unrelated_existing_content_and_crlf_are_preserved (test_global_policy.GlobalPolicyTests.test_unrelated_existing_content_and_crlf_are_preserved) ... ok
+test_unrelated_project_artifacts_are_untouched (test_global_policy.GlobalPolicyTests.test_unrelated_project_artifacts_are_untouched) ... ok
+test_valid_older_managed_policy_can_upgrade (test_global_policy.GlobalPolicyTests.test_valid_older_managed_policy_can_upgrade) ... ok
 test_broken_relative_link_is_rejected (test_package.PackageTests.test_broken_relative_link_is_rejected) ... ok
 test_current_package (test_package.PackageTests.test_current_package) ... ok
+test_explain_and_anti_slop_contracts_are_explicit (test_package.PackageTests.test_explain_and_anti_slop_contracts_are_explicit) ... ok
 test_external_design_install_commands_are_not_active_setup (test_package.PackageTests.test_external_design_install_commands_are_not_active_setup) ... ok
 test_link_outside_package_is_rejected (test_package.PackageTests.test_link_outside_package_is_rejected) ... ok
 test_local_flowchart_guide_is_required (test_package.PackageTests.test_local_flowchart_guide_is_required) ... ok
 test_missing_reference_is_rejected (test_package.PackageTests.test_missing_reference_is_rejected) ... ok
+test_registered_utility_skills_exist_and_are_bounded (test_package.PackageTests.test_registered_utility_skills_exist_and_are_bounded) ... ok
 test_retired_external_design_adapter_is_not_shipped (test_package.PackageTests.test_retired_external_design_adapter_is_not_shipped) ... ok
 test_skill_references_are_self_contained (test_package.PackageTests.test_skill_references_are_self_contained) ... ok
 test_unregistered_extra_skill_is_rejected (test_package.PackageTests.test_unregistered_extra_skill_is_rejected) ... ok
@@ -124,7 +161,7 @@ test_unknown_name_and_missing_root_are_errors (test_specialists.SpecialistTests.
 test_wrapper_is_not_an_alias_for_missing_grilling (test_specialists.SpecialistTests.test_wrapper_is_not_an_alias_for_missing_grilling) ... ok
 test_wrong_baseline_source_is_refused (test_specialists.SpecialistTests.test_wrong_baseline_source_is_refused) ... ok
 test_case_set_mismatch_is_not_verified (test_visual_regression.VisualRegressionTests.test_case_set_mismatch_is_not_verified) ... ok
-test_changed_pixels_fail_and_emit_difference (test_visual_regression.VisualRegressionTests.test_changed_pixels_fail_and_emit_difference) ... /mnt/data/workflow-update-2.3.0/workflow-axa/tools/visual_regression.py:112: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+test_changed_pixels_fail_and_emit_difference (test_visual_regression.VisualRegressionTests.test_changed_pixels_fail_and_emit_difference) ... /mnt/data/workflow-axa-update/workflow-axa/tools/visual_regression.py:112: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
   changed = sum(1 for pixel in difference.getdata() if pixel != (0, 0, 0))
 ok
 test_duplicate_case_is_rejected (test_visual_regression.VisualRegressionTests.test_duplicate_case_is_rejected) ... ok
@@ -143,6 +180,6 @@ test_size_change_fails (test_visual_regression.VisualRegressionTests.test_size_c
 test_unsafe_manifest_path_refused (test_visual_regression.VisualRegressionTests.test_unsafe_manifest_path_refused) ... ok
 
 ----------------------------------------------------------------------
-Ran 141 tests in 9.957s
+Ran 178 tests in 11.159s
 
 OK

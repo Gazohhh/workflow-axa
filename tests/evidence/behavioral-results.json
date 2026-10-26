@@ -57,6 +57,47 @@
     {
       "id": "B14",
       "status": "NOT_RUN"
+    },
+    {
+      "id": "B15",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B16",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B17",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B18",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B19",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B20",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B21",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B22",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B23",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "B24",
+      "status": "NOT_RUN"
     }
-  ]
+  ],
+  "candidate_version": "2.5.0"
 }

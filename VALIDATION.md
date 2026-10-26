@@ -1,40 +1,37 @@
-# Validation — workflow-axa 2.3.0
+# Validation — 2.5.0
 
-Validated 16 October 2026. This is package/browser testing, not proof of model compliance.
+Validated 26 October 2026 against the supplied 2.4.0 archive. This release changes instructions, global activation tooling and tests. It does not delete existing user artifacts or modify a real project/agent installation.
 
 ## Observed checks
 
-| Check | Result | Evidence |
-|---|---|---|
-| Original 2.2.1 tooling baseline | PASS — 113 tests | Historical 2.2.1 evidence retained; original rerun before modification. |
-| Updated package/tooling | PASS — 141 tests, no skips in this environment | tests/evidence/tooling-tests.txt; final extracted package rerun outside this archive. |
-| Structure, metadata, references and core budget | PASS — two skills, workflow 993 words | tools/validate.py; same checks in the extracted package. |
-| Offline Chromium browser suite | PASS — 15 checks | tests/evidence/browser-smoke.json; repeated on extracted package. |
-| Exact screenshot comparisons against 2.2.1 | PASS — 4 cases, zero changed pixels | tests/evidence/visual-comparison.json; reference PNGs in tests/visual-baselines/2.2.1. |
-| Deliberate visual defect | EXPECTED FAIL — changing node titles from 18px to 19px is detected | tests/evidence/visual-negative-control.json; four failed visual comparisons, exit 1. |
-| External-provider/design preservation | PASS | tests/evidence/dependency-preservation.json. |
-| Live-host cases | NOT RUN — 14 authored cases | tests/evidence/behavioral-results.json; tests/behavioral/README.md. |
+| Check | Result |
+|---|---|
+| Package structure, metadata, links and budgets | PASS; six skills; main workflow 1,139 words. |
+| Complete automated tooling suite | PASS; 178 tests (143 existing and 35 new); no skips in this Linux environment. |
+| New global-setup checks | Preview/check do not write; managed apply is idempotent; existing instructions/CRLF/BOM and file modes survive; nonempty Codex override is handled; custom profiles work; unsafe/modified inputs are rejected. |
+| Global-setup boundaries | Synthetic unknown project artifacts remain untouched. There is no project cleanup function. All setup writes in testing target disposable user profiles. |
+| Offline Chromium | PASS; 15 existing browser checks, no external requests or page errors. |
+| Matt integrations | Catalogue records/source metadata unchanged from 2.4.0 except workflow_version. Existing questioning instructions are byte-identical; output boundaries were added to specialist handoffs. |
+| Local flowchart | FLOWCHART-DESIGN.md, CSS, JS and example JSON byte-identical. Renderer code changes only the emitted version. Example HTML regenerated for current metadata. |
+| Project instruction edits | Supplied AGENTS.md changes confined to evidence/output rules and the disposable-output qualification. CLAUDE.md keeps @AGENTS.md and its specialist routes, adding delegated-output boundaries. Both retain CRLF. CONTEXT.md is untouched. |
+| Live agent cases | 24 cases authored, including 10 artifact-specific cases; all NOT_RUN. Definitions and unit tests are not model behavior observations. |
 
-Environment: Python 3.13.5, Linux x86_64, Playwright 1.57.0, Chromium 144.0.7559.96. Pillow and browser tooling were already installed. Tests used an explicitly permitted no-sandbox mode only in this disposable container; the command defaults retain sandboxing elsewhere. No dependency/browser installation was performed.
+Evidence: `tests/evidence/tooling-tests.txt`, `browser-smoke.json`, `dependency-preservation.json` and `behavioral-results.json`. Existing dated evidence and visual-reference comparisons are historical, not rerun claims for this version. This release does not claim a new exact-pixel comparison; unchanged visual assets and the browser suite were checked.
 
-The 141 tests exercise existing renderer/checker safety plus input integrity, optional pixel comparison, negative comparison cases, synthetic task-discovery fixtures and regression checks on instruction contracts. Assertions that a rule appears in a file are not observed agent behavior. The live fixture generator creates a local baseline commit only in a new isolated synthetic repository, never the user's checkout.
+Environment: Python 3.13.5, Linux x86_64, Playwright 1.57.0, Chromium 144.0.7559.96. Existing tools only, no downloads. Browser sandbox bypass was explicitly limited to this trusted disposable container; default commands keep sandboxing elsewhere. The feature-flow screenshot was visually inspected.
 
-## What is preserved
+## Setup guarantees and limits
 
-Matt's 27 catalogue entries and historical source metadata match 2.2.1; only workflow_version changes in the catalogue. Nine research/debugging/TDD/review/design/domain/prototype/PR/wizard route rows are unchanged. The grilling route/adapter is deliberately strengthened; writing integration now includes the local reader policy. No upstream skill bodies are bundled or replaced.
+The global helper replaces only its own marked block, preserves surrounding bytes and writes one shared deployed policy. It refuses malformed/duplicate markers, unowned or modified policy, a newer installed policy, unsafe path indirection and inputs changed before replacement. It has no recursive artifact scan, deletion preview or cleanup engine: its preview concerns global instructions only. Its only temporary-file removal is its own in-progress configuration-write file.
 
-Report CSS, JavaScript and example JSON are byte-identical to 2.2.1. Renderer behavior is byte-identical after allowing the emitted tool_version change to 2.3.0. The saved example was regenerated only for version/timestamp metadata. Four prior-fixture images match exactly at the recorded viewports. No schema migration is needed from 2.2.1, no external diagram-design dependency returns, and no font files are included.
+File replacements are atomic individually, not transactional across all targets. Run setup without concurrent instruction edits. A failed/interrupted apply reports partial completion; rerun the read-only check and complete the reviewed merge. Native Windows ACLs/junction behavior and actual installed-host discovery were not executed here. Conservative path checks and Linux filesystem tests are not a substitute for that target-machine verification.
 
-The default and mobile screenshots were also visually inspected in this maintenance session. The first mobile view shows the entry path; horizontal scrolling exposes offscreen branches rather than shrinking all labels. This preserves the previously chosen interaction, not an assertion that every future graph will be clear.
+Claude/Codex executables and the user's actual homes are unavailable. Global policy loading, delegation, compliant cleanup, question quality and preservation of real active consumers are NOT VERIFIED on a live model. Fresh sessions and the B15–B24 pilot are required. Instructions are not a hard filesystem permission mechanism.
 
-## Limits
+Direct file navigation was blocked by this environment's browser policy. The identical HTML was tested offline through browser content loading. Opening in the user's desktop browser still requires a local check. No complete accessibility audit or human comprehension study is claimed.
 
-- **No live Claude/Codex runs:** neither executable is available. Actual grilling invocation, meaningful decision discovery, task-folder reuse, compaction/handoff, approval compliance and optional helper integration have not been tested on the user's host. The new protocol must be run there before broad rollout. No model reliability score is claimed.
-- **No desktop opener confirmation:** managed browser policy blocked direct file navigation. The browser suite and visual capture loaded identical HTML with networking disabled. No external requests or page errors occurred. Default-browser opening must be checked on the target machine.
-- **No universal pixel-perfect claim:** screenshot equality covers four stable synthetic views in this environment. Reference images were carried forward from the already accepted design, not individually reapproved by the user. Different fonts/OS/browser conditions must be reviewed; no baseline is rewritten automatically. Image equality does not prove accessibility, semantics or human comprehension.
-- **No new specialist installations:** optional skill-creator/webapp-testing were assessed from primary source guidance and documented as opt-in candidates. They were not invoked. Reading a public skill is not proof of installed availability. Matt's current user installation was not inspected or upgraded.
-- **No external actions:** this delivery changes only the extracted package and disposable test fixtures. No user repository, host permissions, Git staging, remote, publication or subscription was modified.
+The user supplied project instructions, not the whole repository or their actual global files. Referenced ADRs, test producers, build-store internals and existing 35 GB artifact tree were not inspected or changed here. The provided project edits preserve known protections and do not certify that every possible consumer has been identified. Producer retention and historical cleanup remain separately approved repository work.
 
-## Packaging
+## Distribution
 
-The final ZIP is CRC-checked, extracted into a fresh directory and compared byte-for-byte with the source-file manifest. Structural/unit, browser and visual checks are rerun from that extracted package; their final logs are kept outside the archive to avoid a self-referential ZIP. The archive excludes .git, caches, test worktrees, credentials and font binaries. The external checksum identifies the delivered ZIP, not an upstream release or installed version.
+The archive excludes caches, temporary profiles, browser-run directories, credentials, fonts and the user's project-specific files. Those AGENTS.md/CLAUDE.md copies are delivered separately; do not publish them as part of the reusable plugin. ZIP integrity and member hashes are verified against the final package. Structural, unit and browser checks are rerun from a fresh extraction before delivery; packaging does not install, tag, push or publish anything.

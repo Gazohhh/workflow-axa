@@ -82,3 +82,9 @@ The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed
 ## Maintaining the approved presentation
 
 The package's tools/visual_regression.py captures the stable bundled fixture and compares screenshots read-only. See package tests/VISUAL-REGRESSION.md for the controlled-environment protocol. These maintenance tools are not required by a standalone map installation; retain existing browser/manual checks when unavailable. Never update an approved screenshot automatically, substitute image equality for semantic review, or claim screenshots establish user comprehension. Keep generated timestamps outside the compared view.
+
+## Durable reviews versus disposable checks
+
+Review HTML/JSON are requested deliverables, not generic test output. Use the project's review-page location or the existing task folder. Preserve every presented/approved revision according to project rules. The renderer refuses existing outputs intentionally: do not bypass that protection or invent another task root. Revise an unpresented draft only when its ownership and the writer's rules allow it.
+
+For optional browser/visual verification, apply the active workflow ARTIFACTS.md/global policy. These tools may require a fresh child directory to avoid overwriting evidence; place it under the stable task output parent. After comparing, preserve approved references and necessary failure/proof images, then remove only the current operation's eligible temporary captures. Do not retain every identical successful comparison or create an extra manifest outside what the test tool actually needs.

@@ -1,3 +1,9 @@
+## 2.4.0 — focused workflow utilities
+
+The package keeps `/workflow` as the only full implementation orchestrator. `task-status`, `resume-task`, `workflow-doctor`, and `plan-review` are narrow local skills so status, recovery, setup diagnosis, or plan challenge do not require starting a new implementation workflow. `codebase-map explain` is inspection-only. Matt's specialist integrations remain external and explicit; the flowchart design remains bundled locally.
+
+A necessity check challenges new abstraction layers before implementation. Domain-modeling is preferred when existing terminology or ownership is unclear. Cold-reader checks protect plain-language usability without removing developer evidence.
+
 # Design decisions and sources
 
 ## 2.3.0 — decisions, task identity and reader clarity
@@ -131,3 +137,11 @@ The external design entry/adapter/install instructions are removed. Matt's histo
 substitutes are introduced. Renderer logic, CSS/JS, schema and example input remain
 unchanged apart from the package version emitted in the output manifest. Reports still
 need code evidence, resolved material decisions and real user approval before coding.
+
+## 2.5.0 — global artifact lifecycle
+
+A user-provided project audit found agents inventing task/phase/retry output roots alongside tools that retain every run. This package addresses agent defaults globally; it does not claim to repair the repository producers. ARTIFACTS.md is the maintained policy inside workflow. Approved setup deploys one shared user-scope copy and small host activation blocks; no seventh skill or dependency is added.
+
+The helper has preview/check by default and explicit apply. It never touches project artifacts. Known protections, concurrency, required evidence and reusable tools prevent destructive blanket cleanup. Task records and approved flowcharts remain durable. User-specific AGENTS/CLAUDE edits are delivered separately, not embedded in the reusable plugin; no domain glossary change is required.
+
+Primary references checked 26 October 2026: [Claude memory scopes/imports](https://code.claude.com/docs/en/memory) and [Codex instructions](https://developers.openai.com/codex/guides/agents-md/). Instructions are context, not an enforcement or storage-quota mechanism. Tests of setup files are not live behavior tests.
