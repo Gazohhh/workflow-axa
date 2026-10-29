@@ -97,7 +97,36 @@
     {
       "id": "B24",
       "status": "NOT_RUN"
+    },
+    {
+      "id": "H01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "H07",
+      "status": "NOT_RUN"
     }
   ],
-  "candidate_version": "2.5.0"
+  "candidate_version": "2.6.0",
+  "baseline_version": "2.5.0"
 }

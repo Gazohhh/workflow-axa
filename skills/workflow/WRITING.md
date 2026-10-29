@@ -30,3 +30,9 @@ Use the existing authoritative docs. Do not create a new glossary, plan, summary
 Before presenting an approval report, substantial plan or final explanation, reread it without relying on the conversation. Can a new reader explain the goal, current/proposed difference, unchanged behavior, important consequences, requested decision and completion checks? Can a technical reader locate supporting evidence?
 
 When available, give a separate reviewer only the artifact and audience, not the conversation; ask for their interpretation and identify mismatches. Otherwise perform and label a self-review. This is not an extra routine approval or proof of usability. Testing with a real nontechnical teammate remains stronger evidence. Record specific corrections in existing findings, not a new writing-audit document for every task.
+
+## Say which time and which state
+
+Use “Baseline before this change” for earlier code, “Approved scope” for agreed work, and a dated current checkpoint for progress. Avoid several unqualified “today” paragraphs. Explain approval, implementation and verification separately: “R3 is approved and coded; the phone appearance still needs acceptance” is clearer than “R3 done.”
+
+Keep a short reason for each changed agreement in the existing revision log; send detailed failed attempts to the existing evidence section. A status update or test retry is not a plan revision. Preserve older reasoning and aliases without asking readers to reconstruct the current state from them.

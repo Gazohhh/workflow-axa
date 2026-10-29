@@ -69,7 +69,11 @@ class PackageTests(unittest.TestCase):
             self.assertTrue(any("FLOWCHART-DESIGN.md" in error for error in validate_package(root)))
 
     def test_retired_external_design_adapter_is_not_shipped(self):
-        self.assertFalse((ROOT / "skills/codebase-map/DIAGRAM-DESIGN.md").exists())
+        compat = (ROOT / "skills/codebase-map/DIAGRAM-DESIGN.md").read_text(encoding="utf-8")
+        self.assertIn("Compatibility pointer", compat)
+        self.assertIn("[FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md)", compat)
+        self.assertNotIn("npx skills add", compat)
+        self.assertNotIn("--only diagram-design", compat)
         self.assertFalse((ROOT / "skills/diagram-design").exists())
         self.assertFalse((ROOT / "skills/workflow/METHODS.md").exists())
 
@@ -92,7 +96,7 @@ class PackageTests(unittest.TestCase):
 
     def test_registered_utility_skills_exist_and_are_bounded(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        self.assertEqual(plugin["version"], "2.5.0")
+        self.assertEqual(plugin["version"], "2.6.0")
         for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
             self.assertIn(f"./skills/{name}", plugin["skills"])
             text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")

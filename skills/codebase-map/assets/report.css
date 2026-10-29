@@ -119,3 +119,23 @@ li,tr,article { scroll-margin-top:24px; }
   .approval { break-inside:avoid; }
   a { color:inherit; }
 }
+
+.task-checkpoint { border-top:1px solid var(--ink); padding:20px 0 24px; }
+.task-checkpoint h2 { font:400 28px var(--serif); margin:0 0 6px; }
+.checkpoint-asof,.checkpoint-limit,.flow-context { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.checkpoint-asof { margin:0 0 18px; }
+.checkpoint-axes { display:grid; grid-template-columns:1fr 1fr 1fr; gap:28px; margin:0 0 16px; }
+.checkpoint-axes > div { min-width:0; }
+.checkpoint-axes dt { font:10px/1.6 var(--mono); text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.checkpoint-axes dd { margin:5px 0 0; font-size:14px; overflow-wrap:anywhere; }
+.checkpoint-axes dd p { margin:5px 0 0; font-size:13px; color:var(--muted); }
+.next-action { font-size:14px; border-top:1px solid var(--rule); padding-top:14px; margin:0; overflow-wrap:anywhere; }
+.next-action strong { margin-right:12px; }
+.checkpoint-limit { margin:12px 0 0; }
+.flow-context { margin:0 0 14px; }
+.revision-log { margin-bottom:12px; }
+.revision-log > p { font-size:12px; color:var(--muted); }
+.revision-log table { min-width:740px; }
+.revision-log td { overflow-wrap:anywhere; }
+@media(max-width:800px) { .checkpoint-axes { grid-template-columns:1fr; gap:16px; } }
+@media print { .task-checkpoint { break-inside:avoid; } }

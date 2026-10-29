@@ -91,6 +91,78 @@ def load_json(path: Path) -> dict:
     return value
 
 
+
+TASK_OUTCOMES = {
+    'planned': 'Not started', 'in-progress': 'In progress',
+    'implemented': 'Implemented — verification pending', 'verified': 'Verified',
+    'blocked': 'Blocked', 'removed': 'Removed by owner — not a passed test',
+    'superseded': 'Superseded — not a passed test', 'not-applicable': 'Not applicable',
+    'unknown': 'Unknown',
+}
+
+
+def validate_record_context(data: dict, sources: dict) -> None:
+    """Check optional projection structure; never interpret Markdown as authorization."""
+    kind = data.get('report_kind', 'review')
+    if kind not in ('review', 'task-overview'):
+        raise ValueError('report_kind must be review or task-overview')
+    checkpoint = data.get('checkpoint')
+    if kind == 'task-overview' and checkpoint is None:
+        raise ValueError('A task-overview needs a sourced checkpoint')
+    if checkpoint is not None:
+        if not isinstance(checkpoint, dict):
+            raise ValueError('checkpoint must be an object')
+        for key in ('as_of', 'locator', 'next_action'):
+            text(checkpoint.get(key), f'checkpoint.{key}')
+        if checkpoint.get('source') not in sources:
+            raise ValueError('checkpoint.source must name a supplied source')
+        approval = checkpoint.get('approval')
+        if not isinstance(approval, dict) or approval.get('status') not in ('approved', 'waived', 'not-approved', 'unknown'):
+            raise ValueError('checkpoint.approval needs an explicit status')
+        text(approval.get('summary'), 'checkpoint.approval.summary')
+        revision = approval.get('revision')
+        if revision is not None:
+            text(revision, 'checkpoint.approval.revision')
+        if approval['status'] in ('approved', 'waived') and revision is None:
+            raise ValueError('Approved/waived checkpoint needs the exact covered revision')
+        if approval['status'] in ('not-approved', 'unknown') and revision is not None:
+            raise ValueError('An unknown/unapproved checkpoint cannot name an approved revision')
+        statuses = {
+            'implementation': {'not-started', 'in-progress', 'implemented', 'partial', 'unknown'},
+            'verification': {'not-run', 'in-progress', 'blocked', 'passed', 'failed', 'limited', 'unknown'},
+        }
+        for field, allowed in statuses.items():
+            value = checkpoint.get(field)
+            if not isinstance(value, dict) or value.get('status') not in allowed:
+                raise ValueError(f'checkpoint.{field} needs an explicit status')
+            text(value.get('summary'), f'checkpoint.{field}.summary')
+        if kind == 'review' and data['state'] == 'awaiting-approval' and approval['status'] == 'approved' and revision == data['revision']:
+            raise ValueError('Already approved scope needs a task-overview, not another approval request')
+        if data['state'] == 'approved' and (approval['status'] != 'approved' or revision != data['revision']):
+            raise ValueError('Approved report and checkpoint must identify the same approved revision')
+    if 'revision_log' in data:
+        history = rows(data['revision_log'], 'revision_log')
+        if len(history) > 100:
+            raise ValueError('Use at most 100 revision rows; link older history from the source')
+        seen = set()
+        for row in history:
+            revision = text(row.get('revision'), 'revision_log.revision')
+            if revision in seen:
+                raise ValueError('Duplicate revision_log revision; record presentation aliases in one row')
+            seen.add(revision)
+            for field in ('change', 'reason', 'locator'):
+                text(row.get(field), f'revision_log.{field}')
+            if row.get('source') not in sources:
+                raise ValueError('revision_log.source must name a supplied source')
+            if row.get('status') not in ('proposed', 'presented', 'approved', 'superseded', 'rejected', 'withdrawn', 'unknown'):
+                raise ValueError('revision_log.status is invalid')
+            if 'review' in row:
+                text(row['review'], 'revision_log.review')
+            if checkpoint and row['revision'] == checkpoint['approval'].get('revision'):
+                if row['status'] in ('rejected', 'withdrawn', 'superseded'):
+                    raise ValueError('Current approval conflicts with the revision_log outcome')
+
+
 def validate(data: dict, root: Path) -> dict[str, dict]:
     if data.get('schema_version') != 2:
         raise ValueError('New renders require schema_version 2; migrate the layout using REPORT.md. Existing HTML remains checkable with --check.')
@@ -120,6 +192,7 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
     for row in sources.values():
         text(row.get('role'), 'source.role', 80)
         safe_source(root, row.get('path'))
+    validate_record_context(data, sources)
     requirements = indexed(data.get('requirements'), 'requirements')
     for row in requirements.values():
         text(row.get('text'), 'requirement.text')
@@ -141,6 +214,12 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
     for row in tasks.values():
         text(row.get('title'), 'task.title')
         text(row.get('reason'), 'task.reason')
+        if 'outcome' in row:
+            if row['outcome'] not in TASK_OUTCOMES:
+                raise ValueError('task.outcome is invalid')
+            text(row.get('outcome_note'), 'task.outcome_note')
+        elif 'outcome_note' in row:
+            raise ValueError('task.outcome_note requires an explicit outcome')
         if row.get('kind') not in ('requested', 'prerequisite'):
             raise ValueError('Task kind must be requested or prerequisite')
         references(row.get('requirements'), requirements, 'task.requirements', required=True)
@@ -552,6 +631,51 @@ def view_controls(graphs: list, default: str) -> tuple[str, str]:
     return controls, '\n'.join(rules)
 
 
+
+def task_outcome_html(task: dict) -> str:
+    if 'outcome' not in task:
+        return ''
+    return f'<small class="task-outcome">{esc(TASK_OUTCOMES[task["outcome"]])}: {esc(task["outcome_note"])}</small>'
+
+
+def record_context_html(data: dict) -> tuple[str, str]:
+    checkpoint = data.get('checkpoint')
+    current = ''
+    if checkpoint:
+        approval = checkpoint['approval']
+        labels = {'approved': 'Approved', 'waived': 'Explicit waiver', 'not-approved': 'Not approved', 'unknown': 'Unknown'}
+        revision = f' · {approval["revision"]}' if approval.get('revision') else ''
+        axes = [('Approval', labels[approval['status']] + revision, approval['summary'])]
+        for label, key in [('Implementation', 'implementation'), ('Verification / acceptance', 'verification')]:
+            item = checkpoint[key]
+            axes.append((label, item['status'].replace('-', ' ').capitalize(), item['summary']))
+        columns = ''.join(f'<div><dt>{esc(label)}</dt><dd><strong>{esc(status)}</strong><p>{esc(summary)}</p></dd></div>'
+                          for label, status, summary in axes)
+        current = (f'<section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2>'
+                   f'<p class="checkpoint-asof">As recorded: {esc(checkpoint["as_of"])} · {links([checkpoint["source"]], "s")} '
+                   f'— {esc(checkpoint["locator"])}</p><dl class="checkpoint-axes">{columns}</dl>'
+                   f'<p class="next-action"><strong>Next safe action</strong> {esc(checkpoint["next_action"])}</p>'
+                   '<p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. '
+                   'Approval, completed code and acceptance are different states.</p></section>')
+    history = ''
+    if data.get('revision_log'):
+        entries = ''.join(
+            f'<tr><td><strong>{esc(row["revision"])}</strong><small>{esc(row.get("review", "No review alias recorded"))}</small></td>'
+            f'<td>{esc(row["change"])}</td><td>{esc(row["reason"])}</td>'
+            f'<td>{esc(row["status"].capitalize())}<small>{links([row["source"]], "s")} — {esc(row["locator"])}</small></td></tr>'
+            for row in data['revision_log'])
+        history = ('<details class="revision-log" id="revision-history"><summary>Revision history — what changed and why</summary>'
+                   '<p>Changed agreements, not a log of every retry. Review aliases are preserved as recorded; '
+                   'a missing original is not reconstructed.</p><div class="table-scroll"><table><thead><tr>'
+                   '<th>Revision / review</th><th>Change</th><th>Reason</th><th>Recorded outcome / source</th>'
+                   f'</tr></thead><tbody>{entries}</tbody></table></div></details>')
+    return current, history
+
+
+def plan_label(revision: str) -> str:
+    return revision if re.match(r'(?i)^plan\b', revision) else f'Plan {revision}'
+
+
 def render(data: dict, root: Path, input_path: Path) -> str:
     sources = validate(data, root)
     input_path = input_path.resolve()
@@ -562,8 +686,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     records = [{'id': key, 'role': value['role'], 'path': value['path'], 'sha256': digest(safe_source(root, value['path']))}
                for key, value in sources.items()]
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
-    manifest = {'schema_version': 1, 'tool_version': '2.5.0', 'layout_version': 2, 'style': 'workflow-editorial-v1',
-                'revision': data['revision'], 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
+    manifest = {'schema_version': 1, 'tool_version': '2.6.0', 'layout_version': 2, 'style': 'workflow-editorial-v1',
+                'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])
     controls, view_css = view_controls(ordered, data['default_view'])
@@ -571,19 +695,23 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     js = (ASSETS/'report.js').read_text(encoding='utf-8')
     script_hash = base64.b64encode(hashlib.sha256(js.encode('utf-8')).digest()).decode('ascii')
     state = data['state']
+    overview = data.get('report_kind') == 'task-overview'
+    checkpoint_html, history_html = record_context_html(data)
     status = {'draft': 'DRAFT — decisions or review still pending',
               'awaiting-approval': 'AWAITING USER APPROVAL — implementation not authorized',
               'approved': 'APPROVAL RECORDED — verify the task record before continuing',
               'inspection': 'CURRENT STATE — inspection only, no implementation authority',
               'superseded': 'SUPERSEDED — not authority for new implementation'}[state]
+    if overview:
+        status = 'SAVED TASK OVERVIEW — read the dated checkpoint; not a new approval request'
     req = ''.join(f'<li id="r-{esc(r["id"])}"><strong>{esc(r["id"])}.</strong> {esc(r["text"])}<small>Source: {esc(r["origin"])}</small></li>' for r in data['requirements'])
     bounds = ''.join(f'<li>{esc(b)}</li>' for b in data['boundaries']) or '<li>No additional boundaries recorded.</li>'
     task_rows = ''.join(f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td><strong>{esc(t["title"])}</strong>'
-                        f'<small>{esc(t["kind"])}: {esc(t["reason"])}<br>Areas: {esc(", ".join(t["areas"]))}</small></td>'
+                        f'<small>{esc(t["kind"])}: {esc(t["reason"])}<br>Areas: {esc(", ".join(t["areas"]))}</small>{task_outcome_html(t)}</td>'
                         f'<td>{links(t["requirements"], "r")}<br>{links(t["evidence"], "e")}<br>{links(t["acceptance"], "a")}</td>'
                         f'<td>{links(t["depends_on"], "t")}</td></tr>' for t in data['tasks'])
     task_summary = ''.join(f'<li><a href="#t-{esc(t["id"])}">{esc(t["id"])}</a> {esc(t["title"])}'
-                           f'<small>Depends on: {esc(", ".join(t["depends_on"]) or "No prior task")}</small></li>' for t in data['tasks'])
+                           f'{task_outcome_html(t)}<small>Depends on: {esc(", ".join(t["depends_on"]) or "No prior task")}</small></li>' for t in data['tasks'])
     acceptance = ''.join(f'<li id="a-{esc(a["id"])}"><strong>{esc(a["id"])} — {esc(a["text"])}</strong>'
                          f'<small>Verify: {esc(a["verification"])} · {links(a["requirements"], "r")}</small></li>' for a in data['acceptance'])
     ev = ''.join(f'<article id="e-{esc(e["id"])}" class="evidence"><strong>{esc(e["id"])} · {esc(e["kind"])} — {esc(e["claim"])}</strong>'
@@ -598,10 +726,17 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     comparison_rows = ''.join(f'<tr><td><strong>{esc(row["label"])}</strong><small>{links(row["requirements"], "r")}</small></td>'
                               f'<td>{esc(row["current"])}<small>{links(row["evidence"], "e")}</small></td>'
                               f'<td>{esc(row["proposed"])}<small>{links(row["tasks"], "t")}</small></td></tr>' for row in data['comparison'])
+    current_heading = 'Baseline before the selected change' if overview else 'Current — recorded evidence'
+    proposed_heading = 'Reviewed scope — see checkpoint for progress' if overview else 'Reviewed scope' if state in ('approved', 'superseded') else 'Proposed scope'
     comparison = (f'<section class="comparison"><h2>What changes</h2><div class="table-scroll"><table><thead><tr>'
-                  '<th>Area</th><th>Current — recorded evidence</th><th>Proposed — not implemented</th></tr></thead>'
+                  f'<th>Area</th><th>{esc(current_heading)}</th><th>{esc(proposed_heading)}</th></tr></thead>'
                   f'<tbody>{comparison_rows}</tbody></table></div></section>') if comparison_rows else ''
-    if state == 'awaiting-approval':
+    if overview:
+        gate = ('<section class="approval"><h2>Authority stays in the task record.</h2><div><p>This saved overview does not '
+                'approve work, reopen settled approval or certify completed implementation. A historical review may still '
+                'say awaiting approval; use the dated checkpoint and actual approval record.</p>'
+                '<p>There is no approve button or agent connection.</p></div></section>')
+    elif state == 'awaiting-approval':
         gate = (f'<section class="approval"><h2>Review before code.</h2><div><p>Does this match what you want built? '
                 f'Approve plan {esc(data["revision"])} in the agent conversation, or describe what needs changing.</p>'
                 '<p>Opening or interacting with this report does not approve anything. There is no approve button, '
@@ -613,24 +748,29 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     else:
         gate = ('<section class="approval"><h2>No implementation permission</h2><div><p>This view alone authorizes no code changes. '
                 'Resolve any decisions and use the workflow approval gate before substantive implementation.</p></div></section>')
+    flow_context = (f'<p class="flow-context">Flow reviewed for {esc(data["revision"])}. The current/baseline view describes '
+                    'the earlier inspected state; the proposed view describes the reviewed scope, not proof it was implemented.</p>') if overview else ''
+    if overview and data['mode'] == 'current':
+        flow_context = '<p class="flow-context">Current flow as inspected for this saved snapshot; not a live repository map.</p>'
+    task_heading = 'Tasks in the reviewed scope' if overview else 'Changes and cleanup'
     viewer_note = ('<p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p>')
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><main>
-<header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>Plan {esc(data['revision'])}</span></div>
+<header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>{esc(plan_label(data['revision']))}</span></div>
 <h1>{esc(data['title'])}</h1><p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
-{issues}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}</div></section>
+{checkpoint_html}{issues}{flow_context}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}</div></section>
 {comparison}<section class="boundaries"><h2>What will not change</h2><ul>{bounds}</ul></section>
-<div class="two-col"><section><h2>Changes and cleanup</h2><ul class="plain">{task_summary or '<li>Inspection only; no implementation tasks.</li>'}</ul></section>
+<div class="two-col"><section><h2>{task_heading}</h2><ul class="plain">{task_summary or '<li>Inspection only; no implementation tasks.</li>'}</ul></section>
 <section><h2>How completion will be checked</h2><ul class="plain">{acceptance or '<li>No implementation acceptance criteria for this inspection.</li>'}</ul></section></div>
-{gate}<details class="appendix" id="technical-details"><summary>Technical evidence and task details</summary><div class="appendix-body">
+{gate}{history_html}<details class="appendix" id="technical-details"><summary>Technical evidence and task details</summary><div class="appendix-body">
 <section><h2>Requested outcome</h2><ul class="plain">{req or '<li>No implementation requirements in this inspection.</li>'}</ul></section>
 <section><h2>Changes and mapped tasks</h2><div class="table-scroll"><table><thead><tr><th>Task</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody>{task_rows or '<tr><td colspan="4">Inspection only; no implementation tasks.</td></tr>'}</tbody></table></div></section>
 <section><h2>Evidence and limits</h2>{ev}</section>{''.join(graph_records(g) for g in data['graphs'])}
 <details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>{esc(data['snapshot']['repository'])} · {esc(data['snapshot'].get('branch', 'No branch recorded'))}</p>
 <p>{esc(data['snapshot']['basis'])}</p><p>Generated {esc(manifest['generated_utc'])}. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table></div></details>
-</div></details>{viewer_note}<footer>Local HTML + SVG · no external assets, uploads or approval actions · edit source JSON and render a new revision</footer>
+</div></details>{viewer_note}<footer>Local HTML + SVG · no external assets, uploads or approval actions · saved review snapshot; progress belongs in the existing task records</footer>
 </main><script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
 
 

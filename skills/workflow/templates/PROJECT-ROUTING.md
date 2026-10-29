@@ -16,3 +16,11 @@ If a required skill is unavailable or cannot be loaded, disclose it; use only an
 Codex uses applicable `AGENTS.md`/overrides; Claude Code uses applicable `CLAUDE.md`/project rules. Do not assume Claude automatically loads a file merely because Codex uses it. One shared policy with deliberate host-supported references is valid when verified. Record actual file location, scope and runtime discovery in setup evidence. [Codex project instructions](https://developers.openai.com/codex/guides/agents-md/) · [Claude memory/project instructions](https://code.claude.com/docs/en/memory)
 
 Test in a fresh session: an ordinary feature request must load workflow and inspect code before proposals; a diagram-only request must load codebase-map without implementation; a general conceptual question must not create task files. Inventory presence and this template passing file checks do not prove any of those behaviors.
+
+## Optional record-history clarification — reviewed merge only
+
+During this upgrade, merge the following into the authoritative task/review policy rather than adding a contradictory second rule. Project-specific preservation, approval and publishing rules still apply.
+
+```markdown
+Keep one concise current checkpoint in the task's established record, separating approval, implementation and verification/owner acceptance. Label earlier baselines and proposals as history. Record meaningful scope revisions and their reasons in the existing PLAN/DECISIONS; progress, test retries and agent handoffs do not create plan revisions. Preserve paths, IDs, heading links and presented/approved HTML/JSON snapshots; later approval is recorded in the task record, not by rewriting old reviews. Apply the structure to new work and minimally to tasks actually resumed; do not migrate closed tasks or create extra state/revision files. Resolve conflicting local retention instructions explicitly; never delete history automatically.
+```

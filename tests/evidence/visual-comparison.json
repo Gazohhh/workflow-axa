@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "baseline": "tests/visual-baselines/2.2.1",
-  "candidate": "local capture recorded separately",
+  "baseline": "/mnt/data/workflow-update-work/visual-base",
+  "candidate": "/mnt/data/workflow-update-work/visual-candidate",
   "checks": [
     {
       "case": "desktop-proposed",

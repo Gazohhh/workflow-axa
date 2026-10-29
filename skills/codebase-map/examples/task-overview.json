@@ -1,0 +1,948 @@
+{
+  "schema_version": 2,
+  "title": "Reject invalid scores. Keep valid output.",
+  "revision": "P1",
+  "mode": "compare",
+  "state": "awaiting-approval",
+  "snapshot": {
+    "repository": "Synthetic scoreboard fixture — example only",
+    "branch": "Local illustrative files; no application branch",
+    "basis": "Based on the bundled fixture and named source files. Current flow is statically inspected; proposed behavior is not implemented."
+  },
+  "understanding": "Synthetic task overview: reject negative scores in both display paths. The later fixture approval is recorded, but implementation and verification have not started. The retained flow is the reviewed design, not proof of completed code.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Reject a negative home or away score in both display paths.",
+      "origin": "Synthetic request in PLAN.md; not an actual product change."
+    },
+    {
+      "id": "R2",
+      "text": "Keep zero and positive score formatting unchanged.",
+      "origin": "Explicit compatibility constraint in the synthetic request."
+    }
+  ],
+  "boundaries": [
+    "No new features, UI redesign or score history.",
+    "No dependencies, extra configuration or automatic Git actions.",
+    "Only the shared score behavior, required caller, tests, scoped cleanup and existing documentation change."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "src/scoreboard.py",
+      "role": "code"
+    },
+    {
+      "id": "S5",
+      "path": "STATUS.md",
+      "role": "checkpoint"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "The web path uses an existing shared formatter without validation.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "src/scoreboard.py: format_score, web_score",
+      "limits": "Static inspection only; no runtime result claimed."
+    },
+    {
+      "id": "E2",
+      "claim": "The player calls a separate formatter and bypasses the shared owner.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "src/scoreboard.py: _legacy_score, player_score",
+      "limits": "Static fixture only; not a complete application call graph."
+    },
+    {
+      "id": "E3",
+      "claim": "Both supplied paths format scores but neither rejects negatives.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "Both entrypoints and their directly called formatters",
+      "limits": "Only the tiny supplied fixture was inspected."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Add behavior-level regression tests",
+      "kind": "prerequisite",
+      "reason": "Prove the requested rejection and preserve existing output.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "tests/test_scoreboard.py"
+      ],
+      "depends_on": [],
+      "outcome": "planned",
+      "outcome_note": "STATUS.md checkpoint: implementation has not started."
+    },
+    {
+      "id": "T2",
+      "title": "Validate at the existing shared formatter",
+      "kind": "requested",
+      "reason": "The shared owner already formats the same score values.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "src/scoreboard.py: format_score"
+      ],
+      "depends_on": [
+        "T1"
+      ],
+      "outcome": "planned",
+      "outcome_note": "STATUS.md checkpoint: implementation has not started."
+    },
+    {
+      "id": "T3",
+      "title": "Route player through shared validation; remove old helper",
+      "kind": "prerequisite",
+      "reason": "Fixing only the shared formatter would leave the player bypass.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "src/scoreboard.py: player_score, _legacy_score"
+      ],
+      "depends_on": [
+        "T2"
+      ],
+      "outcome": "planned",
+      "outcome_note": "STATUS.md checkpoint: implementation has not started."
+    },
+    {
+      "id": "T4",
+      "title": "Verify both paths and update existing usage documentation",
+      "kind": "prerequisite",
+      "reason": "Complete acceptance evidence and remove stale behavior descriptions.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "tests/test_scoreboard.py",
+        "README.md"
+      ],
+      "depends_on": [
+        "T3"
+      ],
+      "outcome": "planned",
+      "outcome_note": "STATUS.md checkpoint: implementation has not started."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "Negative scores are rejected through all affected entrypoints.",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "Add/run tests for negative home and negative away at shared, web and player entrypoints; expect ValueError."
+    },
+    {
+      "id": "A2",
+      "text": "Nonnegative scores still render exactly as before.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Run zero/positive examples through both display paths and compare exact strings; verify obsolete-helper references are removed."
+    }
+  ],
+  "graphs": [
+    {
+      "kind": "current",
+      "title": "Current — two separate paths",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Web display",
+          "note": "Shared formatting path",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 48,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "shape": "start"
+        },
+        {
+          "id": "N2",
+          "label": "Shared formatter",
+          "note": "No negative-score check",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 456,
+          "y": 152,
+          "width": 344,
+          "height": 96,
+          "shape": "action"
+        },
+        {
+          "id": "N3",
+          "label": "Score text",
+          "note": "Negatives are not rejected",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 920,
+          "y": 152,
+          "width": 304,
+          "height": 96,
+          "shape": "result"
+        },
+        {
+          "id": "N4",
+          "label": "Player display",
+          "note": "Separate formatting path",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "x": 48,
+          "y": 424,
+          "width": 288,
+          "height": 96,
+          "shape": "start"
+        },
+        {
+          "id": "N5",
+          "label": "Legacy formatter",
+          "note": "Duplicates score formatting",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "x": 456,
+          "y": 424,
+          "width": 344,
+          "height": 96,
+          "shape": "action"
+        },
+        {
+          "id": "N6",
+          "label": "Score text",
+          "note": "Shared owner is bypassed",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "x": 920,
+          "y": 424,
+          "width": 304,
+          "height": 96,
+          "shape": "result"
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "calls",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              336,
+              200
+            ],
+            [
+              456,
+              200
+            ]
+          ],
+          "label_position": [
+            396,
+            172
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "text",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              800,
+              200
+            ],
+            [
+              920,
+              200
+            ]
+          ],
+          "label_position": [
+            860,
+            172
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "calls",
+          "evidence": [
+            "E2"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              336,
+              472
+            ],
+            [
+              456,
+              472
+            ]
+          ],
+          "label_position": [
+            396,
+            444
+          ]
+        },
+        {
+          "from": "N5",
+          "to": "N6",
+          "label": "text",
+          "evidence": [
+            "E2"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              800,
+              472
+            ],
+            [
+              920,
+              472
+            ]
+          ],
+          "label_position": [
+            860,
+            444
+          ]
+        }
+      ],
+      "id": "current",
+      "purpose": "flow",
+      "tab": "Current flow",
+      "description": "Static inspection of the bundled fixture. Each path returns score text; neither rejects negative values.",
+      "width": 1280,
+      "height": 640
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Feature flow",
+      "title": "Proposed — one check, two outcomes",
+      "description": "Both display paths use the existing formatter. Reject either negative input; otherwise return exactly the existing score text. Proposed behavior, not a runtime observation.",
+      "width": 1280,
+      "height": 736,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Both display paths",
+          "note": "Web and player",
+          "x": 464,
+          "y": 40,
+          "width": 352,
+          "height": 72,
+          "shape": "start",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E1",
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Shared formatter",
+          "note": "One owner for both paths",
+          "x": 464,
+          "y": 160,
+          "width": 352,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Either score\nnegative?",
+          "note": "",
+          "x": 512,
+          "y": 320,
+          "width": 256,
+          "height": 160,
+          "shape": "decision",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": true
+        },
+        {
+          "id": "N4",
+          "label": "Reject invalid input",
+          "note": "Raise ValueError",
+          "x": 920,
+          "y": 352,
+          "width": 304,
+          "height": 96,
+          "shape": "result",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "highlight": true
+        },
+        {
+          "id": "N5",
+          "label": "Keep score formatting",
+          "note": "Zero and positive scores unchanged",
+          "x": 460,
+          "y": 576,
+          "width": 360,
+          "height": 88,
+          "shape": "result",
+          "tasks": [],
+          "evidence": [
+            "E1",
+            "E2"
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "points": [
+            [
+              640,
+              112
+            ],
+            [
+              640,
+              160
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E1",
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "points": [
+            [
+              640,
+              248
+            ],
+            [
+              640,
+              320
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "points": [
+            [
+              768,
+              400
+            ],
+            [
+              920,
+              400
+            ]
+          ],
+          "label": "Yes",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "label_position": [
+            844,
+            372
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N5",
+          "points": [
+            [
+              640,
+              480
+            ],
+            [
+              640,
+              576
+            ]
+          ],
+          "label": "No",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "label_position": [
+            688,
+            524
+          ]
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "kind": "proposed",
+      "purpose": "delivery",
+      "tab": "Build plan",
+      "title": "Build plan — after approval only",
+      "description": "These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins; no diagram action grants it.",
+      "width": 1280,
+      "height": 848,
+      "nodes": [
+        {
+          "id": "approval",
+          "label": "User approves this plan",
+          "note": "",
+          "x": 472,
+          "y": 40,
+          "width": 336,
+          "height": 64,
+          "shape": "start",
+          "tasks": [],
+          "evidence": [],
+          "basis": "proposed",
+          "change": "unchanged",
+          "highlight": true,
+          "precondition": "approval"
+        },
+        {
+          "id": "B1",
+          "label": "Add regression tests",
+          "note": "Invalid inputs and valid output",
+          "x": 432,
+          "y": 176,
+          "width": 416,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T1"
+          ],
+          "evidence": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T1"
+        },
+        {
+          "id": "B2",
+          "label": "Validate at the owner",
+          "note": "Use the existing formatter",
+          "x": 432,
+          "y": 328,
+          "width": 416,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T2"
+        },
+        {
+          "id": "B3",
+          "label": "Route player; remove duplicate",
+          "note": "Replace the bypass, not the feature",
+          "x": 432,
+          "y": 480,
+          "width": 416,
+          "height": 96,
+          "shape": "action",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T3"
+        },
+        {
+          "id": "B4",
+          "label": "Verify and update docs",
+          "note": "Check both paths and stale references",
+          "x": 432,
+          "y": 640,
+          "width": 416,
+          "height": 96,
+          "shape": "result",
+          "tasks": [
+            "T4"
+          ],
+          "evidence": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T4"
+        }
+      ],
+      "edges": [
+        {
+          "from": "approval",
+          "to": "B1",
+          "points": [
+            [
+              640,
+              104
+            ],
+            [
+              640,
+              176
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T1"
+          ],
+          "evidence": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B1",
+          "to": "B2",
+          "points": [
+            [
+              640,
+              264
+            ],
+            [
+              640,
+              328
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E1"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B2",
+          "to": "B3",
+          "points": [
+            [
+              640,
+              416
+            ],
+            [
+              640,
+              480
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B3",
+          "to": "B4",
+          "points": [
+            [
+              640,
+              576
+            ],
+            [
+              640,
+              640
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T4"
+          ],
+          "evidence": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "Negative scores",
+      "current": "Both display paths format negative scores without rejecting them.",
+      "proposed": "Reject a negative home or away score through the shared formatter.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E3"
+      ],
+      "tasks": [
+        "T1",
+        "T2",
+        "T3",
+        "T4"
+      ]
+    },
+    {
+      "label": "Valid scores",
+      "current": "Zero and positive scores are formatted as home - away.",
+      "proposed": "Keep the same text for every nonnegative score.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "tasks": [
+        "T1",
+        "T2",
+        "T3",
+        "T4"
+      ]
+    },
+    {
+      "label": "Ownership",
+      "current": "Web and player use separate formatting functions.",
+      "proposed": "Use the existing shared owner and remove the redundant helper.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "tasks": [
+        "T3",
+        "T4"
+      ]
+    }
+  ],
+  "report_kind": "task-overview",
+  "checkpoint": {
+    "as_of": "2026-10-29T12:00:00+00:00 — synthetic fixture",
+    "source": "S5",
+    "locator": "Current checkpoint; inline decision D2",
+    "approval": {
+      "status": "approved",
+      "revision": "P1",
+      "summary": "D2 records the fixture approval for both callers; no extra features or dependencies."
+    },
+    "implementation": {
+      "status": "not-started",
+      "summary": "The supplied code still has the original behavior. Approval is not implementation."
+    },
+    "verification": {
+      "status": "not-run",
+      "summary": "The proposed change has not been tested. Baseline inspection is not a passing result."
+    },
+    "next_action": "Add the agreed regression coverage, then implement the covered scope. Reuse P1; an agent handoff is not another plan revision."
+  },
+  "revision_log": [
+    {
+      "revision": "P0",
+      "review": "old-draft — no retained HTML in this fixture",
+      "change": "Initially considered the web path only.",
+      "reason": "The first proposal did not cover the separate player path.",
+      "status": "superseded",
+      "source": "S5",
+      "locator": "D1; superseded by the P1 scope"
+    },
+    {
+      "revision": "P1",
+      "review": "review.html / review.json",
+      "change": "Cover both display paths; preserve existing nonnegative output.",
+      "reason": "Both callers must apply the same requested rule.",
+      "status": "approved",
+      "source": "S5",
+      "locator": "D2 — synthetic approval, not actual authorization"
+    }
+  ]
+}

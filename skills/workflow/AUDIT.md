@@ -64,3 +64,9 @@ When report/UI rendering changes, compare stable screenshots against a reviewed 
 ## Test-output lifecycle
 
 Apply [ARTIFACTS.md](ARTIFACTS.md). Check whether tests created redundant whole builds, per-task tools, unnecessary captures or another root for retries. Finish eligible own scratch cleanup and retain necessary results, failures and reference images. Verify active consumers and protected/tool-owned output before any removal. No deletion based only on age, ignore status or missing citations; no broad cleanup of earlier work. Record the retained paths and unresolved lifetime in existing findings or chat, not another report. A tool without retention needs an approved producer fix, not a global sweep.
+
+## Current-state and history consistency
+
+Check the current summary against TODO and actual evidence; distinguish scope approval, performed implementation, verification and owner acceptance. Flag a current paragraph that still says “not implemented” when later evidence records implementation, without changing the historical proposal itself. Check revision/phase/review mappings and the recorded reason/authority for material changes. Removed/superseded work is not verified work. A historical pending review can legitimately coexist with later approval. Preserve its bytes.
+
+Update only the active task within scope; no closure-time bulk migration, renamed links, duplicate state files or generated report per checkpoint. If evidence is incomplete or contradictory, state the specific unknown and next safe action rather than manufacture a clean status.

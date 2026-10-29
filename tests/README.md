@@ -102,3 +102,9 @@ passing feature flow. See E32–E37 in SCENARIOS.md.
 `test_global_policy.py` uses disposable user homes to test preview/check no-write behavior, idempotent merges, override selection, CRLF/BOM preservation, custom profiles, modified policy refusal, symlink/junction boundary checks, hardlinks, concurrent edits and untouched project artifacts. The helper is not a filesystem cleaner. Linux filesystem checks are not evidence of Windows junction or native ACL behavior; test the actual target environment before deployment.
 
 B15–B24 in the live-host suite cover policy loading outside workflow, safe reruns/concurrency, required captures, producer retention limits, ownership and delivery preservation. They are authored but NOT RUN. Existing browser output directories remain isolated for safety: use an owned child under one task parent, retain necessary proof, and clean eligible temporary captures after inspection instead of creating an unrelated root each time.
+
+## Record history and backward compatibility (2.6.0)
+
+`test_record_context.py` checks additive schema-2 fields, distinct progress states, no approval-request bypass, original-file preservation, exact aliases, missing historical review descriptions, owner-removed outcomes, escaped input and legacy fixtures. It checks the data/renderer and instruction contracts, not whether a host model follows them. H01–H07 in behavioral/cases.json exercise actual-agent record handling; they remain NOT_RUN until observed.
+
+The old pending example and historic task records are intentionally unchanged. The new task-overview example uses the same graph geometry with an optional sourced checkpoint/revision log. Inspect both desktop and mobile, the closed/open history disclosure and source links. Do not refresh approved visual baselines merely because a status section was added.

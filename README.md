@@ -1,8 +1,16 @@
 # workflow-axa
 
-**2.5.0 — global test-output rules with safe retention.** One main workflow plus focused local utilities. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
+**2.6.0 — clear current state with retained revision history.** One main workflow plus focused local utilities. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
 
-## New: global test-output rules
+## New: current state without losing history
+
+The current checkpoint now separates **approval**, **implementation** and **verification/owner acceptance**. A compact revision log records what changed, why and who approved it, inside existing PLAN/DECISIONS. Progress, test retries and account switches update the checkpoint, not the plan revision. Historical baselines and saved reviews are labelled, not rewritten as if they were current.
+
+Apply this to new tasks and minimally to existing tasks actually resumed. Closed records, existing paths, task IDs, heading links, phase/review aliases and legacy STATUS.md layouts stay intact. No bulk migration or additional revision/status database is included. [UPGRADE.md](UPGRADE.md) explains the limited project-policy merge.
+
+The optional [task-overview example](skills/codebase-map/examples/task-overview.html) shows dated current state and expandable revision history around the same local flowchart. It is synthetic and creates no application approval. Ordinary status requests still return in chat; no new HTML on every checkpoint. Existing schema-2 JSON needs no new fields; historical HTML stays unchanged.
+
+## Global test-output rules retained
 
 One policy now covers ordinary testing/build/device prompts as well as `/workflow`: stable task output parents, selective evidence, reuse of tools, and safe cleanup of only the current work's eligible scratch. No new skill, external dependency or blanket cleanup. Plans, approved flowcharts, reference images and protected tool outputs stay intact.
 
@@ -20,7 +28,7 @@ The four independent local utilities added in 2.4.0 remain: `task-status`, `resu
 | Clear language | Explain concrete behavior and consequences before technical details in questions, plans, reports and completion messages. Keep exact evidence accessible. |
 | No-slop review | Review unnecessary helpers, silent coercion, repetitive comments/docs and unsupported claims against specific examples, not a vague label. |
 | Visual protection | Keep the approved flowchart local and unchanged. Compare stable reference screenshots; never automatically replace a failing baseline. |
-| Actual-agent tests | Decision, task-reuse and artifact cases compare 2.4.0 with this version. Their results remain NOT_RUN until a real host run is observed. |
+| Actual-agent tests | Decision, task-reuse and artifact cases compare the supplied 2.5.0 with this version. Their results remain NOT_RUN until a real host run is observed. |
 
 Matt's research, diagnosing-bugs, tdd, code-review, grilling and other established specialists remain separately installed. All 27 catalogue entries are retained; the existing proactive grilling trigger/adapter is preserved. The local flowchart needs no external diagram-design skill. Optional skill-creator and webapp-testing guidance is available only for approved maintenance/browser work; neither becomes a dependency.
 
@@ -48,8 +56,8 @@ For a short installation handoff, start with [UPGRADE.md](UPGRADE.md).
 2. **Update, do not duplicate, your existing routing block** so ordinary prompts use the new task-selection and proactive-grilling rules. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that all six local skills actually load.
 3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
 
-4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update all six complete local skill folders while preserving unrelated custom files. When upgrading from 2.2.0, remove its retired package-owned DIAGRAM-DESIGN.md reference; later releases already use FLOWCHART-DESIGN.md. Do not uninstall unrelated external skills automatically.
-5. Activate the shared artifact policy globally using the preview/apply/check commands in [UPGRADE.md](UPGRADE.md). Keep project-specific rules in their project, not in the global files.
+4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update all six complete local skill folders while preserving unrelated custom files. Old DIAGRAM-DESIGN.md references now resolve to a local compatibility pointer; FLOWCHART-DESIGN.md remains authoritative. Do not uninstall unrelated external skills automatically.
+5. Existing 2.5.0 global artifact activation remains valid; new setups use the preview/apply/check commands in [SETUP.md](skills/workflow/SETUP.md). Keep project-specific rules in their project, not in the global files.
 6. No report-schema migration is needed from 2.2.1; the same schema-2 JSON and approved assets are retained. Older schema-1 inputs use the existing [migration guide](skills/codebase-map/REPORT.md). Keep previously reviewed HTML. Complete the new [live-host pilot](tests/behavioral/README.md) before team-wide reliance on the changed interviewing behavior.
 
 ## Local commands

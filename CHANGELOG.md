@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.6.0 — 2026-10-29
+
+- Build from the owner's supplied workflow-axa(1).zip (2.5.0), not an older generated copy. Preserve the six skills, Matt's integrations, proactive grilling, global artifact policy and original flowchart geometry.
+- Separate current approval, implementation and verification/owner acceptance. Keep one current checkpoint, short TODOs and detailed evidence in their existing owners; do not repeat live totals or create CURRENT/HANDOFF/revision tracker files.
+- Define meaningful plan revisions versus progress, retries and session switches. Add a compact change/reason/authority log in existing records; preserve old identifiers, review/phase aliases and partial supersession.
+- Forward-only adoption: new tasks use the clarified structure; authorised resumption reconciles only that task; legacy STATUS.md/inline decisions remain supported. No bulk rewrite, renaming, missing-review reconstruction or automatic deletion.
+- Keep presented reviews immutable. Add optional sourced checkpoint/revision/outcome fields to schema 2, and a requested task-overview presentation that does not ask for or grant approval. Old schema-2 inputs remain valid and old HTML freshness checks remain available.
+- Retain the uploaded DIAGRAM-DESIGN.md filename as a compatibility pointer to the local guide; its stale external-install instructions are superseded.
+- Add projection/security/compatibility tests and synthetic legacy-history evaluation cases. Live agent adherence is not inferred from tooling tests.
+
 ## 2.5.0 — 2026-10-26
 
 - Add one shared ARTIFACTS.md policy: stable task parents, concurrency-safe child runs, required evidence, reuse of tools and narrowly authorized own-scratch cleanup. No legacy sweep or automatic producer changes.

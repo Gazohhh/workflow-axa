@@ -6,7 +6,7 @@ The format is local to this package; it is not claimed to be native Claude plugi
 
 ## Prepare a fair old/new comparison
 
-Use trusted copies of 2.4.0 and 2.5.0 in separate fresh sessions. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
+Use trusted copies of the supplied 2.5.0 and candidate 2.6.0 in separate fresh sessions. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
 
 Generate the same fixture variant twice in new locations outside valuable repositories:
 
@@ -53,3 +53,7 @@ Run B01–B09 and B12/B13 on the team's actual Claude configuration before relyi
 Run only in disposable project and user-profile directories. Apply the evaluator setup in cases.json before giving the prompt; the setup is not part of the agent prompt and is never real cleanup authority. Use tiny synthetic build/emulator placeholders, not full downloads. Establish active/retained/protected paths explicitly in the fixture. Keep actual production artifact trees out of scope.
 
 Include an ordinary test request without a skill name after global setup, an effective Codex override, concurrent output isolation, requested screenshot coverage, an output-producing tool with no retention, and interrupted ownership. Inspect filesystem changes and reads, not merely the final answer. Required evidence must survive. No live result is claimed by validating the case definitions. Store only the selected run evidence needed for comparison and use a stable evaluator output parent.
+
+## Record-history cases H01–H07
+
+Use the record-* fixtures for legacy STATUS.md, actual implemented code with older pending proposals, explicit phase/review aliases, owner-removed work and unavailable historical HTML. Preserve originals and compare before/after bytes. These cases are live-host evaluation inputs, not executed agent evaluations. Tool tests establish only fixture structure and renderer behavior.

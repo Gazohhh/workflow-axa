@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Ct/4BgYIGLXq783UVb4B4liFvGHnUs1jSYOGFzy3QsY='; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Reject invalid scores. Keep valid output.</title><style>:root {
+  --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --rule:#cdd0d5;
+  --accent:#bf4520; --accent-tint:#f5e9e4;
+  --sans:'Geist','Inter','Segoe UI',system-ui,sans-serif;
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --mono:'Geist Mono',ui-monospace,'Cascadia Mono',monospace;
+  color-scheme:light;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.6 var(--sans); }
+main { max-width:1392px; margin:auto; padding:36px 56px 48px; }
+a { color:var(--ink); text-underline-offset:4px; }
+a:hover { color:var(--accent); }
+a:focus-visible,summary:focus-visible,.canvas:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+header { padding-bottom:24px; }
+.mast { display:flex; justify-content:space-between; gap:20px; border-bottom:1px solid var(--rule); padding-bottom:14px; font:11px/1.5 var(--mono); letter-spacing:.1em; color:var(--muted); }
+.mast strong { font-weight:500; color:var(--ink); }
+h1 { font:400 clamp(38px,4vw,58px)/1.08 var(--serif); letter-spacing:-.035em; margin:25px 0 14px; max-width:1080px; }
+h2 { font-size:20px; line-height:1.4; font-weight:600; margin:0 0 12px; }
+.status { font:11px/1.6 var(--mono); letter-spacing:.04em; color:var(--accent); margin:0 0 14px; }
+.lead { font-size:16px; color:var(--muted); margin:0; max-width:1040px; }
+.muted,small { color:var(--muted); }
+.review { position:relative; border-top:1px solid var(--ink); }
+.sr-radio { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%); white-space:nowrap; }
+.viewbar { display:flex; justify-content:space-between; align-items:center; gap:16px; border-bottom:1px solid var(--rule); min-height:60px; }
+.view-tabs,.zoom-tabs { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.view-tabs label,.zoom-tabs label { cursor:pointer; user-select:none; line-height:58px; color:var(--muted); border-bottom:2px solid transparent; font-size:14px; }
+.view-tabs label { font-weight:550; }
+.zoom-tabs { gap:14px; flex-shrink:0; }
+.zoom-tabs label { font:11px/58px var(--mono); }
+.figures { --scale:1; }
+#zoom-125:checked~.figures { --scale:1.25; }
+#zoom-150:checked~.figures { --scale:1.5; }
+#zoom-fit:checked~.figures .map { width:100%; min-width:0; }
+.panel { display:none; margin:0; }
+.figure-head { display:flex; justify-content:space-between; align-items:baseline; gap:24px; padding:22px 0 4px; }
+.figure-head h2 { font-size:18px; margin:0; }
+.figure-head span { font:10px var(--mono); color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+.figure-description { margin:6px 0 12px; font-size:13px; color:var(--muted); max-width:1100px; }
+.hint { margin:0 0 4px; font-size:11px; color:var(--muted); }
+.canvas { max-width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; scrollbar-color:#9198a5 transparent; overscroll-behavior-x:contain; cursor:grab; }
+.canvas.dragging { cursor:grabbing; user-select:none; }
+.map { display:block; width:calc(var(--board-width) * var(--scale)); min-width:calc(var(--board-width) * var(--scale)); height:auto; }
+.node-shape { fill:#fff; stroke:var(--ink); stroke-width:1.2; }
+.start .node-shape,.result .node-shape { fill:#edf0f2; stroke:var(--muted); }
+.focal .node-shape { fill:var(--accent-tint); stroke:var(--accent); stroke-width:1.4; }
+.node.inferred .node-shape,.node.unknown .node-shape { stroke-dasharray:5 4; }
+.connector { fill:none; stroke:var(--muted); stroke-width:1.4; }
+.connector.inferred,.connector.unknown { stroke-dasharray:5 4; }
+.map marker path { fill:var(--muted); }
+.node-title { font:600 18px var(--sans); fill:var(--ink); }
+.node-note { font:13px var(--sans); fill:var(--muted); }
+.node-item { font:15px var(--sans); fill:var(--ink); }
+.arrow-label rect { fill:var(--paper); }
+.edge-label { font:10px var(--mono); letter-spacing:1px; fill:var(--muted); }
+figcaption { font-size:12px; color:var(--muted); margin:12px 0 24px; }
+.legend { display:flex; flex-wrap:wrap; align-items:center; gap:16px 32px; border-top:1px solid var(--rule); padding:16px 0 10px; }
+.legend span { display:flex; align-items:center; gap:10px; }
+.legend i { display:inline-block; width:26px; height:16px; border:1px solid var(--muted); background:#fff; }
+.legend-start { border-radius:10px; }
+.legend-action,.legend-group { border-radius:3px; }
+.legend .legend-decision { width:16px; height:16px; transform:rotate(45deg); margin:0 5px; }
+.legend .legend-focus { background:var(--accent-tint); border-color:var(--accent); border-radius:3px; }
+.comparison { border-top:1px solid var(--ink); padding-top:24px; margin-top:8px; }
+.comparison h2,.boundaries h2 { font:400 30px var(--serif); }
+.table-scroll { max-width:100%; overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:14px; text-align:left; }
+th { font:10px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:14px 18px 12px 0; border-bottom:1px solid var(--rule); vertical-align:bottom; }
+td { padding:16px 24px 16px 0; border-bottom:1px solid var(--rule); vertical-align:top; }
+td:first-child { width:20%; }
+td:last-child { padding-right:0; }
+.comparison td:nth-child(2) { width:36%; color:var(--muted); }
+small { display:block; font-size:12px; line-height:1.6; margin-top:5px; }
+.boundaries { padding-top:24px; }
+.boundaries ul { padding-left:20px; font-size:14px; }
+.two-col { display:grid; grid-template-columns:1fr 1.2fr; gap:48px; margin:32px 0; }
+.plain { list-style:none; padding:0; margin:0; }
+.plain li { padding:13px 0; border-bottom:1px solid var(--rule); font-size:14px; }
+.approval { border-top:1px solid var(--ink); padding:24px 0; display:grid; grid-template-columns:230px 1fr; gap:32px; }
+.approval h2 { font:400 30px var(--serif); }
+.approval p { margin:0 0 10px; font-size:14px; }
+.warning { padding:18px 0; margin:0 0 20px; border-top:1px solid var(--accent); border-bottom:1px solid var(--rule); }
+.warning h2 { color:var(--accent); font-size:17px; }
+details { border-top:1px solid var(--rule); padding:17px 0; }
+summary { font-size:14px; font-weight:550; cursor:pointer; list-style-position:inside; }
+.appendix-body { padding-top:24px; }
+.appendix-body section { margin-bottom:30px; }
+.appendix table { min-width:840px; font-size:12px; }
+.appendix td:first-child { width:auto; }
+.appendix ol { font-size:12px; padding-left:22px; }
+.appendix ol li { margin:10px 0; }
+.evidence { padding:18px 0; border-top:1px solid var(--rule); }
+.evidence strong { font-size:14px; }
+.evidence p,code { font:12px/1.8 var(--mono); overflow-wrap:anywhere; }
+.snapshot p { font-size:12px; }
+footer { border-top:1px solid var(--rule); padding-top:14px; margin-top:28px; color:var(--muted); font:10px/1.7 var(--mono); }
+li,tr,article { scroll-margin-top:24px; }
+@media(max-width:800px) {
+  main { padding:22px 20px 36px; }
+  h1 { font-size:39px; }
+  .mast { font-size:9px; }
+  .viewbar { display:block; }
+  .view-tabs { gap:18px; }
+  .view-tabs label { font-size:12px; line-height:46px; }
+  .zoom-tabs { justify-content:flex-end; border-top:1px solid var(--rule); }
+  .zoom-tabs label { line-height:34px; }
+  .figure-head { display:block; }
+  .figure-head span { display:block; margin-top:8px; }
+  .comparison table { min-width:740px; }
+  .two-col,.approval { grid-template-columns:1fr; gap:20px; }
+}
+@media print {
+  main { max-width:none; padding:0; }
+  .viewbar,.hint { display:none!important; }
+  .panel { display:block!important; break-inside:avoid; }
+  .canvas { overflow:visible; }
+  .map { width:100%!important; min-width:0!important; }
+  .figure-head { margin-top:25px; }
+  .approval { break-inside:avoid; }
+  a { color:inherit; }
+}
+
+.task-checkpoint { border-top:1px solid var(--ink); padding:20px 0 24px; }
+.task-checkpoint h2 { font:400 28px var(--serif); margin:0 0 6px; }
+.checkpoint-asof,.checkpoint-limit,.flow-context { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.checkpoint-asof { margin:0 0 18px; }
+.checkpoint-axes { display:grid; grid-template-columns:1fr 1fr 1fr; gap:28px; margin:0 0 16px; }
+.checkpoint-axes > div { min-width:0; }
+.checkpoint-axes dt { font:10px/1.6 var(--mono); text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.checkpoint-axes dd { margin:5px 0 0; font-size:14px; overflow-wrap:anywhere; }
+.checkpoint-axes dd p { margin:5px 0 0; font-size:13px; color:var(--muted); }
+.next-action { font-size:14px; border-top:1px solid var(--rule); padding-top:14px; margin:0; overflow-wrap:anywhere; }
+.next-action strong { margin-right:12px; }
+.checkpoint-limit { margin:12px 0 0; }
+.flow-context { margin:0 0 14px; }
+.revision-log { margin-bottom:12px; }
+.revision-log > p { font-size:12px; color:var(--muted); }
+.revision-log table { min-width:740px; }
+.revision-log td { overflow-wrap:anywhere; }
+@media(max-width:800px) { .checkpoint-axes { grid-template-columns:1fr; gap:16px; } }
+@media print { .task-checkpoint { break-inside:avoid; } }
+
+#view-proposed:checked~.figures #panel-proposed{display:block}
+#view-proposed:checked~.viewbar label[for="view-proposed"]{border-color:var(--accent);color:var(--ink)}
+#view-proposed:focus-visible~.viewbar label[for="view-proposed"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-current:checked~.figures #panel-current{display:block}
+#view-current:checked~.viewbar label[for="view-current"]{border-color:var(--accent);color:var(--ink)}
+#view-current:focus-visible~.viewbar label[for="view-current"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-build:checked~.figures #panel-build{display:block}
+#view-build:checked~.viewbar label[for="view-build"]{border-color:var(--accent);color:var(--ink)}
+#view-build:focus-visible~.viewbar label[for="view-build"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-100:checked~.viewbar label[for="zoom-100"]{border-color:var(--ink);color:var(--ink)}
+#zoom-100:focus-visible~.viewbar label[for="zoom-100"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-125:checked~.viewbar label[for="zoom-125"]{border-color:var(--ink);color:var(--ink)}
+#zoom-125:focus-visible~.viewbar label[for="zoom-125"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-150:checked~.viewbar label[for="zoom-150"]{border-color:var(--ink);color:var(--ink)}
+#zoom-150:focus-visible~.viewbar label[for="zoom-150"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-fit:checked~.viewbar label[for="zoom-fit"]{border-color:var(--ink);color:var(--ink)}
+#zoom-fit:focus-visible~.viewbar label[for="zoom-fit"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><main>
+<header><div class="mast"><strong>Synthetic scoreboard fixture — example only</strong><span>Plan P1</span></div>
+<h1>Reject invalid scores. Keep valid output.</h1><p class="status awaiting-approval">SAVED TASK OVERVIEW — read the dated checkpoint; not a new approval request</p><p class="lead">Synthetic task overview: reject negative scores in both display paths. The later fixture approval is recorded, but implementation and verification have not started. The retained flow is the reviewed design, not proof of completed code.</p></header>
+<section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2><p class="checkpoint-asof">As recorded: 2026-10-29T12:00:00+00:00 — synthetic fixture · <a href="#s-S5">S5</a> — Current checkpoint; inline decision D2</p><dl class="checkpoint-axes"><div><dt>Approval</dt><dd><strong>Approved · P1</strong><p>D2 records the fixture approval for both callers; no extra features or dependencies.</p></dd></div><div><dt>Implementation</dt><dd><strong>Not started</strong><p>The supplied code still has the original behavior. Approval is not implementation.</p></dd></div><div><dt>Verification / acceptance</dt><dd><strong>Not run</strong><p>The proposed change has not been tested. Baseline inspection is not a passing result.</p></dd></div></dl><p class="next-action"><strong>Next safe action</strong> Add the agreed regression coverage, then implement the covered scope. Reuse P1; an agent handoff is not another plan revision.</p><p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. Approval, completed code and acceptance are different states.</p></section><p class="flow-context">Flow reviewed for P1. The current/baseline view describes the earlier inspected state; the proposed view describes the reviewed scope, not proof it was implemented.</p><section class="review" aria-label="Flowchart review"><input class="sr-radio" type="radio" name="diagram-view" id="view-proposed" aria-label="Feature flow" aria-controls="panel-proposed" checked><input class="sr-radio" type="radio" name="diagram-view" id="view-current" aria-label="Current flow" aria-controls="panel-current" ><input class="sr-radio" type="radio" name="diagram-view" id="view-build" aria-label="Build plan" aria-controls="panel-build" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-100" aria-label="100% diagram size" checked><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-125" aria-label="125% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-150" aria-label="150% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-fit" aria-label="Fit diagram size" ><div class="viewbar"><div class="view-tabs" role="group" aria-label="Diagram views"><label for="view-proposed">Feature flow</label><label for="view-current">Current flow</label><label for="view-build">Build plan</label></div><div class="zoom-tabs" role="group" aria-label="Diagram size"><label for="zoom-100">100%</label><label for="zoom-125">125%</label><label for="zoom-150">150%</label><label for="zoom-fit">Fit</label></div></div><div class="figures"><figure class="panel" id="panel-proposed"><div class="figure-head"><h2>Proposed — one check, two outcomes</h2><span>proposed · flow</span></div><p class="figure-description">Both display paths use the existing formatter. Reject either negative input; otherwise return exactly the existing score text. Proposed behavior, not a runtime observation.</p><p class="hint">Scroll sideways to explore. <a href="#node-8-proposed-N1">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Feature flow diagram, scroll to explore" data-start-id="node-8-proposed-N1" style="--board-width:1280px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1280" height="736" viewBox="0 0 1280 736" role="img" aria-labelledby="proposed-title proposed-desc"><title id="proposed-title">Proposed — one check, two outcomes</title><desc id="proposed-desc">Both display paths use the existing formatter. Reject either negative input; otherwise return exactly the existing score text. Proposed behavior, not a runtime observation.</desc><defs><marker id="arrow-proposed" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="N1" data-to="N2" data-points="[[640, 112], [640, 160]]" d="M 640 112 L 640 160" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N2" data-to="N3" data-points="[[640, 248], [640, 320]]" d="M 640 248 L 640 320" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N3" data-to="N4" data-points="[[768, 400], [920, 400]]" d="M 768 400 L 920 400" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N3" data-to="N5" data-points="[[640, 480], [640, 576]]" d="M 640 480 L 640 576" marker-end="url(#arrow-proposed)"/><g class="arrow-label"><rect x="825.5" y="357" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="844" y="372">YES</text></g><g class="arrow-label"><rect x="673" y="509" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="688" y="524">NO</text></g><g id="node-8-proposed-N1" class="node start proposed " data-id="N1" data-box="464,40,352,72"><title>Both display paths. proposed / modified. </title><rect class="node-shape" x="464" y="40" width="352" height="72" rx="20"/><text class="node-title" x="640" y="72" text-anchor="middle">Both display paths</text><text class="node-note" x="640" y="96" text-anchor="middle">Web and player</text></g><g id="node-8-proposed-N2" class="node action proposed " data-id="N2" data-box="464,160,352,88"><title>Shared formatter. proposed / modified. </title><rect class="node-shape" x="464" y="160" width="352" height="88" rx="6"/><text class="node-title" x="640" y="200" text-anchor="middle">Shared formatter</text><text class="node-note" x="640" y="224" text-anchor="middle">One owner for both paths</text></g><g id="node-8-proposed-N3" class="node decision proposed focal" data-id="N3" data-box="512,320,256,160"><title>Either score
+negative?. proposed / modified. </title><polygon class="node-shape" points="640,320 768,400 640,480 512,400"/><text class="node-title" x="640" y="394" text-anchor="middle">Either score</text><text class="node-title" x="640" y="418" text-anchor="middle">negative?</text></g><g id="node-8-proposed-N4" class="node result proposed focal" data-id="N4" data-box="920,352,304,96"><title>Reject invalid input. proposed / added. </title><rect class="node-shape" x="920" y="352" width="304" height="96" rx="20"/><text class="node-title" x="1072" y="396" text-anchor="middle">Reject invalid input</text><text class="node-note" x="1072" y="420" text-anchor="middle">Raise ValueError</text></g><g id="node-8-proposed-N5" class="node result observed " data-id="N5" data-box="460,576,360,88"><title>Keep score formatting. observed / unchanged. </title><rect class="node-shape" x="460" y="576" width="360" height="88" rx="20"/><text class="node-title" x="640" y="616" text-anchor="middle">Keep score formatting</text><text class="node-note" x="640" y="640" text-anchor="middle">Zero and positive scores unchanged</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span><span><i class="legend-decision" aria-hidden="true"></i>Decision</span><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div><span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure><figure class="panel" id="panel-current"><div class="figure-head"><h2>Current — two separate paths</h2><span>current · flow</span></div><p class="figure-description">Static inspection of the bundled fixture. Each path returns score text; neither rejects negative values.</p><p class="hint">Scroll sideways to explore. <a href="#node-7-current-N1">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Current flow diagram, scroll to explore" data-start-id="node-7-current-N1" style="--board-width:1280px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="current-title current-desc"><title id="current-title">Current — two separate paths</title><desc id="current-desc">Static inspection of the bundled fixture. Each path returns score text; neither rejects negative values.</desc><defs><marker id="arrow-current" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="N1" data-to="N2" data-points="[[336, 200], [456, 200]]" d="M 336 200 L 456 200" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N2" data-to="N3" data-points="[[800, 200], [920, 200]]" d="M 800 200 L 920 200" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N4" data-to="N5" data-points="[[336, 472], [456, 472]]" d="M 336 472 L 456 472" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N5" data-to="N6" data-points="[[800, 472], [920, 472]]" d="M 800 472 L 920 472" marker-end="url(#arrow-current)"/><g class="arrow-label"><rect x="370.5" y="157" width="51" height="22"/><text class="edge-label" text-anchor="middle" x="396" y="172">CALLS</text></g><g class="arrow-label"><rect x="838" y="157" width="44" height="22"/><text class="edge-label" text-anchor="middle" x="860" y="172">TEXT</text></g><g class="arrow-label"><rect x="370.5" y="429" width="51" height="22"/><text class="edge-label" text-anchor="middle" x="396" y="444">CALLS</text></g><g class="arrow-label"><rect x="838" y="429" width="44" height="22"/><text class="edge-label" text-anchor="middle" x="860" y="444">TEXT</text></g><g id="node-7-current-N1" class="node start observed " data-id="N1" data-box="48,152,288,96"><title>Web display. observed / unchanged. </title><rect class="node-shape" x="48" y="152" width="288" height="96" rx="20"/><text class="node-title" x="192" y="196" text-anchor="middle">Web display</text><text class="node-note" x="192" y="220" text-anchor="middle">Shared formatting path</text></g><g id="node-7-current-N2" class="node action observed " data-id="N2" data-box="456,152,344,96"><title>Shared formatter. observed / unchanged. </title><rect class="node-shape" x="456" y="152" width="344" height="96" rx="6"/><text class="node-title" x="628" y="196" text-anchor="middle">Shared formatter</text><text class="node-note" x="628" y="220" text-anchor="middle">No negative-score check</text></g><g id="node-7-current-N3" class="node result observed " data-id="N3" data-box="920,152,304,96"><title>Score text. observed / unchanged. </title><rect class="node-shape" x="920" y="152" width="304" height="96" rx="20"/><text class="node-title" x="1072" y="196" text-anchor="middle">Score text</text><text class="node-note" x="1072" y="220" text-anchor="middle">Negatives are not rejected</text></g><g id="node-7-current-N4" class="node start observed " data-id="N4" data-box="48,424,288,96"><title>Player display. observed / unchanged. </title><rect class="node-shape" x="48" y="424" width="288" height="96" rx="20"/><text class="node-title" x="192" y="468" text-anchor="middle">Player display</text><text class="node-note" x="192" y="492" text-anchor="middle">Separate formatting path</text></g><g id="node-7-current-N5" class="node action observed " data-id="N5" data-box="456,424,344,96"><title>Legacy formatter. observed / unchanged. </title><rect class="node-shape" x="456" y="424" width="344" height="96" rx="6"/><text class="node-title" x="628" y="468" text-anchor="middle">Legacy formatter</text><text class="node-note" x="628" y="492" text-anchor="middle">Duplicates score formatting</text></g><g id="node-7-current-N6" class="node result observed " data-id="N6" data-box="920,424,304,96"><title>Score text. observed / unchanged. </title><rect class="node-shape" x="920" y="424" width="304" height="96" rx="20"/><text class="node-title" x="1072" y="468" text-anchor="middle">Score text</text><text class="node-note" x="1072" y="492" text-anchor="middle">Shared owner is bypassed</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span></div><span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure><figure class="panel" id="panel-build"><div class="figure-head"><h2>Build plan — after approval only</h2><span>proposed · delivery</span></div><p class="figure-description">These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins; no diagram action grants it.</p><p class="hint">Scroll sideways to explore. <a href="#node-5-build-approval">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Build plan diagram, scroll to explore" data-start-id="node-5-build-approval" style="--board-width:1280px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1280" height="848" viewBox="0 0 1280 848" role="img" aria-labelledby="build-title build-desc"><title id="build-title">Build plan — after approval only</title><desc id="build-desc">These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins; no diagram action grants it.</desc><defs><marker id="arrow-build" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="approval" data-to="B1" data-points="[[640, 104], [640, 176]]" d="M 640 104 L 640 176" marker-end="url(#arrow-build)"/><path class="connector proposed" data-from="B1" data-to="B2" data-points="[[640, 264], [640, 328]]" d="M 640 264 L 640 328" marker-end="url(#arrow-build)"/><path class="connector proposed" data-from="B2" data-to="B3" data-points="[[640, 416], [640, 480]]" d="M 640 416 L 640 480" marker-end="url(#arrow-build)"/><path class="connector proposed" data-from="B3" data-to="B4" data-points="[[640, 576], [640, 640]]" d="M 640 576 L 640 640" marker-end="url(#arrow-build)"/><g id="node-5-build-approval" class="node start proposed focal" data-id="approval" data-box="472,40,336,64"><title>User approves this plan. proposed / unchanged. </title><rect class="node-shape" x="472" y="40" width="336" height="64" rx="20"/><text class="node-title" x="640" y="78" text-anchor="middle">User approves this plan</text></g><g id="node-5-build-B1" class="node action proposed " data-id="B1" data-box="432,176,416,88"><title>Add regression tests. proposed / modified. </title><rect class="node-shape" x="432" y="176" width="416" height="88" rx="6"/><text class="node-title" x="640" y="216" text-anchor="middle">Add regression tests</text><text class="node-note" x="640" y="240" text-anchor="middle">Invalid inputs and valid output</text></g><g id="node-5-build-B2" class="node action proposed " data-id="B2" data-box="432,328,416,88"><title>Validate at the owner. proposed / modified. </title><rect class="node-shape" x="432" y="328" width="416" height="88" rx="6"/><text class="node-title" x="640" y="368" text-anchor="middle">Validate at the owner</text><text class="node-note" x="640" y="392" text-anchor="middle">Use the existing formatter</text></g><g id="node-5-build-B3" class="node action proposed " data-id="B3" data-box="432,480,416,96"><title>Route player; remove duplicate. proposed / modified. </title><rect class="node-shape" x="432" y="480" width="416" height="96" rx="6"/><text class="node-title" x="640" y="524" text-anchor="middle">Route player; remove duplicate</text><text class="node-note" x="640" y="548" text-anchor="middle">Replace the bypass, not the feature</text></g><g id="node-5-build-B4" class="node result proposed " data-id="B4" data-box="432,640,416,96"><title>Verify and update docs. proposed / modified. </title><rect class="node-shape" x="432" y="640" width="416" height="96" rx="20"/><text class="node-title" x="640" y="684" text-anchor="middle">Verify and update docs</text><text class="node-note" x="640" y="708" text-anchor="middle">Check both paths and stale references</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div><span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure></div></section>
+<section class="comparison"><h2>What changes</h2><div class="table-scroll"><table><thead><tr><th>Area</th><th>Baseline before the selected change</th><th>Reviewed scope — see checkpoint for progress</th></tr></thead><tbody><tr><td><strong>Negative scores</strong><small><a href="#r-R1">R1</a></small></td><td>Both display paths format negative scores without rejecting them.<small><a href="#e-E3">E3</a></small></td><td>Reject a negative home or away score through the shared formatter.<small><a href="#t-T1">T1</a> <a href="#t-T2">T2</a> <a href="#t-T3">T3</a> <a href="#t-T4">T4</a></small></td></tr><tr><td><strong>Valid scores</strong><small><a href="#r-R2">R2</a></small></td><td>Zero and positive scores are formatted as home - away.<small><a href="#e-E1">E1</a> <a href="#e-E2">E2</a></small></td><td>Keep the same text for every nonnegative score.<small><a href="#t-T1">T1</a> <a href="#t-T2">T2</a> <a href="#t-T3">T3</a> <a href="#t-T4">T4</a></small></td></tr><tr><td><strong>Ownership</strong><small><a href="#r-R1">R1</a> <a href="#r-R2">R2</a></small></td><td>Web and player use separate formatting functions.<small><a href="#e-E1">E1</a> <a href="#e-E2">E2</a></small></td><td>Use the existing shared owner and remove the redundant helper.<small><a href="#t-T3">T3</a> <a href="#t-T4">T4</a></small></td></tr></tbody></table></div></section><section class="boundaries"><h2>What will not change</h2><ul><li>No new features, UI redesign or score history.</li><li>No dependencies, extra configuration or automatic Git actions.</li><li>Only the shared score behavior, required caller, tests, scoped cleanup and existing documentation change.</li></ul></section>
+<div class="two-col"><section><h2>Tasks in the reviewed scope</h2><ul class="plain"><li><a href="#t-T1">T1</a> Add behavior-level regression tests<small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small><small>Depends on: No prior task</small></li><li><a href="#t-T2">T2</a> Validate at the existing shared formatter<small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small><small>Depends on: T1</small></li><li><a href="#t-T3">T3</a> Route player through shared validation; remove old helper<small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small><small>Depends on: T2</small></li><li><a href="#t-T4">T4</a> Verify both paths and update existing usage documentation<small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small><small>Depends on: T3</small></li></ul></section>
+<section><h2>How completion will be checked</h2><ul class="plain"><li id="a-A1"><strong>A1 — Negative scores are rejected through all affected entrypoints.</strong><small>Verify: Add/run tests for negative home and negative away at shared, web and player entrypoints; expect ValueError. · <a href="#r-R1">R1</a></small></li><li id="a-A2"><strong>A2 — Nonnegative scores still render exactly as before.</strong><small>Verify: Run zero/positive examples through both display paths and compare exact strings; verify obsolete-helper references are removed. · <a href="#r-R2">R2</a></small></li></ul></section></div>
+<section class="approval"><h2>Authority stays in the task record.</h2><div><p>This saved overview does not approve work, reopen settled approval or certify completed implementation. A historical review may still say awaiting approval; use the dated checkpoint and actual approval record.</p><p>There is no approve button or agent connection.</p></div></section><details class="revision-log" id="revision-history"><summary>Revision history — what changed and why</summary><p>Changed agreements, not a log of every retry. Review aliases are preserved as recorded; a missing original is not reconstructed.</p><div class="table-scroll"><table><thead><tr><th>Revision / review</th><th>Change</th><th>Reason</th><th>Recorded outcome / source</th></tr></thead><tbody><tr><td><strong>P0</strong><small>old-draft — no retained HTML in this fixture</small></td><td>Initially considered the web path only.</td><td>The first proposal did not cover the separate player path.</td><td>Superseded<small><a href="#s-S5">S5</a> — D1; superseded by the P1 scope</small></td></tr><tr><td><strong>P1</strong><small>review.html / review.json</small></td><td>Cover both display paths; preserve existing nonnegative output.</td><td>Both callers must apply the same requested rule.</td><td>Approved<small><a href="#s-S5">S5</a> — D2 — synthetic approval, not actual authorization</small></td></tr></tbody></table></div></details><details class="appendix" id="technical-details"><summary>Technical evidence and task details</summary><div class="appendix-body">
+<section><h2>Requested outcome</h2><ul class="plain"><li id="r-R1"><strong>R1.</strong> Reject a negative home or away score in both display paths.<small>Source: Synthetic request in PLAN.md; not an actual product change.</small></li><li id="r-R2"><strong>R2.</strong> Keep zero and positive score formatting unchanged.<small>Source: Explicit compatibility constraint in the synthetic request.</small></li></ul></section>
+<section><h2>Changes and mapped tasks</h2><div class="table-scroll"><table><thead><tr><th>Task</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody><tr id="t-T1"><td><strong>T1</strong></td><td><strong>Add behavior-level regression tests</strong><small>prerequisite: Prove the requested rejection and preserve existing output.<br>Areas: tests/test_scoreboard.py</small><small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a><br><a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a></td><td>—</td></tr><tr id="t-T2"><td><strong>T2</strong></td><td><strong>Validate at the existing shared formatter</strong><small>requested: The shared owner already formats the same score values.<br>Areas: src/scoreboard.py: format_score</small><small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a></td><td><a href="#t-T1">T1</a></td></tr><tr id="t-T3"><td><strong>T3</strong></td><td><strong>Route player through shared validation; remove old helper</strong><small>prerequisite: Fixing only the shared formatter would leave the player bypass.<br>Areas: src/scoreboard.py: player_score, _legacy_score</small><small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a><br><a href="#e-E2">E2</a> <a href="#e-E3">E3</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a></td><td><a href="#t-T2">T2</a></td></tr><tr id="t-T4"><td><strong>T4</strong></td><td><strong>Verify both paths and update existing usage documentation</strong><small>prerequisite: Complete acceptance evidence and remove stale behavior descriptions.<br>Areas: tests/test_scoreboard.py, README.md</small><small class="task-outcome">Not started: STATUS.md checkpoint: implementation has not started.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a><br><a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a></td><td><a href="#t-T3">T3</a></td></tr></tbody></table></div></section>
+<section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · static — The web path uses an existing shared formatter without validation.</strong><p>src/scoreboard.py: format_score, web_score</p><small>Sources: <a href="#s-S4">S4</a> <a href="#s-S3">S3</a><br>Limits: Static inspection only; no runtime result claimed.</small></article><article id="e-E2" class="evidence"><strong>E2 · static — The player calls a separate formatter and bypasses the shared owner.</strong><p>src/scoreboard.py: _legacy_score, player_score</p><small>Sources: <a href="#s-S4">S4</a> <a href="#s-S3">S3</a><br>Limits: Static fixture only; not a complete application call graph.</small></article><article id="e-E3" class="evidence"><strong>E3 · static — Both supplied paths format scores but neither rejects negatives.</strong><p>Both entrypoints and their directly called formatters</p><small>Sources: <a href="#s-S4">S4</a> <a href="#s-S3">S3</a><br>Limits: Only the tiny supplied fixture was inspected.</small></article></section><details><summary>Current flow — nodes and relationships</summary><ol><li><strong>N1 — Web display</strong>: Shared formatting path (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 — Shared formatter</strong>: No negative-score check (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N3 — Score text</strong>: Negatives are not rejected (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N4 — Player display</strong>: Separate formatting path (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N5 — Legacy formatter</strong>: Duplicates score formatting (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N6 — Score text</strong>: Shared owner is bypassed (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N1 → N2</strong>: calls (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N3</strong>: text (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N4 → N5</strong>: calls (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N5 → N6</strong>: text (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li></ol></details><details><summary>Feature flow — nodes and relationships</summary><ol><li><strong>N1 — Both display paths</strong>: Web and player (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>N2 — Shared formatter</strong>: One owner for both paths (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>N3 — Either score
+negative?</strong>:  (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>N4 — Reject invalid input</strong>: Raise ValueError (proposed, added)  Evidence <a href="#e-E1">E1</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>N5 — Keep score formatting</strong>: Zero and positive scores unchanged (observed, unchanged)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N1 → N2</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>N2 → N3</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>N3 → N4</strong>: Yes (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>N3 → N5</strong>: No (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li></ol></details><details><summary>Build plan — nodes and relationships</summary><ol><li><strong>approval — User approves this plan</strong>:  (proposed, unchanged)  Evidence —; tasks —.</li><li><strong>B1 — Add regression tests</strong>: Invalid inputs and valid output (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>B2 — Validate at the owner</strong>: Use the existing formatter (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>B3 — Route player; remove duplicate</strong>: Replace the bypass, not the feature (proposed, modified)  Evidence <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>B4 — Verify and update docs</strong>: Check both paths and stale references (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>approval → B1</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>B1 → B2</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a>.</li><li><strong>B2 → B3</strong>: continues (proposed, modified)  Evidence <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>B3 → B4</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks <a href="#t-T4">T4</a>.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>Synthetic scoreboard fixture — example only · Local illustrative files; no application branch</p>
+<p>Based on the bundled fixture and named source files. Current flow is statically inspected; proposed behavior is not implemented.</p><p>Generated 2026-10-29T14:09:21.287479+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-S1"><td>S1</td><td><code>PLAN.md</code></td><td>plan</td><td><code>afeb79818ad8cae6…</code></td></tr><tr id="s-S2"><td>S2</td><td><code>TODO.md</code></td><td>todo</td><td><code>34453899a983f495…</code></td></tr><tr id="s-S3"><td>S3</td><td><code>FINDINGS.md</code></td><td>findings</td><td><code>6aca6ff40deb18d1…</code></td></tr><tr id="s-S4"><td>S4</td><td><code>src/scoreboard.py</code></td><td>code</td><td><code>7e1df39d2884f0b3…</code></td></tr><tr id="s-S5"><td>S5</td><td><code>STATUS.md</code></td><td>checkpoint</td><td><code>b1aad19a80868c9a…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>task-overview.json</code></td><td>projection</td><td><code>fb73f2c75ff120a4…</code></td></tr></tbody></table></div></details>
+</div></details><p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p><footer>Local HTML + SVG · no external assets, uploads or approval actions · saved review snapshot; progress belongs in the existing task records</footer>
+</main><script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.6.0", "layout_version": 2, "style": "workflow-editorial-v1", "revision": "P1", "report_kind": "task-overview", "generated_utc": "2026-10-29T14:09:21.287479+00:00", "sources": [{"id": "S1", "role": "plan", "path": "PLAN.md", "sha256": "afeb79818ad8cae67f80ea9aef77754391f84eefc29f32bccc500c0ac06217ef"}, {"id": "S2", "role": "todo", "path": "TODO.md", "sha256": "34453899a983f495c86dc398a7f0218439aeb5c6de0c129cb0f48f0f69c0e1cd"}, {"id": "S3", "role": "findings", "path": "FINDINGS.md", "sha256": "6aca6ff40deb18d14d610448bc4fab4aa94442b94b8e53f464a9212d32d6262e"}, {"id": "S4", "role": "code", "path": "src/scoreboard.py", "sha256": "7e1df39d2884f0b337a0939370cacce6f6c462c6bfa3c10c42c81f339889aed9"}, {"id": "S5", "role": "checkpoint", "path": "STATUS.md", "sha256": "b1aad19a80868c9ad71b4caf2e2a5da31b8f5fb8d04f8e5cec42c8f3eaf91183"}, {"id": "report-input", "role": "projection", "path": "task-overview.json", "sha256": "fb73f2c75ff120a4bc9a1f662ff50573d06915ad8eb63dc0e6d7c145424211c7"}]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+</script></body></html>

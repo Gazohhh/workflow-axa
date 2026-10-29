@@ -48,8 +48,8 @@
     }
   ],
   "provenance": {
-    "package_version": "2.3.0",
-    "renderer_sha256": "8d980f908198617e641fa4b5cb3f8be9d0f76390aea6bbf1a0d6901d0f7ff994",
+    "package_version": "2.6.0",
+    "renderer_sha256": "b71e0460a56daaa9119aa42f6456e67bdc87d64e9b97c4024d409b3bf4a9a9ff",
     "input_sha256": "6190635b735ba5da5eff380ed7ccc691a8e9ebe24e6abd6bda247b5bc84675eb",
     "reference_authority": "Capture only. Generation does not approve or replace a reference."
   },

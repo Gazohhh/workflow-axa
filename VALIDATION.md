@@ -1,37 +1,39 @@
-# Validation — 2.5.0
+# Validation — 2.6.0
 
-Validated 26 October 2026 against the supplied 2.4.0 archive. This release changes instructions, global activation tooling and tests. It does not delete existing user artifacts or modify a real project/agent installation.
+Date: 29 October 2026. Baseline: the owner-supplied workflow-axa(1).zip (plugin 2.5.0), SHA-256 `078537e539e85c957ed24175f2ad0bad814e17284466b7aaf814f870d0ff3af6`. The uploaded archive and user's project documentation are unchanged. Work was done in an isolated package copy, not in an installed host or application repository.
 
 ## Observed checks
 
 | Check | Result |
 |---|---|
-| Package structure, metadata, links and budgets | PASS; six skills; main workflow 1,139 words. |
-| Complete automated tooling suite | PASS; 178 tests (143 existing and 35 new); no skips in this Linux environment. |
-| New global-setup checks | Preview/check do not write; managed apply is idempotent; existing instructions/CRLF/BOM and file modes survive; nonempty Codex override is handled; custom profiles work; unsafe/modified inputs are rejected. |
-| Global-setup boundaries | Synthetic unknown project artifacts remain untouched. There is no project cleanup function. All setup writes in testing target disposable user profiles. |
-| Offline Chromium | PASS; 15 existing browser checks, no external requests or page errors. |
-| Matt integrations | Catalogue records/source metadata unchanged from 2.4.0 except workflow_version. Existing questioning instructions are byte-identical; output boundaries were added to specialist handoffs. |
-| Local flowchart | FLOWCHART-DESIGN.md, CSS, JS and example JSON byte-identical. Renderer code changes only the emitted version. Example HTML regenerated for current metadata. |
-| Project instruction edits | Supplied AGENTS.md changes confined to evidence/output rules and the disposable-output qualification. CLAUDE.md keeps @AGENTS.md and its specialist routes, adding delegated-output boundaries. Both retain CRLF. CONTEXT.md is untouched. |
-| Live agent cases | 24 cases authored, including 10 artifact-specific cases; all NOT_RUN. Definitions and unit tests are not model behavior observations. |
+| Uploaded baseline | 178 automated tests ran: 177 passed; one failed because the extra legacy DIAGRAM-DESIGN.md file restored the retired external-provider instructions. The filename is now a safe local compatibility pointer. |
+| Candidate tooling suite | PASS: 210 tests, including additive report fields, exact legacy aliases, source checks, authority mismatches, escaped content, unchanged original snapshots, legacy STATUS.md fixtures and existing global-policy safeguards. |
+| Package validator | PASS: six skills, manifest/catalogue version alignment, relative references and entrypoint budgets. Main workflow: 1,178 words; codebase-map: 850 words. |
+| Offline Chromium | PASS: 19 checks, including original flow controls/geometry plus separate checkpoint states, revision disclosure/source navigation, desktop/mobile layout and no-JavaScript behavior. No external requests or page errors. |
+| Flowchart visual carry-forward | PASS: four exact screenshot comparisons against the supplied baseline rendered in the same controlled environment; zero changed pixels in desktop current/proposed/build and mobile proposed panels. The new optional prose/status sections are outside that old flow-panel comparison and were separately inspected. |
+| Dependencies and original history | 27 Matt catalogue entries and route definitions preserved. QUESTIONS.md, ARTIFACTS.md, global_policy.py, local design guide, viewer JS, original example sources/HTML and all 24 existing package task-record files are byte-identical. See dependency-preservation.json. |
+| Backward compatibility | Old schema-2 input has no new required fields. Existing HTML/source-manifest checks are retained. Schema-1 layout regeneration still requires the existing explicit migration, not an automatic converter. |
+| Final distributable | Extracted to a fresh directory; package validator, all 210 tooling tests and the 19 browser checks rerun from those extracted bytes. ZIP integrity checked. |
+| Agent evaluations | 31 live-host scenarios are defined, including seven new record-history cases. ALL NOT_RUN. Tool tests do not establish model obedience. |
 
-Evidence: `tests/evidence/tooling-tests.txt`, `browser-smoke.json`, `dependency-preservation.json` and `behavioral-results.json`. Existing dated evidence and visual-reference comparisons are historical, not rerun claims for this version. This release does not claim a new exact-pixel comparison; unchanged visual assets and the browser suite were checked.
+Evidence files are in tests/evidence: tooling-tests.txt, browser-smoke.json, visual-comparison.json, visual-candidate-manifest.json, dependency-preservation.json and behavioral-results.json. Dated 2.2.x results and visual-negative-control.json are retained historical evidence, not new run claims. The unchanged bundled visual baselines are not replaced with candidate images.
 
-Environment: Python 3.13.5, Linux x86_64, Playwright 1.57.0, Chromium 144.0.7559.96. Existing tools only, no downloads. Browser sandbox bypass was explicitly limited to this trusted disposable container; default commands keep sandboxing elsewhere. The feature-flow screenshot was visually inspected.
+## What the tests mean
 
-## Setup guarantees and limits
+The renderer checks supplied structure, references, geometry, exact source bytes and some explicit state contradictions. It does not interpret arbitrary Markdown as truth, authenticate an approving person, verify implementation from a status field, or prove complete repository coverage. A checkpoint remains a dated sourced claim; its approval, code work and acceptance must be reconciled with actual records/worktree by the agent.
 
-The global helper replaces only its own marked block, preserves surrounding bytes and writes one shared deployed policy. It refuses malformed/duplicate markers, unowned or modified policy, a newer installed policy, unsafe path indirection and inputs changed before replacement. It has no recursive artifact scan, deletion preview or cleanup engine: its preview concerns global instructions only. Its only temporary-file removal is its own in-progress configuration-write file.
+Behavioral fixture tests establish what inputs exist, not how Claude/Codex respond. The legacy history fixture contains actual negative-score validation while retaining a prior pending review and historical proposal, so a future evaluator can distinguish progress from authority. Missing historical reviews are deliberately not reconstructed. Owner-removed items are not labelled as passing tests.
 
-File replacements are atomic individually, not transactional across all targets. Run setup without concurrent instruction edits. A failed/interrupted apply reports partial completion; rerun the read-only check and complete the reviewed merge. Native Windows ACLs/junction behavior and actual installed-host discovery were not executed here. Conservative path checks and Linux filesystem tests are not a substitute for that target-machine verification.
+## Preservation and scope
 
-Claude/Codex executables and the user's actual homes are unavailable. Global policy loading, delegation, compliant cleanup, question quality and preservation of real active consumers are NOT VERIFIED on a live model. Fresh sessions and the B15–B24 pilot are required. Instructions are not a hard filesystem permission mechanism.
+No user plans.zip/adr.zip records, project AGENTS/CLAUDE/CONTEXT files, global instructions, application code, Git index/history, third-party skills or existing artifacts were modified. No dependency downloads, external uploads or new external skill requirements were introduced. The distributable excludes .git, caches and local QA output; it retains all original non-Git package file paths, including the legacy diagram pointer.
 
-Direct file navigation was blocked by this environment's browser policy. The identical HTML was tested offline through browser content loading. Opening in the user's desktop browser still requires a local check. No complete accessibility audit or human comprehension study is claimed.
+ARTIFACTS.md and its deployment helper remain revision 2.5.0 because their content and activation are unchanged; that version is independent of the 2.6.0 package. Existing global activation still matches. Its test now checks deployment-to-policy consistency rather than forcing unrelated release numbers to match. The setup safety tests remain in force.
 
-The user supplied project instructions, not the whole repository or their actual global files. Referenced ADRs, test producers, build-store internals and existing 35 GB artifact tree were not inspected or changed here. The provided project edits preserve known protections and do not certify that every possible consumer has been identified. Producer retention and historical cleanup remain separately approved repository work.
+Adoption is forward-only: new tasks use the clarified rules; an authorised continuation minimally reconciles that task. Read-only utilities never silently update files. Local project retention conflicts need an explicit reviewed merge, not a global override. Existing pending review badges remain historical. The optional task-overview is not regenerated on every update and creates no authority or additional plan.
 
-## Distribution
+## Environment and limits
 
-The archive excludes caches, temporary profiles, browser-run directories, credentials, fonts and the user's project-specific files. Those AGENTS.md/CLAUDE.md copies are delivered separately; do not publish them as part of the reusable plugin. ZIP integrity and member hashes are verified against the final package. Structural, unit and browser checks are rerun from a fresh extraction before delivery; packaging does not install, tag, push or publish anything.
+Python 3.13, Linux x86_64, existing Playwright and Chromium 144.0.7559.96. No browser installation. Chromium's sandbox bypass was used only in this disposable trusted container; normal commands retain the sandbox. Desktop and mobile overview screenshots were visually inspected.
+
+Direct local file navigation was blocked by the environment policy. The identical HTML was loaded with networking disabled; this tests rendering and controls, not the user's default desktop opener. No complete accessibility audit, multi-browser/Windows pixel guarantee, user-comprehension study or live Claude/Codex invocation/behavior is claimed. Verify host discovery and H01–H07 on the actual team installations before relying on them.

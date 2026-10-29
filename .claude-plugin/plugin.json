@@ -1,6 +1,6 @@
 {
   "name": "workflow-axa",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Code-grounded workflow with proactive grilling, anti-slop review, task recovery, visual approval and independent workflow utilities.",
   "author": {
     "name": "Gazohhh",

@@ -203,10 +203,10 @@ class GlobalPolicyTests(unittest.TestCase):
         p=self.write('.claude/CLAUDE.md',b'rules\n');p.chmod(0o640)
         g.apply_plan(self.plan());self.assertEqual(p.stat().st_mode & 0o777,0o640)
 
-    def test_package_version_and_policy_agree(self):
-        version=json.loads((ROOT/'.claude-plugin/plugin.json').read_text())['version']
-        self.assertEqual(g.VERSION,version)
-        self.assertIn('Policy revision: '+version,g.SOURCE.read_text())
+    def test_deployment_matches_policy_without_forcing_package_version(self):
+        package=json.loads((ROOT/'.claude-plugin/plugin.json').read_text())['version']
+        self.assertIn('Policy revision: '+g.VERSION,g.SOURCE.read_text())
+        self.assertLessEqual(tuple(map(int,g.VERSION.split('.'))),tuple(map(int,package.split('.'))))
 
     def test_unrelated_project_artifacts_are_untouched(self):
         p=self.write('project/.artifacts/builds2/proof.txt',b'keep this old evidence')

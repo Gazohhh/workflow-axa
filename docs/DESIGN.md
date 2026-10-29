@@ -145,3 +145,13 @@ A user-provided project audit found agents inventing task/phase/retry output roo
 The helper has preview/check by default and explicit apply. It never touches project artifacts. Known protections, concurrency, required evidence and reusable tools prevent destructive blanket cleanup. Task records and approved flowcharts remain durable. User-specific AGENTS/CLAUDE edits are delivered separately, not embedded in the reusable plugin; no domain glossary change is required.
 
 Primary references checked 26 October 2026: [Claude memory scopes/imports](https://code.claude.com/docs/en/memory) and [Codex instructions](https://developers.openai.com/codex/guides/agents-md/). Instructions are context, not an enforcement or storage-quota mechanism. Tests of setup files are not live behavior tests.
+
+## 2.6.0 — current record, historical agreement
+
+The record model remains Markdown-first: one current checkpoint, actionable TODOs, investigative/verification evidence, and meaningful decision history. Approval, implementation and acceptance are independent. A changed agreement creates a plan revision; progress and attempts do not. The revision log is a section, not a new database or file type.
+
+Adoption is forward-only and evidence-led. Existing paths, identifiers, heading anchors, STATUS.md layouts, historical reviews and reference guides remain valid. Only new work and the active resumed task adopt clearer wording. The package cannot infer current authority from arbitrary Markdown, latest filenames or hashes; the agent must reconcile sources and report unknowns.
+
+Schema 2 gains optional record context without changing graph layout. A task overview shows a dated sourced checkpoint and selected review history, never a live status claim or approval action. A retained pending review is not overwritten to reflect later approval. Standard report inputs and geometry still work unchanged. The fixed runtime/visual design is preserved; new prose sections are scoped separately.
+
+The artifact policy/deployment version is independent of the package version so a documentation improvement does not needlessly rewrite global instructions. Specialist catalogue entries and adapters are preserved. The restored legacy DIAGRAM-DESIGN.md path points to the bundled guide rather than reviving its retired external dependency.

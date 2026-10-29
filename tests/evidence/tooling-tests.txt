@@ -60,6 +60,7 @@ test_apply_preserves_existing_mode (test_global_policy.GlobalPolicyTests.test_ap
 test_changed_input_after_plan_is_rejected (test_global_policy.GlobalPolicyTests.test_changed_input_after_plan_is_rejected) ... ok
 test_config_directory_not_file_rejected (test_global_policy.GlobalPolicyTests.test_config_directory_not_file_rejected) ... ok
 test_custom_environment_roots (test_global_policy.GlobalPolicyTests.test_custom_environment_roots) ... ok
+test_deployment_matches_policy_without_forcing_package_version (test_global_policy.GlobalPolicyTests.test_deployment_matches_policy_without_forcing_package_version) ... ok
 test_empty_override_is_not_changed (test_global_policy.GlobalPolicyTests.test_empty_override_is_not_changed) ... ok
 test_existing_override_and_base_are_both_updated (test_global_policy.GlobalPolicyTests.test_existing_override_and_base_are_both_updated) ... ok
 test_explicit_roots_take_precedence (test_global_policy.GlobalPolicyTests.test_explicit_roots_take_precedence) ... ok
@@ -70,7 +71,6 @@ test_modified_policy_requires_review (test_global_policy.GlobalPolicyTests.test_
 test_new_file_created_after_plan_is_not_overwritten (test_global_policy.GlobalPolicyTests.test_new_file_created_after_plan_is_not_overwritten) ... ok
 test_newer_policy_cannot_be_downgraded (test_global_policy.GlobalPolicyTests.test_newer_policy_cannot_be_downgraded) ... ok
 test_non_utf8_instructions_are_not_rewritten (test_global_policy.GlobalPolicyTests.test_non_utf8_instructions_are_not_rewritten) ... ok
-test_package_version_and_policy_agree (test_global_policy.GlobalPolicyTests.test_package_version_and_policy_agree) ... ok
 test_partial_duplicate_and_reversed_markers_rejected (test_global_policy.GlobalPolicyTests.test_partial_duplicate_and_reversed_markers_rejected) ... ok
 test_preflight_failure_writes_nothing_else (test_global_policy.GlobalPolicyTests.test_preflight_failure_writes_nothing_else) ... ok
 test_preview_does_not_create_home (test_global_policy.GlobalPolicyTests.test_preview_does_not_create_home) ... ok
@@ -97,6 +97,38 @@ test_skill_references_are_self_contained (test_package.PackageTests.test_skill_r
 test_unregistered_extra_skill_is_rejected (test_package.PackageTests.test_unregistered_extra_skill_is_rejected) ... ok
 test_version_without_changelog_is_rejected (test_package.PackageTests.test_version_without_changelog_is_rejected) ... ok
 test_visual_skill_loads_local_guide_and_preserves_style (test_package.PackageTests.test_visual_skill_loads_local_guide_and_preserves_style) ... ok
+test_absent_original_is_not_fabricated (test_record_context.LegacyFixtureTests.test_absent_original_is_not_fabricated) ... ok
+test_history_fixture_has_actual_implemented_code (test_record_context.LegacyFixtureTests.test_history_fixture_has_actual_implemented_code) ... ok
+test_legacy_record_requires_no_template_migration (test_record_context.LegacyFixtureTests.test_legacy_record_requires_no_template_migration) ... ok
+test_aliases_preserved_not_renumbered (test_record_context.RecordContextTests.test_aliases_preserved_not_renumbered) ... ok
+test_approval_cannot_be_invented_by_missing_revision (test_record_context.RecordContextTests.test_approval_cannot_be_invented_by_missing_revision) ... ok
+test_approved_state_must_match_checkpoint (test_record_context.RecordContextTests.test_approved_state_must_match_checkpoint) ... ok
+test_approved_state_still_requires_original_record_response (test_record_context.RecordContextTests.test_approved_state_still_requires_original_record_response) ... ok
+test_checkpoint_update_changes_fingerprint_not_original_report (test_record_context.RecordContextTests.test_checkpoint_update_changes_fingerprint_not_original_report) ... ok
+test_current_approval_not_also_superseded (test_record_context.RecordContextTests.test_current_approval_not_also_superseded) ... ok
+test_current_only_overview_has_no_nonexistent_proposed_view_claim (test_record_context.RecordContextTests.test_current_only_overview_has_no_nonexistent_proposed_view_claim) ... ok
+test_duplicate_plan_prefix_not_added (test_record_context.RecordContextTests.test_duplicate_plan_prefix_not_added) ... ok
+test_duplicate_revision_rows_rejected (test_record_context.RecordContextTests.test_duplicate_revision_rows_rejected) ... ok
+test_geometry_is_identical_to_prior_review (test_record_context.RecordContextTests.test_geometry_is_identical_to_prior_review) ... ok
+test_implemented_can_have_blocked_acceptance (test_record_context.RecordContextTests.test_implemented_can_have_blocked_acceptance) ... ok
+test_legacy_combined_status_record_can_supply_roles (test_record_context.RecordContextTests.test_legacy_combined_status_record_can_supply_roles) ... ok
+test_missing_checkpoint_in_overview_fails (test_record_context.RecordContextTests.test_missing_checkpoint_in_overview_fails) ... ok
+test_missing_historical_review_can_be_described_not_rebuilt (test_record_context.RecordContextTests.test_missing_historical_review_can_be_described_not_rebuilt) ... ok
+test_missing_source_fails (test_record_context.RecordContextTests.test_missing_source_fails) ... ok
+test_new_proposal_does_not_replace_existing_approval (test_record_context.RecordContextTests.test_new_proposal_does_not_replace_existing_approval) ... ok
+test_old_schema_two_has_no_new_required_fields (test_record_context.RecordContextTests.test_old_schema_two_has_no_new_required_fields) ... ok
+test_original_report_and_sources_are_not_changed (test_record_context.RecordContextTests.test_original_report_and_sources_are_not_changed) ... ok
+test_overview_has_separate_states_and_no_approval_request (test_record_context.RecordContextTests.test_overview_has_separate_states_and_no_approval_request) ... ok
+test_pending_material_decision_still_blocks_approved_state (test_record_context.RecordContextTests.test_pending_material_decision_still_blocks_approved_state) ... ok
+test_record_text_and_aliases_are_inert (test_record_context.RecordContextTests.test_record_text_and_aliases_are_inert) ... ok
+test_removed_and_superseded_not_labelled_verified (test_record_context.RecordContextTests.test_removed_and_superseded_not_labelled_verified) ... ok
+test_revision_row_requires_change_reason_and_source (test_record_context.RecordContextTests.test_revision_row_requires_change_reason_and_source) ... ok
+test_same_approved_scope_not_represented_as_new_pending_review (test_record_context.RecordContextTests.test_same_approved_scope_not_represented_as_new_pending_review) ... ok
+test_task_outcome_requires_note (test_record_context.RecordContextTests.test_task_outcome_requires_note) ... ok
+test_unknown_authority_does_not_name_approved_revision (test_record_context.RecordContextTests.test_unknown_authority_does_not_name_approved_revision) ... ok
+test_unknown_authority_is_explicitly_renderable (test_record_context.RecordContextTests.test_unknown_authority_is_explicitly_renderable) ... ok
+test_policy_contains_forward_only_and_authority_boundaries (test_record_context.RecordPolicyContracts.test_policy_contains_forward_only_and_authority_boundaries) ... ok
+test_utility_modes_remain_bounded (test_record_context.RecordPolicyContracts.test_utility_modes_remain_bounded) ... ok
 test_approval_ready_needs_authoritative_sources (test_reports.ReportTests.test_approval_ready_needs_authoritative_sources) ... ok
 test_approval_ready_needs_compare_mode (test_reports.ReportTests.test_approval_ready_needs_compare_mode) ... ok
 test_cli_creates_only_requested_file_then_checks_without_writes (test_reports.ReportTests.test_cli_creates_only_requested_file_then_checks_without_writes) ... ok
@@ -161,7 +193,7 @@ test_unknown_name_and_missing_root_are_errors (test_specialists.SpecialistTests.
 test_wrapper_is_not_an_alias_for_missing_grilling (test_specialists.SpecialistTests.test_wrapper_is_not_an_alias_for_missing_grilling) ... ok
 test_wrong_baseline_source_is_refused (test_specialists.SpecialistTests.test_wrong_baseline_source_is_refused) ... ok
 test_case_set_mismatch_is_not_verified (test_visual_regression.VisualRegressionTests.test_case_set_mismatch_is_not_verified) ... ok
-test_changed_pixels_fail_and_emit_difference (test_visual_regression.VisualRegressionTests.test_changed_pixels_fail_and_emit_difference) ... /mnt/data/workflow-axa-update/workflow-axa/tools/visual_regression.py:112: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+test_changed_pixels_fail_and_emit_difference (test_visual_regression.VisualRegressionTests.test_changed_pixels_fail_and_emit_difference) ... /mnt/data/workflow-release/workflow-axa/tools/visual_regression.py:112: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
   changed = sum(1 for pixel in difference.getdata() if pixel != (0, 0, 0))
 ok
 test_duplicate_case_is_rejected (test_visual_regression.VisualRegressionTests.test_duplicate_case_is_rejected) ... ok
@@ -180,6 +212,6 @@ test_size_change_fails (test_visual_regression.VisualRegressionTests.test_size_c
 test_unsafe_manifest_path_refused (test_visual_regression.VisualRegressionTests.test_unsafe_manifest_path_refused) ... ok
 
 ----------------------------------------------------------------------
-Ran 178 tests in 11.159s
+Ran 210 tests in 15.209s
 
 OK

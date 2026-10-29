@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "workflow_version": "2.5.0",
+  "workflow_version": "2.6.0",
   "source": {
     "repository": "https://github.com/mattpocock/skills",
     "observed_ref": "main",

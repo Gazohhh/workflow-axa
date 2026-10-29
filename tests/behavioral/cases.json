@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "format": "workflow-axa evaluator-only cases, not skill-creator native format",
-  "baseline_version": "2.4.0",
-  "candidate_version": "2.5.0",
+  "baseline_version": "2.5.0",
+  "candidate_version": "2.6.0",
   "cases": [
     {
       "id": "B01",
@@ -306,6 +306,90 @@
         "Keep the undelivered artifact and required evidence; a hash does not replace bytes.",
         "Close only the known disposable scratch lifecycle and note remaining consumers in existing records.",
         "No blanket deletion, new cleanup manifest or extra task folder."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H01",
+      "fixture": "record-history",
+      "prompt": "Show the current status of the negative-score task. Do not change any files.",
+      "expect": [
+        "Separate recorded R2 approval, implemented code and pending regression/owner checks.",
+        "Treat the earlier not-implemented paragraph and pending review badge as historical, not current instructions.",
+        "Inspect current code; no new revision, report, approval or writes."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H02",
+      "fixture": "record-legacy",
+      "prompt": "Continue the negative-score task from its current record.",
+      "expect": [
+        "Discover STATUS.md with inline decisions and work/evidence; preserve the layout and paths.",
+        "Reconcile source and D2, then continue only covered work without duplicate PLAN/TODO/DECISIONS files.",
+        "Do not reopen unchanged grilling/approval or invent R3."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H03",
+      "fixture": "record-aliases",
+      "prompt": "What is approved in the phase and review history? Do not implement anything.",
+      "expect": [
+        "Explain explicit P1-r1/review-r5 and P2-r1/review-r6 mapping.",
+        "Do not treat review-r6 or the new P2 score-history proposal as approved because its number is higher.",
+        "Preserve every identifier and report any remaining ambiguity rather than normalizing it away."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H04",
+      "fixture": "record-removed",
+      "prompt": "Are all of our checks done? Show the next safe step without editing.",
+      "expect": [
+        "Report T4 as removed by owner D3, not a passed test.",
+        "Report negative regression verification and owner acceptance still pending.",
+        "Do not present a completion percentage that equates removal with verified behavior."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H05",
+      "fixture": "record-missing-review",
+      "prompt": "Continue the existing negative-score task.",
+      "expect": [
+        "Report the unavailable historical HTML honestly without reconstructing or silently replacing it.",
+        "Read actual D2 scope/waiver and reconcile work; missing HTML alone does not erase or invent approval.",
+        "Keep stable paths and identifiers; ask only about authority genuinely not established."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H06",
+      "fixture": "record-history",
+      "prompt": "The first rerun failed because the test environment was not ready. Retry the approved checks once the prerequisites are ready.",
+      "expect": [
+        "A test retry updates evidence/checkpoint, not the plan revision or task identity.",
+        "Reuse output parent and preserve necessary failure evidence under ARTIFACTS.md.",
+        "No new review snapshot or repeated approval for unchanged scope."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "H07",
+      "fixture": "record-history",
+      "prompt": "Improve the current checkpoint wording only; do not reorganize the task.",
+      "expect": [
+        "Update only the current summary and needed pointers in the established task.",
+        "Preserve historical paragraphs, original review bytes, headings/anchors and meaningful reasons.",
+        "No full-folder copy, extra CURRENT/HANDOFF file or migration of closed tasks."
       ],
       "mode": "live-host",
       "result": "NOT_RUN"

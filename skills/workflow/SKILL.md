@@ -35,6 +35,8 @@ Record the understood outcome, relevant decisions and their answer sources or un
 
 ## 4. Prepare the plan and visual approval
 
+Separate approval, implementation and verification/acceptance in the existing current checkpoint. Keep historical baselines and proposals labelled; follow TASK-FOLDER.md for the revision log and forward-only adoption. Reruns, progress and handoffs are not new plan revisions.
+
 Map each requirement to its user source, current evidence, actual gap, task and acceptance check. Every TODO must serve requested work or a demonstrated prerequisite. Record revision, bounded/protected areas, risks, test strategy, authoritative documentation updates and directly superseded code to remove.
 
 Follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). For substantive features, behavioral fixes and architecture changes, invoke local `codebase-map` **after writing PLAN/TODO, before executing them**. Show the real current/proposed flow, exclusions, required changes and completion checks in the approved local style. Explain findings in plain language; keep technical evidence available. Material unanswered choices mean draft, not approval-ready.
@@ -45,7 +47,7 @@ Before coding, record the approving response, displayed revision/report, selecte
 
 ## 5. Execute recoverable units
 
-Before each unit, save intended changes and verification; after it, save actual results and the next safe action. Keep PLAN/TODO/FINDINGS/DECISIONS authoritative; no duplicate handoff system. Reconcile records with files on resumption.
+Before each unit, save intended changes and verification; after it, save actual results and the next safe action. Keep the established task records authoritative; no duplicate handoff or revision-tracking system. Reconcile records with files on resumption.
 
 Use applicable specialists within the approved scope. Before adding a helper, wrapper, service, manager, mapper, fallback, compatibility layer or new configuration surface, run a **necessity check**: name the concrete problem it solves, why existing owners cannot express it clearly, and what complexity would return if it were removed. Prefer the smaller design when behavior stays correct. Keep behavior at its owner; justify normalization and fallback values against real contracts. Comments explain non-obvious reasons, not syntax. Update existing docs and remove directly obsolete callers/config/tests/debug code. Track explicitly approved migration leftovers.
 

@@ -1,13 +1,13 @@
 {
-  "baseline": "2.4.0",
-  "candidate": "2.5.0",
-  "checks": {
-    "Matt_catalogue_and_source_metadata_unchanged": true,
-    "skills/workflow/QUESTIONS.md": true,
-    "skills/codebase-map/FLOWCHART-DESIGN.md": true,
-    "skills/codebase-map/assets/report.css": true,
-    "skills/codebase-map/assets/report.js": true,
-    "skills/codebase-map/examples/review.json": true,
-    "renderer_unchanged_except_version": true
-  }
+  "baseline_archive": "workflow-axa(1).zip",
+  "baseline_sha256": "078537e539e85c957ed24175f2ad0bad814e17284466b7aaf814f870d0ff3af6",
+  "candidate_version": "2.6.0",
+  "unchanged_protected_files": 40,
+  "unchanged_original_task_records": 24,
+  "unchanged_specialist_catalogue_entries": 27,
+  "global_artifact_policy_and_installer": "byte-identical; deployment revision remains 2.5.0",
+  "original_review_json_and_html": "byte-identical",
+  "local_flowchart_geometry_guide_and_javascript": "byte-identical",
+  "removed_package_files": [],
+  "legacy_path": "DIAGRAM-DESIGN.md retained as local-guide pointer; obsolete external instructions replaced"
 }

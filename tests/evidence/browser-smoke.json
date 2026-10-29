@@ -16,6 +16,10 @@
     "Fit is optional on mobile and 100% restores the readable canvas",
     "Print presentation includes every diagram, not only the selected tab",
     "With JavaScript disabled, diagram selection, zoom and technical disclosure still work",
+    "Optional checkpoint separates approval/implementation/acceptance without another approval request",
+    "Revision history reveals exact aliases and links to its real source section",
+    "Overview desktop/mobile keep separate readable states and contain wide history tables",
+    "Checkpoint and history disclosure remain usable without JavaScript or external assets",
     "Script-like input remains inert; no external requests or page errors"
   ],
   "direct_file_navigation": false,
@@ -24,6 +28,6 @@
   "limits": [
     "Default desktop opener and Claude/Codex skill invocation/behavior were not tested.",
     "Geometry and browser assertions do not prove semantic completeness, real approval or a complete accessibility audit.",
-    "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-axa-update/qa-current/tested-report.html\nCall log:\n  - navigating to \"file:///mnt/data"
+    "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-update-work/browser-final/tested-report.html\nCall log:\n  - navigating to \"file:///mnt/"
   ]
 }

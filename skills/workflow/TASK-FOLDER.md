@@ -31,6 +31,8 @@ Once resolved, report the reused/new path and reason; create or update a small c
 
 For a genuinely lightweight edit, use only `PLAN.md` with short Work and Evidence sections instead of three mostly empty files. Promote to the normal layout when the work expands; move the authoritative sections and leave pointers, not competing copies. Do not grow a permanent `HANDOFF.md` duplicating the checkpoint.
 
+For an existing task, read its established record layout, including legacy `STATUS.md` or inline decisions; do not create missing template files merely for conformity. New-task defaults below are not a migration requirement.
+
 Records are reviewable project documentation; creating them does not authorize committing them. Preserve meaningful history. Keep the current checkpoint concise, append corrections to findings, and mark superseded choices rather than making old decisions look current. Link existing architecture decisions/glossaries; update their authoritative location within approved scope rather than copying them into every task.
 
 ## PLAN.md starting structure
@@ -41,24 +43,30 @@ Omit irrelevant fields for lightweight work; use `unknown` or `not applicable` r
 # <Task>
 
 ## Current checkpoint
-- Status: investigating | awaiting-approval | implementing | verifying | blocked | paused | done
-- Owner: <session/person identifier>; ownership: active | handed-off | released
-- Updated: <date/time with timezone when known>
+- Updated / phase: <known date/time; investigating, awaiting approval, implementing, verifying, blocked, paused or closed>
+- Approval: <approved/waived/not approved/unknown; exact revision, scope and record>
+- Implementation: <not started/in progress/implemented/partial/unknown; task references>
+- Verification / owner acceptance: <not run/in progress/blocked/passed/limited/unknown; evidence and outstanding acceptance>
+- Selected review: <exact plan revision, report/source path, or actual waiver; a snapshot, not live status>
+- Active tasks / blockers: <TODO IDs, unanswered decisions or interrupted work>
+- Last result / next safe action: <short observed result and specific next step with prerequisites>
+- History: <revision-log section in the established record; omit before needed>
+
+## Working context
+<Keep stable setup details here, not repeatedly inside the progress summary.>
+- Owner and ownership: <session/person; active, handed-off or released>
 - Repository / branch / worktree: <actual locations>
-- Approved revision and scope: <revision or not approved>
-- Active tasks: <TODO IDs, or the lightweight work item>
-- Task identity: <reused/new; relevant earlier task; reason or user answer>
-- Decision check: <FINDINGS reference, settled sources, open Q-IDs; rechecked only where changed>
-- Current understanding / evidence: <R/E/A mapping; inspected state and unresolved limits>
-- Visual review: <draft/awaiting/approved/waived; revision; report/source path; shown/open result>
-- Specialists: <capability evidence / selected routes / approved adapters or exceptions>
-- Test output (when needed): <existing parent; owner; retained evidence; scratch/active consumers and cleanup condition>
-- Last completed step and observed evidence: <reference>
-- Next safe action: <specific step and prerequisites>
-- Blocked decisions / interrupted work: <IDs and affected work>
+- Task identity: <reused/new; related record and reason or user answer>
+- Decision check: <FINDINGS reference, confirmed answer sources and unresolved Q-IDs>
+- Current understanding / evidence: <R/E/A mapping, inspected state and limits>
+- Specialists: <shared capability record; selected routes and approved exceptions>
+- Test output, when needed: <existing parent, owner, retained proof, active consumers and cleanup condition>
 
 ## Goal and acceptance
 <Observable outcome, constraints, and how it will be checked.>
+
+## Baseline before this change
+<What the inspected sources established at the stated time; not a claim about today's implementation.>
 
 ## Approach and scope
 <Chosen/proposed approach; bounded areas; protected areas; cleanup;
@@ -72,7 +80,7 @@ included work, exclusions, and what requires renewed approval.>
 <Pending, verified result, or partial result and limitations.>
 ```
 
-For a multi-step plan, retain earlier approval records and describe later changes as a delta. Execution order, status updates, or correction of a path inside the same approved area need not reopen approval. Changed intent, risk, protected scope, or a reserved decision does. Label an unapproved revision proposed; it does not replace the last approved authority.
+For a multi-step plan, retain earlier approval records and describe later changes as a delta. PLAN's checkpoint owns the concise current summary; TODO owns item states; FINDINGS owns detailed evidence; decisions own the reasons. Do not repeat live completion totals across them. Where a legacy task already uses STATUS.md for the checkpoint, preserve that single owner and link it. A checked item is not necessarily accepted: report approval, implementation and verification/owner acceptance separately. Execution order, status updates, or correction of a path inside the same approved area need not reopen approval. Changed intent, risk, protected scope, or a reserved decision does. Label an unapproved revision proposed; it does not replace the last approved authority.
 
 ## TODO and evidence
 
@@ -85,6 +93,8 @@ Use stable requirement (R), evidence (E), acceptance (A) and task (T) IDs; every
 - [~] T2 — <work>; owner/lane: <identifier>; next: <step>.
 - [x] T3 — <work>; evidence: FINDINGS.md V2, <observed result>.
 ```
+
+Keep each TODO short: action, state/blocker, dependencies and evidence pointer. Put attempt histories and test details in the existing FINDINGS or evidence section, not a growing paragraph on the checkbox. Distinguish `verified`, `implemented — verification pending`, `removed by owner`, `superseded` and `not applicable`; removal or supersession is not a passed test. Preserve legacy checkbox notation and state the outcome explicitly.
 
 Mark blocked work with a reason and decision ID, not a misleading completion mark. A waived requirement records the explicit user decision; it is not a passed test. Reopen an item when later changes invalidate its evidence. An agent's completion message is a claim until the owner inspects its artifacts/results.
 
@@ -113,11 +123,11 @@ Only the task owner updates these records. Subagents return findings and evidenc
 
 ## Resume safely
 
-1. Read the checkpoint and linked TODO/findings/decisions, applicable project instructions, and recorded approval. Do not require the previous conversation.
+1. Read the current checkpoint and linked TODO/findings/decisions, applicable project instructions, and recorded approval. Support legacy STATUS.md and inline decisions. Treat earlier baselines/proposals/reviews as historical unless current evidence says otherwise; do not choose the newest paragraph, filename or checkbox as authority. Do not require the previous conversation.
 2. Confirm repository, branch/worktree, and task ownership. A user saying "continue this task" can authorize takeover; record it and establish that overlapping writes are stopped or isolated. Resolve uncertain concurrent ownership before writing.
 3. Recheck specialist availability in this host and compare any saved installation fingerprint. An old session's availability is not proof for a new account. Reuse task approval; resolve only changed capability/compatibility.
 4. Inspect current staged/unstaged/untracked files and the previously active unit. Preserve unrelated work. Determine what completed, what is partial, and which checks no longer apply.
-5. Reconcile the inspected-code evidence, understood outcome and visual review revision with current files. Classify expected approved progress versus material changes; do not treat a new report or source hash as approval. An awaiting-approval task stays paused for implementation.
+5. Reconcile approval, implementation, verification and any owner acceptance separately. Resolve contradictions by inspecting their sources; mark unresolved state unknown and ask when it blocks authority or correctness. Reconcile the inspected-code evidence, understood outcome and visual review revision with current files. Classify expected approved progress versus material changes; do not treat a new report or source hash as approval. An awaiting-approval task stays paused for implementation.
 6. Reuse the applicable decision check. Run grilling only for new substantive intent, changed material branches or requested further challenge; do not restart an unchanged approved interview.
 7. Update the checkpoint and continue the next covered step. Ask only for missing authority, a genuine decision blocker, or an unresolved ownership conflict—not for routine reapproval.
 
@@ -129,10 +139,43 @@ Never copy credentials, access tokens, raw personal data, or unrelated productio
 
 ## Visual artifacts
 
-For substantive implementation follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Keep revisioned report input and HTML at the project's review-page location, otherwise inside the existing task folder, linked from PLAN. This durable approval record is separate from ignored test scratch. They project the authoritative records; do not maintain another task list inside an independent design. Preserve the report shown for each approval and mark later material proposals separately. No unrequested HANDOFF file or remote whiteboard is needed.
+For substantive implementation follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Keep revisioned report input and HTML at the project's review-page location, otherwise use `reviews/` inside a new task folder. Reuse existing root-level or other review paths for established tasks. Link the selected review from the current checkpoint. This durable approval record is separate from ignored test scratch. They project the authoritative records; do not maintain another task list inside an independent design. Preserve the report shown for each approval and mark later material proposals separately. No unrequested HANDOFF file or remote whiteboard is needed.
 
 ## Test output is not another task record
 
 Read [ARTIFACTS.md](ARTIFACTS.md) before generating output. Reuse the already recorded output parent; default only when absent to the project's convention or `.artifacts/<full-existing-task-folder-name>/` in this worktree. Create only needed children. Do not create new top-level folders for phases, retries or dates. Tool-owned output paths remain unchanged.
 
 Record retained proof and the current scratch/consumer state in the existing checkpoint/findings. No new per-run manifests, cleanup logs, backups or HANDOFF documents. On resume, reconcile ownership and active consumers before reusing or removing output; an interrupted run is not automatically disposable. A read-only status/doctor/review can return findings in chat without saving anything.
+
+## Revisions are changed agreements, not attempts
+
+| Event | Record action |
+|---|---|
+| Material change to requested behavior, chosen approach, risk or protected scope | New proposed plan revision; show the delta and resolve required approval. Retain the last valid authority for independent unchanged work. |
+| Task progress, blocker, corrected progress summary, rerun or account/agent switch | Update the existing checkpoint/item/evidence. No new plan revision, folder or review merely for this event. |
+| Unpresented draft correction | Reuse that draft when ownership and tool protections allow. Never bypass the renderer's no-overwrite guard. |
+| New visual presentation of unchanged agreed scope, explicitly requested | Distinguish presentation identity from the unchanged plan revision; no new application approval implied. |
+| Revoking/superseding an agreement | Preserve its scope and reason; point to the replacing decision and affected portions. A newer proposal does not itself revoke approval. |
+
+For new tasks prefer R1, R2, R3; keep phase names separate. Existing C3, P1-r1, review-r5 and similar identifiers remain exact. Do not renumber or infer a mapping from filenames. Record known aliases explicitly; leave unestablished relationships unknown.
+
+Keep one compact revision log in existing DECISIONS, or PLAN for a smaller task:
+
+| Plan revision | Review/phase alias | Change | Why | Authority/outcome and source |
+|---|---|---|---|---|
+| R2 | review-r2.html | Earlier agreed approach | Recorded reason | Approved then superseded by D4; original review retained |
+| R3 | review-r3.html | Correct only the affected behavior | Observed failure V7 | D4 approval; implementation complete; device acceptance pending V8 |
+
+The example is illustrative, not an approval. Record the actual changed agreement, constraints, reason, authority and links; a hash is not preserved content. Do not copy the complete PLAN/TODO/FINDINGS/DECISIONS set per revision or create CURRENT/REVISION/HANDOFF duplicates. The log may be absent until a meaningful revision occurs. Preserve old approval text and enough old scope to understand what was approved; later progress need not be an append-only diary.
+
+## Forward-only adoption
+
+Apply the clearer structure to new tasks. On an authorised resume, update only the current summary, directly contradictory current wording and necessary links within that task. Mark old descriptions as historical instead of silently rewriting their meaning. Keep existing paths, IDs, headings/anchors, review filenames and valid approvals; add a historical note below an old heading when renaming would break links. If inspection cannot resolve a contradiction, report it rather than inventing a reconciliation. Read-only status/review requests make no edits.
+
+Do not bulk rewrite closed tasks, generate missing template files, migrate old JSON, renumber ADRs, move maintained guides from dated folders, or reconstruct missing historic reviews. Mark an unavailable original review and cite the remaining actual approval/decision record; its absence does not prove either approval or nonapproval. Escalate only the authority that cannot be established.
+
+Presented/approved HTML and JSON are immutable snapshots by default; an old `awaiting-approval` badge can correctly describe the moment shown. Later approval lives in the task record, not a rewritten snapshot. Project policies that require asking about retention remain in force until their conflict with this new default is explicitly resolved during setup. No automatic deletion.
+
+## Architecture decisions
+
+Keep task progress in task records. An ADR preserves an important decision, its context and consequences. For a material reversal, create a linked superseding ADR within authorised scope, stating whether it replaces all or only part of the earlier decision. Preserve earlier reasoning; labelled factual corrections/clarifications are not silent reversals. Proposed ADRs are not accepted just because a date passed. Keep established reference/runbook paths; link rather than copy them into each task.

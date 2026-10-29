@@ -88,3 +88,27 @@ The package's tools/visual_regression.py captures the stable bundled fixture and
 Review HTML/JSON are requested deliverables, not generic test output. Use the project's review-page location or the existing task folder. Preserve every presented/approved revision according to project rules. The renderer refuses existing outputs intentionally: do not bypass that protection or invent another task root. Revise an unpresented draft only when its ownership and the writer's rules allow it.
 
 For optional browser/visual verification, apply the active workflow ARTIFACTS.md/global policy. These tools may require a fresh child directory to avoid overwriting evidence; place it under the stable task output parent. After comparing, preserve approved references and necessary failure/proof images, then remove only the current operation's eligible temporary captures. Do not retain every identical successful comparison or create an extra manifest outside what the test tool actually needs.
+
+## Additive record context (2.6; schema 2 stays valid)
+
+Existing schema-2 input requires no migration or new fields. Existing HTML is never rewritten; schema-1 HTML manifests remain checkable. A new render of schema-1 layout still requires the deliberate layout migration documented above. None of these checks interprets arbitrary Markdown, authenticates decisions or proves agent compliance.
+
+Ordinary approval reviews remain the default. For a specifically requested task-status illustration, set `report_kind: "task-overview"` and supply `checkpoint`. This is a saved projection of the existing task record, not a dashboard to regenerate per checkpoint. It does not ask for new approval or grant implementation authority. Preserve the selected `revision` exactly, even when a legacy review uses another filename/phase alias. The task overview labels the comparison as a historical baseline versus reviewed scope; a flow is not current-implementation evidence just because it is approved. In current-only mode, the inspected flow still needs fresh code evidence.
+
+| Optional field | Meaning and requirements |
+|---|---|
+| `report_kind` | `review` (default) or `task-overview`. The latter requires a sourced checkpoint; it is not an approval-mode bypass. |
+| `checkpoint` | `as_of` (actual known time or explicit unknown), `source` (supplied source ID), `locator` (current record section), `next_action`, and the three state objects below. |
+| `checkpoint.approval` | `status`: approved/waived/not-approved/unknown; `revision`: exact covered revision for approved/waived, otherwise null/omitted; `summary`: authority and limits in plain language. An approved report must match this revision and still needs its existing `approval` record/response. |
+| `checkpoint.implementation` | `status`: not-started/in-progress/implemented/partial/unknown; `summary`: supported work state and evidence/limitations. |
+| `checkpoint.verification` | `status`: not-run/in-progress/blocked/passed/failed/limited/unknown; `summary`: checks and any owner acceptance still outstanding. Passed automated checks alone must not conceal pending owner acceptance. |
+| `revision_log` | Ordered array of `revision`, optional `review` alias, `change`, `reason`, `status` (proposed/presented/approved/superseded/rejected/withdrawn/unknown), `source` and `locator`. One row per agreement, presentation aliases in that row. Keep exact identifiers; no automatic sorting by filename or invented missing history. Review aliases are escaped text, not executable URLs. |
+| Task `outcome` / `outcome_note` | Optional sourced status: planned/in-progress/implemented/verified/blocked/removed/superseded/not-applicable/unknown. A note explaining the evidence or owner decision is required. Removed/superseded work is labelled as not a passed test. Without a status, the task is only a scope description, not a completion claim. |
+
+Use the existing PLAN checkpoint, or established STATUS.md in a legacy task. Keep the revision log in existing PLAN/DECISIONS (or existing legacy equivalent). Do not create a JSON state file or new Markdown file to feed this feature. Generate the requested report input from those records; no competing task database or duplicate handwritten history.
+
+[The task-overview example](examples/task-overview.json) adds context to the unchanged synthetic flowchart. Its legacy [STATUS.md](examples/STATUS.md) is deliberately separate from the older pending review. It demonstrates a later recorded fixture approval without altering the old HTML. It is not real user approval or runtime evidence.
+
+The renderer continues exclusive creation. Do not bypass an existing-output refusal to edit a presented/approved snapshot, or create retry-named reports automatically. An unpresented draft may be replaced only through explicitly authorised ownership-safe operations; a saved overview remains an as-of snapshot. Normal progress belongs in the task record/chat, not more HTML files.
+
+A source hash change after a checkpoint update does not by itself invalidate unchanged approved scope. `--check` only reports byte differences; the agent must distinguish expected progress, material changes and missing authority. Keep presented history intact and ask only about genuinely unresolved authority.

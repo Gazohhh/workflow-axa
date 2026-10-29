@@ -47,7 +47,7 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.5.0 requires this package's six local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, and `plan-review`.** The Claude plugin registers all six. Direct installations must copy each complete folder into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.6.0 requires this package's six local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, and `plan-review`.** The Claude plugin registers all six. Direct installations must copy each complete folder into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
