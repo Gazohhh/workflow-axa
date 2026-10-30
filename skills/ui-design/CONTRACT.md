@@ -36,7 +36,7 @@ A narrow styling bug fix records the exact area/property or contract, reason, ap
 
 ## Reports are not application prototypes
 
-Generating the normal workflow HTML/SVG review through the bundled codebase-map renderer and its approved assets remains permitted. Reports explain behaviour and approval, not a newly designed application interface. Do not modify the report theme, embed styled application mockups or create arbitrary prototype HTML under a `reports/` path to evade this boundary. Changes to the report renderer/design require their own explicit package-maintenance scope.
+Generating the normal workflow HTML/SVG review through the bundled codebase-map renderer and its approved assets remains permitted. Reports explain behaviour and approval, not a newly designed application interface. Do not modify the report theme or create arbitrary prototype HTML under a `reports/` path to evade this boundary. The bundled codebase-map/UI-FLOW.md extension may show source-backed screen captures or explicitly authorised, labelled schematics inside the existing full report. Preview permission, source choice and app implementation remain separate. No raw application HTML/CSS/scripts execute in that viewer. An illustration is not approved kit evidence. Changes to the report renderer/design require their own explicit package-maintenance scope.
 
 ## Lifecycle, handoff and release
 

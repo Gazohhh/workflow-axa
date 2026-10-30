@@ -23,3 +23,7 @@ The scanner is intentionally conservative, not a parser for every language. It c
 Test new/removed CSS, inline styles, style tags, CSS-in-JS, arbitrary class combinations, theme/visual props, SVG/native/Unity/Pixi changes and new visual dependencies. Test a no-styling semantic form, a behaviour-only change preserving presentation, functional IDs, approved component use and an exact authorised style fix. Exercise new/untracked and binary files, malformed inputs and no-write behaviour. Mechanical tests establish the helper's behaviour, not the agent's compliance.
 
 Live acceptance must also test ordinary prompts without `/workflow`, missing kit coverage, preview exposure, design-authoring authority, a subagent, a resumed task and the approved report exemption. Inspect actual file changes and decisions; do not grade “I followed the rules” as a pass.
+
+## Visual approval report
+
+For a UI task, inspect the bundled screen flow in the complete report. Verify source/kit selection, actual capture provenance, schematic labels, task/requirement mapping, transitions and design-decision markers. Confirm that no file name or illustration is treated as approval. Compare the unchanged report shell against the established reference; the UI extension is additive. A report image is not live interaction/device verification. Existing no-appearance-change tasks need no repeated screen sample.

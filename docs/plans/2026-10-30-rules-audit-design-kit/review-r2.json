@@ -1,0 +1,822 @@
+{
+  "schema_version": 2,
+  "title": "Shared rules load in every ordinary session, both projects",
+  "revision": "R2-draft",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa package + installed runtime + Altinstar and Cheflabels rule files",
+    "branch": "workflow-axa main (task records uncommitted); projects inspected read-only",
+    "basis": "Static inspection and read-only helper runs on 2026-10-30, recorded in FINDINGS.md. Global profile and project files lie outside this report root, so they are cited through FINDINGS.",
+    "limits": "No fresh-session trace has been run, so loading is inferred from host documentation. No independent review yet. Draft: not an approval request."
+  },
+  "understanding": "You want one central set of shared rules that ordinary Claude and Codex sessions in both projects pick up without slash commands, while each project keeps only its own knowledge. Today only the artifact policy is activated globally, and the installed copy fails its own integrity check because of line endings. The draft fixes the copy, activates the shared core for both hosts, adds one shared TypeScript rule and a few project lines, and changes no application code.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Ordinary sessions in both projects load the shared core without /workflow or /rule-maker.",
+      "origin": "Owner brief section 3C"
+    },
+    {
+      "id": "R2",
+      "text": "The installed copy verifiably matches the reviewed package bytes.",
+      "origin": "Owner brief sections 1 and 4"
+    },
+    {
+      "id": "R3",
+      "text": "Projects keep their own knowledge; shared rules are not duplicated into them.",
+      "origin": "Owner brief section 3A/3B; DECISIONS D2"
+    },
+    {
+      "id": "R4",
+      "text": "UI work stays functionality-only where no approved kit is established.",
+      "origin": "Owner brief section 7; DECISIONS D3"
+    }
+  ],
+  "boundaries": [
+    "No application code, styles, dependencies or build configuration change.",
+    "No hooks, permissions or status line changes.",
+    "No framework upgrades and no retroactive cleanup.",
+    "Nothing is deleted; history and approved records are preserved.",
+    "Teammates' machines are not updated by this local install."
+  ],
+  "open_decisions": [
+    "F1 method: keep raw-byte integrity and reinstall LF bytes (drafted) or a text-normalised manifest; decided after independent review.",
+    "Altinstar AGENTS.md:105 one-line comment rule versus the owner brief.",
+    "Global ~/.claude/CLAUDE.md mandatory design vocabulary versus the owner brief.",
+    "Number and credit budget of live fresh-session acceptance runs.",
+    "Independent Astra review has not run yet."
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-10-30-rules-audit-design-kit/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-10-30-rules-audit-design-kit/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-10-30-rules-audit-design-kit/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S4",
+      "path": "skills/rule-maker/scripts/activate_rules.py",
+      "role": "code"
+    },
+    {
+      "id": "S5",
+      "path": "skills/rule-maker/rules/START.md",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "Global Claude and Codex instructions activate only the artifact policy; the shared-rules block is missing for both.",
+      "kind": "static",
+      "sources": [
+        "S2"
+      ],
+      "locator": "FINDINGS R2 F2; audit_installation.py --check-global reports UPDATE",
+      "limits": "Disk state only; loading in a live session not traced."
+    },
+    {
+      "id": "E2",
+      "claim": "The runtime copy differs from the package only by CRLF line endings, so all integrity-checked helpers refuse or report false drift.",
+      "kind": "static",
+      "sources": [
+        "S2"
+      ],
+      "locator": "FINDINGS R2 F1",
+      "limits": "The install route that produced CRLF is unknown."
+    },
+    {
+      "id": "E3",
+      "claim": "The activation helper adds @START.md and @CORE.md for Claude and a read instruction for Codex, preserving unrelated text.",
+      "kind": "static",
+      "sources": [
+        "S4"
+      ],
+      "locator": "activate_rules.py block() and merge()",
+      "limits": "Claude user-scope imports load eagerly per the docs; Codex has no import syntax, so its loading is guidance."
+    },
+    {
+      "id": "E4",
+      "claim": "START routes to version-relevant modules and to ui-design for UI work.",
+      "kind": "static",
+      "sources": [
+        "S5"
+      ],
+      "locator": "START.md module table",
+      "limits": "Selection by the model is not traced yet."
+    },
+    {
+      "id": "E5",
+      "claim": "Owner chose a shared TypeScript rule, superseded concurrency memories and functionality-only UI.",
+      "kind": "design",
+      "sources": [
+        "S3"
+      ],
+      "locator": "DECISIONS D1-D3",
+      "limits": "Direction only, not implementation approval."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "Fresh sessions in both projects show START and CORE in context or reads, plus the matching modules.",
+      "requirements": [
+        "R1",
+        "R3"
+      ],
+      "verification": "Owner cases 1-3: neutral prompts in new T3 Claude and Codex sessions; inspect context and tool-read traces."
+    },
+    {
+      "id": "A2",
+      "text": "The runtime copy matches the package byte for byte.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Source audit_installation.py --candidate ~/.agents/skills reports MATCH."
+    },
+    {
+      "id": "A3",
+      "text": "Project diffs contain only the listed lines, with CRLF and the owner's edits kept.",
+      "requirements": [
+        "R3"
+      ],
+      "verification": "Review the diff; the file command shows CRLF."
+    },
+    {
+      "id": "A4",
+      "text": "A UI task without authority adds no styling and claims no kit.",
+      "requirements": [
+        "R4"
+      ],
+      "verification": "Owner case 9 in a disposable fixture."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Make the package line-ending safe and diagnosable",
+      "kind": "requested",
+      "reason": "Fixes the cause of F1 without weakening integrity checks.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A2"
+      ],
+      "areas": [
+        ".gitattributes",
+        "skills/rule-maker/scripts",
+        "tools/update_rules_manifest.py",
+        "INSTALLATION.md",
+        "UPGRADE.md",
+        "tests"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2",
+      "title": "Add the shared TypeScript discriminant rule",
+      "kind": "requested",
+      "reason": "Owner decision D2.",
+      "requirements": [
+        "R3"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A1"
+      ],
+      "areas": [
+        "skills/rule-maker/rules/typescript.md",
+        "rules/version.json"
+      ],
+      "depends_on": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Reinstall the runtime copy as package bytes",
+      "kind": "prerequisite",
+      "reason": "Helpers refuse to run on the CRLF copy.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A2"
+      ],
+      "areas": [
+        "~/.agents/skills"
+      ],
+      "depends_on": [
+        "T1",
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Activate the shared core for Claude and Codex",
+      "kind": "requested",
+      "reason": "Goal requires loading without slash commands in both hosts.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1",
+        "E3",
+        "E4"
+      ],
+      "acceptance": [
+        "A1"
+      ],
+      "areas": [
+        "~/.claude/CLAUDE.md",
+        "~/.codex/AGENTS.md"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Project lines and memory status",
+      "kind": "requested",
+      "reason": "Shared-library pointer, UI mode, Node range, GREEN wording, superseded memories.",
+      "requirements": [
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A3",
+        "A4"
+      ],
+      "areas": [
+        "Altinstar AGENTS.md, src/AGENTS.md, memories",
+        "Cheflabels AGENTS.md, memory"
+      ],
+      "depends_on": []
+    }
+  ],
+  "comparison": [
+    {
+      "label": "Shared core in ordinary sessions",
+      "current": "Loaded only if the model happens to pick a workflow skill.",
+      "proposed": "Global block: Claude imports START and CORE; Codex is told to read them.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1",
+        "E3"
+      ],
+      "tasks": [
+        "T4"
+      ]
+    },
+    {
+      "label": "Installed copy",
+      "current": "CRLF copy fails its own manifest; helpers blocked.",
+      "proposed": "Byte-identical copy, checked by the source audit.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "T1",
+        "T3"
+      ]
+    },
+    {
+      "label": "Project files",
+      "current": "No pointer to shared rules; no UI mode line.",
+      "proposed": "One portable pointer and one UI-mode line per project; no copied shared prose.",
+      "requirements": [
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "tasks": [
+        "T2",
+        "T5"
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "graphs": [
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "Today: shared rules depend on skill choice",
+      "description": "Arrows show what loads as an ordinary session starts in either project. Based on disk inspection and host docs, not a live trace.",
+      "width": 1440,
+      "height": 464,
+      "nodes": [
+        {
+          "id": "C1",
+          "label": "Ordinary session",
+          "note": "No slash command",
+          "shape": "start",
+          "x": 48,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "C2",
+          "label": "Global rules",
+          "note": "Artifact policy only",
+          "shape": "action",
+          "x": 320,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "C3",
+          "label": "Project rules",
+          "note": "Root + area files",
+          "shape": "action",
+          "x": 592,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "C4",
+          "label": "Model picks\na skill?",
+          "note": "",
+          "shape": "decision",
+          "x": 864,
+          "y": 64,
+          "width": 256,
+          "height": 160,
+          "highlight": true,
+          "basis": "inferred",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "uncertainty": "Depends on the model matching a skill description; not traced."
+        },
+        {
+          "id": "C5",
+          "label": "Shared rules read",
+          "note": "Helpers blocked: CRLF",
+          "shape": "result",
+          "x": 864,
+          "y": 320,
+          "width": 256,
+          "height": 96,
+          "highlight": true,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "C6",
+          "label": "No shared core",
+          "note": "Project rules only",
+          "shape": "result",
+          "x": 1200,
+          "y": 96,
+          "width": 208,
+          "height": 96,
+          "basis": "inferred",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "uncertainty": "Inferred from missing global block; not traced."
+        }
+      ],
+      "edges": [
+        {
+          "from": "C1",
+          "to": "C2",
+          "label": "",
+          "points": [
+            [
+              272,
+              144
+            ],
+            [
+              320,
+              144
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C2",
+          "to": "C3",
+          "label": "",
+          "points": [
+            [
+              544,
+              144
+            ],
+            [
+              592,
+              144
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C3",
+          "to": "C4",
+          "label": "",
+          "points": [
+            [
+              816,
+              144
+            ],
+            [
+              864,
+              144
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C4",
+          "to": "C5",
+          "label": "Yes",
+          "label_position": [
+            1028,
+            276
+          ],
+          "points": [
+            [
+              992,
+              224
+            ],
+            [
+              992,
+              320
+            ]
+          ],
+          "basis": "inferred",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "uncertainty": "Not traced."
+        },
+        {
+          "from": "C4",
+          "to": "C6",
+          "label": "No",
+          "label_position": [
+            1160,
+            128
+          ],
+          "points": [
+            [
+              1120,
+              144
+            ],
+            [
+              1200,
+              144
+            ]
+          ],
+          "basis": "inferred",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "uncertainty": "Not traced."
+        }
+      ]
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Proposed",
+      "title": "Proposed: shared core first, modules on demand",
+      "description": "Arrows show what loads as an ordinary session starts. Claude imports START and CORE; Codex is instructed to read them (guidance, not guaranteed). Draft awaiting review.",
+      "width": 1440,
+      "height": 464,
+      "nodes": [
+        {
+          "id": "P1",
+          "label": "Ordinary session",
+          "note": "No slash command",
+          "shape": "start",
+          "x": 48,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "P2",
+          "label": "Shared core block",
+          "note": "START + CORE",
+          "shape": "action",
+          "x": 320,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "highlight": true,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "T3",
+            "T4"
+          ]
+        },
+        {
+          "id": "P3",
+          "label": "Project rules",
+          "note": "+ pointer, UI mode",
+          "shape": "action",
+          "x": 592,
+          "y": 96,
+          "width": 224,
+          "height": 96,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E5"
+          ],
+          "tasks": [
+            "T5"
+          ]
+        },
+        {
+          "id": "P4",
+          "label": "Framework\nor UI work?",
+          "note": "",
+          "shape": "decision",
+          "x": 864,
+          "y": 64,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "P5",
+          "label": "Read matching modules",
+          "note": "UI: functionality-only",
+          "shape": "action",
+          "x": 864,
+          "y": 320,
+          "width": 256,
+          "height": 96,
+          "highlight": true,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E4",
+            "E5"
+          ],
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "id": "P6",
+          "label": "Work with shared\n+ project rules",
+          "note": "",
+          "shape": "result",
+          "x": 1200,
+          "y": 96,
+          "width": 208,
+          "height": 96,
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "P1",
+          "to": "P2",
+          "label": "",
+          "points": [
+            [
+              272,
+              144
+            ],
+            [
+              320,
+              144
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "T4"
+          ]
+        },
+        {
+          "from": "P2",
+          "to": "P3",
+          "label": "",
+          "points": [
+            [
+              544,
+              144
+            ],
+            [
+              592,
+              144
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "T4"
+          ]
+        },
+        {
+          "from": "P3",
+          "to": "P4",
+          "label": "",
+          "points": [
+            [
+              816,
+              144
+            ],
+            [
+              864,
+              144
+            ]
+          ],
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "P4",
+          "to": "P5",
+          "label": "Yes",
+          "label_position": [
+            1028,
+            276
+          ],
+          "points": [
+            [
+              992,
+              224
+            ],
+            [
+              992,
+              320
+            ]
+          ],
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "P4",
+          "to": "P6",
+          "label": "No",
+          "label_position": [
+            1160,
+            128
+          ],
+          "points": [
+            [
+              1120,
+              144
+            ],
+            [
+              1200,
+              144
+            ]
+          ],
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "P5",
+          "to": "P6",
+          "label": "",
+          "points": [
+            [
+              1120,
+              368
+            ],
+            [
+              1304,
+              368
+            ],
+            [
+              1304,
+              192
+            ]
+          ],
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": []
+        }
+      ]
+    }
+  ]
+}

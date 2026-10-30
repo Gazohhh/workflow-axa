@@ -5,7 +5,7 @@ description: "Create an evidence-linked local flowchart or codebase map when the
 
 # Codebase map
 
-Create offline HTML/SVG with an actual flowchart as the primary view. Do not replace it with summary cards, UI mockups or generic research/plan/build boxes. Never call workflow recursively.
+Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screen previews with actions and design decisions, not a replacement report or a kit-selection diagram. Non-UI flows keep their existing shapes. Never call workflow recursively.
 
 Write for a reader new to the project: behavior and consequences first, exact references underneath. Show risks, exclusions and unresolved choices; retain technical precision.
 
@@ -19,11 +19,11 @@ Identify and reuse the current/named task and its requirements, answers, PLAN, T
 
 ## 2. Apply the local flowchart design
 
-Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md). This guide, report assets and renderer are bundled in this skill. Follow them directly; no external diagram-design installation, lookup or invocation is required. Matt's architecture-improvement command is not the visualizer. Missing local guide/assets/runtime are installation or rendering issues, not a reason to install a third-party skill or waive approval.
+Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md): no external diagram-design installation, lookup or invocation is required. Use local assets/renderer, not Matt's architecture command. Missing files/runtime require repair, not waived approval.
 
 Use the inspected evidence, approved answers, type, audience, revision and allowed artifact paths. Choose the geometry, not new product behavior. Main flow: start/actions/real decisions/results, short domain labels and labelled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
 
-Reuse the approved workflow-editorial-v1 light styling and offline/system fonts. No repeated branding interview, online references or external checker is needed. Do not replace the requested flowchart with cards or the old generic grid.
+Reuse workflow-editorial-v1 styling and offline/system fonts; no branding interview or external dependency. Keep the flowchart, not summary cards. Sourced UI previews do not permit redesigning the report shell or application.
 
 ## 3. Render, inspect and open
 
@@ -35,7 +35,7 @@ Check freshness and meaning. Inspect desktop/mobile output when available: defau
 
 Before delivery, check that someone without the prior conversation can explain the change, exclusions and decision. For renderer/style edits, compare stable screenshots with the reviewed reference in a controlled environment; never replace a failed baseline automatically.
 
-Request local opening with `--open` and give its path. Report the actual accepted/failed/unverified result; launch acceptance is not proof of display. A headless host may deliver the file. Do not install or upload to work around an opener.
+Request local opening with `--open` and give its path. Report the actual accepted/failed/unverified result; launch acceptance is not proof of display. Headless hosts deliver the file; do not install or upload an opener workaround.
 
 ## 4. Return without implementing
 

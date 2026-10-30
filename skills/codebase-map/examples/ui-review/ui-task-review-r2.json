@@ -1,0 +1,1144 @@
+{
+  "schema_version": 2,
+  "title": "Notification preferences: review the screens before building",
+  "revision": "R2",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "Illustrative UI workflow · not a real application change",
+    "basis": "A local synthetic baseline defines the current state. No actual application, kit, server or device was inspected.",
+    "branch": "Example only"
+  },
+  "understanding": "In this fictional example, you want people to change their email preference, save it, see whether it worked, and retry without losing their choice. The existing report stays intact; the UI screens view adds the proposed screen states and marked design questions. Nothing here is an approved design for Altinstar or Cheflabels.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Change and explicitly save the email-notification preference.",
+      "origin": "Synthetic request in UI-PLAN.md."
+    },
+    {
+      "id": "R2",
+      "text": "Keep the choice during saving/failure; prevent duplicate saves and support manual retry.",
+      "origin": "Synthetic requirement, not existing app behaviour."
+    }
+  ],
+  "boundaries": [
+    "Do not change either actual application, its styles, dependencies or backend.",
+    "No automatic retry, extra notification features or new component system.",
+    "Report sketches are not shipped UI or captured approved components.",
+    "Preview generation does not approve application implementation, visual design or release."
+  ],
+  "open_decisions": [
+    "Select the real project component/kit or explicitly authorise a bounded functionality-only preview.",
+    "D1: checkbox or switch? D2: feedback inside the form or an approved floating message?",
+    "Agree the actual preview destination, verification commands and required designer acceptance before implementation."
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "role": "plan",
+      "path": "skills/codebase-map/examples/ui-review/UI-PLAN.md"
+    },
+    {
+      "id": "S2",
+      "role": "todo",
+      "path": "skills/codebase-map/examples/ui-review/UI-TODO.md"
+    },
+    {
+      "id": "S3",
+      "role": "findings",
+      "path": "skills/codebase-map/examples/ui-review/UI-FINDINGS.md"
+    },
+    {
+      "id": "S4",
+      "role": "fixture",
+      "path": "skills/codebase-map/examples/ui-review/ui-baseline.json"
+    },
+    {
+      "id": "UIREF",
+      "role": "design-example",
+      "path": "skills/codebase-map/examples/ui-review/README.md"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "The synthetic current view shows a read-only email preference without a Save action.",
+      "kind": "static",
+      "sources": [
+        "S4",
+        "S3"
+      ],
+      "locator": "ui-baseline.json: editable=false, save_action=false",
+      "limits": "Fixture evidence only; no real application inspection."
+    },
+    {
+      "id": "E2",
+      "claim": "The intended edit/saving/success/failure states and remaining design questions are recorded for this sample.",
+      "kind": "design",
+      "sources": [
+        "S1",
+        "S3"
+      ],
+      "locator": "Requested example behaviour and scope",
+      "limits": "Proposed behaviour and schematic preview, not implementation or design acceptance."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Add behaviour tests",
+      "kind": "prerequisite",
+      "reason": "Prove the requirement before changing its implementation.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "Existing settings owner / approved preview (resolve in actual project)"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2",
+      "title": "Implement preference saving",
+      "kind": "requested",
+      "reason": "Use the inspected settings owner, not a parallel settings system.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "Existing settings owner / approved preview (resolve in actual project)"
+      ],
+      "depends_on": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Apply the selected presentation",
+      "kind": "prerequisite",
+      "reason": "Use only the chosen kit/pattern or the expressly authorised functional preview.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "Existing settings owner / approved preview (resolve in actual project)"
+      ],
+      "depends_on": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Verify and record remaining design work",
+      "kind": "prerequisite",
+      "reason": "Distinguish tested behaviour, design acceptance and release readiness.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "acceptance": [
+        "A1",
+        "A2"
+      ],
+      "areas": [
+        "Existing settings owner / approved preview (resolve in actual project)"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "An agreed change is saved once and success is shown only after confirmation.",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "In a real project, test the existing persistence owner with controlled responses; do not run production requests."
+    },
+    {
+      "id": "A2",
+      "text": "A pending or failed save retains the choice, prevents duplicate submits, and exposes an accessible manual retry.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Test pending/failure/retry states, keyboard and focus behaviour; inspect the approved source-backed UI and preview isolation."
+    }
+  ],
+  "graphs": [
+    {
+      "kind": "current",
+      "title": "Current fixture: the preference is read-only",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Open settings",
+          "note": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 48,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "shape": "start"
+        },
+        {
+          "id": "N2",
+          "label": "Read-only preference",
+          "note": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 456,
+          "y": 152,
+          "width": 344,
+          "height": 96,
+          "shape": "action"
+        },
+        {
+          "id": "N3",
+          "label": "View current value",
+          "note": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "x": 920,
+          "y": 152,
+          "width": 304,
+          "height": 96,
+          "shape": "result"
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              336,
+              200
+            ],
+            [
+              456,
+              200
+            ]
+          ],
+          "label_position": [
+            396,
+            172
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              800,
+              200
+            ],
+            [
+              920,
+              200
+            ]
+          ],
+          "label_position": [
+            860,
+            172
+          ]
+        }
+      ],
+      "id": "current",
+      "purpose": "flow",
+      "tab": "Current flow",
+      "description": "The current state belongs only to ui-baseline.json. Arrows show the simple opening/display path, not a real app audit.",
+      "width": 1280,
+      "height": 640
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Feature flow",
+      "title": "Proposed: save and show the result",
+      "description": "Proposed example behaviour. Failure retains the choice; retry is user-initiated. The UI screens tab shows the visible states and design questions.",
+      "width": 1280,
+      "height": 736,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Edit preference",
+          "note": "",
+          "x": 464,
+          "y": 40,
+          "width": 352,
+          "height": 72,
+          "shape": "start",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Save selected value",
+          "note": "",
+          "x": 464,
+          "y": 160,
+          "width": 352,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Save\nsucceeded?",
+          "note": "",
+          "x": 512,
+          "y": 320,
+          "width": 256,
+          "height": 160,
+          "shape": "decision",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": true
+        },
+        {
+          "id": "N4",
+          "label": "Show confirmation",
+          "note": "",
+          "x": 920,
+          "y": 352,
+          "width": 304,
+          "height": 96,
+          "shape": "result",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": true
+        },
+        {
+          "id": "N5",
+          "label": "Keep choice; allow retry",
+          "note": "",
+          "x": 460,
+          "y": 576,
+          "width": 360,
+          "height": 88,
+          "shape": "result",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "points": [
+            [
+              640,
+              112
+            ],
+            [
+              640,
+              160
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "points": [
+            [
+              640,
+              248
+            ],
+            [
+              640,
+              320
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "points": [
+            [
+              768,
+              400
+            ],
+            [
+              920,
+              400
+            ]
+          ],
+          "label": "Yes",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "label_position": [
+            844,
+            372
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N5",
+          "points": [
+            [
+              640,
+              480
+            ],
+            [
+              640,
+              576
+            ]
+          ],
+          "label": "No",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "label_position": [
+            688,
+            524
+          ]
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "kind": "proposed",
+      "purpose": "delivery",
+      "tab": "Build plan",
+      "title": "Build plan — after approval only",
+      "description": "These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins; no diagram action grants it.",
+      "width": 1280,
+      "height": 848,
+      "nodes": [
+        {
+          "id": "approval",
+          "label": "User approves this plan",
+          "note": "",
+          "x": 472,
+          "y": 40,
+          "width": 336,
+          "height": 64,
+          "shape": "start",
+          "tasks": [],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "unchanged",
+          "highlight": true,
+          "precondition": "approval"
+        },
+        {
+          "id": "B1",
+          "label": "Add behaviour tests",
+          "note": "",
+          "x": 432,
+          "y": 176,
+          "width": 416,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T1"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T1"
+        },
+        {
+          "id": "B2",
+          "label": "Implement saving",
+          "note": "",
+          "x": 432,
+          "y": 328,
+          "width": 416,
+          "height": 88,
+          "shape": "action",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T2"
+        },
+        {
+          "id": "B3",
+          "label": "Use approved presentation",
+          "note": "",
+          "x": 432,
+          "y": 480,
+          "width": 416,
+          "height": 96,
+          "shape": "action",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T3"
+        },
+        {
+          "id": "B4",
+          "label": "Verify and hand off",
+          "note": "",
+          "x": 432,
+          "y": 640,
+          "width": 416,
+          "height": 96,
+          "shape": "result",
+          "tasks": [
+            "T4"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "highlight": false,
+          "task_id": "T4"
+        }
+      ],
+      "edges": [
+        {
+          "from": "approval",
+          "to": "B1",
+          "points": [
+            [
+              640,
+              104
+            ],
+            [
+              640,
+              176
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T1"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B1",
+          "to": "B2",
+          "points": [
+            [
+              640,
+              264
+            ],
+            [
+              640,
+              328
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T2"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B2",
+          "to": "B3",
+          "points": [
+            [
+              640,
+              416
+            ],
+            [
+              640,
+              480
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T3"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        },
+        {
+          "from": "B3",
+          "to": "B4",
+          "points": [
+            [
+              640,
+              576
+            ],
+            [
+              640,
+              640
+            ]
+          ],
+          "label": "",
+          "tasks": [
+            "T4"
+          ],
+          "evidence": [
+            "E2"
+          ],
+          "basis": "proposed",
+          "change": "modified"
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "Changing a preference",
+      "current": "Synthetic baseline is read-only.",
+      "proposed": "An agreed control allows editing and explicit save.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "tasks": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    },
+    {
+      "label": "Saving and failures",
+      "current": "No save action exists in the fixture.",
+      "proposed": "Retain the choice, show the result and allow a manual retry.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E2"
+      ],
+      "tasks": [
+        "T1",
+        "T2",
+        "T4"
+      ]
+    },
+    {
+      "label": "Design",
+      "current": "No actual project kit is included in this sample.",
+      "proposed": "Confirm the source and appearance before integration; do not invent styling.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "T3",
+        "T4"
+      ]
+    }
+  ],
+  "ui_review": {
+    "kind": "application",
+    "mode": "unselected",
+    "title": "The proposed interface, state by state",
+    "summary": "See the screens and feedback states, not just boxes naming them. Arrows show actions or outcomes; D1 and D2 point to design choices on the controls.",
+    "limit": "A synthetic UI task. These are authorised report schematics, not a real project kit, working application or approved design.",
+    "authority": {
+      "status": "unconfirmed",
+      "source": "UIREF",
+      "locator": "Preview authority and limits",
+      "summary": "Fictional illustration only. No real project kit or styling decision has been selected."
+    },
+    "preview": {
+      "status": "authorised",
+      "source": "UIREF",
+      "locator": "Preview authority",
+      "summary": "This isolated local report example only; no new application route or production UI.",
+      "destination": "This offline report, not either application"
+    },
+    "acceptance": {
+      "status": "pending",
+      "summary": "No design alternative has been accepted for either project."
+    },
+    "width": 1280,
+    "height": 1024,
+    "open_first": true,
+    "screens": [
+      {
+        "id": "UI1",
+        "title": "01 · Edit preference",
+        "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
+        "state": "proposed",
+        "x": 32,
+        "y": 48,
+        "width": 320,
+        "height": 384,
+        "representation": "schematic",
+        "content": [
+          {
+            "kind": "heading",
+            "label": "Notifications"
+          },
+          {
+            "kind": "text",
+            "label": "Choose what you receive."
+          },
+          {
+            "kind": "checkbox",
+            "label": "Email notifications",
+            "checked": true,
+            "decision": "D1"
+          },
+          {
+            "kind": "button",
+            "label": "Save"
+          },
+          {
+            "kind": "text",
+            "label": "Changes are not yet saved."
+          }
+        ],
+        "sources": [
+          "UIREF"
+        ],
+        "requirements": [
+          "R1",
+          "R2"
+        ],
+        "evidence": [
+          "E2"
+        ],
+        "tasks": [
+          "T2",
+          "T3"
+        ],
+        "decisions": [
+          "D1"
+        ]
+      },
+      {
+        "id": "UI2",
+        "title": "02 · Saving",
+        "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
+        "state": "proposed",
+        "x": 480,
+        "y": 48,
+        "width": 320,
+        "height": 384,
+        "representation": "schematic",
+        "content": [
+          {
+            "kind": "heading",
+            "label": "Notifications"
+          },
+          {
+            "kind": "text",
+            "label": "Your choice stays visible."
+          },
+          {
+            "kind": "checkbox",
+            "label": "Email notifications",
+            "checked": true,
+            "decision": "D1"
+          },
+          {
+            "kind": "button",
+            "label": "Saving…",
+            "disabled": true
+          },
+          {
+            "kind": "text",
+            "label": "Wait for the save result."
+          }
+        ],
+        "sources": [
+          "UIREF"
+        ],
+        "requirements": [
+          "R1",
+          "R2"
+        ],
+        "evidence": [
+          "E2"
+        ],
+        "tasks": [
+          "T2",
+          "T3"
+        ],
+        "decisions": [
+          "D1"
+        ]
+      },
+      {
+        "id": "UI3",
+        "title": "03 · Saved",
+        "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
+        "state": "proposed",
+        "x": 928,
+        "y": 48,
+        "width": 320,
+        "height": 384,
+        "representation": "schematic",
+        "content": [
+          {
+            "kind": "heading",
+            "label": "Notifications"
+          },
+          {
+            "kind": "text",
+            "label": "Your choice stays visible."
+          },
+          {
+            "kind": "checkbox",
+            "label": "Email notifications",
+            "checked": true,
+            "decision": "D1"
+          },
+          {
+            "kind": "message",
+            "label": "Preference saved.",
+            "decision": "D2"
+          },
+          {
+            "kind": "button",
+            "label": "Save"
+          }
+        ],
+        "sources": [
+          "UIREF"
+        ],
+        "requirements": [
+          "R1",
+          "R2"
+        ],
+        "evidence": [
+          "E2"
+        ],
+        "tasks": [
+          "T2",
+          "T3"
+        ],
+        "decisions": [
+          "D1",
+          "D2"
+        ]
+      },
+      {
+        "id": "UI4",
+        "title": "04 · Save failed",
+        "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. A failed save keeps the selection so the user can retry.",
+        "state": "proposed",
+        "x": 480,
+        "y": 592,
+        "width": 320,
+        "height": 384,
+        "representation": "schematic",
+        "content": [
+          {
+            "kind": "heading",
+            "label": "Notifications"
+          },
+          {
+            "kind": "text",
+            "label": "Your choice stays visible."
+          },
+          {
+            "kind": "checkbox",
+            "label": "Email notifications",
+            "checked": true,
+            "decision": "D1"
+          },
+          {
+            "kind": "message",
+            "label": "Could not save. Try again.",
+            "decision": "D2"
+          },
+          {
+            "kind": "button",
+            "label": "Try again"
+          }
+        ],
+        "sources": [
+          "UIREF"
+        ],
+        "requirements": [
+          "R1",
+          "R2"
+        ],
+        "evidence": [
+          "E2"
+        ],
+        "tasks": [
+          "T2",
+          "T3"
+        ],
+        "decisions": [
+          "D1",
+          "D2"
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "from": "UI1",
+        "to": "UI2",
+        "label": "Save",
+        "points": [
+          [
+            352,
+            240
+          ],
+          [
+            480,
+            240
+          ]
+        ],
+        "label_position": [
+          416,
+          216
+        ]
+      },
+      {
+        "from": "UI2",
+        "to": "UI3",
+        "label": "Saved",
+        "points": [
+          [
+            800,
+            240
+          ],
+          [
+            928,
+            240
+          ]
+        ],
+        "label_position": [
+          864,
+          216
+        ]
+      },
+      {
+        "from": "UI2",
+        "to": "UI4",
+        "label": "Failed",
+        "points": [
+          [
+            640,
+            432
+          ],
+          [
+            640,
+            592
+          ]
+        ],
+        "label_position": [
+          688,
+          512
+        ]
+      },
+      {
+        "from": "UI4",
+        "to": "UI2",
+        "label": "Retry",
+        "points": [
+          [
+            800,
+            784
+          ],
+          [
+            864,
+            784
+          ],
+          [
+            864,
+            496
+          ],
+          [
+            736,
+            496
+          ],
+          [
+            736,
+            432
+          ]
+        ],
+        "label_position": [
+          800,
+          476
+        ]
+      }
+    ],
+    "decisions": [
+      {
+        "id": "D1",
+        "title": "Preference control",
+        "question": "Should this be the approved checkbox or the approved switch? The drawing shows a checkbox as an example, not a selection.",
+        "options": [
+          "Approved checkbox",
+          "Approved switch"
+        ],
+        "status": "open",
+        "screens": [
+          "UI1",
+          "UI2",
+          "UI3",
+          "UI4"
+        ]
+      },
+      {
+        "id": "D2",
+        "title": "Feedback position",
+        "question": "Where should the approved success and error feedback appear? The sample shows inline text only.",
+        "options": [
+          "Inside the form",
+          "Approved floating message"
+        ],
+        "status": "open",
+        "screens": [
+          "UI3",
+          "UI4"
+        ]
+      }
+    ]
+  }
+}

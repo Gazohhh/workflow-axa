@@ -1,4 +1,16 @@
-# Workflow AXA — 2.7.0-rc.4
+# Workflow AXA — 2.7.0-rc.6
+
+
+## This update: keep the full report, add the screens
+
+The uploaded rc.5 is the base. Its Windows integrity/home fixes and shared TypeScript rule are retained. [Audit findings](AUDIT-rc5.md) distinguish package evidence from the interrupted owner's still-pending runtime installation.
+
+The existing editorial report is not redesigned. An optional **UI screens** view shows connected state previews, meaningful design choices and sources within the same report. Actual approved-kit captures and explicit schematic proposals are distinct. Core report CSS/JS remain unchanged.
+
+Full samples: [R2 with the additive UI example](skills/codebase-map/examples/ui-review/review-r2.html) · [complete synthetic UI-feature report](skills/codebase-map/examples/ui-review/ui-task-review-r2.html). The original R2 remains unchanged in its task history. Open the HTML directly; no server or external assets are needed.
+
+[Upgrade](UPGRADE.md) · [Screen-flow contract](skills/codebase-map/UI-FLOW.md) · [Validation](VALIDATION.md). No new external skill or component library.
+
 
 Complete replacement package: **eight local skills**, the existing Matt specialist integrations, shared version-aware engineering rules, and local design-kit support. This candidate fixes gaps exposed by the two project rules audits without making their project-specific instructions identical.
 

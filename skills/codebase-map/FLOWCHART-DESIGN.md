@@ -77,3 +77,7 @@ normal versioned workflow.
 Use everyday action/result labels and explain necessary technical terms in visible context. Do not assume the reader knows the project, but retain precise evidence and original requirement terms in the technical section. A reader should be able to describe the proposed behavior and approval decision without the prior conversation. Report an unresolved meaning rather than guessing it to simplify the diagram.
 
 For renderer/style maintenance, compare deterministic screenshots against a reviewed prior example with the same browser, fonts, viewport and data. Missing or mismatched references are not verification. Reference replacement requires deliberate review; do not make a test pass by automatically accepting its output. Pixel equality only addresses that fixture's appearance, not correctness, accessibility or human comprehension. Keep semantic checks and the real user approval boundary.
+
+## Optional UI screens
+
+[UI-FLOW.md](UI-FLOW.md) extends the same report with source-backed screen previews joined by actions and control-linked decisions. This does not change the editorial shell or permit invented application styling. Non-UI flows keep this exact visual grammar. Use kit captures for actual appearance and label authorised schematics as approximate.

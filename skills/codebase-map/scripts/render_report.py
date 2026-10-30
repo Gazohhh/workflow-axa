@@ -10,6 +10,7 @@ import argparse
 import base64
 import hashlib
 import html
+import importlib.util
 import json
 import re
 import sys
@@ -24,6 +25,24 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
+RENDERER_VERSION = '2.7.0-rc.6'
+
+
+def ui_module():
+    path = Path(__file__).with_name('screen_flow.py')
+    spec = importlib.util.spec_from_file_location('workflow_screen_flow', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def renderer_api():
+    # Works when this script was loaded through importlib without registration in sys.modules.
+    from types import SimpleNamespace
+    return SimpleNamespace(text=text, rows=rows, indexed=indexed, references=references,
+                           coordinate=coordinate, validate_geometry=validate_geometry,
+                           safe_source=safe_source, links=links, elbow_path=elbow_path, edge_label_box=edge_label_box)
+
 
 
 def text(value: Any, name: str, limit: int = 2000) -> str:
@@ -308,6 +327,8 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
             raise ValueError('Approved state needs matching recorded approval revision')
         for field in ('record', 'response'):
             text(approval.get(field), f'approval.{field}')
+    if 'ui_review' in data:
+        ui_module().validate(data, root, sources, renderer_api())
     return sources
 
 
@@ -686,13 +707,23 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     records = [{'id': key, 'role': value['role'], 'path': value['path'], 'sha256': digest(safe_source(root, value['path']))}
                for key, value in sources.items()]
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
-    manifest = {'schema_version': 1, 'tool_version': '2.6.0', 'layout_version': 2, 'style': 'workflow-editorial-v1',
+    manifest = {'schema_version': 1, 'tool_version': RENDERER_VERSION, 'layout_version': 2, 'style': 'workflow-editorial-v1',
                 'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])
-    controls, view_css = view_controls(ordered, data['default_view'])
+    views = ordered + ([{'id': 'ui-preview', 'tab': 'UI screens'}] if 'ui_review' in data else [])
+    default = 'ui-preview' if data.get('ui_review', {}).get('open_first', False) else data['default_view']
+    controls, view_css = view_controls(views, default)
     css = (ASSETS/'report.css').read_text(encoding='utf-8') + '\n' + view_css
     js = (ASSETS/'report.js').read_text(encoding='utf-8')
+    ui_html = ''
+    image_policy = "'none'"
+    if 'ui_review' in data:
+        css += '\n' + (ASSETS/'ui-review.css').read_text(encoding='utf-8')
+        js += '\n' + (ASSETS/'ui-review.js').read_text(encoding='utf-8')
+        ui_html = ui_module().render(data['ui_review'], root, sources, renderer_api())
+        if any(s['representation'] == 'capture' for s in data['ui_review']['screens']):
+            image_policy = 'data:'
     script_hash = base64.b64encode(hashlib.sha256(js.encode('utf-8')).digest()).decode('ascii')
     state = data['state']
     overview = data.get('report_kind') == 'task-overview'
@@ -756,11 +787,11 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     viewer_note = ('<p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p>')
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src {image_policy}; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><main>
 <header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>{esc(plan_label(data['revision']))}</span></div>
 <h1>{esc(data['title'])}</h1><p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
-{checkpoint_html}{issues}{flow_context}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}</div></section>
+{checkpoint_html}{issues}{flow_context}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}{ui_html}</div></section>
 {comparison}<section class="boundaries"><h2>What will not change</h2><ul>{bounds}</ul></section>
 <div class="two-col"><section><h2>{task_heading}</h2><ul class="plain">{task_summary or '<li>Inspection only; no implementation tasks.</li>'}</ul></section>
 <section><h2>How completion will be checked</h2><ul class="plain">{acceptance or '<li>No implementation acceptance criteria for this inspection.</li>'}</ul></section></div>
@@ -823,6 +854,8 @@ def main() -> int:
         if args.output.suffix.lower() not in ('.html', '.htm'):
             raise ValueError('Output must use .html or .htm extension')
         result=render(load_json(args.input),root,args.input)
+        if len(result.encode('utf-8')) > MAX_BYTES:
+            raise ValueError('Rendered report exceeds 8 MiB; reduce captures or split the view')
         # Exclusive creation protects earlier reviewed revisions and unrelated files.
         with args.output.open('x',encoding='utf-8',newline='\n') as out:
             out.write(result)

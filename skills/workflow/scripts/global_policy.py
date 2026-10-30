@@ -27,6 +27,14 @@ class Change:
     role: str
 
 
+def implicit_home() -> Path:
+    """The user's home, resolved only when no explicit path was given."""
+    try:
+        return Path.home()
+    except RuntimeError as exc:  # e.g. Windows with USERPROFILE/HOMEDRIVE unset
+        raise ValueError("Cannot determine the home directory; pass --home (and --claude-dir/--codex-home) explicitly.") from exc
+
+
 def safe_path(path: Path) -> Path:
     """Reject indirection rather than accidentally updating a linked project/config file."""
     path = path.expanduser()
@@ -180,15 +188,15 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true", help="Merge the reviewed managed blocks; no project mutations.")
     mode.add_argument("--check", action="store_true", help="Read-only comparison against the packaged policy and blocks.")
-    parser.add_argument("--home", type=Path, default=Path.home(), help="Policy home; defaults to this user. Use absolute paths.")
+    parser.add_argument("--home", type=Path, help="Policy home; defaults to this user. Use absolute paths.")
     parser.add_argument("--claude-dir", type=Path, help="Actual Claude configuration directory; otherwise CLAUDE_CONFIG_DIR or HOME/.claude.")
     parser.add_argument("--codex-home", type=Path, help="Actual Codex home; otherwise CODEX_HOME or HOME/.codex.")
     parser.add_argument("--host", choices=("both", "claude", "codex"), default="both")
     args = parser.parse_args(argv)
-    home = args.home.expanduser()
-    claude = args.claude_dir or Path(os.environ.get("CLAUDE_CONFIG_DIR") or home / ".claude")
-    codex = args.codex_home or Path(os.environ.get("CODEX_HOME") or home / ".codex")
     try:
+        home = (args.home or implicit_home()).expanduser()
+        claude = args.claude_dir or Path(os.environ.get("CLAUDE_CONFIG_DIR") or home / ".claude")
+        codex = args.codex_home or Path(os.environ.get("CODEX_HOME") or home / ".codex")
         changes = build_plan(home, claude.expanduser(), codex.expanduser(), args.host)
         for change in changes:
             status = "MATCH" if change.before == change.after else "MISSING" if change.before is None else "UPDATE"
@@ -206,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(str(change.path) + "\n" + text[text.index(START):text.index(END) + len(END)] + "\n")
             print("Review the packaged ARTIFACTS.md as well. Rerun with --apply to merge, or --check to inspect. Existing unrelated bytes are preserved.")
         return 0
-    except (OSError, ValueError, UnicodeError) as exc:
+    except (OSError, ValueError, UnicodeError, RuntimeError) as exc:  # RuntimeError: "~" with no home directory
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

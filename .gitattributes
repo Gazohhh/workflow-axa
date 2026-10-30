@@ -1,0 +1,19 @@
+# The installable skills are checked byte for byte against rules/version.json, so every checkout
+# must keep them LF, even where Git's core.autocrlf is true. Scoped on purpose: task records under
+# docs/plans keep their existing (partly mixed) endings, and test baselines include binary images.
+skills/** text eol=lf
+.claude-plugin/** text eol=lf
+
+# Never apply text conversion to captured or binary assets within a skill.
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.webp -text
+*.gif -text
+*.ico -text
+*.pdf -text
+*.zip -text
+*.woff -text
+*.woff2 -text
+*.ttf -text
+*.otf -text

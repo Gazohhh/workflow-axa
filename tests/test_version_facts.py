@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+from links_helper import make_link
 SCRIPT = ROOT / 'skills/rule-maker/scripts/version_facts.py'
 spec = importlib.util.spec_from_file_location('version_facts_under_test', SCRIPT)
 v = importlib.util.module_from_spec(spec)
@@ -272,12 +273,12 @@ class VersionFactsTests(unittest.TestCase):
 
     def test_linked_manifest_is_rejected(self):
         outside=Path(self.tmp.name)/'outside.json';outside.write_text('{}')
-        (self.root/'package.json').symlink_to(outside)
+        make_link(self.root/'package.json',outside)
         with self.assertRaises(ValueError): self.inspect()
 
     def test_linked_scope_is_rejected(self):
         outside=Path(self.tmp.name)/'outside';outside.mkdir()
-        (self.root/'other').symlink_to(outside,target_is_directory=True)
+        make_link(self.root/'other',outside,directory=True)
         with self.assertRaises(ValueError): self.inspect('other')
 
     @unittest.skipUnless(hasattr(os,'mkfifo'),'FIFO unavailable')

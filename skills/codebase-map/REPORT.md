@@ -112,3 +112,7 @@ Use the existing PLAN checkpoint, or established STATUS.md in a legacy task. Kee
 The renderer continues exclusive creation. Do not bypass an existing-output refusal to edit a presented/approved snapshot, or create retry-named reports automatically. An unpresented draft may be replaced only through explicitly authorised ownership-safe operations; a saved overview remains an as-of snapshot. Normal progress belongs in the task record/chat, not more HTML files.
 
 A source hash change after a checkpoint update does not by itself invalidate unchanged approved scope. `--check` only reports byte differences; the agent must distinguish expected progress, material changes and missing authority. Keep presented history intact and ask only about genuinely unresolved authority.
+
+## Optional UI screen flow (rc.6)
+
+[UI-FLOW.md](UI-FLOW.md) adds `ui_review` to existing schema 2. It renders connected screen/state previews as another tab inside this full report. Existing JSON, style and sections do not need rewriting. No raw app markup or code is executed. Local PNG captures must be listed as sources and are included in freshness checks. Explicit schematics remain visibly approximate. Every rendering uses the same bundled renderer; do not hand-replace the HTML shell with an independent design page.

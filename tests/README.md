@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.4; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.6; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -129,3 +129,9 @@ Install all eight skills, then run the [UI acceptance cases](behavioral/UI-DESIG
 ## Rules audit and design kit
 
 Read [RULES-AUDIT-KIT.md](behavioral/RULES-AUDIT-KIT.md) for the new live-host cases. The installation/catalogue tests operate on temporary synthetic files. They establish parsing, scope/freshness, readonly and error behaviour, not actual designer acceptance, successful host loading or completeness of an application audit.
+
+## rc.6 additive screen-flow testing
+
+`test_screen_flow.py` covers optional schema validation, approval/source distinctions, screenshot inputs, inert text, preserved full-report sections, extra-file auditing and policy integration. `tools/ui_browser_smoke.py` exercises the actual view in an offline browser. Neither substitutes for a live Claude/Codex acceptance test or real project-kit signoff.
+
+Live UI report cases: [UI-SCREEN-FLOW.md](behavioral/UI-SCREEN-FLOW.md). These fourteen cases are authored acceptance scenarios, not executed model tests.

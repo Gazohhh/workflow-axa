@@ -13,6 +13,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from links_helper import make_link
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location('workflow_global_policy', ROOT/'skills/workflow/scripts/global_policy.py')
 g = importlib.util.module_from_spec(SPEC)
@@ -51,7 +53,7 @@ class GlobalPolicyTests(unittest.TestCase):
 
     def test_apply_creates_only_three_expected_files(self):
         self.assertEqual(self.cli('--apply'),0)
-        actual={str(p.relative_to(self.home)) for p in self.home.rglob('*') if p.is_file()}
+        actual={p.relative_to(self.home).as_posix() for p in self.home.rglob('*') if p.is_file()}
         self.assertEqual(actual,{'.workflow-axa/ARTIFACTS.md','.claude/CLAUDE.md','.codex/AGENTS.md'})
         self.assertEqual(self.cli('--check'),0)
 
@@ -139,14 +141,14 @@ class GlobalPolicyTests(unittest.TestCase):
 
     def test_symlinked_file_is_rejected(self):
         target=self.write('real.txt',b'not ours');self.claude.mkdir()
-        (self.claude/'CLAUDE.md').symlink_to(target)
+        make_link(self.claude/'CLAUDE.md',target)
         with self.assertRaisesRegex(ValueError,'Symlink'):
             self.plan()
         self.assertEqual(target.read_bytes(),b'not ours')
 
     def test_symlinked_parent_is_rejected(self):
         target=self.home/'real';target.mkdir(parents=True)
-        self.claude.symlink_to(target,target_is_directory=True)
+        make_link(self.claude,target,directory=True)
         with self.assertRaisesRegex(ValueError,'Symlink'):
             self.plan()
 
@@ -199,6 +201,7 @@ class GlobalPolicyTests(unittest.TestCase):
         before=p.read_bytes();self.assertEqual(self.cli('--check'),1)
         self.assertEqual(before,p.read_bytes())
 
+    @unittest.skipIf(os.name=='nt','Windows has no POSIX permission bits; mode preservation is unverified here.')
     def test_apply_preserves_existing_mode(self):
         p=self.write('.claude/CLAUDE.md',b'rules\n');p.chmod(0o640)
         g.apply_plan(self.plan());self.assertEqual(p.stat().st_mode & 0o777,0o640)

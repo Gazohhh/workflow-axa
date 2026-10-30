@@ -11,7 +11,7 @@ def main(argv=None):
     p.add_argument('--apply', action='store_true')
     args=p.parse_args(argv)
     path=ROOT/'skills/rule-maker/rules/version.json'
-    data=json.loads(path.read_text())
+    data=json.loads(path.read_text(encoding='utf-8'))
     hashes={}
     for name in data['files']:
         if not isinstance(name,str) or Path(name).name!=name:
@@ -23,7 +23,9 @@ def main(argv=None):
     print('Updated files:', ', '.join(n for n,h in hashes.items() if data.get('sha256',{}).get(n)!=h) or 'none')
     if args.apply:
         data['sha256']=hashes
-        path.write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8')
+        # Write bytes so the tree is identical on every OS: the manifest does not hash itself, so a CRLF
+        # rewrite by Windows text mode would change the shipped bytes without any integrity check noticing.
+        path.write_bytes((json.dumps(data,indent=2)+'\n').encode('utf-8'))
         print('Manifest updated; run tests before distribution.')
     else:
         print('PREVIEW ONLY. Not a security signature or permission to edit shared rules.')

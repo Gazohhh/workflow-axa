@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "screen": "Notification preferences",
+  "fields": [
+    {
+      "name": "Email notifications",
+      "value": true,
+      "editable": false
+    }
+  ],
+  "save_action": false
+}

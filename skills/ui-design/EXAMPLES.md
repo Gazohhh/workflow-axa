@@ -43,3 +43,12 @@ Unity/Pixi/Three code may update an existing progress indicator according to its
 ## Workflow review
 
 Generate the existing approved flowchart with codebase-map. It may retain its local CSS/SVG styling while application work remains functionality-only. Its feature-flow arrows do not approve component spacing or a new screen mockup. The report and application have separate design authority.
+
+## Screen previews without replacing the report (rc.6)
+
+- Owner says “use the approved settings form from kit revision K3”: inspect its coverage, record that task selection, and do not ask the same question again. New layouts outside that approval still need a decision.
+- Only DESIGN.md exists: read its actual authority/scope, recommend the matching source and ask which to use. Its filename is not a choice made by the owner.
+- No kit: ask whether an explicitly labelled schematic or plain functional preview is wanted, and where. Do not automatically publish plain HTML.
+- UI plan: keep the normal full HTML report; add Edit → Saving → Success/Failure screen previews. Point decision IDs to controls and retain the existing plan/task/evidence references.
+- Source-less kit preview: remain draft, disclose missing captures; do not draw a lookalike and call it an actual component.
+- Non-UI plan: omit the UI section entirely. No fictional screens just to populate a template.

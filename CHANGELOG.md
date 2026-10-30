@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.7.0-rc.6 — 2026-10-30
+
+- Audited the supplied rc.5 source against rc.4 and reran its package tests. Retained the Windows home handling, strict CRLF diagnosis, byte-preserving manifest writes and owner-approved shared TypeScript rule.
+- Optional UI screen flows are rendered inside the existing full editorial HTML report, not a replacement dashboard. Existing report.css/report.js stay byte-identical; non-UI JSON remains compatible.
+- Show source-backed static PNG component captures or explicitly authorised labelled schematics, linked screen transitions, control-level design decisions and enlarged evidence/details. No arbitrary app HTML, CSS, scripts, remote URLs or approval callbacks execute.
+- Task design source/mode must be established before new substantive UI work; DESIGN.md alone does not choose the source. Explicit task choices and unchanged resumes do not need repetitive questions. Same boundary for ordinary prompts and workflow tasks.
+- Installation audits now report unexpected files inside the eight owned skill folders. They do not touch unrelated external skills or delete anything.
+- Preserve raw-byte LF integrity while exempting binary assets from Git text conversion. Report manifests now identify this renderer release instead of the stale 2.6.0 label.
+- Includes the original historical R2 report unchanged, an additive R2 sample, and a complete synthetic UI-workflow report. Historical deployment/approval claims are not relabelled as current verification.
+
+
+## 2.7.0-rc.5 — 2026-10-30
+
+- Keep installed rule bytes verifiable on Windows. `.gitattributes` keeps `skills/` and `.claude-plugin/` LF on every checkout, even with `core.autocrlf=true`. The manifest writer writes bytes, so it can no longer emit CRLF.
+- Diagnose CRLF-only copies without weakening integrity. `audit_installation.py` lists `line_ending_only` files (the state stays DRIFT). Activation and readiness still refuse, and name the first CRLF-only file. Real edits remain "Mixed/modified".
+- Fix Windows home handling in `global_policy.py`, `activate_rules.py` and `audit_installation.py`. Home is resolved only when a selected host still needs a default, and a missing or unexpandable home is a controlled error.
+- Document byte-for-byte installation and the two-step check: the package's `--candidate` compares bytes, then the installed copy's `--check-global` verifies the route. Also documented: the shared baseline scope and the unsigned-provenance limit.
+- Shared TypeScript rule (rules library 1.4.0): no nested conditional expressions in new or meaningfully changed code; no mandated abstraction.
+- Tests: CRLF-only vs hidden-edit, LF manifest, checkout-policy and home-resolution regressions, each with a negative case. Windows junctions exercise directory-link rejection. File-symlink and POSIX-mode checks skip with explicit "unverified here" reasons. Unrelated link errors propagate.
+
 ## 2.7.0-rc.4 — 2026-10-30
 
 - Separate requested full rules audits from scoped readiness, including policy/memory conflicts and explicit coverage/loading limits.

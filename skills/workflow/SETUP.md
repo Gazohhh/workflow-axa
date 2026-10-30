@@ -210,3 +210,5 @@ Install `rule-maker` and `ui-design` with the existing six skills (eight total).
 ## UI boundary integration
 
 Install local ui-design together with the other package skills. It uses the central rule-maker design.md; do not copy that policy into projects or install an external design skill. Verify the route with an ordinary UI request, a backend negative case and an existing report generation. Check the real host registry and global reference, not files alone. No auto-creation of a UI kit/preview, no guessed kit approval and no repeat interview for a valid resumed mode. Update the project routing block only through an approved merge when necessary.
+
+For the optional UI screen-flow report extension, install the entire codebase-map folder including screen_flow.py and ui-review assets. Existing global shared-rule references remain valid at the same path. Plain application UI requests still route through shared design.md → ui-design, not directly to a report prototype. Confirm live invocation separately; files on disk do not prove execution.

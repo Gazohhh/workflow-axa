@@ -135,6 +135,9 @@ def snapshot(root: Path, scopes: list[str], *, task: str, host: str, sources=(),
         if digest is None or not (shared/name).read_text(encoding="utf-8").strip():
             raise ValueError(f"Missing/empty shared rule: {name}")
         if digest != manifest["sha256"][name]:
+            if hashlib.sha256((shared/name).read_bytes().replace(b"\r\n", b"\n")).hexdigest() == manifest["sha256"][name]:
+                raise ValueError(f"Rule file differs from its manifest entry only by CRLF line endings: {name}. "
+                                 "Files after it were not checked; reinstall a byte-preserving copy (rule-maker INSTALLATION.md).")
             raise ValueError(f"Mixed/modified rules library: {name}")
         modules[name] = digest
     result = {"root": str(root), "workspace": workspace_identity(root), "shared_root": str(shared), "scope": scope_paths,

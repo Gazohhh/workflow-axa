@@ -39,7 +39,7 @@ Record the understood outcome, relevant decisions and their answer sources or un
 
 ## 4. Prepare the plan and visual approval
 
-Separate approval, implementation and verification/acceptance in the existing current checkpoint. For UI, include the mode, approved component/pattern sources, preview scope and design-pending release limits; behaviour approval is not unseen design approval. Keep historical baselines and proposals labelled; follow TASK-FOLDER.md for the revision log and forward-only adoption. Reruns, progress and handoffs are not new plan revisions.
+Separate approval, implementation and verification/acceptance in the existing current checkpoint. For substantive UI work, confirm source/mode through ui-design; reuse explicit task choices. Include connected screen previews in the full report, with component/pattern sources, preview scope and design-pending release limits. Behaviour approval is not unseen design approval. Keep historical baselines and proposals labelled; follow TASK-FOLDER.md for the revision log and forward-only adoption. Reruns, progress and handoffs are not new plan revisions.
 
 Map each requirement to its user source, current evidence, actual gap, task and acceptance check. Every TODO must serve requested work or a demonstrated prerequisite. Record revision, bounded/protected areas, risks, test strategy, authoritative documentation updates and directly superseded code to remove.
 

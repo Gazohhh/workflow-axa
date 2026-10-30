@@ -6,6 +6,8 @@ Applies to application markup, controls, page composition, interaction states, s
 
 Use the installed local **ui-design** skill before dependent application planning/edits, including ordinary requests and delegated work. It applies this policy; it does not automatically design. Missing/inaccessible route or unexplained project-policy conflicts block affected UI work, not unrelated read-only/backend tasks. Reuse confirmed decisions after checking freshness.
 
+For each new substantive UI task, confirm the specific source and mode before choosing appearance. An explicit task instruction or a still-valid same-task decision is sufficient; discovering DESIGN.md, an approved kit or an old screenshot is not by itself that task selection. Ask once with the relevant recommendation when unresolved; do not reopen settled decisions. Functionality-only is a restriction on authority, not automatic permission to create plain markup anywhere.
+
 Select a mode per affected area in the existing task record:
 
 - **functionality-only (default):** build approved behaviour, preserve existing presentation, and reuse only explicitly approved components/patterns. New minimal semantic markup is allowed within the agreed functionality-only scope and authorised preview destination. Design remains pending where no approved presentation exists.
@@ -31,3 +33,5 @@ Report functionality, design acceptance and release readiness separately. Design
 Normal workflow reports retain the approved local codebase-map renderer/assets. This narrow exemption is not permission to style application prototypes under a reports path, change the report theme or impose its visual style on applications.
 
 Sources (principles, not mandatory remote reads): [native HTML controls](https://www.w3.org/WAI/WCAG21/Techniques/html/H91), [form labels](https://www.w3.org/WAI/tutorials/forms/labels/), [CSS inheritance](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Inheritance), [components with usage guidance](https://design-system.service.gov.uk/components/). The three modes and approval rules are team policy, not claims that these sources prescribe this workflow.
+
+For substantive UI planning, the normal full HTML report includes the local codebase-map screen-flow extension: screen previews joined by actions and meaningful design decisions, with sourced kit captures or explicitly authorised labelled schematics. Preserve the established report shell, evidence and approval stop. Ordinary UI requests use the same policy; only saying /workflow must not determine whether design authority is checked. A screen sketch approves neither appearance nor app implementation.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "candidate_version": "2.7.0-rc.4",
+  "candidate_version": "2.7.0-rc.6",
   "baseline_version": "2.7.0-rc.2",
   "purpose": "Staged live-host cases, NOT executed by package tests. Keep expected outcomes evaluator-only.",
   "cases": [

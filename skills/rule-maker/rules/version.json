@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rules_version": "1.3.0",
-  "package_version": "2.7.0-rc.4",
+  "rules_version": "1.5.0",
+  "package_version": "2.7.0-rc.6",
   "entrypoint": "START.md",
   "files": [
     "CORE.md",
@@ -45,7 +45,7 @@
     "capacitor.md": "b8905050e5bc724f785efca48db9158c0e4d289240444a981dedd644ef4d300c",
     "compatibility.md": "bd363aad894d6ae3e9d1bef94be4765c3afc9da583129a6a5396cd8c26419ad8",
     "data-contracts.md": "83e68b82099783a4fa945c8cb2d1ac3765fa2cd15caa9b9903b99cffeb0d3bbc",
-    "design.md": "aed573ed8945461682ab6cacb7bd6c128acde05d46efb39b5889119c38fdc538",
+    "design.md": "516406b15c8e4bce848d0120ee9e00b496dc53c34038f8c6918a7288bc1e20b8",
     "ionic.md": "e79debf46e9b52913efaca4e7dcc91b03a2084a30236216f537ebfe092ba7efa",
     "laravel.md": "46e6840187aec46a676376266a68ddd06792bb636d1044208bdb2a97bf329009",
     "lifetimes.md": "52db0cf9a77b1a37ee3ab5a876345922c2e1723bad0053346bea458252f885ff",
@@ -59,7 +59,7 @@
     "security.md": "c8cf458069ab60b3fe3847d6fc7ab283c0f62d1a26db5eef4bb19bbf48275625",
     "testing.md": "1810b4060d427dda310615838ef30eb29ca3cc9fc4076838c753be14d8a54dd7",
     "threejs.md": "8a37ffa32a1e0c31bc29e03b3e9ca9e12472cf2e09763c5cd5ff6ba991f20137",
-    "typescript.md": "8bfc6e33794cde6c6c678087cbc19da98e7ef119f9564d02bfe290d3c1265586",
+    "typescript.md": "171f5431e490d3cae147ef3a159daa4f90efc34271a6429bf3c7cdec27f9ae1b",
     "unity.md": "c02191d1b7989c5ed97b1d4d6e2cb47a983afdff5e8406e0a85d1a31b50e3597",
     "vite.md": "e8a16beea1a67a6fc7a100e80da9b3715fef4b3a3878d64c96444ca4c12e98e3"
   }

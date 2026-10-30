@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_version": "2.7.0-rc.1",
-  "candidate_version": "2.7.0-rc.4",
+  "candidate_version": "2.7.0-rc.6",
   "status": "NOT_RUN",
   "instructions": "Prepare isolated fixtures with stated facts. Do not expose expected results to the agent. Use identical model/host/permissions for baseline and candidate; record actual invocation and outputs. These cases are not claims of complete coverage.",
   "cases": [

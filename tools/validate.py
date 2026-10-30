@@ -14,6 +14,8 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED = {".git", "__pycache__", ".artifacts", ".local-fixtures"}
 REQUIRED = (
+    "skills/codebase-map/UI-FLOW.md", "skills/codebase-map/scripts/screen_flow.py",
+    "skills/codebase-map/assets/ui-review.css", "skills/codebase-map/assets/ui-review.js",
     "skills/rule-maker/AUDIT.md", "skills/rule-maker/INSTALLATION.md",
     "skills/rule-maker/scripts/audit_installation.py", "skills/rule-maker/rules/POLICY.md",
     "skills/rule-maker/rules/operations.md", "skills/rule-maker/rules/angular.md",

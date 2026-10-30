@@ -178,3 +178,17 @@ The normal local codebase-map viewer remains unchanged and is not the applicatio
 A task-readiness check is not a full audit. The audit procedure explicitly separates source authority, memory scope, framework coverage, host loading, safe operations and current verification. The local installation helper compares named copies against the trusted running package without claiming remote currency or enforcement. Shared Angular/Ionic/Capacitor modules preserve project-specific contracts. Version facts fingerprint selected configuration without evaluating it.
 
 The UI kit is project-owned. The package provides an inventory/setup/check procedure, adaptable templates and optional bounded JSON reference checking; it contains no newly approved application component or theme. Existing Markdown/catalogue layouts remain valid. Component, variant and pattern approvals are scoped and do not spread to new entries automatically. Fingerprints detect changes but do not authenticate consent or prove complete runtime/style dependency coverage. No additional skill, external provider, runtime manifest per task, preview application or new CSS is mandated.
+
+## Byte-verifiable installs on Windows (2.7.0-rc.5)
+
+The shared library is verified by raw-byte hashes, and that stays strict. A copy that differs only in CRLF line endings is still rejected. The helpers now name that case (`line_ending_only`, or a file-scoped "only by CRLF line endings" refusal), so the fix is a byte-preserving reinstall rather than a search for edits. `.gitattributes` keeps the installable tree LF on Git checkouts, and the manifest writer writes bytes.
+
+A normalised-hash manifest was considered and not adopted: it would change what the manifest means for every reader.
+
+Verification is split. The package's `--candidate` audit compares bytes. The installed copy's `--check-global` verifies global references, because the blocks point at the library of the copy that runs the check.
+
+## Additive screen-flow report (2.7.0-rc.6)
+
+The previous editorial shell remains authoritative. Optional ui_review data renders a connected screen-state flow inside the same report, with referenced design decisions and sources. PNG captures can show actual kit appearance; structured inert schematics are explicitly approximate and need preview authority. This does not add a competing visualizer, automatic kit, raw app execution or approval action. Existing schema-2 reports do not gain UI by default.
+
+Scope/source confirmation is a task decision, not implied by DESIGN.md. Valid explicit selections are reused. A hypothetical example cannot become source evidence for a real project. Old snapshots remain historical, and interrupted install steps remain pending until actually completed.

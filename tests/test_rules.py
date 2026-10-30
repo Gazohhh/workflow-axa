@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+from links_helper import make_link
 def load(name,path):
     spec=importlib.util.spec_from_file_location(name,path)
     module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module)
@@ -143,7 +144,7 @@ class RuleGateTests(unittest.TestCase):
                 r.snapshot(self.root,[scope],task='T1',host='test')
     def test_linked_input_rejected(self):
         other=Path(self.tmp.name)/'outside';other.write_text('private')
-        (self.root/'AGENTS.md').unlink();(self.root/'AGENTS.md').symlink_to(other)
+        (self.root/'AGENTS.md').unlink();make_link(self.root/'AGENTS.md',other)
         with self.assertRaises(ValueError):r.snapshot(self.root,['src'],task='T1',host='test')
     def test_partial_shared_update_rejected(self):
         shared=Path(self.tmp.name)/'rules';shutil.copytree(r.RULES,shared)
@@ -196,7 +197,7 @@ class RulesActivationTests(unittest.TestCase):
             with self.subTest(raw=raw),self.assertRaises(ValueError):a.merge(raw.encode(),'replacement')
     def test_config_symlink_refused(self):
         self.claude.mkdir();outside=self.home/'outside';outside.write_text('outside')
-        (self.claude/'CLAUDE.md').symlink_to(outside)
+        make_link(self.claude/'CLAUDE.md',outside)
         with self.assertRaises(ValueError):self.plan()
     def test_profile_overlap_refused(self):
         # Same physical target is rejected by the underlying safe-file checks when linked.
@@ -242,4 +243,4 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertNotIn('diagram-design',c['skills'])
         self.assertIn('grilling',c['skills'])
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.3.0')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.5.0')

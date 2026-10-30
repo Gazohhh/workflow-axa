@@ -42,7 +42,11 @@ def validate_library(library: Path) -> dict:
         target = library / relative
         if target.is_symlink() or not target.is_file() or not target.read_text(encoding="utf-8").strip():
             raise ValueError(f"Missing, linked or empty rule file: {target}")
-        if hashlib.sha256(target.read_bytes()).hexdigest() != data["sha256"][relative]:
+        raw = target.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != data["sha256"][relative]:
+            if hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest() == data["sha256"][relative]:
+                raise ValueError(f"Rule file differs from its manifest entry only by CRLF line endings: {target}. "
+                                 "Files after it were not checked; reinstall a byte-preserving copy (rule-maker INSTALLATION.md).")
             raise ValueError(f"Mixed/modified rules library; finish the reviewed update: {target}")
     return data
 
@@ -120,23 +124,36 @@ def build_plan(home: Path, claude: Path, codex: Path, host: str, library: Path =
     return changes
 
 
+def profile_roots(args) -> tuple[Path | None, Path | None, Path | None]:
+    """Explicit paths win. The home directory is resolved only when a selected host still needs its default;
+    an unselected host's root is None (build_plan never reads it)."""
+    roots = {"claude": args.claude_dir or os.environ.get("CLAUDE_CONFIG_DIR"),
+             "codex": args.codex_home or os.environ.get("CODEX_HOME")}
+    selected = ("claude", "codex") if args.host == "both" else (args.host,)
+    home = args.home
+    if home is None and any(not roots[h] for h in selected):
+        home = load_file_helpers().implicit_home()
+    if home is not None:
+        home = home.expanduser()
+        if not home.is_absolute():
+            raise ValueError("Home must be absolute.")
+    resolved = {h: Path(roots[h] or home / f".{h}").expanduser() if h in selected else None for h in roots}
+    return home, resolved["claude"], resolved["codex"]
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--apply", action="store_true")
     modes.add_argument("--check", action="store_true")
-    parser.add_argument("--home", type=Path, default=Path.home())
+    parser.add_argument("--home", type=Path)
     parser.add_argument("--claude-dir", type=Path)
     parser.add_argument("--codex-home", type=Path)
     parser.add_argument("--host", choices=("both", "claude", "codex"), default="both")
     args = parser.parse_args(argv)
     try:
-        home = args.home.expanduser()
-        if not home.is_absolute():
-            raise ValueError("Home must be absolute.")
-        claude = args.claude_dir or Path(os.environ.get("CLAUDE_CONFIG_DIR") or home / ".claude")
-        codex = args.codex_home or Path(os.environ.get("CODEX_HOME") or home / ".codex")
-        changes = build_plan(home, claude.expanduser(), codex.expanduser(), args.host)
+        home, claude, codex = profile_roots(args)
+        changes = build_plan(home, claude, codex, args.host)
         for c in changes:
             print(f"{'MATCH' if c.before == c.after else 'MISSING' if c.before is None else 'UPDATE'}: {c.path}")
         if args.check:
@@ -151,7 +168,7 @@ def main(argv=None) -> int:
                 text = c.after.decode("utf-8")
                 print(str(c.path) + "\n" + text[text.index(START):text.index(END)+len(END)])
         return 0
-    except (OSError, ValueError, UnicodeError) as exc:
+    except (OSError, ValueError, UnicodeError, RuntimeError) as exc:  # RuntimeError: "~" with no home directory
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

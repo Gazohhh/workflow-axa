@@ -61,12 +61,14 @@ def skill_root(value: Path) -> Path:
     return value.resolve(strict=True)
 
 
-def baseline_files(base: Path) -> dict[str, str]:
+def baseline_files(base: Path, *, require_complete: bool = True) -> dict[str, str]:
     result = {}
     for name in NAMES:
         folder = base / name
         if not folder.is_dir():
-            raise ValueError(f"Trusted comparison installation is incomplete: {name}")
+            if require_complete:
+                raise ValueError(f"Trusted comparison installation is incomplete: {name}")
+            continue
         for parent, dirs, files in os.walk(folder, followlinks=False):
             dirs[:] = sorted(d for d in dirs if d != "__pycache__")
             for dirname in dirs:
@@ -105,21 +107,28 @@ def inspect(candidates: list[Path], baseline: Path = SKILLS) -> dict:
         raise ValueError("Supply at most 24 explicit candidate installations.")
     rows = []
     for candidate in actual_paths:
-        missing, changed = [], []
+        actual = baseline_files(candidate, require_complete=False)
+        unexpected = sorted(set(actual) - set(expected))
+        missing, changed, line_endings = [], [], []
         for relative, digest in expected.items():
             raw = ordinary(candidate / relative, candidate)
             if raw is None:
                 missing.append(relative)
             elif hashlib.sha256(raw).hexdigest() != digest:
                 changed.append(relative)
+                # Diagnosis only: the file still counts as changed, so the state stays DRIFT.
+                if hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest() == digest:
+                    line_endings.append(relative)
         rows.append({"skills_root": str(candidate), "declared_version": declared_version(candidate),
-                     "state": "MATCH" if not missing and not changed else "DRIFT", "missing": missing, "changed": changed})
+                     "state": "MATCH" if not missing and not changed and not unexpected else "DRIFT", "missing": missing, "changed": changed,
+                     "unexpected": unexpected,
+                     "line_ending_only": line_endings})
     return {"schema_version": 1, "expected_version": declared_version(base), "comparison_source": str(base),
             "state": "WARNING" if len(rows) > 1 or any(r["state"] != "MATCH" for r in rows) else "DISK_MATCH",
             "candidates": rows, "multiple_copies": len(rows) > 1,
             "host_loading": "NOT_VERIFIED", "compliance": "NOT_VERIFIED", "enforcement": "NOT_VERIFIED",
             "limits": ["Comparison is against this trusted local package, not a remote latest release or security signature.",
-                       "Only named candidate copies and expected skill files are checked; extra files and hidden host caches need inspection.",
+                       "Only the eight named workflow-axa skill trees are compared, including unexpected files; unrelated skills and hidden host caches are not scanned. No file is removed.",
                        "Matching bytes or global blocks do not prove the host selected or followed them."]}
 
 
@@ -135,7 +144,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate", action="append", type=Path, default=[])
     parser.add_argument("--check-global", action="store_true")
-    parser.add_argument("--home", type=Path, default=Path.home())
+    parser.add_argument("--home", type=Path)
     parser.add_argument("--claude-dir", type=Path)
     parser.add_argument("--codex-home", type=Path)
     parser.add_argument("--host", choices=("both", "claude", "codex"), default="both")
@@ -145,18 +154,14 @@ def main(argv=None) -> int:
         activation.validate_library(SKILLS / "rule-maker/rules")
         result = inspect(args.candidate)
         if args.check_global:
-            home = args.home.expanduser()
-            if not home.is_absolute():
-                raise ValueError("Home must be absolute.")
-            claude = args.claude_dir or Path(os.environ.get("CLAUDE_CONFIG_DIR") or home / ".claude")
-            codex = args.codex_home or Path(os.environ.get("CODEX_HOME") or home / ".codex")
-            changes = activation.build_plan(home, claude.expanduser(), codex.expanduser(), args.host)
+            home, claude, codex = activation.profile_roots(args)
+            changes = activation.build_plan(home, claude, codex, args.host)
             result["global_references"] = [{"path": str(c.path), "state": "MATCH" if c.before == c.after else "MISSING" if c.before is None else "UPDATE"} for c in changes]
             if any(c.before != c.after for c in changes):
                 result["state"] = "WARNING"
         print(json.dumps(result, indent=2))
         return 0 if result["state"] == "DISK_MATCH" else 1
-    except (OSError, ValueError, UnicodeError, TypeError, RecursionError) as exc:
+    except (OSError, ValueError, UnicodeError, TypeError, RecursionError, RuntimeError) as exc:  # RuntimeError: "~" with no home
         print(json.dumps({"state": "BLOCKED", "reason": str(exc), "host_loading": "NOT_VERIFIED"}))
         return 2
 
