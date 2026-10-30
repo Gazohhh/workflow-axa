@@ -16,3 +16,5 @@ Report the real state of an existing workflow task without implementing it. Writ
 Read the active workflow/global artifact policy when assessing output. Treat unknown files as unknown, not disposable. Mention relevant retained evidence, active consumers or outstanding scratch cleanup in chat; do not run tests, generate screenshots, save another status report or delete artifacts merely to report status.
 
 Report missing or stale applicable rules as a blocker to the next affected action, without demanding setup merely to give read-only status. A continued task goes through the workflow rules-readiness gate; an old approval does not silently waive new rule gaps.
+
+For UI work, report the recorded mode/reference, behaviour verification, design acceptance, preview/release boundary and missing evidence separately. Do not mark design-pending work release-ready because code/tests are complete. Unknown UI authority blocks the next affected change, not this read-only status response; do not create another UI report.

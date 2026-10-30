@@ -21,3 +21,5 @@ For a Laravel list, measure relevant query behaviour before changing eager loadi
 Select the required workload/devices, warm/cold state, repetition and acceptable change with the project owner where not already defined. Use targeted measurements and existing budgets. Report unmeasured performance explicitly. Ordinary documentation edits should not manufacture profiling work unless a project rule requires it.
 
 Sources: [Microsoft hot-path profiling](https://microsoft.github.io/rust-guidelines/guidelines/performance/index.html), [Unity CPU/GPU bottlenecks](https://docs.unity3d.com/6000.0/Documentation/Manual/OptimizingGraphicsPerformance.html), [Pixi performance tradeoffs](https://pixijs.com/8.x/guides/concepts/performance-tips). Match documentation to installed versions.
+
+For side-effecting verification, use [operations.md](operations.md): inspect prerequisites and effective target/isolation, preserve protected build authority, and report current evidence rather than assumed success.

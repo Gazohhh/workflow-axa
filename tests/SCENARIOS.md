@@ -325,3 +325,7 @@ Inspect the trace to confirm it did not omit awkward dependencies to satisfy a c
 layout. Partial delivery views disclose prerequisites outside their scope. Static
 HTML cannot authenticate the user's approval, prove runtime behavior or enforce agent
 obedience. Record any unexecuted host/browser checks as NOT RUN, not PASS.
+
+## UI boundary candidate
+
+See [UI-DESIGN.md](behavioral/UI-DESIGN.md) and [ui-design.json](behavioral/ui-design.json). Run ordinary UI requests without naming the skill, backend negative cases, missed kit/preview authority, CSS/prop/utility/native bypasses, valid repairs, unchanged resumes and approved flowchart generation. Authoring the scenarios is not executing them. Do not add an external design skill for these cases.

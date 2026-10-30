@@ -33,8 +33,10 @@ Edit only approved rule/configuration files; preserve unrelated bytes, line endi
 
 ## 5. Verify and return to the interrupted task
 
-Check paths, references, effective host discovery, conflicts, version compatibility and missing modules. Separate disk evidence, actual loading, model compliance and enforced checks. Use `writing-for-agents` for the rule changes. Run relevant package tests and live-host acceptance cases when available; otherwise report the untested layer.
+Check paths, references, effective host discovery, conflicts, version compatibility and missing modules; use the read-only installation checker for explicit candidate paths. A scoped readiness pass cannot certify a whole-project audit. Separate disk evidence, actual loading, model compliance and enforced checks. Use `writing-for-agents` for the rule changes. Run relevant package tests and live-host acceptance cases when available; otherwise report the untested layer.
 
 Re-run readiness on the original task's scope. Setup approval does not approve application implementation. Reuse valid existing task approval when the rules do not materially change its agreement; otherwise revise only the affected scope. No bulk migration of existing projects. No change to old code just because a shared rule improved.
 
-Modes: `audit` is read-only; `setup` prepares a scoped proposal; `update` compares current rules with observed gaps. With no mode, establish the requested intent before any writes.
+Modes: `audit` uses [AUDIT.md](AUDIT.md) for the full requested rules scope and is read-only; it is not merely task readiness. `setup` prepares a scoped proposal; `update` compares current rules with observed gaps. With no mode, establish intent before writes. Use [rules/POLICY.md](rules/POLICY.md) when memory, current rules or approvals conflict; show the behavioural effect before recommending policy changes.
+
+For application UI rules, use shared design.md and local ui-design. Record project-specific approved sources, coverage and preview authority only; do not choose a kit from arbitrary existing classes or build one during setup. Missing kit coverage can use the agreed functionality-only path. Explicitly resolve conflicts with stricter project styling rules and keep design-authoring bounded. No automatic migration when a designer later publishes a kit.

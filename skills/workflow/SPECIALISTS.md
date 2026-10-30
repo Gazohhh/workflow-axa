@@ -137,3 +137,9 @@ Before delegating output-producing work, use [ARTIFACTS.md](ARTIFACTS.md). Pass 
 ## Applicable rules are part of every handoff
 
 Before specialist design, implementation or write delegation, apply RULES.md and pass effective shared modules, scoped project constraints, current rule version and any exact authorised exception. `codebase-design` examines the smallest compatible design; it cannot silently replace project vocabulary, ownership, interfaces or policy with its preferred pattern. A read-only audit may report a rule gap; approval-ready plans and dependent writes may not bypass it. Keep all existing Matt routes and invocation requirements.
+
+## Local UI-design route
+
+For application UI, load the installed local `ui-design` before dependent planning/edits, including requests that mention behaviour rather than styling. It reads shared design.md, selects scoped authority and uses existing workflow approval/records; it does not start another workflow or invoke an external designer. Prefer actual approved components/patterns, not arbitrary existing CSS. Pass mode, approval source, kit/reference revision, affected surfaces, preview restrictions and exact exceptions to every specialist/subagent. Missing/disabled UI skill blocks only dependent work; use only an explicitly approved compatible fallback. A missing kit alone is not a blocker to an agreed functionality-only preview.
+
+The prototype adapter cannot bypass this boundary: a styled app prototype needs scoped design-authoring permission. Code review checks actual markup, visual props/assets and removed styling as well as CSS additions; a scanner's no-cue result is not signoff. Backend-only work needs no UI route. Normal flowchart reports remain with codebase-map's approved local assets; do not restyle applications to match them.

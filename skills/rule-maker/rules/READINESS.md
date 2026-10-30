@@ -17,7 +17,7 @@ For the next bounded scope, establish:
 - Existing project agreements identify architecture/ownership and protected/generated files that matter to the change. Root or scoped files and approved linked records are valid sources; no mandatory filename migration.
 - Verification commands or an explicitly agreed verification approach are known; avoid executing unreviewed commands. Missing tests are not a claimed pass.
 - Output destinations, resource limits, data/credential handling and permissions are understood for the planned operations.
-- Existing design references are respected when appearance changes. No design setup is required for unrelated backend work.
+- For application UI, read design.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. Missing kit coverage does not permit styling; an agreed functionality-only path can be ready without a full kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
 - Material conflicts and user decisions are resolved or clearly bounded by an authorised exception.
 
 A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project needs an agreed minimal setup before scaffolding; do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
@@ -62,3 +62,5 @@ Pass workers: root/worktree, task, rules and sources, rule revision, scope/opera
 Use one compact existing checkpoint: `Rules: READY / sources / scope / checked revision / limits`. No mandatory new project manifest and no check report on every invocation. The optional `scripts/readiness.py` checker validates declared assessments and freshness, not the truth of an agent's judgment. Its positive result cannot prove that a model read or obeyed prose.
 
 The acceptance suite must exercise missing/empty/valid/partial/stale/conflicting rules, bootstrap, explicit exceptions, untrusted code, subagents, scope expansion, unavailable tools, offline/cross-machine work and default-block behaviour. All unclassified missing prerequisites block the affected action. Never promise complete scenario enumeration or error-free agents.
+
+A readiness assessment covers its named next-task scope only. A requested full rules audit follows rule-maker/AUDIT.md and reports installation/loading, policy/memory conflicts, framework coverage and verification safety separately. Apply POLICY.md to contradictions; do not convert an old memory into a new project rule.

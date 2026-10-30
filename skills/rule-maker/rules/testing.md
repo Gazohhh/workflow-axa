@@ -22,3 +22,5 @@ Keep tests and the related production change together. Use existing test helpers
 Ask whether the new test would detect the specific broken behaviour. Use a focused negative control in a disposable fixture when practical; never mutate production state to demonstrate a failure. Keep only necessary evidence under the artifact policy. Static rule-content tests do not establish that a live agent follows those rules.
 
 Sources: [Google review/test quality](https://google.github.io/eng-practices/review/reviewer/looking-for.html), [Microsoft agent-oriented test guidance](https://microsoft.github.io/rust-guidelines/guidelines/ai/index.html). Adapt to the project's runner and contracts; no automatic tool installation.
+
+For side-effecting verification, use [operations.md](operations.md): inspect prerequisites and effective target/isolation, preserve protected build authority, and report current evidence rather than assumed success.

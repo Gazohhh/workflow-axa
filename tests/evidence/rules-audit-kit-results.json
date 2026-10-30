@@ -1,0 +1,138 @@
+{
+  "package": "workflow-axa",
+  "version": "2.7.0-rc.4",
+  "date": "2026-10-30",
+  "automated_tests": {
+    "count": 418,
+    "status": "PASS",
+    "scope": "package/tooling tests, not live agents"
+  },
+  "browser": {
+    "status": "PASS",
+    "browser": "144.0.7559.96",
+    "checks": [
+      "Supplied source/input fingerprints match before browser inspection",
+      "Feature flow is default; pending approval is visible and no approval controls exist",
+      "Technical details are secondary; exclusions and acceptance stay visible",
+      "All three views switch correctly and every rendered label fits its node/diamond",
+      "Each SVG has a nonempty accessible title/description and unique IDs",
+      "Default diagram uses natural size with 18px node titles, not fixed-height fit",
+      "Desktop report has no document-wide horizontal overflow",
+      "Native zoom controls and progressive keyboard shortcuts operate",
+      "Evidence and source links reveal the relevant nested details",
+      "Narrow-screen initial view shows the entry node instead of empty canvas",
+      "Narrow viewport scrolls only the diagram; keyboard and mouse pan preserve readable text",
+      "Fit is optional on mobile and 100% restores the readable canvas",
+      "Print presentation includes every diagram, not only the selected tab",
+      "With JavaScript disabled, diagram selection, zoom and technical disclosure still work",
+      "Optional checkpoint separates approval/implementation/acceptance without another approval request",
+      "Revision history reveals exact aliases and links to its real source section",
+      "Overview desktop/mobile keep separate readable states and contain wide history tables",
+      "Checkpoint and history disclosure remain usable without JavaScript or external assets",
+      "Script-like input remains inert; no external requests or page errors"
+    ],
+    "direct_file_navigation": false,
+    "external_requests": [],
+    "page_errors": [],
+    "limits": [
+      "Default desktop opener and Claude/Codex skill invocation/behavior were not tested.",
+      "Geometry and browser assertions do not prove semantic completeness, real approval or a complete accessibility audit.",
+      "Direct local navigation unavailable; identical HTML tested through set_content: Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/workflow-release-work/browser-current/tested-report.html\nCall log:\n  - navigating to \"file:///m"
+    ]
+  },
+  "visual_comparison": {
+    "status": "PASS",
+    "baseline": "/mnt/data/workflow-release-work/visual-base",
+    "candidate": "/mnt/data/workflow-release-work/visual-current",
+    "checks": [
+      {
+        "case": "desktop-proposed",
+        "expected_size": [
+          1280,
+          988
+        ],
+        "actual_size": [
+          1280,
+          988
+        ],
+        "status": "PASS",
+        "changed_pixels": 0
+      },
+      {
+        "case": "desktop-current",
+        "expected_size": [
+          1280,
+          892
+        ],
+        "actual_size": [
+          1280,
+          892
+        ],
+        "status": "PASS",
+        "changed_pixels": 0
+      },
+      {
+        "case": "desktop-build",
+        "expected_size": [
+          1280,
+          1100
+        ],
+        "actual_size": [
+          1280,
+          1100
+        ],
+        "status": "PASS",
+        "changed_pixels": 0
+      },
+      {
+        "case": "mobile-proposed",
+        "expected_size": [
+          350,
+          1149
+        ],
+        "actual_size": [
+          350,
+          1149
+        ],
+        "status": "PASS",
+        "changed_pixels": 0
+      }
+    ],
+    "limits": [
+      "Image equality checks appearance of these fixtures only, not user comprehension, accessibility or plan correctness.",
+      "Environment fingerprints reduce accidental mismatch; they are not proof of identical hardware or all rendering settings."
+    ]
+  },
+  "preservation": {
+    "base": "2.7.0-rc.3",
+    "candidate": "2.7.0-rc.4",
+    "protected_files": {
+      "skills/workflow/QUESTIONS.md": true,
+      "skills/workflow/SPECIALISTS.md": true,
+      "skills/workflow/ARTIFACTS.md": true,
+      "skills/workflow/scripts/global_policy.py": true,
+      "skills/rule-maker/scripts/activate_rules.py": true,
+      "skills/codebase-map/scripts/render_report.py": true,
+      "skills/codebase-map/assets/report.css": true,
+      "skills/codebase-map/assets/report.js": true,
+      "skills/codebase-map/FLOWCHART-DESIGN.md": true
+    },
+    "specialists_preserved": true,
+    "count": 27,
+    "removed": []
+  },
+  "live_agent_cases": {
+    "new_cases": 30,
+    "status": "NOT_RUN",
+    "hosts": [
+      "Claude",
+      "Codex"
+    ]
+  },
+  "limits": [
+    "No native Windows installation test",
+    "No live project/application build or device validation",
+    "No actual project design component/theme or owner acceptance supplied",
+    "No automatic host enforcement or security certification"
+  ]
+}

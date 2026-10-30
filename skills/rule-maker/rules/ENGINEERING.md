@@ -4,6 +4,8 @@ Read this selection table during code planning/review, not every source document
 
 | Trigger in the actual change | Read | Evidence to consider |
 |---|---|---|
+| Side-effecting checks, builds, profiling or external services | [operations.md](operations.md) | Actual command/prerequisites, target/isolation, authority, quiet host and fresh proof |
+| Application markup, controls, interaction states, visuals or rendered/native UI | [design.md](design.md) and local `ui-design` | Mode/authority, approved sources, preview isolation, behaviour and design acceptance kept separate |
 | State, identifiers, units, boundary parsing, error contracts | [data-contracts.md](data-contracts.md) | Valid/invalid transitions, boundary cases, meaningful error distinctions |
 | Resources, subscriptions, async work, threads, replacement or disposal | [lifetimes.md](lifetimes.md) | Setup failure, replacement, cancellation, late completion, shared ownership |
 | Network calls, jobs, retries, queues, caches | [reliability.md](reliability.md) | Retry safety, time/size limits, failure visibility and recovery |

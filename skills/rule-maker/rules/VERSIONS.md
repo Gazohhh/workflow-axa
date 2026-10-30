@@ -16,6 +16,7 @@ Inspect per application/package, not one guessed version for a monorepo. Include
 ## Practical sources
 
 - **JS/TS:** relevant package.json, actual manager/lockfile, engines, compiler options, renderer and plugins. npm lock v1/v2/v3 formats differ; aliases, workspaces, linked/local packages and overrides need context. A pnpm/yarn lock must not be parsed as npm or guessed from its name.
+- **Angular/Ionic/Capacitor:** inspect the affected package, exact peer/runtime ranges, framework integration, angular/ionic/capacitor config and native plugin/toolchain ownership. Hash configurations without executing them. Node ranges with alternatives are not a single lower bound; Capacitor does not require Ionic.
 - **PHP/Laravel:** composer.json, composer.lock, PHP/extensions, `config.platform`, relevant runtime/container and application structure. Composer's emulated platform is not the real PHP runtime. CLI, web/FPM and worker runtimes can differ. Composer requirements are not interchangeable with npm semver rules.
 - **Unity:** exact ProjectVersion, package manifest/lock, pipeline, backend, supported C# level and target device. A generic .NET guide is not proof a language feature is supported in this Editor.
 - **Rust:** edition, rust-version/minimum supported compiler, toolchain file, workspace inheritance, features/target and lockfile. An edition is not the compiler version.

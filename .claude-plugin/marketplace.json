@@ -9,7 +9,7 @@
     {
       "name": "workflow-axa",
       "source": "./",
-      "description": "Evidence-based workflow with local rule-maker, readiness gates, task utilities and visual approval.",
+      "description": "Evidence-based workflow with local rules readiness, scoped UI design authority, task recovery and approved flowchart reviews.",
       "category": "engineering",
       "keywords": [
         "workflow",

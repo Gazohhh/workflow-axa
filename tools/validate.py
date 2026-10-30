@@ -14,6 +14,14 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED = {".git", "__pycache__", ".artifacts", ".local-fixtures"}
 REQUIRED = (
+    "skills/rule-maker/AUDIT.md", "skills/rule-maker/INSTALLATION.md",
+    "skills/rule-maker/scripts/audit_installation.py", "skills/rule-maker/rules/POLICY.md",
+    "skills/rule-maker/rules/operations.md", "skills/rule-maker/rules/angular.md",
+    "skills/rule-maker/rules/ionic.md", "skills/rule-maker/rules/capacitor.md",
+    "skills/ui-design/KIT.md", "skills/ui-design/CATALOGUE.md",
+    "skills/ui-design/templates/KIT.md", "skills/ui-design/templates/design-kit.json",
+    "skills/ui-design/scripts/check_design_kit.py", "tests/test_design_kit.py", "tests/test_rules_audit.py",
+
     ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json",
     "README.md", "CHANGELOG.md", "VALIDATION.md", "docs/DESIGN.md",
     "skills/workflow/SKILL.md", "skills/workflow/TASK-FOLDER.md",
@@ -47,6 +55,9 @@ REQUIRED = (
     "skills/rule-maker/rules/security.md", "skills/rule-maker/rules/performance.md", "skills/rule-maker/rules/compatibility.md",
     "tests/test_version_facts.py", "tests/test_engineering_rules.py", "tests/behavioral/engineering-rules.json",
     "skills/plan-review/SKILL.md", "skills/plan-review/agents/openai.yaml",
+    "skills/ui-design/SKILL.md", "skills/ui-design/agents/openai.yaml",
+    "skills/ui-design/CONTRACT.md", "skills/ui-design/VERIFY.md", "skills/ui-design/EXAMPLES.md",
+    "skills/ui-design/scripts/review_ui_diff.py", "tests/test_ui_design.py", "tests/behavioral/ui-design.json",
 )
 
 
@@ -70,9 +81,9 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Plugin version must use the package's semantic-version format.")
         elif f"## {version} —" not in (root / "CHANGELOG.md").read_text(encoding="utf-8"):
             errors.append("Plugin version has no matching changelog entry.")
-        expected_registered = ["./skills/workflow", "./skills/codebase-map", "./skills/task-status", "./skills/resume-task", "./skills/workflow-doctor", "./skills/plan-review", "./skills/rule-maker"]
+        expected_registered = ["./skills/workflow", "./skills/codebase-map", "./skills/task-status", "./skills/resume-task", "./skills/workflow-doctor", "./skills/plan-review", "./skills/rule-maker", "./skills/ui-design"]
         if plugin.get("skills") != expected_registered:
-            errors.append("Register the seven workflow-axa skills exactly once in the approved order.")
+            errors.append("Register the eight workflow-axa skills exactly once in the approved order.")
         entries = market.get("plugins", [])
         if len(entries) != 1 or entries[0].get("name") != "workflow-axa" or entries[0].get("source") != "./":
             errors.append("Marketplace must point to this one local plugin.")
@@ -120,11 +131,11 @@ def validate_package(root: Path) -> list[str]:
     except (OSError, ValueError, TypeError, AttributeError) as exc:
         errors.append(f"Shared rules manifest error: {exc}")
 
-    registered_names = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker")
+    registered_names = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker", "ui-design")
     expected_skills = {root / f"skills/{name}/SKILL.md" for name in registered_names}
     if set((root / "skills").rglob("SKILL.md")) != expected_skills:
-        errors.append("Exactly the seven registered workflow-axa SKILL.md files are required.")
-    budgets = {"workflow": 1250, "codebase-map": 850, "task-status": 450, "resume-task": 500, "workflow-doctor": 450, "plan-review": 550, "rule-maker": 850}
+        errors.append("Exactly the eight registered workflow-axa SKILL.md files are required.")
+    budgets = {"workflow": 1250, "codebase-map": 850, "task-status": 450, "resume-task": 500, "workflow-doctor": 450, "plan-review": 550, "rule-maker": 850, "ui-design": 850}
     for name in registered_names:
         budget = budgets[name]
         core = (root / f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
@@ -151,7 +162,7 @@ def validate_package(root: Path) -> list[str]:
             except (ValueError, AttributeError) as exc:
                 errors.append(f"{name}: invalid OpenAI string: {exc}")
 
-    skill_roots = [root / f"skills/{name}" for name in ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker")]
+    skill_roots = [root / f"skills/{name}" for name in ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker", "ui-design")]
     for path in sorted(root.rglob("*.md")):
         if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
@@ -184,7 +195,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
-    print(f"PASS: package structure, manifest consistency, minimal metadata, seven local skills, relative links, core budget ({words} workflow words).")
+    print(f"PASS: package structure, manifest consistency, minimal metadata, eight local skills, relative links, core budget ({words} workflow words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
     return 0
 

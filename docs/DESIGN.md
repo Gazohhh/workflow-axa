@@ -166,3 +166,15 @@ Sources reviewed 2026-10-29: Claude instruction/hook documentation, Codex instru
 ## Shared engineering guidance (2.7.0-rc.2)
 
 The local rule-maker library now has a compact core, an engineering selection table, framework references and version-selection guidance. Only the relevant topic modules load during work; these are references, not new independently competing skills. The read-only version collector reports facts and explicit gaps without executing the project or deciding readiness. Existing specialists receive selected rules and effective project/version context through the established workflow/review routes. General guidance stays central, project agreements stay local, and authoritative task history stays in its existing records.
+
+## Application UI authority
+
+The local ui-design skill applies centrally maintained design.md to application UI. Three modes are distinct: functionality-only by default, approved-kit by scoped authority, and design-authoring only for an explicitly approved design task. Component catalogue/preview choices remain project-specific. A source inspection cannot invent design approval. Keep readiness, behaviour approval, design acceptance and release state distinct in existing records.
+
+The normal local codebase-map viewer remains unchanged and is not the application's style system. Its exemption is limited to producing approved review artifacts. The optional diff triage helper supplies review cues, not compliance proof or enforcement. Existing global references pick up the new local policy after re-reading; no external dependency, hook, automatic installation or blanket old-code migration is introduced.
+
+## Rules audits and source-backed kit catalogues (2.7.0-rc.4)
+
+A task-readiness check is not a full audit. The audit procedure explicitly separates source authority, memory scope, framework coverage, host loading, safe operations and current verification. The local installation helper compares named copies against the trusted running package without claiming remote currency or enforcement. Shared Angular/Ionic/Capacitor modules preserve project-specific contracts. Version facts fingerprint selected configuration without evaluating it.
+
+The UI kit is project-owned. The package provides an inventory/setup/check procedure, adaptable templates and optional bounded JSON reference checking; it contains no newly approved application component or theme. Existing Markdown/catalogue layouts remain valid. Component, variant and pattern approvals are scoped and do not spread to new entries automatically. Fingerprints detect changes but do not authenticate consent or prove complete runtime/style dependency coverage. No additional skill, external provider, runtime manifest per task, preview application or new CSS is mandated.

@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.7.0-rc.4 — 2026-10-30
+
+- Separate requested full rules audits from scoped readiness, including policy/memory conflicts and explicit coverage/loading limits.
+- Add read-only comparison of named installations and global references; preserve activation helpers and host permissions.
+- Add Angular, Ionic and Capacitor rules/configuration facts, correct React Compiler context and operation/verification boundaries.
+- Bundle project design-kit lifecycle, optional catalogue templates and a read-only selection/scope/source-freshness checker. No invented project visuals or new external dependencies.
+- Preserve eight skills, Matt integrations, grilling, artifact policy, historical records and the approved flowchart renderer/assets.
+- Add tooling regressions and authored live scenarios; see VALIDATION.md for observed results and untested hosts.
+
+## 2.7.0-rc.3 — 2026-10-30
+
+- Add local ui-design as the eighth skill, automatically routed for application UI and ordinary globally guided work.
+- Introduce functionality-only default, scoped approved-kit and explicitly authorised design-authoring. No guessed styling via existing classes, utility combinations, props or native/rendered paths.
+- Preserve existing appearance, require authorised preview placement for design-pending UI, and distinguish behaviour, design acceptance and release readiness in existing records.
+- Keep the local flowchart report exemption narrow; renderer/assets unchanged. No external design dependency or automatic kit/preview creation.
+- Add read-only unified-diff triage, mechanical regressions and 32 unexecuted live-host scenarios. The helper does not grant approval or prove styling compliance.
+- Shared rules become 1.2.0. Existing activation helpers, Matt catalogue entries, proactive questioning, artifact policy and framework/version tooling are retained.
+
 ## 2.7.0-rc.2 — 2026-10-30
 
 - Strengthen shared core semantics; add conditionally loaded data, lifetime, reliability, testing, security, performance and compatibility rules with examples/checks and primary-source leads.

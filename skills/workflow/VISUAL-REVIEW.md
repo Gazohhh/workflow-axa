@@ -34,3 +34,7 @@ The current checkpoint identifies the approved scope, work performed and verific
 For a meaningful revision, record what changed and why relative to the last approved scope, map old review/phase names explicitly, and preserve history in the existing PLAN/DECISIONS. Reruns and normal progress update records, not plan revision numbers. Reconcile contradictions before presenting an approval-ready plan.
 
 An explicitly requested current task overview can project the checkpoint and revision log through codebase-map's optional schema-2 fields. It must show an as-of time and source, distinguish the baseline/reviewed flow from observed current implementation, and grant no approval. Do not create or refresh an overview per checkpoint or as a side effect of task-status. A normal review remains the default; the flowchart stays central. Old saved reviews are not modified or automatically migrated.
+
+## UI task boundary
+
+For application UI, expose the scoped ui-design mode, approved sources, permitted preview and any design-pending release restriction in the existing plan/review fields (understanding, exclusions, decisions and acceptance). Do not create another renderer schema or separate design report merely for this. The diagram explains behaviour, not approval of an unseen visual layout. Continue using the approved local report CSS/SVG; no report path grants authority to invent application mockups or change the report theme. A designer's eventual visual acceptance is a separate recorded outcome.

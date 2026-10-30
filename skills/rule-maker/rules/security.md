@@ -20,3 +20,5 @@ An API accepts a well-formed document ID. It must still establish that the calle
 Test the relevant denial, malformed input, cross-owner and safe-error paths in controlled fixtures. Verify sensitive values do not appear in retained output. State coverage limits; neither a passing scanner nor this checklist proves the absence of vulnerabilities.
 
 Sources: [OWASP authorisation](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html), [input validation](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html), [logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html).
+
+For side-effecting verification, use [operations.md](operations.md): inspect prerequisites and effective target/isolation, preserve protected build authority, and report current evidence rather than assumed success.

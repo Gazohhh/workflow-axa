@@ -183,3 +183,7 @@ Keep task progress in task records. An ADR preserves an important decision, its 
 ## Rules checkpoint (forward-only)
 
 Before creating records use RULES.md. Once an existing or authorised task record is selected, keep one short readiness/source/scope note in its current checkpoint; a known exception includes the actual response, omissions, allowed work and expiry. No extra RULES-STATUS.md or new task per check. Legacy tasks need no setup marker. Reconcile affected inputs on resume; do not replay valid consent or promote historical exceptions to blanket authority.
+
+## UI context, only when relevant
+
+In the established current checkpoint add one compact UI entry: affected area and mode; approving source/reference revision; allowed components/variants/patterns; preview destination/access; exact exceptions; functionality checks; design acceptance and release state. No UI manifest or new folder by default. Design-pending functionality may be implemented/tested without being a finished interface. An approved-kit directory appearing later, task handoff or test retry does not silently approve design or create a new revision. Reconcile old tasks forward at the next affected unit; do not rewrite historical reviews. Refer to the installed local ui-design contract for details.

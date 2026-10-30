@@ -21,6 +21,7 @@ NAMES = ("AGENTS.md", "AGENTS.override.md", "CLAUDE.md", "CLAUDE.local.md", ".cl
 CONFIGS = ("package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "tsconfig.json",
            "npm-shrinkwrap.json", "bun.lock", "bun.lockb", "pnpm-workspace.yaml",
            "composer.json", "composer.lock", ".php-version", ".tool-versions",
+           "angular.json", "ionic.config.json", "capacitor.config.ts", "capacitor.config.js", "capacitor.config.json",
            "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "rust-toolchain",
            "ProjectSettings/ProjectVersion.txt", "Packages/manifest.json", "Packages/packages-lock.json")
 REQUIRED = ("identity", "trust", "shared_rules", "project_rules", "scope", "versions",

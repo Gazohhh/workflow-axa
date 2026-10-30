@@ -15,6 +15,15 @@ JS_PACKAGES = {
     "react": "react.md", "react-dom": "react.md", "react-router": "react.md",
     "react-router-dom": "react.md", "typescript": "typescript.md", "vite": "vite.md",
     "three": "threejs.md", "pixi.js": "pixijs.md",
+    "@angular/core": "angular.md", "@angular/cli": "angular.md",
+    "@angular/common": "angular.md", "@angular/router": "angular.md",
+    "@angular/forms": "angular.md", "@angular/compiler-cli": "angular.md",
+    "@angular/platform-browser": "angular.md", "rxjs": "typescript.md",
+    "@ionic/angular": "ionic.md", "@ionic/react": "ionic.md", "@ionic/vue": "ionic.md",
+    "@ionic/core": "ionic.md", "@capacitor/core": "capacitor.md",
+    "@capacitor/cli": "capacitor.md", "@capacitor/android": "capacitor.md",
+    "@capacitor/ios": "capacitor.md", "@capacitor/app": "capacitor.md",
+    "@capacitor/keyboard": "capacitor.md", "@capacitor/preferences": "capacitor.md",
 }
 JS_LOCKS = ("npm-shrinkwrap.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb")
 LIMITS = (
@@ -159,7 +168,7 @@ def js_context(inputs: Inputs, manifest: Path, dirs: list[Path]) -> dict:
     declared = {}
     for group in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
         for package, constraint in field(data, group).items():
-            if package in JS_PACKAGES:
+            if package in JS_PACKAGES or package.startswith("@capacitor/"):
                 declared.setdefault(package, []).append({"group": group, "constraint": specification(constraint)})
     result = {"ecosystem": "javascript", "manifest": inputs.name(manifest), "packages": [], "warnings": []}
     if "packageManager" in data:
@@ -188,7 +197,7 @@ def js_context(inputs: Inputs, manifest: Path, dirs: list[Path]) -> dict:
     else:
         result["warnings"].append("This helper does not parse pnpm/yarn/bun locks; use a compatible read-only resolver or inspect them.")
     for package, declarations in sorted(declared.items()):
-        row = {"name": package, "declared": declarations, "locked": None, "module": JS_PACKAGES[package]}
+        row = {"name": package, "declared": declarations, "locked": None, "module": JS_PACKAGES.get(package, "capacitor.md")}
         if any(d["constraint"].startswith("[") for d in declarations):
             row["limit"] = "Non-version/alias/local declaration requires explicit resolution."
         elif lock is not None:
@@ -196,6 +205,12 @@ def js_context(inputs: Inputs, manifest: Path, dirs: list[Path]) -> dict:
             if problem:
                 row["limit"] = problem
         result["packages"].append(row)
+    result["configuration_sources"] = []
+    for name in ("angular.json", "ionic.config.json", "capacitor.config.ts", "capacitor.config.js", "capacitor.config.json"):
+        config = nearest(inputs, dirs, name)
+        if config is not None:
+            result["configuration_sources"].append(inputs.name(config))
+    result["configuration_evaluated"] = False
     result["constraint_compatibility"] = "NOT_CHECKED: no npm semver or peer-dependency solver is run."
     return result
 

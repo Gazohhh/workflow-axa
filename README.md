@@ -1,76 +1,60 @@
-# workflow-axa 2.7.0-rc.2
+# Workflow AXA — 2.7.0-rc.4
 
-**Full candidate update: shared engineering standards and version-aware rules.** Based on 2.7.0-rc.1. The same seven local skills; no new external specialist. Live Claude/Codex behaviour and host action enforcement have not been validated here.
+Complete replacement package: **eight local skills**, the existing Matt specialist integrations, shared version-aware engineering rules, and local design-kit support. This candidate fixes gaps exposed by the two project rules audits without making their project-specific instructions identical.
 
-## The missing prerequisite is now explicit
+## What is new
 
-`/workflow` checks applicable shared/project rules before substantive planning, task scaffolding, application edits, output-producing tests/builds and delegated writes—even when nobody has run `/rule-maker`.
+- **Full rules audit:** distinguish whole requested-scope review from readiness for one task. Check authority/memory conflicts, actual loading, framework coverage, technical claims, verification safety and rule placement; disclose coverage and unknowns rather than issue a blanket pass.
+- **Actual-installation check:** compare explicitly named skill copies with this trusted release, detect missing/changed/mixed files, and optionally check global activation. It writes nothing and cannot prove host selection or compliance.
+- **Framework coverage:** Angular, Ionic and Capacitor modules plus static version/configuration facts. React Compiler guidance distinguishes configuration from React major; Ionic page visibility differs from destruction. No upgrade is authorised.
+- **Operation boundaries:** inspect test prerequisites, build permissions and effective backend isolation; keep quiet-host requirements and report actual gate proof. Old memory cannot silently replace current approved project policy.
+- **Design kit:** local catalogue workflow, adaptable templates and an optional read-only source/approval-freshness checker. No new external design dependency, invented project theme or unauthorised UI-tool installation.
 
-| Situation | Required response |
+## Design kit included — what it is and is not
+
+Use `ui-design kit-audit` to inventory **designated** components; `kit-setup` to propose and apply an approved catalogue setup; `kit-check` to review its authority and current sources. See [KIT.md](skills/ui-design/KIT.md). The included templates are **drafts**, not approved components. Real Cheflabels/Altinstar source components, colours and designer acceptance were not supplied and are not fabricated here.
+
+Keep one project-approved catalogue backed by real components/APIs, supported variants, states, style/token dependencies and page patterns. Reuse an existing UI-kit page/Storybook/project reference; JSON is optional. A candidate entry does not inherit approval from an existing kit. Component approval does not approve any page layout. New kit revisions require targeted reconciliation, not automatic redesign of old work.
+
+| UI mode | Permission |
 |---|---|
-| Existing rules actually cover this scope | Continue; no rule-maker marker or migration needed. |
-| Project rules are missing/empty/inadequate | Stop and offer minimal setup, a specific limited exception, read-only inspection or stop. |
-| Unreadable indispensable rules, unknown trust/identity/authority or unsafe conflict | Block affected work; a generic "continue" does not waive unknown constraints. |
-| User approves setup | Prepare/apply only the exact approved setup scope; no application implementation. |
-| User grants a bounded known-gap exception | Keep remaining safeguards and normal task approval; record scope and expiry in the existing checkpoint. |
-| Rules/scope/host/worktree change | Recheck affected inputs, not every file in the codebase. |
+| **Functionality-only — default** | Preserve appearance; explicitly approved component reuse; agreed semantic markup in an authorised preview. No invented styling. |
+| **Approved-kit** | Use the designated components, variants and patterns within their approved coverage. Missing/stale coverage needs a decision. |
+| **Design-authoring** | Only specifically approved presentation work; no permanent styling unlock. |
 
-**Readiness, setup approval, implementation approval, passing tests and enforced permissions are separate claims.** A Markdown rule cannot guarantee obedience; neither can a checksum authenticate human consent. Unknown prerequisites default to a pause, not an assumed pass.
+CSS, inline styling, CSS-in-JS, arbitrary classes, visual props, themes and rendered/native/game visuals share this boundary. Required labels, keyboard/focus and functional feedback remain. **Behaviour, design acceptance and release readiness stay separate.** Backend work does not need a kit. The approved local flowchart renderer is preserved and is not an application design system.
 
-## Shared rules without project copies
-
-General guidance lives in `skills/rule-maker/rules/`: core, React, TypeScript, Vite, Unity, Three.js, PixiJS, PHP, Laravel, actual-Rust and design-review principles. ENGINEERING.md selects data-contracts, lifetimes, reliability, testing, security, performance and compatibility modules only when relevant. VERSIONS.md separates declared, locked and runtime versions; it does not demand upgrades. The framework references apply to the actual installed versions; they never auto-upgrade dependencies. The design module does not prescribe colours/fonts or replace the approved local flowchart style.
-
-Global Claude/Codex instructions reference this one installed library. Ordinary requests and new folders therefore receive the readiness instruction without needing a slash command. Project files contain only local agreements, commands, ownership and exceptions. A rule update applies to future reads; no automatic bulk changes to application code, old task records or project rulebooks.
-
-See [upgrade instructions](UPGRADE.md) for the preview-first reference helper. The helper installs no hooks, permissions changes or updater. Stable paths and actual host/profile loading must be verified. Other machines and containers need their own installation; no local change silently updates them.
-
-## What this update adds
-
-General rules remain centrally maintained in the skill, not copied into every repository. Required safety/correctness rules are distinguished from design defaults; no rigid zero-nesting, function-length or comment-count mandate. Source/API docs explain the end-state while task records retain the history.
-
-The optional read-only `skills/rule-maker/scripts/version_facts.py --root /absolute/project --scope src --scope server/app` reports static declarations/locks without executing project code or writing artifacts. PHP platform emulation is not a runtime version; npm/pnpm/yarn/Composer formats are not interchangeable. Unsupported resolution remains explicit. The helper is not a solver, compatibility certification or readiness approval.
-
-This is a complete replacement package, not an rc.1 overlay. PHP/Laravel modules are now included. Rust advice runs only for actual Rust work; useful ownership/testing principles remain language-neutral in the shared topics. Existing code is not rewritten automatically.
-
-## Commands
+## Entry points
 
 ```text
 /workflow-axa:workflow <goal>
-/workflow-axa:rule-maker audit
-/workflow-axa:rule-maker setup
-/workflow-axa:rule-maker update
+/workflow-axa:rule-maker audit|setup|update
+/workflow-axa:ui-design <UI task>
+/workflow-axa:ui-design kit-audit|kit-setup|kit-check <area or catalogue>
+/workflow-axa:workflow-doctor
 /workflow-axa:task-status <task>
 /workflow-axa:resume-task <task>
-/workflow-axa:workflow-doctor
 /workflow-axa:plan-review <task>
-/workflow-axa:codebase-map explain <feature>
-/workflow-axa:codebase-map current|proposed|compare <scope>
+/workflow-axa:codebase-map explain|current|proposed|compare <scope>
 ```
 
-Use the host's actually registered names. Standalone Claude uses `/workflow` and `/rule-maker`; Codex uses `$workflow` and `$rule-maker`. Do not keep duplicate active copies.
+These are plugin names. Standalone host registrations differ. The main sequence remains **rules readiness -> find/reuse task -> current-code evidence -> grilling -> PLAN/TODO and flowchart -> approval -> implementation -> verification**. UI/kit work uses the same task and authority, not another implementation workflow. A rules setup or catalogue check does not approve application edits.
 
-The workflow remains: **check rules → find/reuse task → inspect code → grill missing decisions → PLAN/TODO and local flowchart → user approval → implement → verify**. `rule-maker` is a setup/maintenance procedure, not a mandatory repeated interview on every task. Read-only explanations/status need no artificial setup project. Setup bootstrap must not recurse into itself.
+## Install and verify the actual copy
 
-## Preserved behaviour
-
-All Matt catalogue entries and existing specialist routes remain, including grilling, research, debugging, TDD, domain modelling and code review. `codebase-design` receives actual project constraints; its suggestions cannot override approved ownership or silently create new architecture.
-
-Local flowchart guide, renderer, CSS/JS, examples and historic reviews remain unchanged. The existing artifact policy and installer remain independent and unchanged. Revision/history support remains forward-only; no folder renaming or schema migration. Existing valid approvals are reused after reconciliation.
-
-## Validation and limitations
-
-Run from the package root:
+Replace the complete plugin or all **eight complete skill folders**. Keep a stable installation path and one intended active route per host. See [UPGRADE.md](UPGRADE.md).
 
 ```bash
+python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global
+python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
 python -X utf8 tools/validate.py
 python -X utf8 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-[Validation results](VALIDATION.md) distinguish observed mechanical tests from authored live-host scenarios. [Rules scenario matrix](tests/behavioral/RULES-READINESS.md) and [engineering cases](tests/behavioral/engineering-rules.json) covers missing/partial/legacy/conflicting inputs, bootstrap, exceptions, scope changes, recovery, trust and unsupported cases. No enumeration claims every possible future behaviour is solved.
+The first command checks only named/default disk inputs and references. Use repeatable `--candidate` arguments for other discovered copies. It does not delete duplicates, download updates, install hooks or prove which rules a running host loaded. An older global setup pointing only to ARTIFACTS.md is not enough for shared coding rules; use the existing activation helper's preview/apply procedure after review. Fresh Claude/Codex sessions and trace inspection remain necessary.
 
-The read-only `skills/rule-maker/scripts/readiness.py` inventories selected inputs and validates declared coverage/freshness. It never claims file presence proves adequacy. It is not a sandbox, approval authenticator, automatic code-quality proof or host tool-call firewall. Unsupported/malformed states block affected changes under the protocol. Project scripts that generate artifacts or enforce tests keep their existing requirements.
+## Preserved and limited
 
-Before team rollout, pilot this candidate in your actual Claude/Codex environments using ordinary requests, missing rules, unchanged resumption and delegated work. Revert to the known-good package if the pilot fails; no files in your computer were changed by generating this archive.
+Matt's 27 specialist entries/adapters, proactive grilling, task/revision history, local flowchart styling and artifact policy remain. No project application/rule files, memories, old evidence or approved designs are rewritten by installing this package. Project-specific contradictions need a scoped decision; templates do not migrate existing records.
 
-[Setup detail](skills/rule-maker/SETUP.md) · [Existing testing guide](tests/README.md) · [Changelog](CHANGELOG.md) · [Local flowchart example](skills/codebase-map/examples/review.html)
+[VALIDATION.md](VALIDATION.md) records observed tests separately from authored [live acceptance cases](tests/behavioral/RULES-AUDIT-KIT.md). This is a release candidate: live Claude/Codex compliance and native Windows installation remain unverified. Instructions and read-only helpers are not host-enforced security boundaries.

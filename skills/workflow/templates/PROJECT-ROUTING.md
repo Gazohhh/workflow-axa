@@ -25,3 +25,7 @@ During this upgrade, merge the following into the authoritative task/review poli
 ```markdown
 Keep one concise current checkpoint in the task's established record, separating approval, implementation and verification/owner acceptance. Label earlier baselines and proposals as history. Record meaningful scope revisions and their reasons in the existing PLAN/DECISIONS; progress, test retries and agent handoffs do not create plan revisions. Preserve paths, IDs, heading links and presented/approved HTML/JSON snapshots; later approval is recorded in the task record, not by rewriting old reviews. Apply the structure to new work and minimally to tasks actually resumed; do not migrate closed tasks or create extra state/revision files. Resolve conflicting local retention instructions explicitly; never delete history automatically.
 ```
+
+## Application UI (merge, do not duplicate shared standards)
+
+For application UI, load the installed shared design.md and local ui-design before dependent planning/edits, even without `/workflow`. Default to functionality-only unless scoped approval establishes kit/design authority. Preserve existing presentation; do not infer approved designs from arbitrary classes or folders. Record preview and pending design/release state in the existing task. Backend work needs no kit; normal workflow reports keep their approved local renderer. Resolve conflicts with existing project rules instead of overwriting them.

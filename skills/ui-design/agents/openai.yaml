@@ -1,0 +1,3 @@
+interface:
+  display_name: "UI Design Boundary"
+  short_description: "Build behaviour without inventing unapproved styling"

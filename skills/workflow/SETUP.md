@@ -205,4 +205,8 @@ References checked 26 October 2026: [Claude instruction scopes/imports](https://
 
 ## Shared rules and missing project setup (2.7 candidate)
 
-Install the seventh local skill, `rule-maker`, with the existing six. Its rules are referenced centrally, not copied into repositories. Run its `scripts/activate_rules.py` preview/apply/check from the final stable installation after approval. Preserve existing artifact activation. The helper changes only managed global reference sections; no automatic hooks, permissions changes or remote updater. New/missing projects trigger readiness even without a setup command. Test the actual installed host/profile; package checks are not live enforcement proof.
+Install `rule-maker` and `ui-design` with the existing six skills (eight total). Its rules are referenced centrally, not copied into repositories. Run its `scripts/activate_rules.py` preview/apply/check from the final stable installation after approval. Preserve existing artifact activation. The helper changes only managed global reference sections; no automatic hooks, permissions changes or remote updater. New/missing projects trigger readiness even without a setup command. Test the actual installed host/profile; package checks are not live enforcement proof.
+
+## UI boundary integration
+
+Install local ui-design together with the other package skills. It uses the central rule-maker design.md; do not copy that policy into projects or install an external design skill. Verify the route with an ordinary UI request, a backend negative case and an existing report generation. Check the real host registry and global reference, not files alone. No auto-creation of a UI kit/preview, no guessed kit approval and no repeat interview for a valid resumed mode. Update the project routing block only through an approved merge when necessary.

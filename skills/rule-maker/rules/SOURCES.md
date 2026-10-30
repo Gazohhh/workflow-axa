@@ -29,3 +29,18 @@ These are source leads for our locally written rules, not files fetched at runti
 | Static version tooling | [Composer usage](https://getcomposer.org/doc/01-basic-usage.md), [platform emulation](https://getcomposer.org/doc/06-config.md#platform), [Composer lock schema](https://raw.githubusercontent.com/composer/composer/main/res/composer-lock-schema.json), [npm lock format](https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json), [Cargo manifest](https://doc.rust-lang.org/cargo/reference/manifest.html). Static facts are not installed/runtime evidence or dependency solving. |
 
 The general AI-rule prompt supplied by the owner asked for inspection, stack-specific official guidance, and adaptation of Google/Rust principles without blindly transplanting their syntax. This release implements that authorised direction; it does not execute the old prompt's broad repository audit or compulsory twenty-worker policy.
+
+## UI boundary addition — 2026-10-30
+
+The functionality-only / approved-kit / design-authoring split is the owner's approved team policy, not a framework standard. W3C's [HTML-control technique](https://www.w3.org/WAI/WCAG21/Techniques/html/H91) and [labelling guidance](https://www.w3.org/WAI/tutorials/forms/labels/) support preserving semantics and accessible names. MDN's [inheritance guide](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Inheritance) explains why no new CSS does not mean no computed style. GOV.UK's [component catalogue](https://design-system.service.gov.uk/components/) illustrates components with use guidance and code, not a required visual style or dependency. These pages were opened during this package update. The implementation does not install an external design skill, UI kit or Storybook. Source availability is not required during ordinary operation; local policy is authoritative.
+
+## Rules-audit and design-kit update (reviewed 2026-10-30)
+
+- Angular: https://angular.dev/reference/versions and https://v20.angular.dev/reference/versions (exact runtime ranges; current/archived TypeScript constraints may differ, so inspect installed peer metadata); https://angular.dev/guide/components/lifecycle ; https://angular.dev/guide/http/testing .
+- Ionic: https://ionicframework.com/docs/v8/angular/lifecycle and https://ionicframework.com/docs/angular/lifecycle (retained page visibility differs from destruction; choose installed-major guidance).
+- Capacitor: https://capacitorjs.com/docs/basics/workflow ; https://capacitorjs.com/docs/config ; https://capacitorjs.com/docs/apis/app (sync writes, native configuration and app lifecycle).
+- React Compiler: https://react.dev/reference/react-compiler/target (17/18 targets with runtime; not permission to enable it).
+- Host loading: https://code.claude.com/docs/en/memory ; https://developers.openai.com/codex/guides/agents-md . Observe actual installed versions/settings; references are not runtime proof.
+- Component catalogue concepts: https://storybook.js.org/docs/get-started/whats-a-story/ ; https://design-system.service.gov.uk/community/contribution-criteria/ . Borrow source-backed component states and review, not those products' visual style or a requirement to install Storybook.
+
+Audit modes, policy-conflict handling, catalogue schema, human approval and operation boundaries are team policy. They are not claims that these sources prescribe this workflow. No upstream files or third-party design kit were bundled.

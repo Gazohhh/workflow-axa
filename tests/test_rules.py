@@ -242,4 +242,4 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertNotIn('diagram-design',c['skills'])
         self.assertIn('grilling',c['skills'])
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.1.0')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.3.0')

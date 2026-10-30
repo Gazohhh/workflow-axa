@@ -2,7 +2,7 @@
   "schema_version": 1,
   "format": "workflow-axa evaluator-only cases, not skill-creator native format",
   "baseline_version": "2.6.0",
-  "candidate_version": "2.7.0-rc.2",
+  "candidate_version": "2.7.0-rc.4",
   "cases": [
     {
       "id": "B01",

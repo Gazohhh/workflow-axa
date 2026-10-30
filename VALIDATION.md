@@ -1,40 +1,33 @@
-# Validation — 2.7.0-rc.2
+# Validation — workflow-axa 2.7.0-rc.4
 
-Date: 2026-10-30. Baseline: workflow-axa-2.7.0-rc.1.zip, SHA-256 `154e46c0f8eb1eeffde7f02bdbfd9ec3407d3503245dc52b1cc88b08e6241dda`. Work was performed on a separate package copy. No installed skills, actual global profiles, user projects or application dependencies were modified.
+Date: 30 October 2026. Full candidate built from the supplied rc.3 package. The supplied two-project review pack informed requirements; it is not proof of the current repositories or host installations. No private source pack, memory transcript or project component was bundled.
 
-## Observed results
+## Observed package checks
 
-| Check | Result |
-|---|---|
-| Baseline | Existing package validator and all 264 tooling tests passed before edits. |
-| Candidate automated tests | PASS: 321 tests (57 added). These test package structure, rule routing/content contracts, static version facts, snapshot freshness and safe configuration behaviour, not model compliance. |
-| Negative controls | Modified/unlisted/duplicate shared-rule modules, mismatched package identity, corrupt manifests, linked/escaping/oversized inputs, conflicting locks, unsupported npm formats and unrepresented ancestor workspaces are rejected or explicitly unresolved. |
-| Read-only collection | Controlled package/Composer script sentinels were not executed; no project file or .env content was copied to output. Version collection does not invoke PHP, Node, Artisan, Composer or Cargo. |
-| Version cases | npm JSON lock v1/v2/v3; represented workspaces; separate React app versions; missing/ambiguous/alias/linked locks; Composer PHP constraints, platform emulation and Laravel/Illuminate observations; separate PHP apps; Unity configured Editor/render-pipeline; Rust source identification without fabricated TOML parsing. |
-| Readiness freshness | Composer, PHP marker, Cargo/toolchain and additional JS lock changes are included in selected input fingerprints. Old assessments require rechecking, not project/task migration. |
-| Shared-library integration | Manifest includes every Markdown module exactly once and hashes are checked; rules release 1.1.0 matches package metadata. Seven skills remain registered. Main workflow stays at 1,216 words; shared core is 512 words. |
-| Browser | PASS: 19 Chromium 144.0.7559.96 checks, offline, no external requests or page errors; desktop/mobile geometry, navigation, disclosure, history and inert hostile labels checked. |
-| Preserved components | 25 selected files are byte-identical, including the complete local codebase-map subtree, workflow entrypoint, questioning policy, specialist adapters, task-record guide, artifact policy/installer and global-reference helper. All 27 Matt catalogue entries and 26 prior task-history files are preserved. |
-| Final archive | ZIP integrity, source-to-extraction equality, validator and automated tests are rerun from a fresh extraction before delivery. Browser checks also run from that extraction. |
-| Live model/host evaluation | NOT RUN. Neither Claude Code nor Codex was available as a configured authenticated test agent. Existing scenarios and 30 new engineering scenarios remain explicitly NOT_RUN. |
-| Enforced action blocking | NOT ADDED / NOT TESTED. No host permission changes, catch-all blocker or automatic updater is installed. |
+- **418 automated tests passed.** Includes all retained regressions plus installation comparison, Angular/Ionic/Capacitor facts, source/config freshness, no-write checks, optional catalogue schema/selection/scope/reference checks, unsafe paths, drafts/deprecation, stale approval evidence and authored-scenario integrity.
+- **19 Chromium browser checks passed**, with no external requests/page errors. Covered report layout, semantic controls, view switching, source links, mobile behaviour, optional checkpoint/history and no-script operation.
+- **4 same-environment visual comparisons passed with zero changed pixels** against rc.3: desktop proposed/current/build views and mobile proposed view. These compare the approved report renderer, not a real application design kit.
+- Package validator passed: eight registered skills, manifest consistency, shared-rule hashes, relative references and existing maintenance budgets. Workflow core remains 1,235 whitespace-delimited words.
+- The final ZIP was extracted into a fresh directory; package validation, the complete 418-test suite, installation self-check and 19 browser checks were rerun there. Archive integrity and source/extracted payload equality were checked.
 
-## Browser environment limits
+Read the bounded results in [rules-audit-kit-results.json](tests/evidence/rules-audit-kit-results.json) and the tooling transcript in [rules-audit-kit-tooling.txt](tests/evidence/rules-audit-kit-tooling.txt). Prior evidence files remain historical, not new test claims.
 
-The first attempt through `/usr/bin/chromium` timed out without completing checks. Using the installed `/usr/lib/chromium/chromium` binary completed all 19 checks. No package UI logic or assertion was weakened to obtain that result. The container required `--no-sandbox` for this trusted local fixture; do not copy that setting into production browsing.
+## Preservation checks
 
-Direct `file://` navigation is blocked by the environment. The identical HTML was loaded using Playwright set_content while offline. The system opener, native Windows/macOS rendering, full accessibility and actual agent invocation were not verified. Desktop screenshot was inspected. The renderer/assets are unchanged; no new pixel-equality claim across environments is made.
+Matt's 27 catalogue entries are identical to rc.3 except the package release label; the specialist adapters and questioning rules are byte-identical. The shared artifact policy, artifact installer and shared global-reference helper are byte-identical. The flowchart renderer, CSS, JavaScript, local design guide and example files are unchanged. All old package files/task history are retained; no font binaries are included.
 
-## Static facts are not compatibility certification
+## Environment and browser limitation
 
-The new helper is bounded, standard-library-only and read-only. It reports named static facts; it does not solve dependency ranges, verify lock content-hash consistency, resolve all manager formats, inspect the runtime/container/device, authenticate approval or enforce the agent's prose instructions. pnpm/yarn/bun, custom paths, aliases, linked packages and unfamiliar formats require explicit inspection. No API compatibility pass is derived from a manifest or lock entry. A version range, locked dependency, emulated PHP platform and actual runtime remain distinct.
+Python standard-library tooling tests ran on Linux with Git available. Optional visual tests used the already available Pillow and Playwright/Chromium (144.0.7559.96); no package installation was performed. Existing visual comparison code emitted a Pillow deprecation warning; it did not affect the passing comparison and no runtime dependency was upgraded.
 
-Filesystem checks reject ordinary linked/escaping inputs; this is not a hardened sandbox against an adversary changing the filesystem concurrently. Hashes identify inspected bytes, not trust or future freshness. Existing host/organisation protections remain necessary.
+Browser checks ran with networking disabled. Managed policy blocked direct `file://` navigation, so the same HTML bytes were loaded via the browser content API. Tests used the explicit no-sandbox switch only inside this trusted disposable container. This does not verify a desktop file opener, Safari, Firefox, native Windows/macOS installation or all accessibility behaviour.
 
-## Engineering rules and limitations
+## Explicitly unverified
 
-The library adapts primary guidance recorded in rules/SOURCES.md. It does not reproduce entire upstream guides or claim vendor approval. Rules define applicability, useful examples and verification; they are not a universal lint engine. No code-quality tool, dependency upgrade, database migration, automatic legacy cleanup or per-function compliance report is introduced. Framework APIs still require version/configuration-matched sources.
+**No live Claude/Codex evaluations ran.** The 30 new cases in [RULES-AUDIT-KIT.md](tests/behavioral/RULES-AUDIT-KIT.md), as well as earlier live suites, are authored scenarios, not passed model tests. Instructions do not enforce tool calls; the helpers do not install hooks, run the host, infer authentic permission or prove an agent followed a rule.
 
-Tests with PHP/Laravel/Rust manifests are synthetic static fixtures, not executed applications or proof against every framework release. New live scenarios cover stale results, partial cleanup, duplicate effects, authorisation, non-tautological tests, old Laravel structure, PHP syntax limits, multiple React versions, runtime mismatches and avoiding mechanical overengineering. Run them in the real team environments before treating this candidate as established behaviour.
+The installation checker compares explicit candidates against the trusted local package executing it, not a remote release/signature. It does not discover every host cache or identify the host-selected copy from disk alone. Its global check validates managed references, not all user settings or semantic contradictions.
 
-Current compact logs live in tests/evidence/tooling-tests.txt, browser-smoke.json and dependency-preservation.json. Specifically versioned older logs and visual reference records remain historical evidence, not new results. No scratch browser images, caches or build environments are included in the ZIP.
+The optional kit checker validates selected local records and fingerprints. It does not authenticate approval, render components, infer all stylesheet/theme dependencies, guarantee preview isolation or approve shipping. Markdown/existing catalogues remain supported without conversion. Included templates contain no approved application components, palette or designer sign-off. Real project catalogue setup requires bounded inspection and approval.
+
+No Cheflabels/Altinstar application tests, builds, production calls, device checks, repository-rule rewrites or memory changes were executed. Any current project contradictions still need an explicit scoped decision. No automatic migration, cleanup, dependency upgrade or publication is included.

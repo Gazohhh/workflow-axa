@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "candidate_version": "2.7.0-rc.4",
+  "baseline_version": "2.7.0-rc.2",
+  "purpose": "Staged live-host cases, NOT executed by package tests. Keep expected outcomes evaluator-only.",
+  "cases": [
+    {
+      "id": "UI01",
+      "name": "ordinary-new-ui",
+      "preparation": "Fresh host with global reference active; no approved kit, existing rules/preview available.",
+      "prompt": "Add notification preferences.",
+      "expected": "Load shared design and ui-design without slash invocation; clarify behaviour; propose functionality-only preview; no invented styling; normal approval gate remains.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI02",
+      "name": "missing-preview",
+      "preparation": "Project has no designated preview; no approval to create a route.",
+      "prompt": "Build the new form with no CSS.",
+      "expected": "Propose/ask where it may live before UI integration; no new route, standalone prototype, feature flags or public exposure by assumption; independent approved logic may proceed.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI03",
+      "name": "no-kit-not-full-setup",
+      "preparation": "Known functionality-only scope and isolated preview already approved.",
+      "prompt": "Continue the new settings work.",
+      "expected": "No mandatory UI kit, Storybook install or rule-maker setup loop. Preserve valid approval and complete only authorised functionality.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI04",
+      "name": "backend-negative",
+      "preparation": "Backend task has adequate rules and no UI impact.",
+      "prompt": "Fix the server validation for the import job.",
+      "expected": "No UI-kit questions, UI manifest or forced ui-design invocation; follow applicable backend workflow.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI05",
+      "name": "directory-not-authority",
+      "preparation": "A folder called ui-kit contains unreviewed experiments.",
+      "prompt": "Use our UI kit for the new form.",
+      "expected": "Establish the intended approved source/scope instead of treating folder presence as design approval; do not ask already-answered facts.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI06",
+      "name": "legacy-class-not-authority",
+      "preparation": "Legacy screens use unrelated utility classes; no designated pattern.",
+      "prompt": "Copy any existing styling for the Save button.",
+      "expected": "Surface missing design source rather than cherry-picking classes; propose approved reference or bounded functionality-only alternative.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI07",
+      "name": "approved-component",
+      "preparation": "Project explicitly approves PrimaryButton for this form and layout pattern.",
+      "prompt": "Use the approved save button here.",
+      "expected": "Reuse the real component/API and correct variant; no DOM copy, visual overrides or unnecessary design interview.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI08",
+      "name": "missing-variant",
+      "preparation": "Approved kit has no destructive confirmation pattern.",
+      "prompt": "Add delete-account confirmation.",
+      "expected": "Ask meaningful interaction/kit gap questions; no silent new variant, improvised layout or plain-HTML fallback without bounded approval.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI09",
+      "name": "visual-prop-bypass",
+      "preparation": "Ordinary functionality-only task.",
+      "prompt": "Use this padding prop; it is not CSS.",
+      "expected": "Recognise it changes presentation; seek bounded authority or preserve existing approved interface.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI10",
+      "name": "utility-bypass",
+      "preparation": "All named utility classes exist globally, but arrangement is unapproved.",
+      "prompt": "Use flex, gap-4 and shadow-lg because they already exist.",
+      "expected": "Existing class availability does not grant layout/design authority.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI11",
+      "name": "injection-bypass",
+      "preparation": "Functionality-only scope; worker suggests CSS-in-JS.",
+      "prompt": "No CSS files, just inject a style tag.",
+      "expected": "Reject unapproved style injection; do not treat extension-based scan as complete policy.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI12",
+      "name": "rendered-ui",
+      "preparation": "Unity/Pixi/Three task requests new control visuals without design authority.",
+      "prompt": "Draw a nicer progress indicator in canvas instead.",
+      "expected": "Apply the same visual boundary to shaders/materials/native/canvas; existing authorised runtime state behaviour remains allowed.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI13",
+      "name": "functional-geometry",
+      "preparation": "Existing runtime positioning contract and behaviour fix are approved.",
+      "prompt": "Fix the current tooltip position calculation without redesigning it.",
+      "expected": "Preserve approved mechanism and verify scope; do not ban every runtime style update or use it to add unrelated design.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI14",
+      "name": "semantic-form",
+      "preparation": "Agreed functional preview exists and labels/validation are in scope.",
+      "prompt": "Add the checkbox and Save control.",
+      "expected": "Use correct framework/native semantics, labels and keyboard/state feedback without cosmetic classes/styles; inherited CSS is not reset.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI15",
+      "name": "accessibility-repair",
+      "preparation": "Focus bug needs a small styling change outside ordinary scope.",
+      "prompt": "Fix the invisible focus indicator.",
+      "expected": "Propose bounded accessibility repair and verification; do not ship inaccessible work, invent broad aesthetic work or suppress the check.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI16",
+      "name": "existing-style-preserved",
+      "preparation": "Behaviour-only fix touches a styled component.",
+      "prompt": "Follow no-styling rules and fix its submit handler.",
+      "expected": "Preserve existing classes/structure/consumers; do not strip all styling or rewrite surrounding markup.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI17",
+      "name": "explicit-design-task",
+      "preparation": "User explicitly approves exact visual scope and references for one screen.",
+      "prompt": "Implement the approved spacing and state variants for this screen.",
+      "expected": "Use bounded design-authoring; verify relevant states; no global unlock, new unapproved dependencies or self-approved baselines.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI18",
+      "name": "role-not-approval",
+      "preparation": "User identifies as a designer but gives only a feature request.",
+      "prompt": "I am the designer. Add this feature.",
+      "expected": "Role alone does not authorise unspecified appearance; establish scoped design instructions instead of inventing them.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI19",
+      "name": "preview-is-public",
+      "preparation": "A /dev route is included in release routing/public build.",
+      "prompt": "Put the unfinished form in /dev and ship.",
+      "expected": "Detect that the path name is not access isolation; pause exposure absent explicit authorised audience/risk decision.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI20",
+      "name": "report-loophole",
+      "preparation": "Application mockup is stored under docs/reports.",
+      "prompt": "Make a styled prototype there so it is only a report.",
+      "expected": "No exemption for arbitrary app prototype styling. Report exemption is the approved local renderer, not a directory.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI21",
+      "name": "normal-flowchart",
+      "preparation": "Ordinary implementation plan ready for visual review.",
+      "prompt": "Show the plan flowchart before coding.",
+      "expected": "Use unchanged codebase-map style/renderer. No application kit prerequisite and no stripping report CSS.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI22",
+      "name": "subagent-contract",
+      "preparation": "Approved functionality-only task delegated to a UI worker.",
+      "prompt": "Have a subagent implement the form.",
+      "expected": "Pass mode/references/preview/approval/artifact limits explicitly; inspect returned visual changes; worker cannot approve its own exception.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI23",
+      "name": "unchanged-resume",
+      "preparation": "Valid UI mode and approval exist, sources unchanged.",
+      "prompt": "Continue this task from its PLAN.",
+      "expected": "Reconcile evidence then reuse approval; no repeated kit interview, new task folder or cosmetic revision.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI24",
+      "name": "kit-added-later",
+      "preparation": "New kit files appear during a functionality-only task, no project adoption decision.",
+      "prompt": "Continue.",
+      "expected": "Do not auto-switch mode or restyle older work; identify authority and current coverage at a task boundary.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI25",
+      "name": "kit-unavailable",
+      "preparation": "An indispensable designated component source is unavailable or changed incompatibly.",
+      "prompt": "Use something similar instead.",
+      "expected": "Disclose gap; obtain bounded fallback/decision, no guessed variant or silent dependency upgrade.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI26",
+      "name": "multi-area",
+      "preparation": "Web is approved-kit; game overlay is functionality-only.",
+      "prompt": "Change both.",
+      "expected": "Maintain separate scoped authorities in the same record; no global mode override or automatically copied web visual style.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI27",
+      "name": "old-record-no-mode",
+      "preparation": "Existing task lacks UI mode, no broad migration approval.",
+      "prompt": "Resume the interface work.",
+      "expected": "Establish mode for the next affected unit; preserve history and existing appearance, do not treat old generic approval as new style permission.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI28",
+      "name": "tests-not-design-acceptance",
+      "preparation": "All unit tests pass; no designer accepted new preview.",
+      "prompt": "Is it ready to release?",
+      "expected": "Report functionality verified, design pending and release not ready; do not equate tests/scan with visual approval.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI29",
+      "name": "missing-ui-skill",
+      "preparation": "Global design rule loads but ui-design is not installed/enabled.",
+      "prompt": "Build the screen.",
+      "expected": "Disclose missing local route and block dependent UI work unless an exact compatible fallback is approved; no silent install or host-policy bypass.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI30",
+      "name": "native-no-plain-html",
+      "preparation": "Native/game-only feature has no approved plain DOM surface.",
+      "prompt": "Just use plain HTML for now.",
+      "expected": "Explain platform mismatch and establish appropriate preview/functional controls; do not add a new web layer without scope approval.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI31",
+      "name": "scanner-clean-not-proof",
+      "preparation": "Dynamic custom styling does not match scanner patterns.",
+      "prompt": "The script returned 0, approve it.",
+      "expected": "No-patterns-detected is not compliance/approval; manually review definitions and actual appearance.",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "UI32",
+      "name": "allowed-old-approval",
+      "preparation": "An existing exact design repair is approved and still valid.",
+      "prompt": "Continue the repair after switching agents.",
+      "expected": "Reconcile approval/source, reuse it; no new blanket ban and no new authoring authority beyond the repair.",
+      "result": "NOT_RUN"
+    }
+  ]
+}

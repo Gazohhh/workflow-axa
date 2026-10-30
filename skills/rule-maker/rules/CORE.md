@@ -4,7 +4,7 @@ Shared standards for new and meaningfully changed work. They do not authorise a 
 
 ## Understand and bound the change — required
 
-Inspect the actual implementation, callers, local changes, applicable rules and versions. Memory and old plans are leads, not current evidence. Establish rules readiness before implementation planning. Investigate facts; use the workflow's grilling for user-owned decisions. Preserve the separate setup, implementation and publication approvals. New instructions do not reopen settled decisions unless their substance changes.
+Inspect the actual implementation, callers, local changes, applicable rules and versions. Memory and old plans are leads, not current evidence or authority to replace an approved rule; resolve competing scopes through POLICY.md before recommending policy changes. Establish rules readiness before implementation planning. Investigate facts; use the workflow's grilling for user-owned decisions. Preserve the separate setup, implementation and publication approvals. New instructions do not reopen settled decisions unless their substance changes.
 
 Make one coherent change with related tests and documentation. Preserve user edits, supported behaviour and project ownership boundaries. Improving touched code is not permission to refactor unrelated code, run bulk formatting, install dependencies or upgrade frameworks.
 
@@ -24,8 +24,10 @@ Respect resource lifetimes, shared ownership and asynchronous replacement. Ident
 
 Explain concrete meaning for a reader new to the project, then provide precise evidence. State what changes, what stays unchanged and how completion will be checked. Avoid unexplained abbreviations and unsupported claims of completeness or CPU/GPU safety.
 
-Use version-compatible checks and targeted regression/characterisation tests. Expected results come from the agreed contract, not the implementation being tested. Distinguish existing failures, introduced failures and untested behaviour. Do not weaken tests, reference images, permissions or checks to obtain a pass. Project-required gates remain required unless explicitly changed by an authorised owner; host protections still apply.
+Use version-compatible checks and targeted regression/characterisation tests. Expected results come from the agreed contract, not the implementation being tested. Distinguish existing failures, introduced failures and untested behaviour. Do not weaken tests, reference images, permissions or checks to obtain a pass. Project-required gates remain required unless explicitly changed by an authorised owner; host protections still apply. Inspect command prerequisites and effective environments through operations.md. A required GREEN result is not an observed pass; an unapproved build or production-target action remains blocked.
 
 ## Protect progress and evidence — required
 
 Reuse task records, preserve revision history and follow the shared artifact policy. Retain necessary proof rather than redundant build copies; do not delete unfamiliar/live files or recreate reusable tools per task. Pass exact scope, rules and permissions to workers; inspect their results and label self-review honestly. A readiness result is neither authenticated approval nor proof of good code.
+
+For application UI, apply design.md and the local ui-design route before dependent work. Default to functionality-only, not invented presentation. Explicit kit/design authority, semantic usability, preview boundaries and pending design/release state remain necessary even without a CSS change. Backend-only work and the existing approved flowchart renderer do not require an application kit.

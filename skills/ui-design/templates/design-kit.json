@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kit_id": "replace-with-project-kit-id",
+  "revision": "draft-1",
+  "status": "draft",
+  "scope": [
+    "."
+  ],
+  "approval": null,
+  "preview": null,
+  "items": []
+}

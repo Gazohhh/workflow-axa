@@ -25,7 +25,7 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 
 ## Run the current skill and candidate fairly
 
-For this release use 2.6.0 as the comparison baseline, not the original first workflow. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
+For this release use 2.7.0-rc.3 as the comparison baseline, not the original first workflow. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
 constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
@@ -58,14 +58,14 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.2; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.4; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
 
 The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
 
-Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install all seven local skills plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
+Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install all eight local skills plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
 
 An optional browser smoke runner uses already installed Python Playwright and a supplied Chromium executable:
 
@@ -116,8 +116,16 @@ The old pending example and historic task records are intentionally unchanged. T
 
 Use [the 40-case matrix](behavioral/RULES-READINESS.md) for actual host runs. Keep its expectations outside the agent context. All results remain NOT_RUN until execution is observed. Preserve valid old rules, approval/history, test artifacts and the separately maintained global artifact policy.
 
-## Engineering rules and version facts (2.7.0-rc.2)
+## Engineering rules and version facts (2.7.0-rc.3)
 
 The new `test_version_facts.py` exercises real read-only file inspection, scoped lock observations, version ambiguity, unsafe inputs and no project execution. `test_engineering_rules.py` checks library routing/content contracts and additional version-input freshness. Content assertions are not model-behaviour evidence.
 
 [Engineering scenarios](behavioral/engineering-rules.json) add thirty baseline/candidate cases. They remain NOT_RUN until actual host executions are reviewed. Do not feed expected outcomes to the agent. Verify that selected guidance changes the result without gratuitous questions, new reports, wrappers or unrelated cleanup.
+
+## UI-design integration
+
+Install all eight skills, then run the [UI acceptance cases](behavioral/UI-DESIGN.md) using [their scenario data](behavioral/ui-design.json). They are NOT RUN until observed in actual hosts. `test_ui_design.py` covers read-only diff parsing, styling and markup cues, malformed/partial inputs, legitimate semantic changes, no-write/no-approval behaviour and local route contracts. These mechanical assertions do not prove a model follows the policy.
+
+## Rules audit and design kit
+
+Read [RULES-AUDIT-KIT.md](behavioral/RULES-AUDIT-KIT.md) for the new live-host cases. The installation/catalogue tests operate on temporary synthetic files. They establish parsing, scope/freshness, readonly and error behaviour, not actual designer acceptance, successful host loading or completeness of an application audit.

@@ -32,3 +32,9 @@ Global prose and the checker are not an enforced sandbox. To enforce actions, se
 ## Optional read-only checker
 
 Use [CHECKER.md](CHECKER.md) only when running the inventory/assessment helper. It accepts stdin so no new receipt file is required. Normal workflow uses a short existing checkpoint; never confuse a generated receipt with authenticated approval.
+
+## UI-design boundary
+
+The shared START/CORE/design modules now route application UI to the local ui-design skill. Install all eight local skill folders together. Existing global references at stable paths need checking, not duplicate activation or framework-rule copies. Policy content changed, so re-read it at the next task/work-unit boundary; reconcile existing specific design approvals rather than stripping prior styles. The helper remains reference setup only: it does not install a tool-call blocker or a UI framework. Test ordinary prompts and delegated work in the actual host.
+
+For mixed/old installations, use [INSTALLATION.md](INSTALLATION.md) and the read-only audit helper before a fresh-session test. Do not assume this package is active because its ZIP was downloaded. For a full project-rules audit use [AUDIT.md](AUDIT.md); a task-readiness pass is not a full audit. Global blocks remain unchanged in rc.4, so a matching existing block needs no reinstallation.

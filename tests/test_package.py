@@ -29,7 +29,7 @@ class PackageTests(unittest.TestCase):
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly the seven registered workflow-axa SKILL.md files are required.", validate_package(root))
+            self.assertIn("Exactly the eight registered workflow-axa SKILL.md files are required.", validate_package(root))
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -96,7 +96,7 @@ class PackageTests(unittest.TestCase):
 
     def test_registered_utility_skills_exist_and_are_bounded(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        self.assertEqual(plugin["version"], "2.7.0-rc.2")
+        self.assertEqual(plugin["version"], "2.7.0-rc.4")
         for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
             self.assertIn(f"./skills/{name}", plugin["skills"])
             text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")

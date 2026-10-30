@@ -16,7 +16,7 @@ class EngineeringRulesTests(unittest.TestCase):
         data=json.loads((RULES/'version.json').read_text())
         for name in ('ENGINEERING.md','VERSIONS.md','data-contracts.md','lifetimes.md','reliability.md','testing.md','security.md','performance.md','compatibility.md','php.md','laravel.md','rust.md'):
             self.assertIn(name,data['files']);self.assertIn(name,data['sha256'])
-        self.assertEqual(data['rules_version'],'1.1.0')
+        self.assertEqual(data['rules_version'],'1.3.0')
 
     def test_core_has_no_universal_nesting_or_comment_quota(self):
         text=(RULES/'CORE.md').read_text()

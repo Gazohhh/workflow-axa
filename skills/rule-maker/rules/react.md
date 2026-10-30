@@ -10,4 +10,4 @@ Primary references: [Rules of Hooks](https://react.dev/reference/rules/rules-of-
 
 ## Related checks
 
-For version selection use [VERSIONS.md](VERSIONS.md). For affected state and effects, load [data-contracts.md](data-contracts.md) and [lifetimes.md](lifetimes.md); use [testing.md](testing.md) for behavioural changes. Do not adopt React 19-only APIs in React 18 or rearrange Hook order just to reduce nesting. Renderer/compiler configuration also matters.
+For version selection use [VERSIONS.md](VERSIONS.md). For affected state and effects, load [data-contracts.md](data-contracts.md) and [lifetimes.md](lifetimes.md); use [testing.md](testing.md) for behavioural changes. Do not adopt React 19-only APIs in React 18 or rearrange Hook order just to reduce nesting. Renderer/compiler configuration also matters. React Compiler is not inherently React-19-only: official targets include React 17/18 with the separate runtime. Inspect the installed compiler target, runtime and approved configuration; this fact does not authorise enabling/installing it. See [compiler target](https://react.dev/reference/react-compiler/target).

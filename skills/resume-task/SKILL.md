@@ -15,3 +15,5 @@ Continue an existing workflow task safely; do not reconstruct progress from conv
 6. Do not stage, commit, push, deploy, reset or discard unless explicitly authorized.
 
 Before output-producing work, read the active workflow ARTIFACTS.md/global policy and reconcile the recorded output parent, pending consumers, retained proof and interrupted scratch. Reuse that parent; a new agent is not a new artifact root. Clean only verified owned disposable output under existing authority, never unknown files from the interrupted session.
+
+For resumed application UI, reload shared design.md and local ui-design. Reconcile mode, authority, approved reference/kit revision, preview isolation, exceptions and pending design acceptance before the next affected unit. Preserve valid decisions; do not infer new styling permission from an old generic plan approval or a newly discovered kit. Legacy tasks gain only the necessary forward-looking checkpoint, not a bulk redesign.
