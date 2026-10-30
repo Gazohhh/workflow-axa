@@ -7,7 +7,7 @@ description: "Safely continue an existing workflow task after a session, account
 
 Continue an existing workflow task safely; do not reconstruct progress from conversation memory.
 
-1. Read project rules and the supplied/named task records. If the task identity is ambiguous, ask before writing.
+1. Apply the installed workflow RULES.md readiness gate before continuation, even if rule-maker never ran. Revalidate scoped exceptions and changed inputs; setup permission is not application approval. Read project rules and the supplied/named task records. If the task identity is ambiguous, ask before writing.
 2. Read the existing workflow task-record rules. Support PLAN/TODO/FINDINGS/DECISIONS, legacy STATUS.md and inline decisions without demanding missing templates. Reconcile current branch/worktree, uncommitted changes, relevant files, verification evidence and specialist availability. Treat interrupted work as uncertain until inspected.
 3. Separate approval, implementation and verification/owner acceptance; an approved plan is not a completed task. Resolve conflicting current/historical statements from evidence, not timestamps or revision numbers. Restate in plain language what the task is, what is already approved, what appears complete, what changed since the checkpoint, unresolved decisions and the next safe action.
 4. Reuse valid answers and approval for the same presented revision. Do not restart grilling or visual approval merely because the agent/session changed. If scope materially changed or approval evidence is invalid/stale, return to `workflow` for the necessary questioning/review gate.

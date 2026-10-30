@@ -1,106 +1,76 @@
-# workflow-axa
+# workflow-axa 2.7.0-rc.2
 
-**2.6.0 — clear current state with retained revision history.** One main workflow plus focused local utilities. This archive updates the package, not your installed agent or application. [VALIDATION.md](VALIDATION.md) separates observed tests from untested model behavior.
+**Full candidate update: shared engineering standards and version-aware rules.** Based on 2.7.0-rc.1. The same seven local skills; no new external specialist. Live Claude/Codex behaviour and host action enforcement have not been validated here.
 
-## New: current state without losing history
+## The missing prerequisite is now explicit
 
-The current checkpoint now separates **approval**, **implementation** and **verification/owner acceptance**. A compact revision log records what changed, why and who approved it, inside existing PLAN/DECISIONS. Progress, test retries and account switches update the checkpoint, not the plan revision. Historical baselines and saved reviews are labelled, not rewritten as if they were current.
+`/workflow` checks applicable shared/project rules before substantive planning, task scaffolding, application edits, output-producing tests/builds and delegated writes—even when nobody has run `/rule-maker`.
 
-Apply this to new tasks and minimally to existing tasks actually resumed. Closed records, existing paths, task IDs, heading links, phase/review aliases and legacy STATUS.md layouts stay intact. No bulk migration or additional revision/status database is included. [UPGRADE.md](UPGRADE.md) explains the limited project-policy merge.
-
-The optional [task-overview example](skills/codebase-map/examples/task-overview.html) shows dated current state and expandable revision history around the same local flowchart. It is synthetic and creates no application approval. Ordinary status requests still return in chat; no new HTML on every checkpoint. Existing schema-2 JSON needs no new fields; historical HTML stays unchanged.
-
-## Global test-output rules retained
-
-One policy now covers ordinary testing/build/device prompts as well as `/workflow`: stable task output parents, selective evidence, reuse of tools, and safe cleanup of only the current work's eligible scratch. No new skill, external dependency or blanket cleanup. Plans, approved flowcharts, reference images and protected tool outputs stay intact.
-
-Read [UPGRADE.md](UPGRADE.md) to preview/apply global activation for Claude and Codex. This is required for all-project coverage; merely extracting the ZIP or editing one project's AGENTS.md is not enough. The helper never scans or deletes `.artifacts`. Existing producer scripts may still need separate approved retention work.
-
-## Existing workflow capabilities retained
-
-The four independent local utilities added in 2.4.0 remain: `task-status`, `resume-task`, `workflow-doctor` and `plan-review`. `codebase-map` also has an explain mode. They do not replace `/workflow`; they provide read-only/status/recovery/review jobs without forcing a full implementation workflow.
-
-
-| Improvement | What the agent must now do |
+| Situation | Required response |
 |---|---|
-| Proactive grilling | Use Matt's grilling to look for unstated decisions in every new substantive goal or material change, even when the prompt looks complete. Reuse sourced answers; no fixed question quota or repeated interview for an unchanged approved task. |
-| Existing work | Search current/named/related task records before creating a folder. Keep a clear continuation in the same folder through revisions; ask about ambiguous matches, completed work or ownership. |
-| Clear language | Explain concrete behavior and consequences before technical details in questions, plans, reports and completion messages. Keep exact evidence accessible. |
-| No-slop review | Review unnecessary helpers, silent coercion, repetitive comments/docs and unsupported claims against specific examples, not a vague label. |
-| Visual protection | Keep the approved flowchart local and unchanged. Compare stable reference screenshots; never automatically replace a failing baseline. |
-| Actual-agent tests | Decision, task-reuse and artifact cases compare the supplied 2.5.0 with this version. Their results remain NOT_RUN until a real host run is observed. |
+| Existing rules actually cover this scope | Continue; no rule-maker marker or migration needed. |
+| Project rules are missing/empty/inadequate | Stop and offer minimal setup, a specific limited exception, read-only inspection or stop. |
+| Unreadable indispensable rules, unknown trust/identity/authority or unsafe conflict | Block affected work; a generic "continue" does not waive unknown constraints. |
+| User approves setup | Prepare/apply only the exact approved setup scope; no application implementation. |
+| User grants a bounded known-gap exception | Keep remaining safeguards and normal task approval; record scope and expiry in the existing checkpoint. |
+| Rules/scope/host/worktree change | Recheck affected inputs, not every file in the codebase. |
 
-Matt's research, diagnosing-bugs, tdd, code-review, grilling and other established specialists remain separately installed. All 27 catalogue entries are retained; the existing proactive grilling trigger/adapter is preserved. The local flowchart needs no external diagram-design skill. Optional skill-creator and webapp-testing guidance is available only for approved maintenance/browser work; neither becomes a dependency.
+**Readiness, setup approval, implementation approval, passing tests and enforced permissions are separate claims.** A Markdown rule cannot guarantee obedience; neither can a checksum authenticate human consent. Unknown prerequisites default to a pause, not an assumed pass.
 
-## Workflow behavior
+## Shared rules without project copies
 
-```text
-Find the right task → inspect current code → uncover missing decisions with grilling
-→ prepare PLAN + TODO + acceptance → show the local flowchart review
-→ STOP for approval → implement within scope → verify and leave a checkpoint
-```
+General guidance lives in `skills/rule-maker/rules/`: core, React, TypeScript, Vite, Unity, Three.js, PixiJS, PHP, Laravel, actual-Rust and design-review principles. ENGINEERING.md selects data-contracts, lifetimes, reliability, testing, security, performance and compatibility modules only when relevant. VERSIONS.md separates declared, locked and runtime versions; it does not demand upgrades. The framework references apply to the actual installed versions; they never auto-upgrade dependencies. The design module does not prescribe colours/fonts or replace the approved local flowchart style.
 
-The HTML is generated after the task list is written, not executed. It shows what the agent understood, current/proposed behavior, changes, cleanup, exclusions and completion checks. Opening it, answering questions or liking its appearance does not authorize implementation. The user's response approves the identified revision. Corrections update records and diagram together.
+Global Claude/Codex instructions reference this one installed library. Ordinary requests and new folders therefore receive the readiness instruction without needing a slash command. Project files contain only local agreements, commands, ownership and exceptions. A rule update applies to future reads; no automatic bulk changes to application code, old task records or project rulebooks.
 
-A new date, session or slash command is not a new task folder. A task match is also not approval of a new requirement: keep the folder and revise the affected decisions/scope. A complete request can need zero extra questions after the decision check. Important unanswered choices still block dependent work.
+See [upgrade instructions](UPGRADE.md) for the preview-first reference helper. The helper installs no hooks, permissions changes or updater. Stable paths and actual host/profile loading must be verified. Other machines and containers need their own installation; no local change silently updates them.
 
-Substantive features, behavioral fixes and architecture changes retain the visual gate. Lightweight low-risk edits, explanations, PDF/docs-only and visual-only requests keep proportionate routes. Existing approval is reused after checking actual files. No automatic installs, staging, commits, pushes, uploads or deployment.
+## What this update adds
 
-For a short installation handoff, start with [UPGRADE.md](UPGRADE.md).
+General rules remain centrally maintained in the skill, not copied into every repository. Required safety/correctness rules are distinguished from design defaults; no rigid zero-nesting, function-length or comment-count mandate. Source/API docs explain the end-state while task records retain the history.
 
-## Upgrade checklist — important for plain prompts
+The optional read-only `skills/rule-maker/scripts/version_facts.py --root /absolute/project --scope src --scope server/app` reports static declarations/locks without executing project code or writing artifacts. PHP platform emulation is not a runtime version; npm/pnpm/yarn/Composer formats are not interchangeable. Unsupported resolution remains explicit. The helper is not a solver, compatibility certification or readiness approval.
 
-**Install all six local skills and merge the project routing block once.** Updating a ZIP alone cannot ensure an ordinary prompt enters the workflow.
+This is a complete replacement package, not an rc.1 overlay. PHP/Laravel modules are now included. Rust advice runs only for actual Rust work; useful ownership/testing principles remain language-neutral in the shared topics. Existing code is not rewritten automatically.
 
-1. Extract to a separate candidate folder, preserving your previous version and `.git`/unrelated work. For Claude plugin use the root containing `.claude-plugin/plugin.json`; all six skills are registered there. For direct Codex/Claude installs copy the **complete** six folders under `skills/` into the appropriate skill root. Do not retain duplicate active copies.
-2. **Update, do not duplicate, your existing routing block** so ordinary prompts use the new task-selection and proactive-grilling rules. Follow [SETUP.md](skills/workflow/SETUP.md), including the small [project-routing template](skills/workflow/templates/PROJECT-ROUTING.md). Merge it into existing applicable host instructions as an approved setup change; do not replace your AGENTS/CLAUDE files. Verify in a fresh session that all six local skills actually load.
-3. Keep Matt Pocock's collection separately installed and verified. Existing [specialist routes](skills/workflow/SPECIALISTS.md) remain explicit, including `grilling`. The read-only checker inventories Matt’s historically recorded 27 names/11 reusable routes; disk presence does not prove host availability or invocation. This ZIP neither bundles nor silently installs upstream skills.
-
-4. **No extra skill installation is required by this update.** Keep your reviewed Matt collection and its approved fingerprints. Update all six complete local skill folders while preserving unrelated custom files. Old DIAGRAM-DESIGN.md references now resolve to a local compatibility pointer; FLOWCHART-DESIGN.md remains authoritative. Do not uninstall unrelated external skills automatically.
-5. Existing 2.5.0 global artifact activation remains valid; new setups use the preview/apply/check commands in [SETUP.md](skills/workflow/SETUP.md). Keep project-specific rules in their project, not in the global files.
-6. No report-schema migration is needed from 2.2.1; the same schema-2 JSON and approved assets are retained. Older schema-1 inputs use the existing [migration guide](skills/codebase-map/REPORT.md). Keep previously reviewed HTML. Complete the new [live-host pilot](tests/behavioral/README.md) before team-wide reliance on the changed interviewing behavior.
-
-## Local commands
-
-Claude plugin:
+## Commands
 
 ```text
-/workflow-axa:workflow <feature or fix request>
-/workflow-axa:codebase-map current <feature or subsystem>
-/workflow-axa:codebase-map proposed <task folder or supplied design>
-/workflow-axa:codebase-map compare <task folder>
-/workflow-axa:codebase-map explain <feature or subsystem>
-/workflow-axa:task-status <task or topic>
-/workflow-axa:resume-task <task folder>
+/workflow-axa:workflow <goal>
+/workflow-axa:rule-maker audit
+/workflow-axa:rule-maker setup
+/workflow-axa:rule-maker update
+/workflow-axa:task-status <task>
+/workflow-axa:resume-task <task>
 /workflow-axa:workflow-doctor
-/workflow-axa:plan-review <task folder>
+/workflow-axa:plan-review <task>
+/workflow-axa:codebase-map explain <feature>
+/workflow-axa:codebase-map current|proposed|compare <scope>
 ```
 
-Codex: `$workflow` and `$codebase-map`. Standalone Claude skills: `/workflow` and `/codebase-map`. Explicit commands remain available even after ordinary-prompt routing is configured. A map-only request never starts implementation or Matt's architecture-improvement workflow.
+Use the host's actually registered names. Standalone Claude uses `/workflow` and `/rule-maker`; Codex uses `$workflow` and `$rule-maker`. Do not keep duplicate active copies.
 
-The viewer is local HTML/SVG with native-size scrolling, view selection, zoom/Fit, evidence links and editable JSON source, not a collaborative Miro board. The renderer uses Python 3.10+ standard library; the bundled FLOWCHART-DESIGN.md supplies the approved visual-design procedure. Reports use no CDN, server, font download or external upload. [Open the bundled synthetic example](skills/codebase-map/examples/review.html). [Renderer commands and input contract](skills/codebase-map/REPORT.md).
+The workflow remains: **check rules → find/reuse task → inspect code → grill missing decisions → PLAN/TODO and local flowchart → user approval → implement → verify**. `rule-maker` is a setup/maintenance procedure, not a mandatory repeated interview on every task. Read-only explanations/status need no artificial setup project. Setup bootstrap must not recurse into itself.
 
-## Test before pushing
+## Preserved behaviour
 
-From the extracted plugin root:
+All Matt catalogue entries and existing specialist routes remain, including grilling, research, debugging, TDD, domain modelling and code review. `codebase-design` receives actual project constraints; its suggestions cannot override approved ownership or silently create new architecture.
 
-```powershell
+Local flowchart guide, renderer, CSS/JS, examples and historic reviews remain unchanged. The existing artifact policy and installer remain independent and unchanged. Revision/history support remains forward-only; no folder renaming or schema migration. Existing valid approvals are reused after reconciliation.
+
+## Validation and limitations
+
+Run from the package root:
+
+```bash
 python -X utf8 tools/validate.py
-python -X utf8 -m unittest discover -s tests -p "test_*.py" -v
-python -X utf8 tools/create_fixture.py --output "C:\Dev\workflow-sandbox" --scenario clean
-claude plugin validate "C:\Dev\workflow-axa-candidate" --strict
-cd "C:\Dev\workflow-sandbox"
-claude --plugin-dir "C:\Dev\workflow-axa-candidate"
+python -X utf8 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Substitute real paths and check installed CLI help when needed. Python/Git fixture tests create one local baseline commit only in a **new synthetic repository**, not in your project; they never create a remote. The browser smoke test is separate and optional, using already installed Playwright/Chromium. [Testing guide](tests/README.md). [Visual comparisons](tests/VISUAL-REGRESSION.md) use optional installed Playwright/Pillow, not new application dependencies.
+[Validation results](VALIDATION.md) distinguish observed mechanical tests from authored live-host scenarios. [Rules scenario matrix](tests/behavioral/RULES-READINESS.md) and [engineering cases](tests/behavioral/engineering-rules.json) covers missing/partial/legacy/conflicting inputs, bootstrap, exceptions, scope changes, recovery, trust and unsupported cases. No enumeration claims every possible future behaviour is solved.
 
-Test a **plain request with no skill name**, then inspect the trace: workflow loaded, current-code evidence read, no expanded features, visual report shown, implementation paused. Reject/correct the plan, then approve the revised view. Test hard interruption and fresh-agent continuation. Also test explicit invocation and general-question/diagram-only negative triggers. [Behavioral scenarios](tests/SCENARIOS.md) and the [new evaluator-only cases](tests/behavioral/README.md) are authored test cases, not evidence that model behavior has passed. Keep expected answers outside the agent workspace.
+The read-only `skills/rule-maker/scripts/readiness.py` inventories selected inputs and validates declared coverage/freshness. It never claims file presence proves adequacy. It is not a sandbox, approval authenticator, automatic code-quality proof or host tool-call firewall. Unsupported/malformed states block affected changes under the protocol. Project scripts that generate artifacts or enforce tests keep their existing requirements.
 
-## Records and retained behavior
+Before team rollout, pilot this candidate in your actual Claude/Codex environments using ordinary requests, missing rules, unchanged resumption and delegated work. Revert to the known-good package if the pilot fails; no files in your computer were changed by generating this archive.
 
-`PLAN.md` owns goal/checkpoint/approval; `TODO.md` owns tasks; `FINDINGS.md` owns evidence; `DECISIONS.md` owns material choices. HTML/JSON are revisioned views of those records, not competing specifications. Documentation precedes substantial work and each work unit is checkpointed. Resumption reconciles current files, source drift, approval and capabilities; a new machine needs uncommitted changes transferred through an authorized method as well as the docs.
-
-Question batching, user-owned decision boundaries, optional subagent fallback, maintainability rules, scoped replacement cleanup, task-attributable review and PDF language approval reuse are retained. The workflow does not equate matching hashes, green structural tests or pretty diagrams with genuine understanding or authorization.
-
-After the local host pilot, a maintainer may publish/tag through the team's authorized process. This archive is not installed, published, tagged or pushed. [Changes](CHANGELOG.md) · [design/source notes](docs/DESIGN.md) · [prompt examples](skills/workflow/CHATGPT-PROMPTS.md).
+[Setup detail](skills/rule-maker/SETUP.md) · [Existing testing guide](tests/README.md) · [Changelog](CHANGELOG.md) · [Local flowchart example](skills/codebase-map/examples/review.html)

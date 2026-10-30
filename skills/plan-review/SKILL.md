@@ -15,3 +15,7 @@ Review an existing workflow plan before the user approves implementation. Do not
 6. Return PASS / ISSUE / QUESTION / NOT VERIFIED findings with concrete evidence and a minimal recommendation. Do not praise generally, invent question quotas, create another plan, or approve on the user's behalf.
 
 For planned tests/builds, use the active workflow ARTIFACTS.md/global policy to check the output location, concurrency, necessary evidence and cleanup condition. A proposed retention change must protect tool-owned/live outputs. Review in chat; do not create another plan, screenshot set or cleanup report without a request.
+
+Apply the installed workflow RULES.md readiness gate. Read-only review may identify gaps, but do not label a plan approval-ready while required rules are missing/conflicting or a scoped exception is unresolved. Pass applicable rules to `codebase-design`; it does not override project decisions or waive setup. No setup marker is required for adequate legacy rules.
+
+For code plans, select the installed rule-maker's ENGINEERING.md guidance and applicable version context. Challenge invalid state combinations, unowned lifetimes, late results, unsafe retry/permission boundaries, unmeasured optimisation claims and unsupported compatibility assumptions where relevant. Require meaningful tests, not an implementation-mirroring assertion. No mandatory redesign or extra report.

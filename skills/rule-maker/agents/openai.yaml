@@ -1,0 +1,3 @@
+interface:
+  display_name: "Rule Maker"
+  short_description: "Set up shared and project rules without silently changing application code"

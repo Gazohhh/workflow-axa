@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -34,6 +35,17 @@ REQUIRED = (
     "skills/task-status/SKILL.md", "skills/task-status/agents/openai.yaml",
     "skills/resume-task/SKILL.md", "skills/resume-task/agents/openai.yaml",
     "skills/workflow-doctor/SKILL.md", "skills/workflow-doctor/agents/openai.yaml",
+    "skills/rule-maker/SKILL.md", "skills/rule-maker/agents/openai.yaml",
+    "skills/rule-maker/rules/START.md", "skills/rule-maker/rules/CORE.md",
+    "skills/rule-maker/rules/READINESS.md", "skills/rule-maker/SETUP.md",
+    "skills/rule-maker/scripts/activate_rules.py", "skills/rule-maker/scripts/readiness.py",
+    "skills/workflow/RULES.md", "skills/rule-maker/scripts/version_facts.py",
+    "skills/rule-maker/rules/ENGINEERING.md", "skills/rule-maker/rules/VERSIONS.md",
+    "skills/rule-maker/rules/php.md", "skills/rule-maker/rules/laravel.md", "skills/rule-maker/rules/rust.md",
+    "skills/rule-maker/rules/data-contracts.md", "skills/rule-maker/rules/lifetimes.md",
+    "skills/rule-maker/rules/reliability.md", "skills/rule-maker/rules/testing.md",
+    "skills/rule-maker/rules/security.md", "skills/rule-maker/rules/performance.md", "skills/rule-maker/rules/compatibility.md",
+    "tests/test_version_facts.py", "tests/test_engineering_rules.py", "tests/behavioral/engineering-rules.json",
     "skills/plan-review/SKILL.md", "skills/plan-review/agents/openai.yaml",
 )
 
@@ -58,9 +70,9 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Plugin version must use the package's semantic-version format.")
         elif f"## {version} —" not in (root / "CHANGELOG.md").read_text(encoding="utf-8"):
             errors.append("Plugin version has no matching changelog entry.")
-        expected_registered = ["./skills/workflow", "./skills/codebase-map", "./skills/task-status", "./skills/resume-task", "./skills/workflow-doctor", "./skills/plan-review"]
+        expected_registered = ["./skills/workflow", "./skills/codebase-map", "./skills/task-status", "./skills/resume-task", "./skills/workflow-doctor", "./skills/plan-review", "./skills/rule-maker"]
         if plugin.get("skills") != expected_registered:
-            errors.append("Register the six workflow-axa skills exactly once in the approved order.")
+            errors.append("Register the seven workflow-axa skills exactly once in the approved order.")
         entries = market.get("plugins", [])
         if len(entries) != 1 or entries[0].get("name") != "workflow-axa" or entries[0].get("source") != "./":
             errors.append("Marketplace must point to this one local plugin.")
@@ -87,11 +99,32 @@ def validate_package(root: Path) -> list[str]:
     except (ValueError, TypeError, AttributeError, KeyError, OSError) as exc:
         errors.append(f"Specialist catalogue error: {exc}")
 
-    registered_names = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review")
+    try:
+        library = root / "skills/rule-maker/rules"
+        rules = json.loads((library / "version.json").read_text(encoding="utf-8"))
+        names = rules.get("files", [])
+        actual = {p.name for p in library.glob("*.md")}
+        if (rules.get("schema_version") != 1 or not isinstance(names, list)
+                or any(not isinstance(name, str) or Path(name).name != name for name in names)
+                or len(names) != len(set(names)) or set(names) != actual):
+            errors.append("Shared rules manifest must list each bundled Markdown module exactly once.")
+        elif rules.get("package_version") != plugin.get("version"):
+            errors.append("Shared rules package version must match the plugin.")
+        elif not isinstance(rules.get("sha256"), dict) or set(rules["sha256"]) != actual:
+            errors.append("Shared rules hash inventory must match every bundled module.")
+        else:
+            for name in names:
+                source = library / name
+                if source.is_symlink() or hashlib.sha256(source.read_bytes()).hexdigest() != rules["sha256"][name]:
+                    errors.append(f"Shared rules fingerprint mismatch: {name}")
+    except (OSError, ValueError, TypeError, AttributeError) as exc:
+        errors.append(f"Shared rules manifest error: {exc}")
+
+    registered_names = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker")
     expected_skills = {root / f"skills/{name}/SKILL.md" for name in registered_names}
     if set((root / "skills").rglob("SKILL.md")) != expected_skills:
-        errors.append("Exactly the six registered workflow-axa SKILL.md files are required.")
-    budgets = {"workflow": 1250, "codebase-map": 850, "task-status": 450, "resume-task": 500, "workflow-doctor": 450, "plan-review": 550}
+        errors.append("Exactly the seven registered workflow-axa SKILL.md files are required.")
+    budgets = {"workflow": 1250, "codebase-map": 850, "task-status": 450, "resume-task": 500, "workflow-doctor": 450, "plan-review": 550, "rule-maker": 850}
     for name in registered_names:
         budget = budgets[name]
         core = (root / f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
@@ -118,7 +151,7 @@ def validate_package(root: Path) -> list[str]:
             except (ValueError, AttributeError) as exc:
                 errors.append(f"{name}: invalid OpenAI string: {exc}")
 
-    skill_roots = [root / f"skills/{name}" for name in ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review")]
+    skill_roots = [root / f"skills/{name}" for name in ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker")]
     for path in sorted(root.rglob("*.md")):
         if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
@@ -151,7 +184,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
-    print(f"PASS: package structure, manifest consistency, minimal metadata, six local skills, relative links, core budget ({words} workflow words).")
+    print(f"PASS: package structure, manifest consistency, minimal metadata, seven local skills, relative links, core budget ({words} workflow words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
     return 0
 

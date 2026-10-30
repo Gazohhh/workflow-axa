@@ -202,3 +202,7 @@ Default destinations: `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. CLAUDE_CON
 Claude's block imports the policy; Codex's instructs the agent to read it before output-producing work. Verify actual loading in fresh sessions, not merely checker success. Each machine/account environment and each teammate needs its own setup. The policy grants no access that the host otherwise denies; no permission changes or hooks are installed. Project protections remain effective, and contradictions require clarification.
 
 References checked 26 October 2026: [Claude instruction scopes/imports](https://code.claude.com/docs/en/memory), [Codex global instructions and overrides](https://developers.openai.com/codex/guides/agents-md/). These support loading locations, not guaranteed model obedience or automatic retention by project scripts.
+
+## Shared rules and missing project setup (2.7 candidate)
+
+Install the seventh local skill, `rule-maker`, with the existing six. Its rules are referenced centrally, not copied into repositories. Run its `scripts/activate_rules.py` preview/apply/check from the final stable installation after approval. Preserve existing artifact activation. The helper changes only managed global reference sections; no automatic hooks, permissions changes or remote updater. New/missing projects trigger readiness even without a setup command. Test the actual installed host/profile; package checks are not live enforcement proof.

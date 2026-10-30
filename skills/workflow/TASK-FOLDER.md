@@ -179,3 +179,7 @@ Presented/approved HTML and JSON are immutable snapshots by default; an old `awa
 ## Architecture decisions
 
 Keep task progress in task records. An ADR preserves an important decision, its context and consequences. For a material reversal, create a linked superseding ADR within authorised scope, stating whether it replaces all or only part of the earlier decision. Preserve earlier reasoning; labelled factual corrections/clarifications are not silent reversals. Proposed ADRs are not accepted just because a date passed. Keep established reference/runbook paths; link rather than copy them into each task.
+
+## Rules checkpoint (forward-only)
+
+Before creating records use RULES.md. Once an existing or authorised task record is selected, keep one short readiness/source/scope note in its current checkpoint; a known exception includes the actual response, omissions, allowed work and expiry. No extra RULES-STATUS.md or new task per check. Legacy tasks need no setup marker. Reconcile affected inputs on resume; do not replay valid consent or promote historical exceptions to blanket authority.

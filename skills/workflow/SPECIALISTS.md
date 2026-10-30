@@ -133,3 +133,7 @@ The visual design procedure, assets and renderer are local to `codebase-map`. It
 ## Artifact contract for all routes
 
 Before delegating output-producing work, use [ARTIFACTS.md](ARTIFACTS.md). Pass the exact existing output parent, allowed writes, distinct active-run lanes and retained/protected paths. Return concise results to the owner; do not copy build trees or provision tools per call. Required tests/captures are not skipped to reduce storage. Each worker may clean only its own eligible scratch; one worker cannot prune another's run. Tool-owned destinations and project protections stay intact. This adds output boundaries without changing Matt's specialist methods or installation.
+
+## Applicable rules are part of every handoff
+
+Before specialist design, implementation or write delegation, apply RULES.md and pass effective shared modules, scoped project constraints, current rule version and any exact authorised exception. `codebase-design` examines the smallest compatible design; it cannot silently replace project vocabulary, ownership, interfaces or policy with its preferred pattern. A read-only audit may report a rule gap; approval-ready plans and dependent writes may not bypass it. Keep all existing Matt routes and invocation requirements.

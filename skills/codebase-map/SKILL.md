@@ -5,15 +5,15 @@ description: "Create an evidence-linked local flowchart or codebase map when the
 
 # Codebase map
 
-Create offline HTML/SVG with an actual flowchart as the primary view. Do not replace it with summary cards, UI mockups or generic research/plan/build boxes. A local report is not an editable Miro board. Never call workflow recursively.
+Create offline HTML/SVG with an actual flowchart as the primary view. Do not replace it with summary cards, UI mockups or generic research/plan/build boxes. Never call workflow recursively.
 
 Write for a reader new to the project: behavior and consequences first, exact references underneath. Show risks, exclusions and unresolved choices; retain technical precision.
 
 ## 1. Establish the view and current evidence
 
-Read project rules, repository/worktree and local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
+Apply workflow rules readiness: gaps permit read-only inspection or authorised setup drafts, not an approval-ready implementation report. Read project rules, worktree and local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
 
-Choose **explain** when the user wants a no-assumed-context walkthrough of how a feature works today; **current** for a concise current-state map, **proposed** for a supplied/requested future design, **compare** for an implementation review. In explain mode, lead with a plain-language story of the real user/system flow, then the flowchart, then exact files/symbols/evidence; do not create a plan or propose improvements unless asked. In compare mode the proposed feature flow opens first; current behavior and an aligned change comparison remain available. For new features show the verified integration point, not a fictional baseline.
+Choose **explain** when the user wants a no-assumed-context walkthrough of how a feature works today; **current** for a concise current-state map, **proposed** for a supplied/requested future design, **compare** for an implementation review. Explain mode shows the real flow, then exact evidence; do not create a plan or improvements unless asked. In compare mode the proposed feature flow opens first; current behavior and an aligned change comparison remain available. For new features show the verified integration point, not a fictional baseline.
 
 Identify and reuse the current/named task and its requirements, answers, PLAN, TODO, FINDINGS and decisions. If a likely existing record is ambiguous, ask before creating another artifact location; a new command is not a new task. Read the selected plan/review identity exactly. Distinguish the recorded baseline, approved scope, implementation and acceptance; do not infer authority from a pending badge in a historical snapshot. No new refactor candidates or product features merely to enrich the map. Inspection needs no task scaffold.
 

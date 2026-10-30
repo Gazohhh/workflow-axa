@@ -1,6 +1,6 @@
 {
   "name": "workflow-axa",
-  "version": "2.6.0",
+  "version": "2.7.0-rc.2",
   "description": "Code-grounded workflow with proactive grilling, anti-slop review, task recovery, visual approval and independent workflow utilities.",
   "author": {
     "name": "Gazohhh",
@@ -22,6 +22,7 @@
     "./skills/task-status",
     "./skills/resume-task",
     "./skills/workflow-doctor",
-    "./skills/plan-review"
+    "./skills/plan-review",
+    "./skills/rule-maker"
   ]
 }

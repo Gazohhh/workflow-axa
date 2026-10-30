@@ -9,7 +9,7 @@
     {
       "name": "workflow-axa",
       "source": "./",
-      "description": "One implementation workflow plus local codebase-map, task-status, resume-task, workflow-doctor and plan-review utilities.",
+      "description": "Evidence-based workflow with local rule-maker, readiness gates, task utilities and visual approval.",
       "category": "engineering",
       "keywords": [
         "workflow",

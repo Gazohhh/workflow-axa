@@ -33,3 +33,7 @@ Check that requirements, selected decisions, TODOs and proposed flow describe th
 Refresh affected evidence when relevant files change, a task resumes, a working tree changes or contradictory findings appear. Inspect staged, unstaged and relevant untracked files; HEAD alone is insufficient. Reuse unchanged findings and approvals. A changed hash signals review, not automatically lost approval: classify expected in-scope progress versus a material scope/design change.
 
 A state summary and source references are auditable evidence, not a hard security control or proof of comprehensive understanding. Plain-prompt host tests must verify actual code reads and scope mapping before proposals.
+
+## Rules before proposed design
+
+Use RULES.md before substantial design. Do not confuse current code conventions with authorised project policy. Existing adequate guidance passes without rule-maker setup; missing, stale or contradictory guidance requires the readiness decision. Investigating the gap is read-only and does not authorise a proposed application architecture or new task scaffold.

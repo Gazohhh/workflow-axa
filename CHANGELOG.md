@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.7.0-rc.2 — 2026-10-30
+
+- Strengthen shared core semantics; add conditionally loaded data, lifetime, reliability, testing, security, performance and compatibility rules with examples/checks and primary-source leads.
+- Add PHP/Laravel and actual-Rust guidance; keep common principles separate from framework/version-specific mechanisms.
+- Add read-only static version facts for scoped JS/npm, Composer/Laravel and Unity; report unsupported formats and actual-runtime uncertainty rather than guessing compatibility.
+- Fingerprint Composer/Cargo/runtime marker and additional JS lock inputs in readiness. Old assessments must be refreshed; task histories and approval records do not migrate.
+- Connect selected engineering/version rules to existing planning, review and doctor routes. Keep the seven skills, Matt integrations, grilling, local viewer and artifact policy.
+- Shared library is 1.1.0; requires a complete package update. Global-reference helper is unchanged. No project rewrites, dependency installs/upgrades, automatic updater or host action blocker.
+- Candidate status retained: live Claude/Codex behaviour is not established by mechanical tests.
+
+## 2.7.0-rc.1 — 2026-10-29
+
+- Add mandatory rules-readiness before substantive planning/application work, even without prior rule-maker setup. Existing adequate rules are accepted; gaps stop for setup, bounded explicit exception, read-only work or stop.
+- Add one local rule-maker with centrally referenced core/framework standards; no per-project rulebook copies and no new external specialist.
+- Separate setup, rules readiness, task approval and enforcement. Cover bootstrap, stale/partial/conflicting rules, resumption, scope changes, delegated work, trust and unknown states.
+- Add preview/apply/check global reference activation preserving existing instructions and a read-only declared-assessment/freshness checker. No host hooks, silent updates, app rewrites or bulk migrations.
+- Retain local flowchart renderer/assets, artifact policy, all Matt entries and historical records. Candidate pending live host/model acceptance; no zero-drift guarantee.
+
+
 ## 2.6.0 — 2026-10-29
 
 - Build from the owner's supplied workflow-axa(1).zip (2.5.0), not an older generated copy. Preserve the six skills, Matt's integrations, proactive grilling, global artifact policy and original flowchart geometry.

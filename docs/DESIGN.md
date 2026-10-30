@@ -155,3 +155,14 @@ Adoption is forward-only and evidence-led. Existing paths, identifiers, heading 
 Schema 2 gains optional record context without changing graph layout. A task overview shows a dated sourced checkpoint and selected review history, never a live status claim or approval action. A retained pending review is not overwritten to reflect later approval. Standard report inputs and geometry still work unchanged. The fixed runtime/visual design is preserved; new prose sections are scoped separately.
 
 The artifact policy/deployment version is independent of the package version so a documentation improvement does not needlessly rewrite global instructions. Specialist catalogue entries and adapters are preserved. The restored legacy DIAGRAM-DESIGN.md path points to the bundled guide rather than reviving its retired external dependency.
+
+
+## Rules-readiness gate (2.7 candidate)
+
+The new local rule-maker stores shared standards and supports scoped project setup. Workflow checks readiness before planning/writes without requiring prior skill invocation. Existing adequate rules pass; a file/marker alone cannot. Setup, one-task exceptions, implementation approval and host enforcement are distinct. Read-only discovery and a narrowly authorised bootstrap avoid deadlock.
+
+Sources reviewed 2026-10-29: Claude instruction/hook documentation, Codex instruction/hook documentation, React Hook/effect rules and Vite typecheck guidance. The local rules SOURCES.md records URLs and limits. No auto-installed hooks or updates; no unsupported absolute guarantee. The prior artifact policy and local renderer remain unchanged.
+
+## Shared engineering guidance (2.7.0-rc.2)
+
+The local rule-maker library now has a compact core, an engineering selection table, framework references and version-selection guidance. Only the relevant topic modules load during work; these are references, not new independently competing skills. The read-only version collector reports facts and explicit gaps without executing the project or deciding readiness. Existing specialists receive selected rules and effective project/version context through the established workflow/review routes. General guidance stays central, project agreements stay local, and authoritative task history stays in its existing records.

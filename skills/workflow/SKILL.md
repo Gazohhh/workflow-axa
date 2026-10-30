@@ -5,15 +5,19 @@ description: "Use for new or existing repository features, fixes, refactors, res
 
 # Workflow
 
-Find the task → inspect current code → uncover missing decisions → prepare the plan and flowchart → get approval → implement → verify. Prior chats and installed instructions are not proof of current understanding.
+Check rules → find the task → inspect current code → uncover missing decisions → prepare the plan and flowchart → get approval → implement → verify. Prior chats are not current evidence.
 
-**Write for someone new to the project.** Explain what changes, why it matters and what decision is needed before technical details. Keep exact terms, paths and checks available underneath. Use [WRITING.md](WRITING.md) for questions, plans, reports and completion messages. Do not equate simpler language with less precise evidence.
+**Write for someone new to the project.** Use [WRITING.md](WRITING.md): concrete meaning before technical details, with exact evidence preserved.
+
+## 0. Check rules readiness
+
+Read [RULES.md](RULES.md) first, even if rule-maker never ran. Before substantive planning or writes, verify applicable shared/project rules. Missing coverage: STOP and offer setup, a bounded explicit exception, read-only inspection or stop. Valid existing rules need no setup. Unknown safety/authority conflicts block affected work. Rule readiness is not implementation approval. Recheck on scope, rule, host or ownership changes and resumption; pass the same limits to specialists/workers.
 
 ## 1. Establish location, mode and task
 
 Read applicable project instructions with the host's precedence. Inspect the actual root, branch/worktree, local changes and directory rules. State the location; preserve user edits. No policy-file changes without setup approval.
 
-Choose the smallest mode: **explain** is read-only; **research/plan/audit** does not authorize implementation; **implement** needs the steps below. A genuinely **lightweight edit** uses a short record and the user's exact, unambiguous low-risk request as authority. Behavior, architecture, dependencies, public interfaces, security or uncertain impact are not lightweight because few files change.
+Modes: **explain** is read-only; **research/plan/audit** does not authorize implementation; **implement** follows the gates below. A **lightweight edit** uses a short record and the exact unambiguous low-risk request as authority, not a rules-gate bypass. Behavior, architecture, dependencies, public interfaces, security or uncertain impact are not lightweight because few files change.
 
 Before creating any task folder, read [TASK-FOLDER.md](TASK-FOLDER.md). Search the established record location; inspect the current/named task and plausible related plans. Reuse a clearly identified task through revisions. Ask whether to extend or separate a plausible ambiguous match; resolve conflicting owners before writes. A new conversation, date or `/workflow` command is not a new task. Only create a folder when no applicable task exists or separation is explicitly chosen.
 

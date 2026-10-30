@@ -70,3 +70,11 @@ Apply [ARTIFACTS.md](ARTIFACTS.md). Check whether tests created redundant whole 
 Check the current summary against TODO and actual evidence; distinguish scope approval, performed implementation, verification and owner acceptance. Flag a current paragraph that still says “not implemented” when later evidence records implementation, without changing the historical proposal itself. Check revision/phase/review mappings and the recorded reason/authority for material changes. Removed/superseded work is not verified work. A historical pending review can legitimately coexist with later approval. Preserve its bytes.
 
 Update only the active task within scope; no closure-time bulk migration, renamed links, duplicate state files or generated report per checkpoint. If evidence is incomplete or contradictory, state the specific unknown and next safe action rather than manufacture a clean status.
+
+## Rules readiness and policy integrity
+
+Confirm the final scope still matches the applicable rules and any bounded exception. Check for new scoped files, dependency/host changes and unapproved policy weakening. Readiness is distinct from implementation authority, passing tests and safety enforcement. Unknown or missing prerequisites stop affected completion claims. Never let a self-authored readiness record count as independent proof of user consent.
+
+## Risk-specific engineering review
+
+Use the installed rule-maker ENGINEERING.md selection, not every rule on every task. Check relevant state/units/error boundaries, partial cleanup and stale results, bounded retries and duplicate effects, trusted authorisation and safe diagnostics, measured runtime cost, and supported version/data transitions. Tests must establish the agreed contract rather than repeat the implementation. Project-specific error, ownership, build and measurement rules still apply. No failure is resolved by hiding diagnostics, updating a baseline without authority, or introducing speculative infrastructure. Selected modules and sources inform the existing review; do not create another audit workflow or compliance file.

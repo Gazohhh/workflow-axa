@@ -29,7 +29,7 @@ class PackageTests(unittest.TestCase):
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly the six registered workflow-axa SKILL.md files are required.", validate_package(root))
+            self.assertIn("Exactly the seven registered workflow-axa SKILL.md files are required.", validate_package(root))
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -96,7 +96,7 @@ class PackageTests(unittest.TestCase):
 
     def test_registered_utility_skills_exist_and_are_bounded(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        self.assertEqual(plugin["version"], "2.6.0")
+        self.assertEqual(plugin["version"], "2.7.0-rc.2")
         for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
             self.assertIn(f"./skills/{name}", plugin["skills"])
             text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
@@ -113,6 +113,35 @@ class PackageTests(unittest.TestCase):
         self.assertIn("cold-reader check", workflow)
         self.assertIn("**explain**", map_skill)
         self.assertIn("do not create a plan", map_skill)
+
+    def test_modified_shared_module_fingerprint_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            with (root / "skills/rule-maker/rules/CORE.md").open("a") as stream:
+                stream.write("\nUnreviewed rule edit.\n")
+            self.assertTrue(any("fingerprint mismatch" in error for error in validate_package(root)))
+
+    def test_unlisted_shared_module_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            (root / "skills/rule-maker/rules/UNREVIEWED.md").write_text("Unreviewed extra module.")
+            self.assertTrue(any("each bundled Markdown" in error for error in validate_package(root)))
+
+    def test_duplicate_shared_manifest_entry_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            p = root / "skills/rule-maker/rules/version.json"
+            data = json.loads(p.read_text()); data["files"].append("CORE.md")
+            p.write_text(json.dumps(data))
+            self.assertTrue(any("each bundled Markdown" in error for error in validate_package(root)))
+
+    def test_mixed_rule_package_release_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            p = root / "skills/rule-maker/rules/version.json"
+            data = json.loads(p.read_text()); data["package_version"] = "99.0.0"
+            p.write_text(json.dumps(data))
+            self.assertTrue(any("package version must match" in error for error in validate_package(root)))
 
 
 if __name__ == "__main__":
