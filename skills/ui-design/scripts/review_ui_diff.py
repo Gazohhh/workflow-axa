@@ -17,6 +17,7 @@ STYLE_SUFFIXES = {".css", ".scss", ".sass", ".less", ".styl", ".uss"}
 VISUAL_SUFFIXES = {".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".avif", ".ttf", ".woff", ".woff2", ".otf", ".mat", ".shader", ".shadergraph", ".uxml", ".unity", ".prefab"}
 # These cues include legitimate APIs. Only the recorded task determines authority.
 PATTERNS = (
+    ("raw-markup-construction", r"innerHTML|outerHTML|insertAdjacentHTML|dangerouslySetInnerHTML|v-html|\[innerHTML\]"),
     ("inline-or-runtime-style", r"\bstyle\s*=|\.style\b|cssText\b|setProperty\s*\(|insertRule\s*\(|adoptedStyleSheets\b|CSSStyleSheet\b|setAttribute\s*\(\s*['\"]style['\"]"),
     ("style-injection-or-css-in-js", r"<\s*style\b|createElement\s*\(\s*['\"]style['\"]|\bstyled\s*[.(]|\b(?:css|keyframes)\s*`|styled-components|@emotion/|StyleSheet\.create|makeStyles\s*\("),
     ("classes-or-utility-composition", r"\b(?:className|class|classList)\s*(?:=|[.{:])|\b(?:clsx|classNames|twMerge|cva)\s*\("),

@@ -151,16 +151,16 @@ class ScreenFlowTests(unittest.TestCase):
         self.ready();self.ui['decisions'][0].update(status='open');self.ui['decisions'][0].pop('reason')
         with self.assertRaisesRegex(ValueError,'Resolve blocking'):self.render()
 
-    def test_explicit_functionality_only_with_deferred_design_is_valid(self):
+    def test_legacy_plain_mode_no_longer_authorises_new_application_report(self):
         self.ready()
-        self.assertIn('design remains unfinished',self.render())
+        with self.assertRaisesRegex(ValueError,'Strict kit-only'): self.render()
 
     def test_approved_kit_cannot_use_schematic_as_visual_proof(self):
         self.ready();self.ui['mode']='approved-kit'
         with self.assertRaisesRegex(ValueError,'actual component captures'):self.render()
 
     def test_source_backed_capture_can_be_rendered_for_approved_kit(self):
-        self.ready();self.ui['mode']='approved-kit';self.capture()
+        self.ready();self.data['state']='draft';self.ui['mode']='approved-kit';self.capture()
         html=self.render();self.assertIn('data:image/png;base64,',html)
         self.assertIn('img-src data:',html)
         self.assertIn('preserveAspectRatio="xMidYMin meet"',html)
@@ -260,7 +260,8 @@ class ScreenFlowTests(unittest.TestCase):
         self.assertNotIn('fetch(',html)
 
     def test_report_manifest_tracks_new_renderer_version(self):
-        self.assertIn('"tool_version": "2.7.0-rc.6"',self.render())
+        version=json.loads((ROOT/".claude-plugin/plugin.json").read_text())["version"]
+        self.assertIn('"tool_version": '+json.dumps(version),self.render())
 
 
 class InstallAuditExtraFiles(unittest.TestCase):
@@ -294,11 +295,11 @@ class ScreenFlowPolicyTests(unittest.TestCase):
         self.assertIn('not replace the report',text)
     def test_design_source_selection_is_not_filename_authority(self):
         text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
-        self.assertIn('confirm the specific source',text)
+        self.assertIn('exact component/pattern source',text)
         self.assertIn('same-task decision',text)
     def test_no_automatic_plain_html_fallback(self):
         text=(ROOT/'skills/ui-design/SKILL.md').read_text()
-        self.assertIn('neither a kit nor a plain preview is selected',text)
+        self.assertIn('No new plain-HTML controls',text)
     def test_old_report_records_are_present(self):
         p=ROOT/'docs/plans/2026-10-30-rules-audit-design-kit/review-r2.html'
         self.assertIn('R2-draft',p.read_text())

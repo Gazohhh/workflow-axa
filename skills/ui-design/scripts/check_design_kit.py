@@ -172,6 +172,11 @@ def inspect(root: Path, catalogue: str, selected=(), scope_values=()):
     reader = Reader(root)
     raw = reader.read(catalogue)
     data = json.loads(raw.decode("utf-8-sig"), object_pairs_hook=unique_object)
+    return inspect_data(reader, data, raw, selected, scope_values)
+
+
+def inspect_data(reader: Reader, data: dict, raw: bytes, selected=(), scope_values=()):
+    """Check a saved catalogue or a report's projection of an authoritative local record."""
     rows = validate(data)
     selection = list(dict.fromkeys(selected)) if selected else list(rows)
     if any(key not in rows for key in selection):

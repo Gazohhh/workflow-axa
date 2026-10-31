@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_version": "2.6.0",
-  "candidate_version": "2.7.0-rc.6",
+  "candidate_version": "2.7.0-rc.7",
   "format": "evaluator-only scenario matrix, not host execution proof",
   "cases": [
     {
@@ -48,7 +48,7 @@
       "id": "G06",
       "name": "Partial scope coverage",
       "preparation": "React instructions exist, Unity instructions absent.",
-      "prompt": "Change the React\u2013Unity bridge.",
+      "prompt": "Change the React–Unity bridge.",
       "expected": "Identify both scopes and resolve the actual Unity gap; no React-only green result.",
       "result": "NOT_RUN"
     },

@@ -96,7 +96,7 @@ class PackageTests(unittest.TestCase):
 
     def test_registered_utility_skills_exist_and_are_bounded(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        self.assertEqual(plugin["version"], "2.7.0-rc.6")
+        self.assertEqual(plugin["version"], json.loads((ROOT / "skills/rule-maker/rules/version.json").read_text())["package_version"])
         for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
             self.assertIn(f"./skills/{name}", plugin["skills"])
             text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")

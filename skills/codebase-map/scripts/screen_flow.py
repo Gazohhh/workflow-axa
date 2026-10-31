@@ -7,14 +7,27 @@ from __future__ import annotations
 
 import base64
 import html
+import importlib.util
 import struct
 import zlib
 from pathlib import Path
 
 MAX_CAPTURE = 2_000_000
 MAX_CAPTURE_TOTAL = 4_000_000
-MODES = {'unselected', 'functionality-only', 'approved-kit', 'design-authoring'}
+MODES = {'unselected', 'behaviour-only', 'blocked', 'functionality-only', 'approved-kit', 'design-authoring'}
 ELEMENTS = {'heading', 'text', 'checkbox', 'input', 'button', 'message'}
+
+
+def bindings_module():
+    spec = importlib.util.spec_from_file_location('workflow_kit_bindings', Path(__file__).with_name('kit_bindings.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def kit_records(ui, root, sources):
+    module = bindings_module()
+    return module.snapshot_records(module.resolve(ui, root, sources), sources)
 
 
 def png_bytes(path: Path) -> tuple[bytes, int, int]:
@@ -71,7 +84,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     if not isinstance(ui, dict):
         raise ValueError('ui_review must be an object')
     allowed = {'title','summary','kind','mode','authority','preview','acceptance','width','height',
-               'screens','transitions','decisions','open_first','limit'}
+               'screens','transitions','decisions','open_first','limit','kit_binding'}
     if set(ui) - allowed:
         raise ValueError('Unknown UI review fields; raw HTML/CSS/URLs are not supported')
     if any(g['id'] == 'ui-preview' for g in data['graphs']):
@@ -131,7 +144,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     geometry = []
     for key,s in screens.items():
         allowed_screen = {'id','title','description','state','x','y','width','height','representation',
-                          'content','capture','sources','requirements','evidence','tasks','decisions','markers'}
+                          'content','capture','sources','requirements','evidence','tasks','decisions','markers','elements','capture_context'}
         if set(s)-allowed_screen:
             raise ValueError('Unknown screen fields; executable markup/styles are prohibited')
         api.text(s.get('title'), 'screen.title', 48)
@@ -164,8 +177,17 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
             if len(markers) > 8:
                 raise ValueError('Use at most eight capture decision markers')
             for marker in markers:
-                if set(marker) != {'decision', 'position'} or marker['decision'] not in s['decisions']:
-                    raise ValueError('Capture marker must name a mapped decision')
+                if not isinstance(marker, dict):
+                    raise ValueError('Capture marker must be an object')
+                if set(marker) == {'decision', 'position'}:
+                    if marker['decision'] not in s['decisions']:
+                        raise ValueError('Capture marker must name a mapped decision')
+                elif set(marker) == {'element', 'position'}:
+                    elements = s.get('elements', [])
+                    if not isinstance(elements, list) or marker['element'] not in {e.get('id') for e in elements if isinstance(e, dict)}:
+                        raise ValueError('Capture marker must name a selected element')
+                else:
+                    raise ValueError('Capture marker needs a decision or element and position')
                 position = marker['position']
                 if (not isinstance(position, list) or len(position) != 2 or
                     any(type(n) not in (int, float) or not 0 <= n <= 1 for n in position)):
@@ -230,6 +252,12 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
             raise ValueError('Resolve blocking UI decisions before approval-ready output')
 
 
+    resolved = bindings_module().resolve(ui, root, sources)
+    if ui['kind']=='application' and (data['state'] in ('awaiting-approval','approved') or acceptance['status']=='accepted'):
+        if ui['mode'] != 'approved-kit' or resolved is None:
+            raise ValueError('Strict kit-only UI: approval-ready application screens need approved-kit binding and real selected captures; no plain-HTML/design-authoring fallback.')
+
+
 
 def screen_svg(screen: dict, root: Path, sources: dict, api, suffix: str) -> str:
     """A static screen view, reused verbatim in overview and enlarged details."""
@@ -250,8 +278,11 @@ def screen_svg(screen: dict, root: Path, sources: dict, api, suffix: str) -> str
         scale = min((width-16)/iw, (height-86)/ih)
         left, top = 8 + (width-16-iw*scale)/2, 56
         for marker in screen.get('markers', []):
-            dx,dy=marker['position'];mx=left+dx*iw*scale;my=top+dy*ih*scale;d=e(marker['decision'])
-            parts.append(f'<a href="#ui-decision-{d}" aria-label="Review decision {d}"><circle class="ui-marker" cx="{mx:g}" cy="{my:g}" r="13"/>'
+            dx,dy=marker['position'];mx=left+dx*iw*scale;my=top+dy*ih*scale
+            d=e(marker.get('decision', marker.get('element')))
+            target='ui-decision-'+d if 'decision' in marker else 'ui-element-'+e(screen['id'])+'-'+d
+            label = "Review decision " if "decision" in marker else "Inspect kit element "
+            parts.append(f'<a href="#{target}" aria-label="{label}{d}"><circle class="ui-marker" cx="{mx:g}" cy="{my:g}" r="13"/>'
                          f'<text class="ui-marker-text" x="{mx:g}" y="{my+4:g}" text-anchor="middle">{d}</text></a>')
     else:
         y=86
@@ -283,13 +314,15 @@ def screen_svg(screen: dict, root: Path, sources: dict, api, suffix: str) -> str
                 parts.append(f'<a href="#ui-decision-{d}" aria-label="Review decision {d}"><circle class="ui-marker" cx="{cx}" cy="{y-5}" r="13"/>'
                              f'<text class="ui-marker-text" x="{cx}" y="{y-1}" text-anchor="middle">{d}</text></a>')
             y+=48
-    caption='Captured reference' if screen['representation']=='capture' else 'Layout sketch · not a component capture'
+    caption=('Capture · selected kit references' if screen.get('elements') else 'Capture · kit provenance not established') if screen['representation']=='capture' else 'Layout sketch · not a component capture'
     parts.append(f'<text class="ui-footnote" x="20" y="{height-16}">{caption}</text></svg>')
     return ''.join(parts)
 
 
 def render(ui: dict, root: Path, sources: dict, api) -> str:
     e=html.escape
+    bindings = bindings_module()
+    resolved = bindings.resolve(ui, root, sources)
     w,h=ui['width'],ui['height']
     routes=[f'<svg class="ui-routes" width="{w}" height="{h}" viewBox="0 0 {w} {h}" aria-hidden="true">'
             '<defs><marker id="ui-flow-arrow" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto">'
@@ -314,6 +347,7 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
                          f'src="data:image/png;base64,{base64.b64encode(capture).decode("ascii")}"/>')
         details.append(f'<details id="{detail}" class="ui-screen-detail"><summary>{e(s["title"])} — screen and sources</summary>'
                        f'<p>{e(s["description"])}</p>{full_screen}'
+                       f'{bindings.selection_html(s, resolved, sources, api)}'
                        f'<p class="ui-evidence">State: {e(s["state"])}. Sources: {refs}. '
                        f'Requirements: {api.links(s["requirements"],"r")}. Tasks: {api.links(s["tasks"],"t")}.</p></details>')
     decisions=[]
@@ -328,11 +362,14 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
     illustration=('<p class="ui-notice"><strong>Illustrative UI example — outside this report’s implementation scope.</strong> '
                   'These are fictional screens to demonstrate the report format, not an approved project kit.</p>') if ui['kind']=='illustration' else ''
     authority=ui['authority'];preview=ui['preview']
+    legacy_note = ('<p class="ui-notice"><strong>Historical/draft UI mode — not current implementation authority.</strong> '
+                   'Strict kit reuse now prohibits agent-authored application HTML, CSS and inline styles. '
+                   'No plain-markup or design-authoring fallback is permitted.</p>') if ui['mode'] in {'functionality-only','design-authoring'} else ''
     source_note=f'{e(authority["summary"])} Reference: {api.links([authority["source"]],"s")}, {e(authority["locator"])}.'
     first=ui['screens'][0]['id']
     return (f'<figure class="panel ui-review" id="panel-ui-preview"><div class="figure-head"><h2>{e(ui["title"])}</h2>'
             '<span>screens · interaction · design</span></div>'
-            f'<p class="figure-description">{e(ui["summary"])}</p>{illustration}'
+            f'<p class="figure-description">{e(ui["summary"])}</p>{illustration}{legacy_note}'
             f'<div class="ui-authority"><p><strong>Design mode:</strong> {e(ui["mode"])} · {e(authority["status"])}.</p>'
             f'<p>{source_note}</p><p><strong>Preview:</strong> {e(preview["destination"])} — {e(preview["status"])}. '
             f'{e(preview["summary"])}</p><p><strong>Design acceptance:</strong> {e(ui["acceptance"]["status"])}. '

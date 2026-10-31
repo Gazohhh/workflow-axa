@@ -1,40 +1,28 @@
-# Workflow AXA — 2.7.0-rc.6
+# Workflow AXA — 2.7.0-rc.7
 
+Full replacement package: **eight skills**, shared version-aware rules, Matt's existing specialists, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
 
-## This update: keep the full report, add the screens
+## This update: reuse the real kit, never invent application markup/styles
 
-The uploaded rc.5 is the base. Its Windows integrity/home fixes and shared TypeScript rule are retained. [Audit findings](AUDIT-rc5.md) distinguish package evidence from the interrupted owner's still-pending runtime installation.
+Ordinary agent work may **not create, modify or inject application HTML/templates/JSX structure, CSS, inline styles or other invented presentation**. No plain-HTML fallback. No automatic styling exception from old design-authoring records. Approved component calls/data/event wiring are allowed through selected supported APIs and approved patterns; do not copy the component's DOM or modify its internals.
 
-The existing editorial report is not redesigned. An optional **UI screens** view shows connected state previews, meaningful design choices and sources within the same report. Actual approved-kit captures and explicit schematic proposals are distinct. Core report CSS/JS remain unchanged.
-
-Full samples: [R2 with the additive UI example](skills/codebase-map/examples/ui-review/review-r2.html) · [complete synthetic UI-feature report](skills/codebase-map/examples/ui-review/ui-task-review-r2.html). The original R2 remains unchanged in its task history. Open the HTML directly; no server or external assets are needed.
-
-[Upgrade](UPGRADE.md) · [Screen-flow contract](skills/codebase-map/UI-FLOW.md) · [Validation](VALIDATION.md). No new external skill or component library.
-
-
-Complete replacement package: **eight local skills**, the existing Matt specialist integrations, shared version-aware engineering rules, and local design-kit support. This candidate fixes gaps exposed by the two project rules audits without making their project-specific instructions identical.
-
-## What is new
-
-- **Full rules audit:** distinguish whole requested-scope review from readiness for one task. Check authority/memory conflicts, actual loading, framework coverage, technical claims, verification safety and rule placement; disclose coverage and unknowns rather than issue a blanket pass.
-- **Actual-installation check:** compare explicitly named skill copies with this trusted release, detect missing/changed/mixed files, and optionally check global activation. It writes nothing and cannot prove host selection or compliance.
-- **Framework coverage:** Angular, Ionic and Capacitor modules plus static version/configuration facts. React Compiler guidance distinguishes configuration from React major; Ionic page visibility differs from destruction. No upgrade is authorised.
-- **Operation boundaries:** inspect test prerequisites, build permissions and effective backend isolation; keep quiet-host requirements and report actual gate proof. Old memory cannot silently replace current approved project policy.
-- **Design kit:** local catalogue workflow, adaptable templates and an optional read-only source/approval-freshness checker. No new external design dependency, invented project theme or unauthorised UI-tool installation.
-
-## Design kit included — what it is and is not
-
-Use `ui-design kit-audit` to inventory **designated** components; `kit-setup` to propose and apply an approved catalogue setup; `kit-check` to review its authority and current sources. See [KIT.md](skills/ui-design/KIT.md). The included templates are **drafts**, not approved components. Real Cheflabels/Altinstar source components, colours and designer acceptance were not supplied and are not fabricated here.
-
-Keep one project-approved catalogue backed by real components/APIs, supported variants, states, style/token dependencies and page patterns. Reuse an existing UI-kit page/Storybook/project reference; JSON is optional. A candidate entry does not inherit approval from an existing kit. Component approval does not approve any page layout. New kit revisions require targeted reconciliation, not automatic redesign of old work.
-
-| UI mode | Permission |
+| Situation | Behaviour |
 |---|---|
-| **Functionality-only — default** | Preserve appearance; explicitly approved component reuse; agreed semantic markup in an authorised preview. No invented styling. |
-| **Approved-kit** | Use the designated components, variants and patterns within their approved coverage. Missing/stale coverage needs a decision. |
-| **Design-authoring** | Only specifically approved presentation work; no permanent styling unlock. |
+| Existing interface logic fix | Keep its markup/appearance intact; change only authorised behaviour. |
+| New UI with selected approved components and pattern | Reuse exactly those entries/variants/states; show actual captures and component references in the normal report before implementation approval. |
+| Missing, stale, inaccessible, deleted or unapproved component/layout | Stop affected integration and ask for the approved source or designer input. Continue only independent authorised work. |
+| No DESIGN.md | Look for an equivalent designated source; the filename is not mandatory and absence does not authorise improvisation. |
+| Ordinary prompt without /workflow | Same boundary when the global core is loaded. Verify actual host loading; installation alone is not proof. |
 
-CSS, inline styling, CSS-in-JS, arbitrary classes, visual props, themes and rendered/native/game visuals share this boundary. Required labels, keyboard/focus and functional feedback remain. **Behaviour, design acceptance and release readiness stay separate.** Backend work does not need a kit. The approved local flowchart renderer is preserved and is not an application design system.
+**The existing report remains styled.** Its approved local renderer is a narrow reporting exception, not permission to build application prototypes. Base report CSS/JS and UI asset files are unchanged. Inspect screen now lists each selected kit entry, variant/state, actual source/example, role and intended nonvisual changes. Real captures are distinct from source approval; hashes cannot authenticate consent or prove which code produced an image.
+
+## The project kit is real code, not another HTML mockup
+
+[Live-kit guide](skills/ui-design/LIVE-KIT.md): use the project's existing framework components and adjacent examples. Generate its current catalogue and technical references through existing tooling. Keep project instructions short: catalogue location, owner and project constraints. Do not manually maintain several copies of a component/style inventory.
+
+An optional **read-only local Storybook index inspector** reports selected example identities, missing sources and metadata changes. It does not install/run Storybook or discover every transitive import. [Kit workflow](skills/ui-design/KIT.md) supports audit/setup/check of existing sources. Actual Altinstar/Cheflabels kits are not supplied or invented by this package; connecting each real project's tooling is separately scoped work.
+
+Human acceptance stays recorded once. Component edits can refresh current previews after rebuild; they do not renew approval or rewrite historical review captures. Deleted sources cause affected selection checks to fail, not a guessed replacement.
 
 ## Entry points
 
@@ -50,23 +38,25 @@ CSS, inline styling, CSS-in-JS, arbitrary classes, visual props, themes and rend
 /workflow-axa:codebase-map explain|current|proposed|compare <scope>
 ```
 
-These are plugin names. Standalone host registrations differ. The main sequence remains **rules readiness -> find/reuse task -> current-code evidence -> grilling -> PLAN/TODO and flowchart -> approval -> implementation -> verification**. UI/kit work uses the same task and authority, not another implementation workflow. A rules setup or catalogue check does not approve application edits.
+Plugin syntax is shown; standalone names depend on the host. The main sequence is unchanged: **rules readiness → find/reuse task → inspect current code → grilling → plan/full report → owner approval → implementation → verification**. Kit setup or rule setup does not approve application changes. Backend work does not require a kit.
 
-## Install and verify the actual copy
+## Install and check
 
-Replace the complete plugin or all **eight complete skill folders**. Keep a stable installation path and one intended active route per host. See [UPGRADE.md](UPGRADE.md).
+Replace the complete plugin or all **eight complete skill folders** together, preserving separately installed Matt skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global
 python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
-python -X utf8 tools/validate.py
-python -X utf8 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-The first command checks only named/default disk inputs and references. Use repeatable `--candidate` arguments for other discovered copies. It does not delete duplicates, download updates, install hooks or prove which rules a running host loaded. An older global setup pointing only to ARTIFACTS.md is not enough for shared coding rules; use the existing activation helper's preview/apply procedure after review. Fresh Claude/Codex sessions and trace inspection remain necessary.
+These read-only checks do not repair settings or prove loading. Existing correct references remain valid when the install path stays fixed. For missing references, use the activation helper's preview/apply procedure after reviewing it. No host hook, auto-updater or tool sandbox is installed.
 
-## Preserved and limited
+[Upgrade guide](UPGRADE.md) · [Validation](VALIDATION.md) · [Strict reuse scenarios](tests/behavioral/STRICT-KIT.md) · [UI report contract](skills/codebase-map/UI-FLOW.md).
 
-Matt's 27 specialist entries/adapters, proactive grilling, task/revision history, local flowchart styling and artifact policy remain. No project application/rule files, memories, old evidence or approved designs are rewritten by installing this package. Project-specific contradictions need a scoped decision; templates do not migrate existing records.
+## Compatibility and limits
 
-[VALIDATION.md](VALIDATION.md) records observed tests separately from authored [live acceptance cases](tests/behavioral/RULES-AUDIT-KIT.md). This is a release candidate: live Claude/Codex compliance and native Windows installation remain unverified. Instructions and read-only helpers are not host-enforced security boundaries.
+Non-UI report behaviour is unchanged. Historical HTML and task files remain intact. Old UI draft/illustration inputs remain readable, but old permissive modes cannot generate a newly approval-ready application report; add real kit selections/capture provenance instead. JSON is optional as the authoritative kit format: existing Markdown catalogues can be projected inside the report input without another maintained file.
+
+Original rc.6 HTML samples remain as **historical schematic demonstrations, not the current permission policy or project-kit evidence**. See their example README. No replacement styled application sample is manufactured in this release.
+
+All package/test results concern observed tooling. Live Claude/Codex/T3 compliance and real project-kit execution are not established here. A model can still disobey instructions; no absolute guarantee is claimed. No application source, real kit, user profile, memory or project instructions were changed by creating this archive.

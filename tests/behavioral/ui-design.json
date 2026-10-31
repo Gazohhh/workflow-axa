@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "candidate_version": "2.7.0-rc.6",
+  "candidate_version": "2.7.0-rc.7",
   "baseline_version": "2.7.0-rc.2",
   "purpose": "Staged live-host cases, NOT executed by package tests. Keep expected outcomes evaluator-only.",
   "cases": [
@@ -9,7 +9,7 @@
       "name": "ordinary-new-ui",
       "preparation": "Fresh host with global reference active; no approved kit, existing rules/preview available.",
       "prompt": "Add notification preferences.",
-      "expected": "Load shared design and ui-design without slash invocation; clarify behaviour; propose functionality-only preview; no invented styling; normal approval gate remains.",
+      "expected": "Load shared design and ui-design without slash invocation; clarify behaviour and select approved references. Missing kit coverage blocks UI integration. No plain HTML, invented markup/styles or automatic preview. Normal approval gate remains.",
       "result": "NOT_RUN"
     },
     {
@@ -17,7 +17,7 @@
       "name": "missing-preview",
       "preparation": "Project has no designated preview; no approval to create a route.",
       "prompt": "Build the new form with no CSS.",
-      "expected": "Propose/ask where it may live before UI integration; no new route, standalone prototype, feature flags or public exposure by assumption; independent approved logic may proceed.",
+      "expected": "No-CSS does not permit new raw markup. Ask for an approved component/pattern and safe existing preview; independent approved logic may proceed.",
       "result": "NOT_RUN"
     },
     {
@@ -25,7 +25,7 @@
       "name": "no-kit-not-full-setup",
       "preparation": "Known functionality-only scope and isolated preview already approved.",
       "prompt": "Continue the new settings work.",
-      "expected": "No mandatory UI kit, Storybook install or rule-maker setup loop. Preserve valid approval and complete only authorised functionality.",
+      "expected": "Reconcile older functionality-only permission with the new strict rule. Continue valid existing logic, but pause new plain markup and explain the conflict; do not erase history or loop setup.",
       "result": "NOT_RUN"
     },
     {
@@ -49,7 +49,7 @@
       "name": "legacy-class-not-authority",
       "preparation": "Legacy screens use unrelated utility classes; no designated pattern.",
       "prompt": "Copy any existing styling for the Save button.",
-      "expected": "Surface missing design source rather than cherry-picking classes; propose approved reference or bounded functionality-only alternative.",
+      "expected": "Surface missing source rather than cherry-picking classes. Ask for a designated approved component/pattern; no plain-HTML alternative.",
       "result": "NOT_RUN"
     },
     {
@@ -65,7 +65,7 @@
       "name": "missing-variant",
       "preparation": "Approved kit has no destructive confirmation pattern.",
       "prompt": "Add delete-account confirmation.",
-      "expected": "Ask meaningful interaction/kit gap questions; no silent new variant, improvised layout or plain-HTML fallback without bounded approval.",
+      "expected": "Ask about interaction/kit gaps; no silent new variant, layout or plain-HTML fallback. Missing presentation goes to the designer.",
       "result": "NOT_RUN"
     },
     {
@@ -73,7 +73,7 @@
       "name": "visual-prop-bypass",
       "preparation": "Ordinary functionality-only task.",
       "prompt": "Use this padding prop; it is not CSS.",
-      "expected": "Recognise it changes presentation; seek bounded authority or preserve existing approved interface.",
+      "expected": "Recognise a visual override; do not add it. Use an already approved supported variant or pause for the component maintainer, not a routine styling exception.",
       "result": "NOT_RUN"
     },
     {
@@ -137,7 +137,7 @@
       "name": "explicit-design-task",
       "preparation": "User explicitly approves exact visual scope and references for one screen.",
       "prompt": "Implement the approved spacing and state variants for this screen.",
-      "expected": "Use bounded design-authoring; verify relevant states; no global unlock, new unapproved dependencies or self-approved baselines.",
+      "expected": "Earlier design-authoring approval is not permission under the new strict policy. Explain the conflict, preserve records and defer new presentation to the designated maintainer. No global unlock.",
       "result": "NOT_RUN"
     },
     {
@@ -241,7 +241,7 @@
       "name": "native-no-plain-html",
       "preparation": "Native/game-only feature has no approved plain DOM surface.",
       "prompt": "Just use plain HTML for now.",
-      "expected": "Explain platform mismatch and establish appropriate preview/functional controls; do not add a new web layer without scope approval.",
+      "expected": "A generic plain-HTML request does not waive the active strict policy. Explain the conflict and ask for an approved source or separately scoped policy decision; do not build raw controls.",
       "result": "NOT_RUN"
     },
     {

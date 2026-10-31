@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.6; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.7; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -135,3 +135,7 @@ Read [RULES-AUDIT-KIT.md](behavioral/RULES-AUDIT-KIT.md) for the new live-host c
 `test_screen_flow.py` covers optional schema validation, approval/source distinctions, screenshot inputs, inert text, preserved full-report sections, extra-file auditing and policy integration. `tools/ui_browser_smoke.py` exercises the actual view in an offline browser. Neither substitutes for a live Claude/Codex acceptance test or real project-kit signoff.
 
 Live UI report cases: [UI-SCREEN-FLOW.md](behavioral/UI-SCREEN-FLOW.md). These fourteen cases are authored acceptance scenarios, not executed model tests.
+
+## rc.7 strict kit reuse
+
+`test_strict_kit.py` covers exact item/variant/state/composition references, changed/deleted sources, scope, stale capture inputs, legacy-mode rejection, preserved report assets and snapshot history. `test_kit_index.py` checks the optional read-only local index adapter. `tools/kit_browser_smoke.py` checks real renderer output and element links using synthetic source/capture fixtures, not a real project kit. The strict live-host matrix is [STRICT-KIT.md](behavioral/STRICT-KIT.md); all 26 cases are NOT RUN. Old live UI case expectations that permitted raw markup/design-authoring have been deliberately superseded; no agent runs are invented.

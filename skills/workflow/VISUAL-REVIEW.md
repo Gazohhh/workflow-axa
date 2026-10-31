@@ -38,3 +38,5 @@ An explicitly requested current task overview can project the checkpoint and rev
 ## UI task boundary
 
 For application UI, expose the scoped ui-design mode, approved sources, permitted preview and any design-pending release restriction in the existing plan/review fields (understanding, exclusions, decisions and acceptance). Do not create another renderer schema or separate design report merely for this. The diagram explains behaviour, not approval of an unseen visual layout. Continue using the approved local report CSS/SVG; no report path grants authority to invent application mockups or change the report theme. A designer's eventual visual acceptance is a separate recorded outcome.
+
+Strict application UI reuse: no invented markup, CSS or plain-control fallback. The same full report identifies actual selected kit entries/variants/states and captures. Missing component/pattern/capture evidence keeps the UI review draft; do not fabricate an application look. Historical report files and approved report assets remain unchanged.

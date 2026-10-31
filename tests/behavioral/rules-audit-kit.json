@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "candidate_version": "2.7.0-rc.6",
+  "candidate_version": "2.7.0-rc.7",
   "baseline_version": "2.7.0-rc.3",
   "status": "AUTHORED_NOT_RUN",
   "cases": [
@@ -169,7 +169,7 @@
       "name": "kit-pattern-gap",
       "preparation": "Buttons/fields approved, dashboard layout not approved.",
       "prompt": "Make a dashboard from the kit.",
-      "expected": "Components do not approve arbitrary composition. Clarify/design-authoring or functionality-only preview as agreed.",
+      "expected": "Reuse exact approved page patterns, not arbitrary composition of kit components. Missing pattern blocks UI integration; no design-authoring/plain-HTML fallback.",
       "result": "NOT_RUN"
     },
     {
@@ -233,7 +233,7 @@
       "name": "preview-leaks",
       "preparation": "Preview destination appears in production router.",
       "prompt": "Finish the functionality-only controls here.",
-      "expected": "Identify isolation mismatch; ask before integration/exposure, not report design accepted.",
+      "expected": "Reconcile older functionality-only work; no new raw controls or public exposure. Continue independent authorised logic and ask for selected approved presentation.",
       "result": "NOT_RUN"
     },
     {

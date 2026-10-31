@@ -1,3 +1,56 @@
+# Validation — workflow-axa 2.7.0-rc.7
+
+Date: 30 October 2026. Based on the actual supplied rc.6 archive. Tests use Python 3.13/Linux and Chromium 144.0.7559.96 with already installed Playwright. This release changes the package only, not an application, live kit, user profile, memory, device or global installation.
+
+## Observed results
+
+- rc.6 baseline: **490 tests ran, 489 passed, 1 skipped** (Git-checkout-only policy test; archive has no .git).
+- Candidate: **545 tests ran, 544 passed, 1 skipped**, same checkout limitation. Fifty-five added regressions exercise strict UI policy, exact component/pattern/variant/state/example selection, scope and candidate rejection, capture input/image fingerprints, changed/deleted sources, partial approval, source escaping and local Storybook-index discovery. No unresolved failing tests or expected failures.
+- Package validator: PASS, eight local skills, relative references, manifest consistency and existing word budgets. Main workflow: 1,236 words. Shared rules library 1.6.0, package rc.7.
+- Browser suites: **19 base-report + 19 historical/additive UI + 10 source-bound kit checks = 48 passed**. The new suite checks component details, element/source navigation, mobile scrolling, no-script disclosures, inert images, offline behaviour and deletion without rewriting the saved report. Its grey PNG and catalogue are synthetic fixture data, not a real application kit or human approval.
+- Visual regression against rc.6: initial comparison matched three views exactly and found eight edge pixels different in the desktop-build view. No report asset or threshold was changed. A second capture matched all four views exactly against the original baseline. This small rendering variability is disclosed rather than claiming universal pixel identity.
+- All four report assets (`report.css`, `report.js`, `ui-review.css`, `ui-review.js`) are byte-identical to rc.6. The existing full report shell is retained; exact selection tables are added only to optional UI-screen details using existing styles.
+- All **34 pre-existing task-history files** are byte-identical. Matt's catalogue differs only in the package version field. Questioning policy, artifact policy/installer, shared TypeScript rule and global activation helper are byte-identical.
+- Release packaging: archive integrity and source/extraction equality are checked. Package validation, all tests and all three browser suites are rerun from the fresh extracted release. No generated QA images/logs, machine paths, Git internals or Python caches are included in the installable archive.
+
+## Initial failures and repairs
+
+The first suite runs identified stale version assertions and missing documentation wording after the edit. Those were corrected without weakening the checks. Browser verification caught a changed accessible label for existing decision markers; that label was restored. The new fixture exposed a missing-source error path and narrow mobile table columns; the error now names the missing kit source, and the optional table reuses the existing scrollable technical-table styling. No application theme, core report CSS or screenshot reference was changed to force a pass.
+
+## What the checks do not establish
+
+- **No live Claude/Codex/T3 loading or compliance test was run.** All 26 new cases in [STRICT-KIT.md](tests/behavioral/STRICT-KIT.md) remain NOT RUN. Earlier live-host cases remain unverified unless their own evidence establishes otherwise.
+- No real Altinstar/Cheflabels kit, React/Angular component runtime, backend, build or device was inspected or modified. Installing this skill does not create a kit page, set up Storybook, run a sync service or migrate project documentation.
+- No OS/tool-level hook, permission blocker or absolute prevention mechanism was installed. Instruction compliance still requires actual host testing. The diff helper is triage, not approval or comprehensive enforcement.
+- Source hashes establish that declared inputs match supplied bytes. They do not authenticate a human decision, prove every dependency is listed, or prove the captured pixels came from that code. Actual render evidence and owner acceptance remain necessary.
+- The optional Storybook adapter reads a local generated v4/v5 index. It detects missing story files/entries but is not a compiler or module graph; deleted exports or broken nested imports still need project verification. Tags are not approval. Generated indexes can themselves be stale.
+- No native Windows/macOS profile, desktop opener, Firefox/Safari, real accessibility audit or human comprehension test was performed. Existing Windows-related regression fixtures remain present.
+
+## Browser transport
+
+Direct file:// navigation was blocked by the managed environment (ERR_BLOCKED_BY_ADMINISTRATOR). Identical HTML bytes were loaded through the browser content API with networking disabled. No external HTTP/WebSocket request or script exception was observed in successful suites. --no-sandbox was used only in this trusted disposable container. This does not verify desktop double-click/open behaviour.
+
+## Compatibility
+
+Non-UI report input remains compatible and existing saved HTML is untouched. Historical/draft schematic demonstrations remain readable, explicitly non-authoritative. **New approval-ready application UI reports have a stricter contract:** approved-kit selection, real captures, exact elements including the composition pattern, and source/capture evidence. Earlier plain-markup/design-authoring modes do not grant current UI permissions. See UPGRADE.md and UI-FLOW.md; do not silently rewrite old approvals or add mandatory duplicate kit manifests.
+
+## Reproduce with already installed tools
+
+```bash
+python -X utf8 tools/validate.py
+python -X utf8 -m unittest discover -s tests -q
+python -X utf8 skills/rule-maker/scripts/audit_installation.py
+python -X utf8 tools/browser_smoke.py --browser /path/to/chromium --output /new/base-check
+python -X utf8 tools/ui_browser_smoke.py --browser /path/to/chromium --output /new/ui-check
+python -X utf8 tools/kit_browser_smoke.py --browser /path/to/chromium --output /new/kit-check
+```
+
+Do not install tools or spend live-model credits implicitly. Browser helpers refuse existing output directories. Keep only necessary release evidence under the artifact policy; these commands do not author or install a project UI.
+
+---
+
+## Earlier release reports — historical, not current results
+
 # Validation — workflow-axa 2.7.0-rc.6
 
 Date: 30 October 2026. Based on the owner's uploaded rc.5 source checkout and original review-r2.html. Testing here used Python 3.13/Linux and Chromium 144.0.7559.96 through already installed Playwright. No application repository, production backend, global host profile or remote model was modified or invoked.

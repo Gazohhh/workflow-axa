@@ -11,7 +11,7 @@ Check rules → find the task → inspect current code → uncover missing decis
 
 ## 0. Check rules readiness
 
-Read [RULES.md](RULES.md) before substantive planning/writes, even if rule-maker never ran. Missing coverage: STOP for setup, a bounded exception, read-only inspection or stop. Adequate existing rules need no setup. Unknown safety/authority conflicts block affected work. Readiness is not implementation approval. Recheck affected changes/resumption and pass limits to workers. For application UI, load local `ui-design` and shared design.md now: default functionality-only; record mode, authority and preview boundary. A missing kit never permits invented styling. Backend-only work skips UI setup; approved flowchart reports retain their renderer.
+Read [RULES.md](RULES.md) before substantive planning/writes, even if rule-maker never ran. Missing coverage: STOP for setup, a bounded exception, read-only inspection or stop. Adequate existing rules need no setup. Unknown safety/authority conflicts block affected work. Readiness is not implementation approval. Recheck affected changes/resumption and pass limits to workers. For application UI, load local `ui-design` and shared design.md now: strict kit reuse; record selected components/patterns and preview authority. No agent-authored HTML/templates, CSS or inline styles; no plain-HTML fallback. Missing coverage blocks affected UI work. Backend-only work skips UI setup; approved flowchart reports retain their renderer.
 
 ## 1. Establish location, mode and task
 
@@ -21,13 +21,13 @@ Modes: **explain** is read-only; **research/plan/audit** does not authorize impl
 
 Before creating any task folder, read [TASK-FOLDER.md](TASK-FOLDER.md). Search the established record location; inspect the current/named task and plausible related plans. Reuse a clearly identified task through revisions. Ask whether to extend or separate a plausible ambiguous match; resolve conflicting owners before writes. A new conversation, date or `/workflow` command is not a new task. Only create a folder when no applicable task exists or separation is explicitly chosen.
 
-A brief read-only task search precedes record creation. Save a checkpoint before substantial discovery. No-file requests override persistence; disclose recovery limits. General explanations need no repository scan. Visualization-only requests route to local `codebase-map`, not a new implementation scaffold.
+A brief read-only task search precedes record creation. Save a checkpoint before substantial discovery. No-file requests override persistence; disclose recovery limits. Visualization-only requests route to local `codebase-map`, not a new implementation scaffold.
 
 ## 2. Inspect facts and capabilities
 
 Use [GROUNDING.md](GROUNDING.md): inspect relevant owners, callers, alternate paths, reuse, tests, data/config and authoritative docs. Scale reads to impact; record evidence and limits. Before tests/builds/captures use [ARTIFACTS.md](ARTIFACTS.md): reuse output parents, protect tool-owned paths and bound retention. Establish authorised baseline checks. For unclear terms, ownership or boundaries, invoke `domain-modeling` before inventing concepts.
 
-Use [SPECIALISTS.md](SPECIALISTS.md) for applicable Matt/local routes. Installation, availability, use and verification are separate claims. Recheck changed hosts/dependencies. Missing required skills block dependent work unless a fallback is explicitly approved; [SETUP.md](SETUP.md) never authorises automatic installation.
+Use [SPECIALISTS.md](SPECIALISTS.md) for applicable Matt/local routes. Distinguish installation, invocation and verification. Recheck changed hosts/dependencies. Missing required skills block dependent work unless a fallback is explicitly approved; [SETUP.md](SETUP.md) never authorises automatic installation.
 
 ## 3. Check understanding with grilling
 
@@ -39,7 +39,7 @@ Record the understood outcome, relevant decisions and their answer sources or un
 
 ## 4. Prepare the plan and visual approval
 
-Separate approval, implementation and verification/acceptance in the existing current checkpoint. For substantive UI work, confirm source/mode through ui-design; reuse explicit task choices. Include connected screen previews in the full report, with component/pattern sources, preview scope and design-pending release limits. Behaviour approval is not unseen design approval. Keep historical baselines and proposals labelled; follow TASK-FOLDER.md for the revision log and forward-only adoption. Reruns, progress and handoffs are not new plan revisions.
+Separate approval, implementation and verification/acceptance in the existing current checkpoint. For substantive UI work, confirm source/mode through ui-design; reuse explicit task choices. Include connected screen previews in the full report, with exact selected component IDs, variants/states, checked catalogue sources and real captures; retain preview/release limits. Behaviour approval is not unseen design approval. Keep historical baselines and proposals labelled; follow TASK-FOLDER.md for the revision log and forward-only adoption. Reruns, progress and handoffs are not new plan revisions.
 
 Map each requirement to its user source, current evidence, actual gap, task and acceptance check. Every TODO must serve requested work or a demonstrated prerequisite. Record revision, bounded/protected areas, risks, test strategy, authoritative documentation updates and directly superseded code to remove.
 
@@ -61,7 +61,7 @@ Use subagents only when available and useful, with clear write ownership. Pass e
 
 Use [AUDIT.md](AUDIT.md). Check requested behavior, alternate/error paths, cleanup, records and actual task-attributable staged/unstaged/untracked changes. Invoke `code-review` for code; use `writing-for-agents` for skill/instruction changes. Review helpers and prose against concrete examples, not a vague “no slop” claim. Rerun affected checks after repairs.
 
-For UI, apply ui-design VERIFY.md to actual markup/style/rendering changes, preview isolation and behaviour; report design acceptance and release readiness separately. Compare approved references when relevant, never invent or replace one to pass. Screenshot equality is not proof of behaviour or design acceptance. Before consequential plans/reports/final explanations, apply the cold-reader check in WRITING.md: a new reader must be able to state what exists, what changes, what stays unchanged, why it matters and how success is checked.
+For UI, apply ui-design VERIFY.md to actual markup/style/rendering changes, preview isolation and behaviour; report design acceptance and release readiness separately. Compare approved references when relevant, never invent or replace one to pass. Screenshot equality is not proof of behaviour or design acceptance. Apply WRITING.md’s cold-reader check: explain current behaviour, changes, exclusions, purpose and verification.
 
 Do not automatically stage, commit, push, upload, deploy, reset or discard. Finish the artifact lifecycle under ARTIFACTS.md: clean only eligible own scratch, preserve required evidence and note unresolved consumers. Report observed results, untested areas and retained artifact paths; no extra cleanup report. Mark done only when acceptance is met or an explicit limit is recorded. Preserve a concise checkpoint for another agent.
 

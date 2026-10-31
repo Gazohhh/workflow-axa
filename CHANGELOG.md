@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.0-rc.7 — 2026-10-30
+
+- Shared rules library 1.6.0. Owner-requested strict application UI reuse: no agent-authored HTML/templates/JSX structure, CSS, inline styles or visual substitutes. Removes ordinary plain-markup/design-authoring fallback permissions while preserving history and logic-only repairs.
+- Exact component/pattern selections in the existing HTML screen details; captured image/input fingerprints, variants/states, scope, example and transitive catalogue references validated. Missing provenance cannot create an approval-ready application UI report.
+- Code-backed live-kit guide and optional read-only local Storybook v4/v5 index inspector. No app/gallery creation, Storybook installation, background sync, external skill or claimed real project kit.
+- Existing non-JSON catalogues can be projected inside report input; no mandatory duplicate inventory. Removed/changed sources block affected reuse and old report captures stay unchanged.
+- Raw markup-construction diff cues, negative tests, real browser verification and an explicitly unexecuted live-host scenario suite. Existing report CSS/JS/UI assets, Matt catalogue and previous task history preserved.
+- Complete eight-skill replacement; see UPGRADE.md for stricter semantics and legacy report limits. No application/host files changed here.
+
 ## 2.7.0-rc.6 — 2026-10-30
 
 - Audited the supplied rc.5 source against rc.4 and reran its package tests. Retained the Windows home handling, strict CRLF diagnosis, byte-preserving manifest writes and owner-approved shared TypeScript rule.

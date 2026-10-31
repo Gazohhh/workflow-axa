@@ -1,54 +1,25 @@
-# Small examples and decision records
+# UI examples under strict kit reuse
 
-Illustrations, not new project requirements. Keep actual answers in the existing PLAN/STATUS and relevant TODO/FINDINGS; do not copy this entire file into a task.
+## No design source
 
-## Notification preferences without a kit
+Owner: “Add notification settings.” Agent: “I can implement the approved settings logic, but this screen has no selected approved controls/layout. Which existing kit or pattern should I use, or should I leave the UI for the designer?” No plain form, CSS reset, temporary public route or mockup is created.
 
-User asks for saved notification settings. Inspect existing settings behaviour and settle real questions (persistence, permissions, validation). The plan names an existing authorised developer preview. Implement the agreed behaviour with a labelled native checkbox and submit button through the application's existing framework. No new classes, CSS, icons, cards or custom switch. Existing global CSS can still style the markup; observe it, do not reset it.
+## Explicit choice
 
-A short checkpoint could be:
+Owner: “Use Settings/Form and Buttons/Primary, default size.” Inspect these exact sources and allowed composition. Record the selection once. Wire supported data/events and slots. Do not add a cosmetic div, spacing classes, a colour prop or an alternative button.
 
-```text
-UI: functionality-only, notification preview.
-Authority: approved task R2; developer preview /dev/preferences, verified not shipped.
-Reuse: existing SettingsForm behaviour, no approved presentation kit.
-Boundaries: no styling or new public navigation; no component library install.
-Functionality: persistence/validation tests passed; keyboard check pending.
-Design: pending designer review. Release: not ready.
-Next: complete the approved checks, then designer handoff.
-```
+## Existing behaviour repair
 
-These example paths are not present or approved in the user's project. If a real preview is unavailable, request a location decision before integrating new UI; do not fabricate one.
+Fix a selected dialog's save handler and tests without changing its DOM/style. A missing accessible name or focus behaviour that needs markup/style changes is a kit capability issue to report, not authority to author a substitute. No full kit setup is needed for an unchanged interface's logic fix.
 
-## Approved kit, missing variant
+## Component changed or deleted
 
-Project guidance explicitly approves `PrimaryButton` for primary submissions. Reuse its supported variant and behaviour. Do not copy its DOM or add arbitrary padding/colour props. If the request needs a destructive confirmation not covered by approved patterns, batch the missing interaction/design decision. Do not silently drop from approved-kit into plain HTML; obtain a bounded fallback or defer that portion.
+Compare selected sources and actual catalogue. A changed appearance becomes needs-review, not approved after refreshing a hash. A deleted story/component is missing, not quietly replaced. Keep historical reviews and inspect consumers before any removal. Removing one usage from a screen does not delete the shared component.
 
-## Existing component bug
+## Report
 
-Fix the approved event/state bug while retaining its markup, classes and visual props. Check existing success/error states. No new designer signoff is required merely because this is a new session. If preserving semantics requires changing the rendered element, inspect consumers and agree the affected presentation/interaction—not mechanical tag mirroring.
+Keep the existing report shell. Inspect screen lists E1 Save action → Buttons/Primary → medium/loading → actual component/example → content/data changes only. The captured screen and its provenance are reviewed together; an agent-written badge is not proof. Old schematic samples are historical examples, not an approved app design.
 
-## Exact styling repair
+## Ordinary request and resumption
 
-A clipping fix really needs a CSS change. Ask for the bounded repair with expected impact and checks. Record that approval; do not redesign neighbouring controls, replace the style system or change unrelated references. Keep the original mode and name the exception, rather than silently switching the entire project to design-authoring.
-
-## Designers introduce the approved kit later
-
-Inspect its real components and explicit approval, available states, versions and patterns. Select approved-kit for the agreed next scope and add the source to existing project references. Prior functionality-only work remains design-pending until deliberately revisited. Publishing the kit does not approve all interfaces that use it.
-
-## Rendered game UI
-
-Unity/Pixi/Three code may update an existing progress indicator according to its approved behaviour. New colours, materials, motion, positions or iconography are visual design decisions even without CSS. No automatic fallback from a game interface to a new web overlay.
-
-## Workflow review
-
-Generate the existing approved flowchart with codebase-map. It may retain its local CSS/SVG styling while application work remains functionality-only. Its feature-flow arrows do not approve component spacing or a new screen mockup. The report and application have separate design authority.
-
-## Screen previews without replacing the report (rc.6)
-
-- Owner says “use the approved settings form from kit revision K3”: inspect its coverage, record that task selection, and do not ask the same question again. New layouts outside that approval still need a decision.
-- Only DESIGN.md exists: read its actual authority/scope, recommend the matching source and ask which to use. Its filename is not a choice made by the owner.
-- No kit: ask whether an explicitly labelled schematic or plain functional preview is wanted, and where. Do not automatically publish plain HTML.
-- UI plan: keep the normal full HTML report; add Edit → Saving → Success/Failure screen previews. Point decision IDs to controls and retain the existing plan/task/evidence references.
-- Source-less kit preview: remain draft, disclose missing captures; do not draw a lookalike and call it an actual component.
-- Non-UI plan: omit the UI section entirely. No fictional screens just to populate a template.
+The global core routes UI work to this same skill without /workflow. Confirm live loading in the actual host; installation alone is insufficient. Pass selections and the no-HTML/CSS boundary to subagents. On a same-task resume reuse valid decisions, refresh affected sources and do not restart the interview unnecessarily.

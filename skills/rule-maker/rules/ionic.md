@@ -10,6 +10,6 @@ Page lifecycle events are for the routed page, not automatically every child com
 
 Use the project's approved navigation and overlays. Preserve custom action-sheet contracts, back-button behaviour, dismissal roles, focus return, safe-area/keyboard handling and accessibility. Do not replace them with stock Ionic components just because they are available. A component catalogue needs explicit project authority; unsupported visual variants are gaps.
 
-Load capacitor.md for native app state, plugin listeners, permissions, keyboard/device or platform integration. A successful browser test is not proof on the native device. Preview/new UI follows the same functionality-only boundary and existing protected outputs.
+Load capacitor.md for native app state, plugin listeners, permissions, keyboard/device or platform integration. A successful browser test is not proof on the native device. Preview/new UI follows the same strict kit-reuse boundary and existing protected outputs.
 
 Primary leads, reviewed 2026-10-30: [Ionic 8 Angular lifecycle](https://ionicframework.com/docs/v8/angular/lifecycle), [current lifecycle](https://ionicframework.com/docs/angular/lifecycle), [React lifecycle](https://ionicframework.com/docs/react/lifecycle), [focus](https://ionicframework.com/docs/developing/managing-focus). Select the installed version; current pages are not evidence that its APIs exist in an older application.

@@ -25,7 +25,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.7.0-rc.6'
+RENDERER_VERSION = '2.7.0-rc.7'
 
 
 def ui_module():
@@ -706,6 +706,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
         raise ValueError('Projection data must match saved input JSON before rendering')
     records = [{'id': key, 'role': value['role'], 'path': value['path'], 'sha256': digest(safe_source(root, value['path']))}
                for key, value in sources.items()]
+    if 'ui_review' in data:
+        records.extend(ui_module().kit_records(data['ui_review'], root, sources))
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
     manifest = {'schema_version': 1, 'tool_version': RENDERER_VERSION, 'layout_version': 2, 'style': 'workflow-editorial-v1',
                 'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}

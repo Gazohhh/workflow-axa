@@ -227,11 +227,11 @@ class UiPolicyContractTests(unittest.TestCase):
         self.assertEqual(len(data['skills']),8)
         self.assertEqual(data['skills'].count('./skills/ui-design'),1)
 
-    def test_three_modes_and_no_kit_invention(self):
+    def test_strict_modes_and_no_kit_invention(self):
         text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
-        for name in ('functionality-only','approved-kit','design-authoring','default','legacy','pending','preview'):
+        for name in ('behaviour-only','approved-kit','design-authoring','legacy','blocked/unselected','preview'):
             self.assertIn(name,text)
-        self.assertIn('not a finished interface',text)
+        self.assertIn('no plain-HTML fallback',text)
 
     def test_ordinary_loading_covers_markup_not_only_css(self):
         text=(ROOT/'skills/rule-maker/rules/START.md').read_text()
@@ -242,7 +242,7 @@ class UiPolicyContractTests(unittest.TestCase):
     def test_workflow_routes_before_substantive_plan(self):
         text=(ROOT/'skills/workflow/SKILL.md').read_text()
         self.assertLess(text.index('`ui-design`'),text.index('## 4.'))
-        self.assertIn('design-pending release',text)
+        self.assertIn('preview/release limits',text)
 
     def test_handoffs_review_status_doctor_and_setup_connected(self):
         for path in ('skills/resume-task/SKILL.md','skills/task-status/SKILL.md','skills/plan-review/SKILL.md','skills/workflow-doctor/SKILL.md','skills/rule-maker/SKILL.md','skills/workflow/AUDIT.md','skills/workflow/templates/PROJECT-ROUTING.md'):
@@ -251,14 +251,14 @@ class UiPolicyContractTests(unittest.TestCase):
 
     def test_report_exemption_is_narrow(self):
         text=(ROOT/'skills/ui-design/CONTRACT.md').read_text()
-        self.assertIn('Reports are not application prototypes',text)
+        self.assertIn('Preview and report boundary',text)
         self.assertIn('codebase-map',text)
-        self.assertIn('evade this boundary',text)
+        self.assertIn('only routine HTML/CSS generation exception',text)
 
     def test_no_new_record_or_ui_tool_by_default(self):
         text=(ROOT/'skills/ui-design/SKILL.md').read_text()
-        self.assertIn('standalone UI manifest',text)
-        self.assertIn('not an automatic designer',text)
+        self.assertIn('No duplicate component inventory',text)
+        self.assertIn('not a designer',text)
         self.assertIn('Backend-only',text)
 
     def test_verification_explains_no_pass_claim(self):

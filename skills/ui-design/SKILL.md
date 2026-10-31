@@ -1,46 +1,38 @@
 ---
 name: ui-design
-description: "Use automatically for application UI work within workflow or ordinary requests: controls, pages, templates, interaction states, visual assets, native or rendered game UI. Preserve existing appearance and stop unapproved styling. Establish functionality-only, approved-kit or explicitly authorised design-authoring mode; do not redesign by default or block unrelated backend work."
+description: "Use automatically for application UI in workflow or ordinary requests. Enforce kit-only reuse: no agent-authored HTML/templates, CSS or inline styles. Verify selected real components, variants and patterns; block missing authority, never fall back to plain HTML. Inspect code-backed catalogues and preserve historical reports."
 ---
 
-# UI design boundary
+# UI: reuse, do not invent
 
-Build agreed behaviour, reuse approved presentation, and leave missing design unfinished rather than invented. This skill selects design authority; it is not an automatic designer or another implementation workflow. For explicit catalogue work, [KIT.md](KIT.md) defines `kit-audit`, `kit-setup` and `kit-check`, with local templates and an optional read-only checker. These modes never manufacture project styles or approve components; setup still needs bounded approval.
+Read shared rule-maker `rules/design.md` and [CONTRACT.md](CONTRACT.md). This is a permission/selection skill, not a designer or another implementation workflow. The normal rules-readiness gate, grilling, plan review and implementation approval remain in force.
 
-## 1. Establish the affected surface
+## 1. Establish the surface and decision
 
-Apply the installed workflow's RULES.md gate and shared rule-maker `rules/design.md` first. Missing applicable rules or unresolved safety/authority conflicts block dependent changes. Bounded read-only inspection remains allowed. Do not launch rule-maker merely because no kit exists: a scoped functionality-only plan can be ready without one.
+Identify the task, framework versions, affected area/brand/platform, designated project sources, existing changes and applicable rules. Backend-only work skips this skill unless it changes UI contracts. A missing DESIGN.md filename is not a blocker when an equally authoritative source exists. The mere presence of that file, a catalogue or a familiar class is not selection/approval.
 
-Identify the actual application areas, frameworks/versions, current task, effective project restrictions and approval. Include markup, templates, components, rendered/native UI, assets and state-dependent appearance—not just stylesheet files. Backend-only work skips this skill unless it changes an interface contract. A report-only request uses the existing local codebase-map renderer; see [CONTRACT.md](CONTRACT.md) for its narrow exemption.
+For a new substantive UI task, confirm the exact source and selected component/pattern IDs, variants and states. Reuse explicit owner choices or a still-valid same-task decision. Ask once when unresolved, batching consequential gaps through grilling. Do not ask again on every control or unchanged resume.
 
-## 2. Confirm the task source and mode per area
+## 2. Select a permitted mode
 
-Use [CONTRACT.md](CONTRACT.md), and [KIT.md](KIT.md) when selecting/updating an actual catalogue. Default to **functionality-only** unless current, explicit project/task authority establishes **approved-kit** or **design-authoring** for this area. Never infer kit approval from a directory name, familiar class, installed library, screenshot, designer job title or general “make it work” request.
+- **behaviour-only:** authorised logic changes within an existing interface, preserving its markup and appearance. No new plain-HTML controls, previews or invented layout.
+- **approved-kit:** import and wire the selected actual components/patterns using documented APIs/slots; reuse appearance, do not recreate their DOM or styles. An approved button is not approval for an invented page composition.
+- **blocked/unselected:** missing design authority or kit coverage pauses that UI integration. Ask for a designated approved reference or leave it for the designer; independently approved logic/tests can continue.
 
-- **Functionality-only:** preserve existing presentation; reuse an explicitly approved component/pattern without restyling. New minimal semantic controls need an agreed behaviour and preview destination. No invented CSS, utility combinations, visual overrides or decorative layout. Record design pending where no approved design exists.
-- **Approved-kit:** use actual approved components, variants and page patterns through supported APIs. Inspect the designated sources, not random legacy screens as design authority. Missing kit coverage is a gap; batch questions or obtain an explicit bounded functionality-only fallback.
-- **Design-authoring:** obtain approval of the affected surfaces, references, allowed changes and acceptance criteria before creating/changing presentation. This mode is limited to this design task, not permanent global permission.
+Use [KIT.md](KIT.md) for `kit-audit`, `kit-setup`, `kit-check` and [LIVE-KIT.md](LIVE-KIT.md) for code-backed discovery. Setup can audit/propose wiring to existing preview tooling; it cannot create application presentation, install tools or approve new components. Designer changes are external inputs to reconcile, not permission for this agent to author HTML/CSS. A legacy functionality-only/design-authoring record cannot bypass the new boundary; see CONTRACT.md.
 
-For a new substantive UI task, establish the exact design source and presentation mode with the owner before selecting appearance. An explicit task instruction or a still-valid recorded decision counts; a project DESIGN.md or general kit approval alone does not select the source/composition for this new task. Present the applicable existing source as a recommendation and ask once when selection is unresolved. No repeated question for every control or unchanged resumption. If neither a kit nor a plain preview is selected, leave UI integration blocked rather than defaulting to invented markup.
+## 3. Prepare the existing plan/report
 
-Use existing confirmed decisions. Invoke grilling through the workflow adapter for consequential gaps (preview access, layout, interaction, required kit coverage), not for every element. Independent behaviour work can continue only when already authorised.
+Keep one compact selection record in PLAN/STATUS: mode, area, authority, stable item/story IDs, component and example sources, variants/states, selected pattern, preview access and remaining design/release limits. No duplicate component inventory or new folder per selection. Use [EXAMPLES.md](EXAMPLES.md).
 
-## 3. Carry the boundary into the plan
+For substantive UI work, use local codebase-map's **same full HTML report**. Its screen-flow view shows real captures, interaction arrows and exact selected elements in Inspect screen: role, catalogue entry, variant/state, source/example and permitted content/behaviour changes. Captures must come from authorised existing tooling; no fabricated kit likeness or hand-built app mockup. Missing capture/source evidence means draft/unverified, not approval-ready. Read codebase-map/UI-FLOW.md for binding and snapshot checks. Do not alter the approved report shell.
 
-Add a compact UI entry to the existing PLAN/STATUS checkpoint: mode and area; authority/reference; approved components/patterns; preview destination/access; prohibited changes or narrow exception; behaviour checks; design acceptance and release state. See [EXAMPLES.md](EXAMPLES.md). Do not create a kit, another task folder or a standalone UI manifest just to record these facts.
+Resolve material decisions, present the plan/report and stop for owner approval. Behaviour approval is not unseen design signoff. New ordinary UI requests use these gates even without a slash command.
 
-The existing PLAN/TODO and flowchart approval remains mandatory for substantive work, including ordinary requests routed without a slash command. For UI scope, call codebase-map with its optional screen-flow projection in the SAME report: actual/proposed screen states, connected actions, source references and design decisions on the relevant controls. Preserve the report shell and technical sections. An abstract source-selection chart is not a screen preview. A missing capture is marked unverified, not replaced by an invented approved-kit look.
+## 4. Implement and verify only authorised reuse
 
-Behaviour approval is not unseen design acceptance. Keep pending design and release limits visible.
+Pass the same selected IDs, APIs, pattern, source revision, protected internals and preview permissions to workers. Do not use raw HTML, new native tags, CSS, inline style, arbitrary visual props or copied markup as substitutes. Preserve existing functional selectors and runtime contracts. Accessibility remains required; report a missing kit capability rather than invent a repair or ship an inaccessible substitute.
 
-## 4. Implement only the authorised work
+Use [VERIFY.md](VERIFY.md) on the actual final diff and relevant runtime states. Check source/variant/scope freshness, safe environment and build permissions before executing previews. A green scanner is not approval. Keep approved references and follow the artifact policy.
 
-Pass the mode, references, protected appearance, preview boundary and exceptions to every worker and specialist. Preserve existing selectors and runtime layout contracts; do not strip old styling or refactor unrelated markup. Native semantic controls, labels, validation, keyboard access and necessary state feedback are functional requirements—not optional polish. Do not add a styling reset to make a preview look plain.
-
-Keep existing behaviour/presentation boundaries; do not invent a new component framework for a future designer. New interaction/layout choices and styling fixes outside the approved scope require a bounded decision. A newly found CSS class does not authorise its use.
-
-## 5. Verify and hand off
-
-Apply [VERIFY.md](VERIFY.md) to actual task-attributable changes, including new/deleted/binary files and approved component definitions. Run relevant behaviour/accessibility checks and inspect affected screen states when possible. Preserve approved visual references; a passing test or screenshot does not establish design acceptance.
-
-On resume revalidate mode, sources, scope and approval; preserve settled decisions and legacy tasks. Report functionality, design acceptance and release readiness separately. Design-pending UI remains in its agreed preview, not silently shipped. Record necessary results in existing files and follow the artifact policy.
+On update/deletion/resume, reconcile only affected sources/consumers. A missing component blocks its selection; a changed one needs review, not automatic reapproval. Preserve historical captures and decisions. Report behaviour verified, design accepted and release-ready separately. Never claim a live kit was installed or every host follows the rules unless actually checked.
