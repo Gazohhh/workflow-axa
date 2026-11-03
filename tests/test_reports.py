@@ -213,6 +213,19 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(result.returncode,2)
         self.assertEqual(self.output.read_text(),'preserve this approval revision')
 
+    def test_unpresented_draft_can_be_replaced_but_nothing_else(self):
+        # Round v5 (Mulcol, Hooqd): every re-render before showing the report needed a new name (-v2, -v3), and
+        # updating the records to that name made the report stale at once.
+        self.assertEqual(self.cli('--input',self.input,'--output',self.output).returncode,0)
+        replaced=self.cli('--input',self.input,'--output',self.output,'--replace-unpresented')
+        self.assertEqual(replaced.returncode,0,replaced.stderr)
+        self.assertIn('REPLACED',replaced.stdout)
+        other=self.root/'notes.html'
+        other.write_text('preserve this approval revision')
+        refused=self.cli('--input',self.input,'--output',other,'--replace-unpresented')
+        self.assertEqual(refused.returncode,2)
+        self.assertEqual(other.read_text(),'preserve this approval revision')
+
     def test_cli_creates_only_requested_file_then_checks_without_writes(self):
         before={p.relative_to(self.root).as_posix():p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
         result=self.cli('--input',self.input,'--output',self.output)

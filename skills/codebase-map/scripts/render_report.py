@@ -908,6 +908,8 @@ def main() -> int:
     parser.add_argument('--root',type=Path,required=True,help='Repository/source root; read-only.')
     parser.add_argument('--input',type=Path,help='JSON projection inside root.')
     parser.add_argument('--output',type=Path,help='New HTML file; existing files are never overwritten.')
+    parser.add_argument('--replace-unpresented',action='store_true',
+                        help='Replace an existing report this renderer made, only when it has not been shown to the user yet.')
     parser.add_argument('--open',action='store_true',help='Request default-browser opening; not proof of display.')
     parser.add_argument('--check',type=Path,help='Check an existing HTML against its supplied sources; no writes.')
     args=parser.parse_args()
@@ -930,17 +932,24 @@ def main() -> int:
         result=render(load_json(args.input),root,args.input)
         if len(result.encode('utf-8')) > MAX_BYTES:
             raise ValueError('Rendered report exceeds 8 MiB; reduce captures or split the view')
-        # Exclusive creation protects earlier reviewed revisions and unrelated files.
-        with args.output.open('x',encoding='utf-8',newline='\n') as out:
+        # Exclusive creation protects earlier reviewed revisions and unrelated files. A draft not yet shown to the
+        # user may be replaced on request, but only a file this renderer made (round v5: -v2/-v3 copies).
+        replacing = args.replace_unpresented and args.output.exists()
+        if replacing:
+            try:
+                check_report(args.output, root)
+            except (ValueError, OSError) as exc:
+                raise ValueError(f'--replace-unpresented replaces only a report this renderer made ({exc})') from exc
+        with args.output.open('w' if replacing else 'x',encoding='utf-8',newline='\n') as out:
             out.write(result)
-        print(f'RENDERED: {args.output.resolve()}')
+        print(f'{"REPLACED" if replacing else "RENDERED"}: {args.output.resolve()}')
         print('Artifact creation does not approve or start implementation.')
         data = load_json(args.input)
         issues = task_module().prose_issues(data) if 'task_report' in data else []
-        for path, problem in issues:  # simple-english advice; fix the JSON and render a new file
+        for path, problem in issues:  # simple-english advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
             print(f'PLAIN ENGLISH: {path}: {problem}')
         if issues:
-            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill.')
+            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill, then render into the same file with --replace-unpresented if the user has not seen it yet.')
         if args.open:
             try:
                 accepted=webbrowser.open(args.output.resolve().as_uri(),new=2)

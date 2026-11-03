@@ -41,7 +41,7 @@ Use `report_kind: task-overview` with the existing sourced checkpoint for delive
 
 The delivery section explains requested/agreed/implemented work, completed and open tickets, changed files/components, check and review outcomes, known limitations and follow-ups. Link exact evidence through checks and acceptance_results. Actual UI design acceptance and release readiness remain separate when relevant; reuse the existing UI screen-flow and kit source contract.
 
-Generate snapshots at the gate-two review, at delivery (rule in workflow-deliver step 8) or when requested, not on every checkpoint. Progress updates normally remain in the records. Plan revision changes only when the agreement changes; a new dated progress snapshot may project the same plan revision. Do not overwrite a historical review to make its status look current.
+Generate snapshots at the gate-two review, at delivery (rule in workflow-deliver step 8) or when requested, not on every checkpoint. Progress updates normally remain in the records. Plan revision changes only when the agreement changes; a new dated progress snapshot may project the same plan revision. Do not overwrite a historical review to make its status look current. Before you show a report, keep one file name: finish the records first, then render, and re-render into that same file with `--replace-unpresented` (no `-v2`/`-v3` copies). Once the user has seen it, a change gets a new file.
 
 ## Verification
 
