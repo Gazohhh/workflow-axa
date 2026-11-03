@@ -92,11 +92,43 @@ def gated(event: dict) -> str | None:
     return None
 
 
+REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'simple-english/SKILL.md')
+UI_GUIDE = 'codebase-map/UI-FLOW.md'
+
+
+def unread_report_guides(path: Path) -> list[str]:
+    """Report guides not read whole in this context, when specify or deliver loaded (round v3: in all four
+    worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('plain_reply', Path(__file__).with_name('plain_reply.py'))
+    reply = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(reply)
+    missing = reply.unread_files(path)
+    wanted = REPORT_GUIDES + (UI_GUIDE,)
+    return sorted({rel for phase in ('workflow-specify', 'workflow-deliver') for rel in missing.get(phase, ())
+                   if rel in wanted})
+
+
+def deny(reason: str) -> int:
+    print(json.dumps({'hookSpecificOutput': {'hookEventName': 'PreToolUse', 'permissionDecision': 'deny',
+                                             'permissionDecisionReason': reason}}))
+    return 0
+
+
 def main() -> int:
     try:
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    command = str((event.get('tool_input') or {}).get('command', '')) if event.get('tool_name') == 'Bash' else ''
+    if 'render_report.py' in command and '--help' not in command:
+        try:
+            unread = unread_report_guides(Path(event.get('transcript_path', '')))
+        except (OSError, ValueError, AttributeError):
+            unread = []
+        if unread:
+            return deny("workflow-axa: read these whole before rendering the report, because they set its content and "
+                        f"wording: {', '.join(unread)} (under the workflow-axa skills folder). Then render.")
     action = gated(event)
     if not action:
         return 0

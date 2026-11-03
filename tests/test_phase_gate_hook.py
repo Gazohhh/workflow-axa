@@ -86,6 +86,21 @@ class PhaseGateHookTests(unittest.TestCase):
         self.assertEqual(self.fire(rows, "Edit", {"file_path": "D:/Hooqd/src/a.ts"})["permissionDecision"], "deny")
         self.assertEqual(self.fire([ROUTER], "Edit", {"file_path": "D:/Hooqd/AGENTS.md"})["permissionDecision"], "deny")
 
+    def test_report_render_waits_for_the_report_guides(self):
+        # Round v3: in all four worktrees the report guides were read only after the Stop hook asked, so reports
+        # were rendered (and in r22 went stale) before the rules for writing them were read.
+        render = {"command": "python -X utf8 -I D:/workflow-axa/skills/codebase-map/scripts/render_report.py --input p.json --output p.html"}
+        rows = [ROUTER, skill("workflow-axa:workflow-specify")]
+        denied = self.fire(rows, "Bash", render)
+        self.assertEqual(denied["permissionDecision"], "deny")
+        self.assertIn("simple-english/SKILL.md", denied["permissionDecisionReason"])
+        self.assertIn("codebase-map/TASK-REPORT.md", denied["permissionDecisionReason"])
+        read = lambda rel: {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                            "input": {"file_path": f"D:/workflow-axa/skills/{rel}"}}]}}
+        rows += [read("simple-english/SKILL.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md")]
+        self.assertIsNone(self.fire(rows, "Bash", render))
+        self.assertIsNone(self.fire([say("plain session")], "Bash", render))
+
     def test_bad_input_is_ignored(self):
         result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK)], input="nope", capture_output=True, text=True)
         self.assertEqual((result.returncode, result.stdout), (0, ""))
