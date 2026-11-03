@@ -15,3 +15,10 @@ Capturing the kit page safely needs app changes in Cheflabels: an offline config
 
 ## U4 — Machine-readable approval status
 Approval status now lives in a Markdown table (Cheflabels DESIGN.md). Options: (a) the adapter reads that table as it is (recommended, no project change); (b) each project adds a small JSON status file.
+
+## Answers (owner, 2026-11-03)
+- D1 (U1): (a) "Contract first, 2 adapters".
+- D2 (U2): "Install/use Playwright when required for accurate UI capture." Installing is allowed only when a capture needs it, and is recorded.
+- D3 (U3): "Keep Cheflabels' design kit separate from task-specific reviews. Reuse actual approved components and capture real screenshots." The Cheflabels kit page stays its own thing; a task review reuses its approved components and real captures. Any Cheflabels app change still goes through its own task.
+- D4 (U4): "Only explicitly approved components are approved; everything else remains candidate/unverified."
+- D5 (general): "Keep the solution framework-agnostic (Angular, React, Vue, etc.). Never invent application UI when real components or screenshots are available."

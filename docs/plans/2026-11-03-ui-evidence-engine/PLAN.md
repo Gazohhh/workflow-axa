@@ -1,16 +1,16 @@
 # UI evidence and preview engine for plan reports
 
 ## Current checkpoint
-- Status: audit done, architecture proposed, waiting for the owner's choice and approval
+- Status: questions answered (DECISIONS D1-D5); waiting for agreement and plan approval
 - Owner: this Claude Code session (workflow-axa-ff); ownership: active
 - Updated: 2026-11-03
 - Repository / branch / worktree: D:\workflow-axa, main, main worktree
 - Task identity: new, separate task. Source: the owner's request of 2026-11-03. Related: `2026-11-02-modular-engineering-workflow` (built the current screen flow and D14) and `2026-11-03-audit-hardening` (report wording and replace rules, T5).
 - Rules readiness: READY (repository CLAUDE.md, package tests, shared rules 1.8.0).
-- Agreement: proposed revision r1, not agreed. Questions U1-U4 in DECISIONS.md are open.
+- Agreement: proposed revision r1, not agreed. U1-U4 answered as D1-D5.
 - Approval: proposed revision r1, not approved. Report: `reviews/plan-r1.html`.
 - Current understanding / evidence: FINDINGS.md E1-E19.
-- Next safe action: the owner picks the architecture (U1) and answers U2-U4. Nothing is built before approval, and no application repository changes in this task.
+- Next safe action: the owner says yes to the agreement and the plan, or asks for changes. Nothing is built before that, and no application repository changes in this task.
 
 ## Goal in plain words
 Today a plan report shows the current screen as a screenshot when that is safe, and the proposed screen as a labelled sketch. The goal is to show real screens and real components wherever that can be done safely, link every element to its real source and approval status, and refuse visual approval when an accurate picture is not possible.
@@ -29,7 +29,7 @@ Today a plan report shows the current screen as a screenshot when that is safe, 
 - Also: respect approved versus candidate components; change no application code and invent no UI to make a preview work; block visual approval when an accurate picture is impossible; capture no screen that shows personal data.
 
 ## Agreement
-Proposed revision r1, not agreed. It covers the requirements above, the architecture below and the boundaries, with U1-U4 open. If U3 is (b), U-T6 is dropped and Cheflabels keeps sketches; U-T8 then checks Altinstar only.
+Proposed revision r1, not agreed. It covers the requirements above, the architecture below and the boundaries, with the owner's answers: contract first and two adapters (D1); Playwright installed or used only when an accurate capture needs it, and recorded (D2); the Cheflabels design kit stays separate from task reviews, which reuse its approved components and real screenshots (D3); only explicitly approved components count as approved, the rest stay candidate or unverified (D4); framework-agnostic, and never invented UI when real components or screenshots exist (D5). If a Cheflabels capture would reach the live backend, that preview stays blocked until a separate Cheflabels task makes it offline.
 
 ## Proposed architecture (recommended: contract first, then two real adapters)
 1. **Evidence contract (in workflow-axa, framework-neutral).** One manifest per capture: the image, the viewport and environment, the component and variant it shows, approval status (approved or candidate) from the project's kit source, the decision IDs it supports, the console errors, failed requests and missing assets seen during capture, and fingerprints of every file the component depends on. The renderer accepts a real preview only with a valid manifest. Missing or failed evidence keeps the sketch and blocks visual approval.
@@ -48,7 +48,7 @@ Proposed revision r1, not agreed. It covers the requirements above, the architec
 ## Boundaries
 - No application code changes from this task. Anything a project needs (Cheflabels offline translations and configuration, a machine-readable approval list) is proposed to its owner as a separate task.
 - No invented HTML, CSS or SVG for application UI. D14 stays. The report shell keeps the owner's design.
-- No production contact during capture. No installs. No pixel blurring is promised; screens with personal data are not captured.
+- No production contact during capture. No installs except Playwright when a capture needs it (D2). No pixel blurring is promised; screens with personal data are not captured.
 
 ## Approval
 Not yet given.

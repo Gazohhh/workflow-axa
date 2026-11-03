@@ -87,15 +87,9 @@
     "No application repository changes, no global settings or permission changes and no automatic commits.",
     "The four phases, grilling, grounded planning, both gates, task reuse, history, shared rules and artifact protections stay.",
     "Pinned specialist methods, the D14 UI rule and the approved report design stay.",
-    "No package code changes before you answer Q1-Q5 and approve the plan."
+    "No package code changes before you agree to the behavior and approve the plan."
   ],
-  "open_decisions": [
-    "Q1. What counts as approval for code edits.\n\n(a) The current task's Approval line, and the user's words that it quotes must appear in a real user message. Recommended: the agent can write the line, but it cannot fake a user message.\n\n(b) The Approval line alone. It is simpler, but the agent can write it itself.\n\n(c) Keep today's rule. Not recommended: E1-E3 show that it lets edits through.",
-    "Q2. Small-change route. (a) One builder, the main session, and one independent reviewer, with the escalation rule in T6. Recommended. (b) Keep a fresh worker for every ticket. The rule for asking both gates in one message stays as today.",
-    "Q3. A license for the project's own code. (a) MIT. (b) Another license that you name. (c) None for now, for private use. The records give no recommendation.",
-    "Q4. Release package. (a) Add tools/build_release.py now, with the include list in T8. Recommended. (b) Later.",
-    "Q5. Paid live acceptance runs for T9. Measured live runs cost about $1 to $17 each.\n\n(a) Up to 8 headless Claude runs on fixtures, plus Codex runs. (b) Claude only.\n\n(c) None: report only the static and helper tests. The records give no recommendation."
-  ],
+  "open_decisions": [],
   "sources": [
     {
       "id": "S1",
@@ -727,7 +721,7 @@
     },
     {
       "id": "AC11",
-      "text": "Live runs, as Q5 allows, show each bypass blocked and each legitimate route allowed. Their results are reported apart from the static and helper tests, and unavailable hosts are named.",
+      "text": "Live runs, within the D5 limit, show each bypass blocked and each legitimate route allowed. Their results are reported apart from the static and helper tests, and unavailable hosts are named.",
       "requirements": [
         "R1",
         "R2",
@@ -1245,7 +1239,7 @@
     {
       "label": "Verification docs and release",
       "current": "The docs disagree on counts and versions. No release tool exists.",
-      "proposed": "One generated verification summary, and a release package from an include list.",
+      "proposed": "One generated verification summary, a release package from an include list and an MIT LICENSE.",
       "requirements": [
         "R13",
         "R14"
@@ -1264,7 +1258,7 @@
     "screen_change": "none",
     "agreement": {
       "status": "not-approved",
-      "summary": "Revision r1 of the agreement and the plan is proposed. It is not agreed or approved, and questions Q1 to Q5 are open.",
+      "summary": "Revision r1 of the agreement and the plan is proposed, with your answers D1 to D5. It is not agreed or approved yet.",
       "source": "S1",
       "locator": "PLAN.md ## Agreement; ## Current checkpoint, Approval"
     },
@@ -1279,7 +1273,7 @@
       {
         "id": "agreement",
         "title": "What will change",
-        "text": "Edits and git writes get permission only from the current task's approval, with the user's real words. The gate sees more tools and more shell writes.\n\nRecord writes become safe against interruption and a second writer. A stop ends implementation, and each unfinished state has one route. Baselines compare test IDs and stop being reused when their inputs change.\n\nReport wording advice keeps the meaning and runs before the file is written. A small change uses fewer agents. The tests pass on other machines. One generated summary replaces the contradicting counts, and a release package comes from an include list.\n\nNot included: application repositories, global settings, permission changes and automatic commits.\n\nIf the answer to Q1 is (b), A1 drops the check of the quoted words. If the answer to Q5 is (c), T9 is dropped, and only static and helper tests are reported.",
+        "text": "Edits and git writes get permission only from the current task's approval, with the user's real words. The gate sees more tools and more shell writes.\n\nRecord writes become safe against interruption and a second writer. A stop ends implementation, and each unfinished state has one route. Baselines compare test IDs and stop being reused when their inputs change.\n\nReport wording advice keeps the meaning and runs before the file is written. A small change uses fewer agents. The tests pass on other machines. One generated summary replaces the contradicting counts, and a release package comes from an include list.\n\nNot included: application repositories, global settings, permission changes and automatic commits.\n\nYour answers D1 to D5 are part of it. Approval needs the Approval line plus your real words. Small changes use the small route. The project gets an MIT license and a release tool now. T9 uses at most 8 live Claude runs plus useful Codex runs.",
         "source": "S1",
         "locator": "PLAN.md ## Agreement; ## Goal and acceptance A1-A14; ## Approach and scope"
       },
@@ -1293,28 +1287,28 @@
       {
         "id": "milestones",
         "title": "Order of work",
-        "text": "T1, T2, T5 and T7 depend on no other ticket. T3 follows T2, because it uses the records that T2 writes. T4 and T6 follow T3.\n\nT8 follows T1 to T7, because it documents their final state. T9 follows T1 to T6 and runs only as Q5 allows.",
+        "text": "T1, T2, T5 and T7 depend on no other ticket. T3 follows T2, because it uses the records that T2 writes. T4 and T6 follow T3.\n\nT8 follows T1 to T7, because it documents their final state. T9 follows T1 to T6 and stays within the D5 limit.",
         "source": "S2",
         "locator": "TODO.md T1-T9, Depends on"
       },
       {
         "id": "decisions",
         "title": "Decisions",
-        "text": "No decision is recorded yet. Questions Q1 to Q5 are open and are listed under Risks and open questions.\n\nRecommended answers: Q1 (a), Q2 (a) and Q4 (a). The records give no recommendation for Q3 and Q5.",
+        "text": "You answered Q1 to Q5 on 2026-11-03.\n\nD1 (Q1): \"Line + your real words\". Code edits and git writes need the current task's Approval line, and the user's words that it quotes must appear in a real user message.\n\nD2 (Q2): \"1 builder + 1 review\". The small route in T6 applies, with the escalation rule.\n\nD3 (Q3): \"MIT.\" T8 adds an MIT LICENSE at the root.\n\nD4 (Q4): \"Build the release tool now.\" T8 adds tools/build_release.py.\n\nD5 (Q5): \"Allow up to 8 Claude runs plus Codex runs where useful, but avoid unnecessary paid runs.\" T9 stays within that limit.",
         "source": "S4",
-        "locator": "DECISIONS.md Q1-Q5"
+        "locator": "DECISIONS.md ## Answers (owner, 2026-11-03), D1-D5"
       },
       {
         "id": "risks",
         "title": "Risks and assumptions",
-        "text": "The hook blocks the explicit edit tools that it sees. It cannot see every shell write or edits outside Claude Code. It cannot prove that a record is true beyond matching the user's words in the transcript. Codex gets no hooks. The docs will say so.\n\nIt is unknown which transcript a subagent's hook call receives (E7). If it is the subagent's own, the subagent is not gated. T1 finds out and then gates subagents or documents the gap.\n\nA host with only python3 starts no hook (E15). Live runs cost about $1 to $17 each (Q5).",
+        "text": "The hook blocks the explicit edit tools that it sees. It cannot see every shell write or edits outside Claude Code. It cannot prove that a record is true beyond matching the user's words in the transcript. Codex gets no hooks. The docs will say so.\n\nIt is unknown which transcript a subagent's hook call receives (E7). If it is the subagent's own, the subagent is not gated. T1 finds out and then gates subagents or documents the gap.\n\nA host with only python3 starts no hook (E15). Live runs cost about $1 to $17 each, so D5 limits them to 8 Claude runs plus useful Codex runs.",
         "source": "S1",
         "locator": "PLAN.md ## Approach and scope, Enforcement honesty; FINDINGS E7, E8, E15; TODO.md T1"
       },
       {
         "id": "testing",
         "title": "How it will be checked",
-        "text": "Each confirmed defect gets a regression test that fails before the fix. The full package suite runs once per ticket and once at the end.\n\nT1, T2 and T3 each get one fresh reviewer. The other tickets get one combined review at the end. Live runs happen only as approved in Q5.",
+        "text": "Each confirmed defect gets a regression test that fails before the fix. The full package suite runs once per ticket and once at the end.\n\nT1, T2 and T3 each get one fresh reviewer. The other tickets get one combined review at the end. Live runs: at most 8 Claude runs plus Codex runs where useful (D5), and no run is repeated without a reason.",
         "source": "S1",
         "locator": "PLAN.md ## Approach and scope, Budgets"
       }
@@ -1371,14 +1365,14 @@
       },
       {
         "task": "T8",
-        "specification": "Add a generated Current verification section with the commit, the environment, the commands and the results. validate.py rejects skill or version counts in prose that differ from plugin.json. Add tools/build_release.py with an explicit include list. The license follows the answer to Q3.",
+        "specification": "Add a generated Current verification section with the commit, the environment, the commands and the results. validate.py rejects skill or version counts in prose that differ from plugin.json. Add tools/build_release.py with an explicit include list. Add an MIT LICENSE at the root (D3).",
         "expected": "The docs give one set of counts, and the release package lists no excluded path.",
         "source": "S2",
         "locator": "TODO.md T8"
       },
       {
         "task": "T9",
-        "specification": "Run headless Claude sessions on fixtures for each bypass and each legitimate route, and Codex runs where available, as Q5 allows.",
+        "specification": "Run headless Claude sessions on fixtures for each bypass and each legitimate route, and Codex runs where they are useful. D5 allows at most 8 Claude runs and no unnecessary paid runs.",
         "expected": "The live results are reported apart from the static and helper tests, and unavailable hosts are named.",
         "source": "S2",
         "locator": "TODO.md T9"

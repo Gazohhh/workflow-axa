@@ -24,3 +24,10 @@ Measured live runs cost between about $1 and $17 each in this session's headless
 - (a) Up to 8 headless Claude runs on fixtures, plus Codex runs.
 - (b) Claude only.
 - (c) None: report only the static and helper tests.
+
+## Answers (owner, 2026-11-03)
+- D1 (Q1): (a) "Line + your real words". Code edits and git writes need the current task's Approval line, and the user's words it quotes must appear in a real user message.
+- D2 (Q2): (a) "1 builder + 1 review". Small route as in T6, with the escalation rule.
+- D3 (Q3): "MIT."
+- D4 (Q4): "Build the release tool now."
+- D5 (Q5): "Allow up to 8 Claude runs plus Codex runs where useful, but avoid unnecessary paid runs."

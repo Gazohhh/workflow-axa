@@ -63,19 +63,14 @@
     }
   ],
   "boundaries": [
-    "Approved and candidate components stay distinct.",
+    "Only components explicitly marked approved count as approved. All others stay candidate or unverified (D4).",
     "No application code changes in this task, and no invented UI to make a preview work. Anything a project needs is proposed to its owner as a separate task.",
     "No invented HTML, CSS or SVG for application UI. D14 stays, and the report shell keeps the owner's design.",
     "Visual approval is blocked when an accurate picture is impossible.",
-    "No production contact during capture and no installs.",
+    "No production contact during capture. No installs except Playwright when a capture needs it, and each install is recorded (D2).",
     "No screen that shows personal data is captured. No pixel blurring is promised."
   ],
-  "open_decisions": [
-    "U1 Architecture. (a) Contract and element verification first, then two real adapters (Cheflabels, Altinstar). Recommended. (b) The full adapter engine at once. (c) Kit routes only: capture only approved kit pages.",
-    "U2 Browser automation. The engine needs an installed browser automation tool (Playwright). Altinstar has it and Cheflabels does not. (a) You install it where you want real previews, and the other projects keep sketches (recommended). (b) Use the installed Edge in headless mode only. That gives screenshots but no console or network records.",
-    "U3 Cheflabels offline kit capture. A safe capture of the kit page needs an offline configuration and a fixture translation file in Cheflabels. (a) A separate Cheflabels task with its own gates. Recommended. (b) Not now, and Cheflabels keeps sketches.",
-    "U4 Machine-readable approval status. Approval status now lives in a Markdown table (Cheflabels DESIGN.md). (a) The adapter reads that table as it is, with no project change. Recommended. (b) Each project adds a small JSON status file."
-  ],
+  "open_decisions": [],
   "sources": [
     {
       "id": "S1",
@@ -454,7 +449,7 @@
       "id": "U-T6",
       "title": "Angular/Ionic adapter for an approved kit route (Cheflabels)",
       "kind": "requested",
-      "reason": "Cheflabels is one of the two real users that justify a shared interface. The ticket is dropped if U3 is (b).",
+      "reason": "Cheflabels is one of the two real users that justify a shared interface. It captures the separate Cheflabels kit page (D3).",
       "requirements": [
         "R2",
         "R3",
@@ -602,7 +597,7 @@
     },
     {
       "id": "A9",
-      "text": "The adapter discovers the kit page's components and their approved or candidate status from DESIGN.md and the source. It captures one approved component in isolation with no request leaving localhost.",
+      "text": "The adapter discovers the kit page's components from the source and treats only entries explicitly marked approved in DESIGN.md as approved (D4). It captures one approved component in isolation with no request leaving localhost.",
       "requirements": [
         "R2",
         "R3",
@@ -1205,7 +1200,7 @@
     "screen_change": "none",
     "agreement": {
       "status": "not-approved",
-      "summary": "Agreement r1 is proposed and not agreed. Questions U1 to U4 are open. Nothing is built before you agree to the behavior and approve the plan.",
+      "summary": "Agreement r1 is proposed and not agreed. You answered U1 to U4, recorded as D1 to D5. Agreement and plan approval are asked together in one message.",
       "source": "S1",
       "locator": "PLAN.md ## Agreement"
     },
@@ -1220,30 +1215,30 @@
       {
         "id": "agreement",
         "title": "What will change",
-        "text": "Agreement r1 covers the requirements R1 to R10, the architecture and the boundaries. U1 to U4 are open. If U3 is (b), U-T6 is dropped and Cheflabels keeps sketches. U-T8 then checks Altinstar only.\n\nworkflow-axa gets a framework-neutral evidence contract. Each capture has one manifest with the image, viewport, component and variant, approval status, decision IDs, runtime problems and dependency fingerprints. The renderer accepts a real preview only with a valid manifest.\n\nAdapters behind one interface discover, render, capture, report runtime problems and fingerprint dependencies. The planned adapters are static HTML, Angular/Ionic for Cheflabels and React/Vite for Altinstar. Unity and other non-DOM screens use a manual capture, or visual approval is blocked.\n\nNot included: application code changes, invented UI, installs, production contact, pixel blurring and capture of screens with personal data.",
+        "text": "Agreement r1 covers the requirements R1 to R10, the architecture, the boundaries and your answers D1 to D5. If a Cheflabels capture reaches the live backend, that preview stays blocked until a separate Cheflabels task makes it offline.\n\nworkflow-axa gets a framework-neutral evidence contract. Each capture has one manifest with the image, viewport, component and variant, approval status, decision IDs, runtime problems and dependency fingerprints. The renderer accepts a real preview only with a valid manifest.\n\nAdapters behind one interface discover, render, capture, report runtime problems and fingerprint dependencies. The planned adapters are static HTML, Angular/Ionic for Cheflabels and React/Vite for Altinstar. Unity and other non-DOM screens use a manual capture, or visual approval is blocked.\n\nNot included: application code changes, invented UI, production contact, pixel blurring and capture of screens with personal data. Playwright is the only install, and only when a capture needs it.",
         "source": "S1",
         "locator": "PLAN.md ## Agreement, ## Proposed architecture, ## Boundaries"
       },
       {
         "id": "specification",
         "title": "How it will be built",
-        "text": "Eight tickets, U-T1 to U-T8. U-T1 (manifest) and U-T2 (element verification) depend on nothing. U-T3 (adapter interface and static HTML adapter) and U-T4 (staleness) depend on U-T1. U-T5 (report view) depends on U-T1 and U-T2.\n\nU-T6 (Cheflabels) and U-T7 (Altinstar) depend on U-T3. U-T6 also needs a separate Cheflabels task for offline translations and configuration (U3 a). U-T8 depends on U-T6 if it is kept, on U-T7 and on U2.",
+        "text": "Eight tickets, U-T1 to U-T8. U-T1 (manifest) and U-T2 (element verification) depend on nothing. U-T3 (adapter interface and static HTML adapter) and U-T4 (staleness) depend on U-T1. U-T5 (report view) depends on U-T1 and U-T2.\n\nU-T6 (Cheflabels) and U-T7 (Altinstar) depend on U-T3. U-T6 captures the separate Cheflabels kit page (D3). If that page reaches the live backend, its previews stay blocked until a separate Cheflabels task makes it offline.\n\nU-T8 depends on U-T6 if it is kept, on U-T7 and on U2.",
         "source": "S2",
         "locator": "TODO.md U-T1 to U-T8 (depends on)"
       },
       {
         "id": "decisions",
         "title": "Decisions",
-        "text": "Four questions are open: U1 architecture, U2 browser automation, U3 Cheflabels offline kit capture and U4 machine-readable approval status. The recommended answer for each is (a).\n\nThe recommended architecture builds the contract and element verification first, then exactly two real adapters. Two real users justify a shared interface. With only one, the interface is a guess.",
+        "text": "You answered U1 to U4 on 2026-11-03. The answers are D1 to D5.\n\nD1 (U1): (a) \"Contract first, 2 adapters\".\n\nD2 (U2): \"Install/use Playwright when required for accurate UI capture.\" Installing is allowed only when a capture needs it, and each install is recorded.\n\nD3 (U3): \"Keep Cheflabels' design kit separate from task-specific reviews. Reuse actual approved components and capture real screenshots.\" Any Cheflabels app change still goes through its own task.\n\nD4 (U4): \"Only explicitly approved components are approved\" and \"everything else remains candidate/unverified.\"\n\nD5 (general): \"Keep the solution framework-agnostic (Angular, React, Vue, etc.). Never invent application UI when real components or screenshots are available.\"",
         "source": "S4",
-        "locator": "DECISIONS.md U1-U4; PLAN.md ## Tradeoffs"
+        "locator": "DECISIONS.md ## Answers (owner, 2026-11-03) D1-D5"
       },
       {
         "id": "risks",
         "title": "Risks and assumptions",
-        "text": "The Cheflabels kit page still loads translations over HTTP, and its development environment points at the live backend. A capture without an offline configuration contacts production.\n\nOther risks are committed tokens in environment files, personal data in captures, running project code to capture, and fidelity limits. Examples of fidelity limits are the 500 px minimum width, fonts, Ionic md and iOS modes, and WebView differences.\n\nSome screens cannot be captured without a server or device. They keep sketches and block visual approval.",
+        "text": "The Cheflabels kit page still loads translations over HTTP, and its development environment points at the live backend. A capture without an offline configuration contacts production, so that preview stays blocked until a separate Cheflabels task makes it offline.\n\nOther risks are committed tokens in environment files, personal data in captures, running project code to capture, and fidelity limits. Examples of fidelity limits are the 500 px minimum width, fonts, Ionic md and iOS modes, and WebView differences.\n\nSome screens cannot be captured without a server or device. They keep sketches and block visual approval.",
         "source": "S3",
-        "locator": "FINDINGS.md E13, E16, E19"
+        "locator": "FINDINGS.md E13, E16, E19; PLAN.md ## Agreement"
       },
       {
         "id": "testing",
@@ -1291,8 +1286,8 @@
       },
       {
         "task": "U-T6",
-        "specification": "Build an Angular/Ionic adapter for an approved kit route, as Cheflabels /design-kit, in a new adapter file in workflow-axa only. It needs a separate Cheflabels task for offline translations and configuration (U3 a).",
-        "expected": "The adapter discovers the kit components and their approved or candidate status from DESIGN.md and the source. It captures one approved component in isolation with no request leaving localhost. If U3 is (b), this ticket is dropped.",
+        "specification": "Build an Angular/Ionic adapter for an approved kit route, in a new adapter file in workflow-axa only. It captures the separate Cheflabels kit page (D3). If that page reaches the live backend, its previews stay blocked until a separate Cheflabels task makes it offline.",
+        "expected": "The adapter discovers the kit components from the source. Only entries explicitly marked approved in DESIGN.md count as approved (D4). It captures one approved component in isolation with no request leaving localhost.",
         "source": "S2",
         "locator": "TODO.md U-T6"
       },
@@ -1305,7 +1300,7 @@
       },
       {
         "task": "U-T8",
-        "specification": "Run a live capture on the adapted projects in test worktrees only, after U2 is settled. Block the network and keep personal data off the screen. Make no application change.",
+        "specification": "Run a live capture on the adapted projects in test worktrees only. Block the network and keep personal data off the screen. Make no application change.",
         "expected": "Each project gets a plan report with real previews, or \"visual approval blocked\" with the reason. No capture shows personal data.",
         "source": "S2",
         "locator": "TODO.md U-T8"
