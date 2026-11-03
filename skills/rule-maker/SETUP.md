@@ -16,7 +16,7 @@ Use `--home`, `--claude-dir`, `--codex-home` and `--host` for the real profiles;
 
 Claude's managed block imports the entry point/core via its supported syntax. Codex receives explicit file-read instructions, not a pretend Markdown import. Disk `--check` is not evidence of actual loading. Inspect fresh host traces, a root and scoped task, a plain request without slash commands, a resumed task and a delegated worker. Host configurations that omit global instructions, custom/cloud profiles, unsupported imports or truncated context remain NOT VERIFIED until tested. Do not downgrade permissions to force this setup to pass.
 
-New repositories need no setup command to trigger the readiness question: global instructions route the request to the check. If relevant project rules are absent, the agent must ask before substantive planning/edits. Existing adequate rules need no rewrite or setup marker. Only project-specific facts and approved exceptions belong in repository rules. Use the existing task record; no mandatory readiness manifest per repo.
+New repositories need no setup command to trigger the readiness question: global instructions route the request to the check. If relevant project rules are absent, the agent must ask before substantive planning/edits. Existing adequate rules need no rewrite or setup marker; the optional `workflow-axa rules checked` line (rules/CHANGES.md) is information only. Only project-specific facts and approved exceptions belong in repository rules. Use the existing task record; no mandatory readiness manifest per repo.
 
 ## Update and rollback
 

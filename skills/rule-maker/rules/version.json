@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
-  "rules_version": "1.7.0",
+  "rules_version": "1.8.0",
   "package_version": "2.8.0-rc.1",
   "entrypoint": "START.md",
   "files": [
+    "CHANGES.md",
     "CORE.md",
     "ENGINEERING.md",
     "POLICY.md",
@@ -34,10 +35,11 @@
     "vite.md"
   ],
   "sha256": {
+    "CHANGES.md": "36a0a11bb4ff8f5fbc8c086b29231fb0ba3bc9ca27df1812f1584398be2a620c",
     "CORE.md": "0c145572a56b791cc572d3180198a6b4b2fbf911225b72b9509895f01c8c0539",
     "ENGINEERING.md": "36dd25fa356b2d6d332a5ff3257fbd509edcc070b6f1f5646a6993dbe2a54e28",
     "POLICY.md": "34a4724c8d2d16215ad6d89d3e211308547bd480b1fc1efad1cdcd06547c9b0a",
-    "READINESS.md": "fae92fb4105a398d28eea488013906a5be36718dcd3c0d81330b03ce2e5de5b8",
+    "READINESS.md": "6e060393970310506276518235436ebc92aaaa09430cd3f67b0821c861b90df3",
     "SOURCES.md": "a71aa2762e5798dda2b9e9482539501da2988973cafcacfa67831e39ca9f7f73",
     "START.md": "46420b13446bad1ada89220f024ef75213809903d579085f64bd22fb13623cfe",
     "VERSIONS.md": "d37819ae1571f37d00df89f044ea7492b7fb739e509256ef62371b7ea6da5638",

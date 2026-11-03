@@ -15,7 +15,7 @@ Use workflow/scripts/global_policy.py --check with the actual profile paths. Res
 
 ## Shared rules
 
-Use rule-maker/INSTALLATION.md and scripts/audit_installation.py --check-global with explicit known candidate paths. activate_rules.py --check remains available. Byte comparisons detect mixed copies; names do not. readiness.py inspects bounded inputs but cannot infer adequate rules from file presence. version_facts.py reports static versions, not runtime compatibility. Adequate existing project rules need no migration. Report host-loading and enforcement gaps separately; missing capabilities block dependent work, not diagnosis.
+Use rule-maker/INSTALLATION.md and scripts/audit_installation.py --check-global with explicit known candidate paths. activate_rules.py --check remains available. Byte comparisons detect mixed copies; names do not. readiness.py inspects bounded inputs but cannot infer adequate rules from file presence. version_facts.py reports static versions, not runtime compatibility. Adequate existing project rules need no migration. Report `rule-maker/scripts/rules_stamp.py <project-root>` (CURRENT, BEHIND with its changes, NONE or AHEAD). Report host-loading and enforcement gaps separately; missing capabilities block dependent work, not diagnosis.
 
 ## UI and report route
 

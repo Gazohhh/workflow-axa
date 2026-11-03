@@ -43,11 +43,12 @@ def in_project(path: str, cwd: str) -> bool:
 TYPED = re.compile(r'<command-name>\s*/(?:workflow-axa:)?(workflow(?:-clarify|-specify|-execute|-deliver)?)\s*</command-name>'
                    r'|^\s*/(?:workflow-axa:)?(workflow(?:-clarify|-specify|-execute|-deliver)?)(?![\w-])', re.M)
 LIGHTWEIGHT = re.compile(r'\blightweight edit\b', re.I)
+RULE_FILE = re.compile(r"(?:^|[/\s\"'])(?:AGENTS|CLAUDE)(?:\.override|\.local)?\.md\b|/\.claude/rules/", re.I)
 
 
-def session_state(path: Path) -> tuple[bool, bool, bool]:
-    """(router loaded, a phase loaded, lightweight edit declared in chat)."""
-    router = phase = light = False
+def session_state(path: Path) -> tuple[bool, bool, bool, bool]:
+    """(router loaded, a phase loaded, lightweight edit declared in chat, rule-maker loaded)."""
+    router = phase = light = rules = False
     for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
         try:
             entry = json.loads(line)
@@ -68,7 +69,8 @@ def session_state(path: Path) -> tuple[bool, bool, bool]:
                     light = True
         router = router or 'workflow' in names
         phase = phase or any(name in PHASES for name in names)
-    return router, phase, light
+        rules = rules or 'rule-maker' in names
+    return router, phase, light, rules
 
 
 def gated(event: dict) -> str | None:
@@ -99,11 +101,15 @@ def main() -> int:
     if not action:
         return 0
     try:
-        router, phase, light = session_state(Path(event.get('transcript_path', '')))
+        router, phase, light, rules = session_state(Path(event.get('transcript_path', '')))
     except OSError:
         return 0
     if not router or phase or light:
         return 0
+    data = event.get('tool_input') or {}
+    target = str(data.get('file_path') or data.get('notebook_path') or data.get('command') or '').replace('\\', '/')
+    if rules and RULE_FILE.search(target) and not GIT_WRITE.search(target):
+        return 0  # rule-maker setup or audit writes rule files (D20), never code
     reason = (f"workflow-axa: this session started /workflow, but no phase skill has run, so there is no task folder, "
               f"agreement or approved plan for {action}. Invoke workflow-clarify now: it writes the task folder and, "
               "for a small settled change, asks both gates in one message. A reply like \"do it\" or \"push when done\" "

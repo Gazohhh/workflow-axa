@@ -4,7 +4,7 @@ Shared engineering rules live in this package's `rule-maker` skill, under `rules
 
 ## Before planning or writing
 
-1. Resolve this package's `rule-maker` skill (not an upstream specialist). Read its `rules/START.md`, `rules/CORE.md` and `rules/READINESS.md`. Missing library: say so and pause affected work; never invent a substitute or fetch one.
+1. Resolve this package's `rule-maker` skill (not an upstream specialist). Read its `rules/START.md`, `rules/CORE.md` and `rules/READINESS.md`, and run its `scripts/rules_stamp.py` on the repository root (READINESS.md says what each state means). Missing library: say so and pause affected work; never invent a substitute or fetch one.
 2. Bounded read-only discovery is allowed first, to find the facts.
 3. When readiness stops the work, ask only the readiness choice and stop; behavior and design questions come afterwards from the phase skill, which saves them with the task.
 4. Set the readiness state exactly as READINESS.md defines it (READY, NEEDS_SETUP, BLOCKED, LIMITED_EXCEPTION, READ_ONLY, SETUP_ONLY), including its missing-rules message. Existing adequate project rules need no rule-maker run or marker; empty, stale or conflicting guidance is not adequate just because AGENTS.md exists.

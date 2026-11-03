@@ -75,6 +75,17 @@ class PhaseGateHookTests(unittest.TestCase):
         self.assertIsNone(self.fire(rows + [say("Lightweight edit: a typo in a code comment.")], "Edit", code))
         self.assertIsNone(self.fire([say("plain session")], "Edit", code))  # no /workflow, no gate
 
+    def test_rule_maker_may_write_rule_files_only(self):
+        # D20: rule-maker writes the rules-checked line into AGENTS.md during setup or audit, without a phase.
+        rows = [ROUTER, skill("workflow-axa:rule-maker")]
+        for tool, data in (("Edit", {"file_path": "D:/Hooqd/AGENTS.md"}),
+                           ("Edit", {"file_path": "D:/Hooqd/.claude/rules/frontend.md"}),
+                           ("Bash", {"command": "cd /d/Hooqd && sed -i 's/1.7.0/1.8.0/' AGENTS.md"})):
+            with self.subTest(data=data):
+                self.assertIsNone(self.fire(rows, tool, data))
+        self.assertEqual(self.fire(rows, "Edit", {"file_path": "D:/Hooqd/src/a.ts"})["permissionDecision"], "deny")
+        self.assertEqual(self.fire([ROUTER], "Edit", {"file_path": "D:/Hooqd/AGENTS.md"})["permissionDecision"], "deny")
+
     def test_bad_input_is_ignored(self):
         result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK)], input="nope", capture_output=True, text=True)
         self.assertEqual((result.returncode, result.stdout), (0, ""))

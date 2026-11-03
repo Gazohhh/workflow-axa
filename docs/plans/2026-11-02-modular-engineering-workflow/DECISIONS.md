@@ -99,3 +99,14 @@ On 2026-11-03 the owner answered the last audit questions; all applied and pushe
 - Cheflabels (`cb6de05`, `4bf8146`, `2c84170`, `5790571`): type check builds into `.artifacts/checks/typecheck`; failing-spec names instead of the stale count; `httpMock.verify()`; `ionViewWillLeave`; backend work loads php.md and laravel.md; risk modules load too; owner starts native builds, store uploads and live-update publishes; hand-kept native files listed (traced from git history); feature runbooks moved to `docs/architecture/feature-runbooks.md`; tracked permission that edited a backend controller removed.
 - Memories: Altinstar `feedback-audit-verification-scope` and Cheflabels `feedback_no_nested_ternaries` marked historical (nothing deleted).
 - Global blocks: all checkers report MATCH from the installed copy; the audit's UPDATE came from the `D:` copy's path. No refresh needed.
+
+
+## D20 — A project's "rules checked" line and a change list per rules version (decided)
+
+On 2026-11-03 the owner asked how to start in new and old projects, and whether the workflow could know with versions. Testing showed the real gap is updates, not the start: when a shared rule changes (the D14 CSS rule), nothing shows which projects still carry the old wording, so Altinstar and Cheflabels had to be audited by hand. The owner approved this design, to be tested in worktrees of Hooqd, Mulcol-app2, PletrixV2 and Altinstar.
+
+- `rule-maker/rules/CHANGES.md` lists, per rules version and newest first, what changed and what a project must check. Rules 1.8.0 adds it.
+- A project may carry one line in its root AGENTS.md: `workflow-axa rules checked: <rules version> (<date>)`. Only a passed setup or audit writes it, with the owner's approval.
+- `rule-maker/scripts/rules_stamp.py <root>` prints CURRENT (say nothing), BEHIND (one line naming the newer changes and offering an audit of only those, never blocking), NONE (normal check, then offer the line) or AHEAD (install is older). The readiness gate runs it, and workflow-doctor reports it.
+- The line is information, never a requirement. The principle that adequate rules need no setup marker stays.
+- The phase gate lets rule-maker write rule files (AGENTS.md, CLAUDE.md, `.claude/rules`) without a workflow phase, and still never code or git writes.

@@ -33,7 +33,7 @@ Edit only approved rule/configuration files; preserve unrelated bytes, line endi
 
 ## 5. Verify and return to the interrupted task
 
-Check paths, references, effective host discovery, conflicts, version compatibility and missing modules; use the read-only installation checker for explicit candidate paths. A scoped readiness pass cannot certify a whole-project audit. Separate disk evidence, actual loading, model compliance and enforced checks. Use `writing-for-agents` for the rule changes. Run relevant package tests and live-host acceptance cases when available; otherwise report the untested layer.
+Check paths, references, effective host discovery, conflicts, version compatibility and missing modules; use the read-only installation checker for explicit candidate paths. A scoped readiness pass cannot certify a whole-project audit. Separate disk evidence, actual loading, model compliance and enforced checks. Use `writing-for-agents` for the rule changes. After a passed setup or audit, offer the line `scripts/rules_stamp.py` prints for the root AGENTS.md; a BEHIND state scopes the audit to its listed changes. Run relevant package tests and live-host acceptance cases when available; otherwise report the untested layer.
 
 Re-run readiness on the original task's scope. Setup approval does not approve application implementation. Reuse valid existing task approval when the rules do not materially change its agreement; otherwise revise only the affected scope. No bulk migration of existing projects. No change to old code just because a shared rule improved.
 
