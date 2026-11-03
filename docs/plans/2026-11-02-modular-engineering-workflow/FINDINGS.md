@@ -679,3 +679,6 @@ Sources: `digest_sessions.py` on both r22 project log folders, then a scan for t
 - **Renderer self-corrections:** a screen-height error and a dict-indexing slip were fixed by the agent on the next call. No change.
 
 **V29** — validator PASS (21 skills); 636 run, OK, 11 host skips; installed copies match. Codex is not installed on this machine, so Codex host loading is not tested here.
+
+
+**V30 — both r22 deliveries closed (2026-11-03).** Short: the owner asked for the click-through by probe page. 14 of 14 checks passed in headless Edge, the probe failed on the old files, a fresh agent reran it, and the delivery is complete. Long: the owner accepted the r1 look and chose Q7 b. The agent opened revision r2 with both gates in one message, then built T3 test-first (20 of 21 before, 21 of 21 after), with a fresh reviewer and a fresh final check. The delivery is complete. All seven report sources have 0 plain-English problems. A complete delivery report still says "You still need to accept it", because delivery and owner acceptance are separate steps.
