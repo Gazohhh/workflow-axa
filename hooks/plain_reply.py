@@ -45,10 +45,11 @@ def phase_reads_table() -> dict:
 
 
 def unread_files(path: Path) -> dict[str, list[str]]:
-    """For each workflow phase loaded in the session, the required files not opened after its last load.
-    UI files count only when the session worked on a visible change (round 17: reminders were ignored)."""
+    """For each workflow phase loaded in the session, the required files not opened in the current context.
+    A read counts from the last compaction on, also before the phase loaded (round 22: the router's reads were
+    demanded again). UI files count only when the session worked on a visible change (round 17)."""
     reads, ui_files = phase_reads_table()
-    loads: dict[str, int] = {}
+    loaded: set[str] = set()
     inputs: list[str] = []
     visible = False
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
@@ -57,11 +58,13 @@ def unread_files(path: Path) -> dict[str, list[str]]:
         except ValueError:
             continue
         content = (entry.get("message") or {}).get("content")
+        if entry.get("type") == "system" and entry.get("subtype") == "compact_boundary":
+            inputs = []  # the summary does not carry the files' text
         if entry.get("type") == "user":
             text = json.dumps(content)
             for name in reads:
                 if f"/workflow-axa:{name}" in text or f"/{name}<" in text:
-                    loads[name] = len(inputs)
+                    loaded.add(name)
         if entry.get("type") != "assistant" or not isinstance(content, list):
             continue
         for block in content:
@@ -71,15 +74,15 @@ def unread_files(path: Path) -> dict[str, list[str]]:
             if block.get("name") == "Skill":
                 skill = str((block.get("input") or {}).get("skill", "")).split(":")[-1]
                 if skill in reads:
-                    loads[skill] = len(inputs)
+                    loaded.add(skill)
             if "ui_review" in data or "screen_change" in data:
                 visible = True
             inputs.append(data)
     missing = {}
-    for phase, start in loads.items():
-        after = "\n".join(inputs[start:])
+    opened = "\n".join(inputs)
+    for phase in loaded:
         needed = [rel for rel in reads[phase] if visible or rel not in ui_files]
-        gone = [rel for rel in needed if rel not in after]
+        gone = [rel for rel in needed if rel not in opened]
         if gone:
             missing[phase] = gone
     return missing
@@ -117,7 +120,7 @@ def main() -> int:
     reasons = []
     if unread:
         listing = "; ".join(f"{phase}: {', '.join(files)}" for phase, files in unread.items())
-        reasons.append("workflow-axa: these required files were not opened after their phase loaded: " + listing +
+        reasons.append("workflow-axa: these required files were not opened in this context: " + listing +
                        ". Read them now (whole), check your work and records against them, correct anything they change, "
                        "and name only files you actually opened.")
     if found:

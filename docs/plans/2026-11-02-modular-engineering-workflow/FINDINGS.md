@@ -649,3 +649,18 @@ Retro over the Cheflabels kit run (`retro/retro-round17-findings.md`): the Stop 
 Live check r18 (uppercase category tags, no kit, $1.97): the hook asked for the missing reads and plain wording (5 requests each); at the end no required file was unread and the reply used full forms. No CSS: the capitals were typed into the words, with the side effects stated.
 
 **V27** — validator PASS (21 skills); 634 run, OK, 11 host skips; installed copies synced. `D:/wfaxa-eval-nokit` and `D:/wfaxa-eval-nokit-codex` were deleted by the owner on 2026-11-03 (confirmed gone).
+
+
+## E50 — Final re-audit fixes and short and long reruns on the current version (2026-11-03)
+
+The r21 read-only re-audits of Altinstar and Cheflabels found four wording errors in lines written during D19. Fixed and pushed: Altinstar `12e1b2571` (the style exception overrides design.md instead of "design.md defers to it", "it" now names the Unity player build, the module list names operations.md and the risk modules) and Cheflabels `df9b6e3` (the risk-module list is an example list and names performance). Nine other audit items are owner policy choices and stay open; they were listed for the owner, not applied.
+
+r22 reran the r14 short task and the r15 long task on the current version, in two fresh copies of the shopping-list fixture rebuilt from the original script (scratchpad `r22-short`, `r22-long`).
+
+- Short (rename Remove to Delete, 2 turns, about $9.5): plan report with a screen diagram first, three words changed, no CSS, fresh reviewer and fresh final checker, delivered as partial because nobody clicked the buttons.
+- Long (count and Clear list, 4 turns, about $21): the exact mimic question for both new elements, plain HTML only after the explicit instruction, accepted placement differences recorded as assumptions, tests red before each ticket and 19 of 19 green after, per-ticket and whole-feature reviews by fresh agents, a final check of all seven acceptance items, and a focus problem raised as a question instead of fixed silently.
+- All four final report sources have 0 plain-English problems.
+
+**Defect found:** the Stop hook counted a required file only when it was opened after its phase loaded. The router read `ui-design/SKILL.md` and `design.md`, then clarify loaded, so the hook demanded them again on three turns, and the late reread made the presented plan report stale. Fix: a read counts anywhere in the current context, from the last compaction on (`hooks/plain_reply.py`), with a test that fails before the fix. The genuine miss (simple-english not read before the plan report) is still reported. After the fix, turn four had no read demands.
+
+**V28** — validator PASS (21 skills); 635 run, OK, 11 host skips (symlinks and POSIX modes on this Windows host). Not run here: Codex host loading.

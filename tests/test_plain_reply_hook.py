@@ -51,7 +51,7 @@ class PlainReplyHookTests(unittest.TestCase):
         result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK)], input="nope", capture_output=True, text=True)
         self.assertEqual((result.returncode, result.stdout), (0, ""))
 
-    def test_required_phase_files_must_be_opened_after_the_phase_loads(self):
+    def test_required_phase_files_must_be_opened(self):
         # Round 17: the agent ignored both phase reminders and never opened grilling or simple-english.
         path = self.dir / "session.jsonl"
         rows = [{"type": "user", "message": {"role": "user", "content": "/workflow-axa:workflow add"}},
@@ -70,6 +70,23 @@ class PlainReplyHookTests(unittest.TestCase):
                         "input": {"file_path": "plan.json", "content": "{\"ui_review\": {}}"}}]}})
         path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
         self.assertIn("rule-maker/rules/design.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
+
+    def test_reads_before_the_phase_load_count_until_compaction(self):
+        # Round 22: the router read the design files, then clarify loaded. The hook demanded them again
+        # three turns running, and the late reread made the presented plan report stale.
+        path = self.dir / "session.jsonl"
+        read = lambda rel: {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                            "input": {"file_path": f"D:/workflow-axa/skills/{rel}"}}]}}
+        rows = [{"type": "user", "message": {"role": "user", "content": "/workflow-axa:workflow add"}},
+                read("grilling/SKILL.md"),
+                {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Skill",
+                                                               "input": {"skill": "workflow-axa:workflow-clarify"}}]}},
+                {"type": "assistant", "message": {"content": [{"type": "text", "text": "Questions are ready."}]}}]
+        path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+        self.assertEqual(fire({"transcript_path": str(path)}), (0, ""))
+        rows.insert(2, {"type": "system", "subtype": "compact_boundary", "content": "Conversation compacted"})
+        path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+        self.assertIn("workflow-clarify: grilling/SKILL.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
 
     def test_hooks_json_wires_it_on_stop(self):
         data = json.loads((ROOT / "hooks/hooks.json").read_text(encoding="utf-8"))
