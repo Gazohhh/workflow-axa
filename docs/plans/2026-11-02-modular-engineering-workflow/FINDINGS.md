@@ -664,3 +664,18 @@ r22 reran the r14 short task and the r15 long task on the current version, in tw
 **Defect found:** the Stop hook counted a required file only when it was opened after its phase loaded. The router read `ui-design/SKILL.md` and `design.md`, then clarify loaded, so the hook demanded them again on three turns, and the late reread made the presented plan report stale. Fix: a read counts anywhere in the current context, from the last compaction on (`hooks/plain_reply.py`), with a test that fails before the fix. The genuine miss (simple-english not read before the plan report) is still reported. After the fix, turn four had no read demands.
 
 **V28** — validator PASS (21 skills); 635 run, OK, 11 host skips (symlinks and POSIX modes on this Windows host). Not run here: Codex host loading.
+
+
+## E51 — Retro r22 (short and long reruns) (2026-11-03)
+
+Sources: `digest_sessions.py` on both r22 project log folders, then a scan for tool errors, hook blocks and sub-agent calls.
+
+- **Back-and-forth:** none. The owner gave one answer per gate, and no status question or repeat was needed. Short: 2 turns. Long: 4 turns, one answer each.
+- **Stop hook read demands (fixed in E50):** the short run got demands in specify and execute for files read earlier in the same context, and the long run in clarify and specify. Both cases are covered by the new rule.
+- **Screenshot tool blocked a fresh repo (fixed):** both runs hit `BLOCKED: parent of the output folder ... does not exist` because `.artifacts/` did not exist yet. `screenshot_report.py` now creates `.artifacts/` when it is the direct parent and its own parent exists. Any other missing parent still blocks, so a typo in the path is still caught. Test: `test_first_capture_in_a_fresh_repo_creates_artifacts`.
+- **Short run left clicks to the owner, long run did not (fixed):** with no test runner, the short run said it could not click and delivered as partial. The long run drove the real page through a probe page in installed headless Edge (`--dump-dom`) and ran 19 checks. `workflow-specify` step 3 now says a probe page can still click when there is no test runner.
+- **Chat wording:** one simple-english rewrite request in the long run (contractions, semicolons). It was corrected on the next message. No change.
+- **Cost:** the long run's implement and deliver turn used its whole $12 budget for two tickets and eight fresh sub-agents (two builders, four reviews, a probe follow-up, a final checker). This is the review design working as intended. No change proposed.
+- **Renderer self-corrections:** a screen-height error and a dict-indexing slip were fixed by the agent on the next call. No change.
+
+**V29** — validator PASS (21 skills); 636 run, OK, 11 host skips; installed copies match. Codex is not installed on this machine, so Codex host loading is not tested here.

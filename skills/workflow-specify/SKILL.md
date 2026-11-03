@@ -9,11 +9,11 @@ Turn the agreement into tickets another agent could build, and get the plan appr
 
 Read shared policies from `../workflow/` from this SKILL.md (missing: stop and say so; never another skills root's copy). Its "Always" list applies here too.
 
-**Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or clarify sent a small settled change here to ask both gates at once (`workflow/VISUAL-REVIEW.md`); otherwise go to `workflow-clarify`; no open choice blocks the plan (else back to clarify); application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask design.md rule 4's question; never offer new CSS. Refresh evidence for files changed since the agreement.
+**Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or clarify sent a small settled change here to ask both gates at once (`workflow/VISUAL-REVIEW.md`); otherwise go to `workflow-clarify`; no open choice blocks the plan; application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask design.md rule 4's question; never offer new CSS. Refresh evidence for files changed since the agreement.
 
 ## 1. Place the behavior
 
-Put each behavior in the code that already owns it. Read `../codebase-design/SKILL.md` when an interface or seam is in question, `../domain-modeling/SKILL.md` when a term or owner is unclear. Every new helper, wrapper, fallback or setting must pass the necessity check in `workflow/AUDIT.md`. Pick engineering guidance from rule-maker's ENGINEERING.md for the real risks.
+Put each behavior in the code that already owns it. Read `../codebase-design/SKILL.md` when an interface or seam is in question, `../domain-modeling/SKILL.md` when a term or owner is unclear. Every new helper, wrapper, fallback or setting must pass the necessity check in `workflow/AUDIT.md`. Pick guidance for the real risks from rule-maker's ENGINEERING.md.
 
 ## 2. Cut vertical tickets
 
@@ -35,15 +35,15 @@ Done when the graph has no cycles, every requirement and acceptance item has a t
 
 ## 3. Name the bigger checks
 
-List the checks that run after a group of dependent tickets lands, and the whole-feature checks against the full agreement: other callers, compatibility, failure journeys. Say what can't be checked here and why. Name what each check needs (server, port, device, account) and ask for it with gate two, so a needed check is never dropped silently at delivery.
+List checks for each group of dependent tickets and whole-feature checks against the agreement: other callers, compatibility, failure journeys. Say what can't be checked and why. Without a test runner, a headless Edge or Chrome probe page can still click (`--dump-dom`). Name what each check needs (server, port, device, account) and ask for it with gate two, so a needed check is never dropped silently at delivery.
 
 ## 4. Challenge it (when large or risky)
 
-Run `plan-review` in a fresh context and resolve its findings. A behavior question goes back to `workflow-clarify`. In any step, an answer that changes what users see or an agreed requirement (placement, wording, which rows) changes the agreement: write a new agreement revision for those items and ask for it in the same message as gate two; never record it only as a decision.
+Run `plan-review` in a fresh context and resolve its findings. A behavior question goes back to `workflow-clarify`. Any answer that changes what users see or an agreed requirement (placement, wording, which rows) changes the agreement: write a new agreement revision for those items and ask for it in the same message as gate two; never record it only as a decision.
 
 ## 5. Gate two
 
-First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Build and show the HTML plan exactly as `workflow/VISUAL-REVIEW.md` "Prepare the report" says, then ask for implementation approval; say "implements the behavior we agreed" only when that comparison found no difference. **STOP.** Until the answer, write only task records and the report.
+First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Build the HTML plan as `workflow/VISUAL-REVIEW.md` "Prepare the report" says and ask for implementation approval; say "implements the behavior we agreed" only when that comparison found no difference. **STOP.** Until the answer, write only task records and the report.
 
 Done when the report exists for this revision and its path is in your approval question (one-line changes included), or the user's explicit "no report" is recorded. Set `task_report.screen_change`; a change a user can see on screen (`visible`) also needs the report's screen diagram (`ui-design` step 3): capture the current screen when it opens safely (a local page: `../codebase-map/scripts/screenshot_report.py`), sketch the proposed one; a sketch-only preview is `not-needed`.
 
@@ -51,7 +51,7 @@ Record the answer in the checkpoint `Approval` line and DECISIONS: approved (rev
 
 ## Revisions
 
-For a later change, rewrite only affected tickets and checks, show the difference from the last approved revision; unaffected approved tickets keep running. Fixing a path or order inside an approved ticket needs no revision.
+For a later change, rewrite only affected tickets and checks and show the difference from the last approved revision. Other approved tickets keep running. Fixing a path or order inside an approved ticket needs no revision.
 
 ## Next
 

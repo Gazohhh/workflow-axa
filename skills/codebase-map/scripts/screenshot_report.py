@@ -60,10 +60,11 @@ def main(argv: list[str]) -> int:
     if not report.is_file() or report.suffix.lower() != '.html':
         print(f'BLOCKED: {report} is not an HTML file')
         return 2
-    if not folder.parent.is_dir():
+    fresh_artifacts = folder.parent.name == '.artifacts' and folder.parent.parent.is_dir()  # first output in a repo
+    if not folder.parent.is_dir() and not fresh_artifacts:
         print(f'BLOCKED: parent of the output folder {folder} does not exist')
         return 2
-    folder.mkdir(exist_ok=True)
+    folder.mkdir(parents=fresh_artifacts, exist_ok=True)
     browser = find_browser(browser_arg)
     if not browser:
         print('BLOCKED: no installed Edge or Chrome found; pass --browser PATH. Nothing is installed by this tool.')

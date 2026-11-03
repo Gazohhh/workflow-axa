@@ -54,6 +54,16 @@ class ScreenshotReportTests(unittest.TestCase):
         self.assertIn("Nothing is installed", missing_browser.stdout)
         self.assertEqual(list(self.out.iterdir()), [])
 
+    def test_first_capture_in_a_fresh_repo_creates_artifacts(self):
+        # Round 22: both runs were blocked because `.artifacts/` did not exist yet in a fresh repo.
+        out = self.dir / ".artifacts" / "2026-11-03-task"
+        result = self.run_tool(self.report, out, "--browser", self.browser)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue((out / "review-desktop.png").is_file())
+        typo = self.run_tool(self.report, self.dir / "artifacts-typo" / "t", "--browser", self.browser)
+        self.assertEqual(typo.returncode, 2)
+        self.assertFalse((self.dir / "artifacts-typo").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
