@@ -701,3 +701,18 @@ Fixes (owner approved 2026-11-03):
 Live check: r24 found two holes. The gate watched only the Edit tool, so `sed -i` went through, and it exempted every Temp path, including a project under Temp. After the fix, r25 was blocked once, then loaded `workflow-clarify`, recorded revision r2 and asked for both gates. No file changed and nothing was committed.
 
 **V32** — validator PASS (21 skills, 699 router words); 642 run, OK, 11 host skips; installed copies synced.
+
+
+## E53 — Version line (D20) tested in four worktrees, six rounds, with a retro each round (2026-11-03)
+
+Detached worktrees under `D:/wfaxa-wt/` of Hooqd (rules, no line), Altinstar (line 1.7.0, so BEHIND), Mulcol-app2 (no rules) and PletrixV2 (no rules, old BMAD files). One headless agent per worktree and round, run in parallel, with owner answers sent between rounds.
+
+Outcome per project:
+- Hooqd: NONE, then a passed audit, then the line written through the gate (CURRENT). The change was built test-first with a separate reviewer and delivered with a report.
+- Altinstar: BEHIND was reported as one line, then a scoped audit, the line updated to 1.8.0 (CURRENT), and a plan approved with no code, as asked.
+- Mulcol: new-project setup wrote AGENTS.md, CLAUDE.md and the line (CURRENT). The mimic question and the explicit plain `<p>` were recorded. Implementation stopped correctly on the missing packages.
+- PletrixV2: a one-task exception, then a delivered and accepted README change. An unrelated question was answered without touching records, and an unrelated change was treated as a separate task.
+
+Retro fixes made during the loop (each with a test): BEHIND reached the owner only after `rules_stamp.py` printed a ready SAY sentence and the Stop hook checked it was said (v1). Only whole reads count as opened, after `wc -c` counted (v2). The audit keeps package, rules and policy versions apart (v2). The report renders only after its guides are read (v3). Fresh-worktree dependency rule, including monorepo links and removing links as links (v3, v4). One report file before it is shown (`--replace-unpresented`), and a failed run's log is kept (v5). Router: ask before acting on a message that does not belong to the task (owner).
+
+Open from the loop: PletrixV2 did not offer a fresh session for the unrelated change, as the new router line asks (once, not enforced). The Hooqd worktree's four `node_modules` junctions were removed as links on 2026-11-03; `D:\Hooqd\frontend\node_modules` was unchanged (682 entries before and after). The worktrees remain until the owner has looked at their reports.
