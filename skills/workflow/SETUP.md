@@ -13,6 +13,15 @@ Inspect the existing host inventory first. Reuse an approved working installatio
 not download a second one merely because it lives outside this project. Missing or
 disabled dependencies require a setup decision, not an automatic fix during a task.
 
+**workflow-axa itself, and where its hooks come from.** The hooks (phase gate, required reads, plain-English replies, partial-read warnings) run only when workflow-axa is installed as a Claude Code plugin, because they use `${CLAUDE_PLUGIN_ROOT}`:
+
+```powershell
+claude plugin marketplace add Gazohhh/workflow-axa
+claude plugin install workflow-axa@gazohhh
+```
+
+`npx skills add Gazohhh/workflow-axa` copies only the skill folders. It installs no hooks, so nothing enforces the gates; use it for Codex, which gets skills and global instructions but no hooks. Using both routes on one machine gives two copies of every skill: run `workflow-doctor`, and keep one route per host. The Matt Pocock skills below are vendored inside workflow-axa now; the upstream commands are only for a separate install.
+
 For **Claude Code**, the upstream documented managed installation is:
 
 ```powershell

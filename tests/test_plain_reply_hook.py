@@ -71,6 +71,29 @@ class PlainReplyHookTests(unittest.TestCase):
         path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
         self.assertIn("rule-maker/rules/design.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
 
+    def test_only_whole_reads_count_as_opened(self):
+        # Round v2 (Hooqd): `wc -c .../simple-english/SKILL.md` counted as reading it, so the hook stayed silent.
+        path = self.dir / "session.jsonl"
+        def bash(command):
+            return {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {"command": command}}]}}
+        base = [{"type": "user", "message": {"role": "user", "content": "/workflow-axa:workflow add"}},
+                {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Skill",
+                 "input": {"skill": "workflow-axa:workflow-clarify"}}]}}]
+        done = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Questions are ready."}]}}
+        g = "/d/workflow-axa/skills/grilling/SKILL.md"
+        for command in (f"wc -c {g}", f"ls {g}", f"cat {g} | head -40", f"grep -n gate {g}"):
+            with self.subTest(command=command):
+                path.write_text("\n".join(json.dumps(r) for r in base + [bash(command), done]), encoding="utf-8")
+                self.assertIn("grilling/SKILL.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
+        for command in (f"cat {g}", f"cd /d/x && cat {g}; echo ---"):
+            with self.subTest(command=command):
+                path.write_text("\n".join(json.dumps(r) for r in base + [bash(command), done]), encoding="utf-8")
+                self.assertEqual(fire({"transcript_path": str(path)}), (0, ""))
+        partial = {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                   "input": {"file_path": "D:\\workflow-axa\\skills\\grilling\\SKILL.md", "limit": 30}}]}}
+        path.write_text("\n".join(json.dumps(r) for r in base + [partial, done]), encoding="utf-8")
+        self.assertIn("grilling/SKILL.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
+
     def test_a_behind_rules_stamp_must_reach_the_owner(self):
         # Round v1 (Altinstar): rules_stamp.py said BEHIND, and the reply never mentioned it.
         path = self.dir / "session.jsonl"

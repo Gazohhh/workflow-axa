@@ -44,6 +44,23 @@ def phase_reads_table() -> dict:
     return module.READS, set(module.UI)
 
 
+READ_VERB = re.compile(r"^\s*(?:cat|type|get-content|gc|more|less|bat)\b", re.I)
+PARTIAL = re.compile(r"\b(?:head|tail)\b|\bsed\s+-n\b|-totalcount|-tail\b|\bselect-object\s+-first", re.I)
+
+
+def whole_reads(block: dict) -> str:
+    """The paths a tool call read whole: Read without a line limit, or a cat-like shell segment not cut by head,
+    tail or sed -n (round v2: `wc -c` on a required file counted as reading it)."""
+    data = block.get("input") or {}
+    if block.get("name") == "Read":
+        return "" if data.get("limit") else str(data.get("file_path", "")).replace("\\", "/")
+    if block.get("name") not in ("Bash", "PowerShell"):
+        return ""
+    pipelines = re.split(r"&&|\|\||;|\n", str(data.get("command", "")))
+    read = [p for p in pipelines if READ_VERB.match(p) and not PARTIAL.search(p)]
+    return "\n".join(read).replace("\\", "/")
+
+
 def unread_files(path: Path) -> dict[str, list[str]]:
     """For each workflow phase loaded in the session, the required files not opened in the current context.
     A read counts from the last compaction on, also before the phase loaded (round 22: the router's reads were
@@ -77,7 +94,7 @@ def unread_files(path: Path) -> dict[str, list[str]]:
                     loaded.add(skill)
             if "ui_review" in data or "screen_change" in data:
                 visible = True
-            inputs.append(data)
+            inputs.append(whole_reads(block))
     missing = {}
     opened = "\n".join(inputs)
     for phase in loaded:
