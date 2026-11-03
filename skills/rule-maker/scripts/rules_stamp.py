@@ -70,10 +70,14 @@ def main(argv: list[str]) -> int:
         print('The installed rules library is older than the one this project was checked with. Tell the owner '
               'to update the install (workflow-doctor); keep using the project rules meanwhile.')
     else:
+        newer = changes_since(found)
+        versions = ', '.join(HEADING.findall(newer))
         print(f'STATE: BEHIND project {found} ({name}, checked {date}) < installed {installed}')
-        print('Tell the owner in one line which changes below are newer and offer the rules audit for just those. '
-              'Never block the task on it; continue with the normal readiness check.\n')
-        print(changes_since(found))
+        print('Put the SAY sentence in your next reply to the owner, once. Never block the task on it; continue '
+              'with the normal readiness check.')
+        print(f'SAY: This project\'s rules were last checked against shared rules {found}. Newer changes: {versions}. '
+              'Do you want the rules audit for just those changes? It does not hold up this task.\n')
+        print(newer)
     return 0
 
 

@@ -47,6 +47,11 @@ class RulesStampTests(unittest.TestCase):
         self.assertNotIn("## 1.5.0", out)
         self.assertNotIn("## 1.3.0", out)
         self.assertIn("Never block", out)
+        # Round v1 (Altinstar): the agent saw BEHIND and never told the owner. One ready sentence to pass on.
+        say = next(line for line in out.splitlines() if line.startswith("SAY: "))
+        self.assertIn("1.5.0", say)
+        self.assertIn("1.7.0", say)
+        self.assertIn("rules audit", say)
 
     def test_ahead_points_to_the_install(self):
         self.assertIn("STATE: AHEAD", self.run_on(agents="workflow-axa rules checked: 99.0.0 (2030-01-01)\n"))

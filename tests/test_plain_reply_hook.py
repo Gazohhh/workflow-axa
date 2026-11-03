@@ -71,6 +71,25 @@ class PlainReplyHookTests(unittest.TestCase):
         path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
         self.assertIn("rule-maker/rules/design.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
 
+    def test_a_behind_rules_stamp_must_reach_the_owner(self):
+        # Round v1 (Altinstar): rules_stamp.py said BEHIND, and the reply never mentioned it.
+        path = self.dir / "session.jsonl"
+        stamp = {"type": "user", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1",
+                 "content": "STATE: BEHIND project 1.7.0 (AGENTS.md, checked 2026-11-03) < installed 1.8.0\nSAY: ..."}]}}
+        rows = [{"type": "user", "message": {"role": "user", "content": "/workflow-axa:workflow plan it"}},
+                {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                 "input": {"file_path": "D:/workflow-axa/skills/grilling/SKILL.md"}}]}},
+                stamp,
+                {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Skill",
+                 "input": {"skill": "workflow-axa:workflow-clarify"}}]}},
+                {"type": "assistant", "message": {"content": [{"type": "text", "text": "Questions are ready."}]}}]
+        path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+        self.assertIn("rules audit", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
+        rows[-1]["message"]["content"][0]["text"] = ("Questions are ready. This project's rules were last checked "
+                                                     "against shared rules 1.7.0. Do you want the rules audit?")
+        path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+        self.assertEqual(fire({"transcript_path": str(path)}), (0, ""))
+
     def test_reads_before_the_phase_load_count_until_compaction(self):
         # Round 22: the router read the design files, then clarify loaded. The hook demanded them again
         # three turns running, and the late reread made the presented plan report stale.

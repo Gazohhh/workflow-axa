@@ -88,6 +88,30 @@ def unread_files(path: Path) -> dict[str, list[str]]:
     return missing
 
 
+def unsaid_behind(path: Path) -> str | None:
+    """The project version from a BEHIND rules stamp that no later reply mentioned (round v1: Altinstar)."""
+    pending = None
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if not isinstance(content, list):
+            continue
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") == "tool_result":
+                found = re.search(r"STATE: BEHIND project (\d+\.\d+\.\d+)", json.dumps(block.get("content")))
+                if found:
+                    pending = found.group(1)
+            elif entry.get("type") == "assistant" and block.get("type") == "text" and pending \
+                    and pending in block.get("text", ""):
+                pending = None
+    return pending
+
+
 def problems(reply: str) -> list[str]:
     prose = CODE.sub("", reply)  # code, paths and quoted identifiers are exempt
     found = []
@@ -117,7 +141,15 @@ def main() -> int:
         unread = unread_files(Path(event.get("transcript_path", ""))) if used else {}
     except (OSError, ValueError, AttributeError):
         unread = {}
+    try:
+        behind = unsaid_behind(Path(event.get("transcript_path", ""))) if used else None
+    except OSError:
+        behind = None
     reasons = []
+    if behind:
+        reasons.append(f"workflow-axa: rules_stamp.py said this project's rules were checked against {behind}, which is "
+                       "older than the installed rules, and you have not told the owner. Add its SAY sentence (the "
+                       "rules audit offer) to your reply once. It does not block the task.")
     if unread:
         listing = "; ".join(f"{phase}: {', '.join(files)}" for phase, files in unread.items())
         reasons.append("workflow-axa: these required files were not opened in this context: " + listing +
