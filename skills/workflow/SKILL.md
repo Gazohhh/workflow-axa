@@ -17,7 +17,7 @@ Read [RULES.md](RULES.md) before planning or writing, even if rule-maker never r
 2. Pick the mode. **Explain** is read-only; a later "fix it" or "push when done" makes it Implement: invoke `workflow-clarify`. **Research, plan or audit** never authorizes code. **Implement** passes the gates below.
 3. Before creating any task folder, follow [TASK-FOLDER.md](TASK-FOLDER.md) to find and reuse the task. A new chat is not a new task. When a related task might match, create nothing: invoke `workflow-clarify`, which asks "separate task or revision?" with its first questions.
 4. Checkpoint before long discovery (no files allowed: keep it in chat and say what can't be recovered).
-5. A new, unrelated goal in a long session: checkpoint and offer a fresh session.
+5. A message that does not clearly belong to the active task: answer a question without touching records. Before any change, ask "part of <task>, or separate?", checkpoint and offer a fresh session.
 
 Also: `codebase-map`, `task-status`, `resume-task`.
 
@@ -44,14 +44,14 @@ Defined in [VISUAL-REVIEW.md](VISUAL-REVIEW.md):
 1. **Agreement** on behavior and scope. Permits the detailed plan, not code.
 2. **Implementation approval** of tickets, tests and the HTML plan. STOP for user approval before application code.
 
-Small changes with no open question may ask both at once, through `workflow-specify`. Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
+Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
 
 ## Always
 
-- Questions: `grilling`. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md), never installed automatically ([SETUP.md](SETUP.md)). Reviews: [AUDIT.md](AUDIT.md). Output and artifact retention: [ARTIFACTS.md](ARTIFACTS.md).
+- Questions: `grilling`. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md), never installed automatically ([SETUP.md](SETUP.md)). Reviews: [AUDIT.md](AUDIT.md). Output: [ARTIFACTS.md](ARTIFACTS.md).
 - New helpers pass AUDIT.md's necessity check; unclear terms go to `domain-modeling`; consequential documents get WRITING.md's cold-reader check.
 - Never stage, commit, push, branch, reset, deploy or publish unasked.
 - Workers get the same output folder, write scope, rules and UI authority. Code changes go through `workflow-execute`. Read package files whole, never through `head` or `sed -n`.
 - Don't end a turn while your own work runs unless the host will wake you. End every turn with one state line: **Running** (what, when you'll report), **Waiting on you** (the question) or **Done**.
 - When the user must pass status to another session, person or tracker, write that message from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md) "Handoff message").
-- When needed: PDF-DELIVERABLE.md, CHATGPT-PROMPTS.md, OPTIONAL-HELPERS.md.
+- When needed: PDF-DELIVERABLE.md, OPTIONAL-HELPERS.md.
