@@ -5,7 +5,7 @@ description: "Create an evidence-linked local flowchart or codebase map when the
 
 # Codebase map
 
-Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screen previews with actions and design decisions, not a replacement report or a kit-selection diagram. New application approvals need exact kit selections and real captures; no invented markup/styles. Never call workflow recursively.
+Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screens with actions, decisions and the existing elements each proposed screen copies; captures where safe, else labelled sketches. Every visible change needs it; no invented markup/styles. Never call workflow recursively.
 
 Explain behaviour for a reader new to the project first, technical evidence underneath. Keep risks and unresolved decisions visible.
 
@@ -27,9 +27,9 @@ Reuse workflow-editorial-v1 styling and offline/system fonts; no branding interv
 
 ## 3. Render, inspect and open
 
-Read [REPORT.md](REPORT.md). Derive schema-2 JSON from authoritative task records. Historical/draft inputs remain readable; UI-FLOW.md tightens new application approvals. Only for a requested task overview use the optional checkpoint/revision log; show its as-of/source and treat the selected flow as a historical reviewed scope, not live implementation proof. Explicit node geometry and connector routes are validated; each change retains requirement/task/evidence traceability. Approval-ready compare requires the resolved revision, PLAN/TODO/acceptance and no material open decisions; otherwise use draft.
+Read [REPORT.md](REPORT.md); workflow plan, progress and delivery reports also follow [TASK-REPORT.md](TASK-REPORT.md). Derive schema-2 JSON from authoritative task records. Historical/draft inputs remain readable; UI-FLOW.md tightens new application approvals. Use the optional checkpoint/revision log only for a requested task overview; show its as-of/source and treat the selected flow as historical reviewed scope, not live implementation proof. Explicit node geometry and connector routes are validated; each change retains requirement/task/evidence traceability. Approval-ready compare requires the resolved revision, PLAN/TODO/acceptance and no material open decisions; otherwise use draft.
 
-Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the explicit local design; it does not understand code or authenticate approval. No implementation, installation or publication. Explicit no-file instructions take precedence.
+Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the explicit design; it neither understands code nor authenticates approval. No implementation, installation, publication. Explicit no-file instructions take precedence.
 
 Check freshness and meaning. Inspect desktop/mobile output when available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. Disclose unavailable checks instead of claiming them.
 

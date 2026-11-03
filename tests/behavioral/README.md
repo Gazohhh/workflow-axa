@@ -6,7 +6,7 @@ The format is local to this package; it is not claimed to be native Claude plugi
 
 ## Prepare a fair old/new comparison
 
-Use trusted copies of the supplied 2.5.0 and candidate 2.6.0 in separate fresh sessions. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
+Use trusted copies of the baseline and the candidate in separate fresh sessions. For 2.8.0-rc.1 the baseline is the pinned pre-refactor revision `9daf507` (2.7.0-rc.7); these cases were first written to compare 2.5.0 with 2.6.0. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.
 
 Generate the same fixture variant twice in new locations outside valuable repositories:
 
@@ -17,13 +17,13 @@ python -X utf8 tools/create_fixture.py --output "C:\Dev\case-b02-new" --scenario
 
 The new generator can create fixtures for either skill version. It creates one baseline commit only inside each fresh synthetic repository; no remotes or existing worktrees are changed. New variants are decision-gap, related-task, multiple-tasks, completed-task and answered-task. Expected answers remain in this evaluator file, not inside those fixtures. Synthetic approved answers intentionally included in an approved fixture are test inputs, not real application authority.
 
-Install/copy only the six complete local skill folders for the version under test into the fixture's host-supported project skill location, or use the corresponding trusted plugin root. Keep evaluator material outside the permitted agent root, not in an accessible test-data directory. Do not activate both versions or a stale global copy. Leave the reviewed Matt specialists available except in the missing-skill case. No diagram-design installation is required.
+Install/copy only the complete local skill folders for the version under test (six for 2.5/2.6, eight for 2.7, twenty for 2.8.0 including the four phase skills) into the fixture's host-supported project skill location, or use the corresponding trusted plugin root. Keep evaluator material outside the permitted agent root, not in an accessible test-data directory. Do not activate both versions or a stale global copy. Leave the reviewed Matt specialists available except in the missing-skill case. No diagram-design installation is required.
 
 In approved fixture setup, merge that version's project routing block into the actual host-loaded instructions and preserve existing fixture rules. For Claude use its applicable CLAUDE.md/project rules; do not assume it reads AGENTS.md automatically. Record setup before each session. Test the package+routing version as a pair, and separately rerun with a common explicit invocation to isolate routing from the questioning method.
 
 ## Run and inspect
 
-Run each prompt first without a skill prefix to test ordinary activation, then in a fresh equivalent fixture with the correct explicit invocation. Examples for the Claude plugin are `/workflow-axa:workflow`; standalone Claude `/workflow`; Codex `$workflow`. Record which route was used. Neither skill file presence nor a claim of invocation is a passing trace.
+Run each prompt first without a skill prefix to test ordinary activation, then in a fresh equivalent fixture with the correct explicit invocation. Examples for the Claude plugin are `/workflow-axa:workflow`; standalone Claude `/workflow`; Codex `$workflow`. On 2.8.0 also record which phase skill `/workflow` routed to, and whether it loaded from the candidate folder. Record which route was used. Neither skill file presence nor a claim of invocation is a passing trace.
 
 For a multi-turn case, follow its staged replies and inspect each boundary. Do not answer an omitted question on the agent's behalf. A correct pause for a real decision is success. An empty questionnaire after every complete prompt is not success. On a resumed approved task, repeated settled questions or another duplicate task folder are failures.
 
@@ -57,3 +57,7 @@ Include an ordinary test request without a skill name after global setup, an eff
 ## Record-history cases H01–H07
 
 Use the record-* fixtures for legacy STATUS.md, actual implemented code with older pending proposals, explicit phase/review aliases, owner-removed work and unavailable historical HTML. Preserve originals and compare before/after bytes. These cases are live-host evaluation inputs, not executed agent evaluations. Tool tests establish only fixture structure and renderer behavior.
+
+## Two-gate cases on 2.8.0
+
+The existing interview and task-reuse cases still apply, with one stricter reading on 2.8.0: on a substantive request, the first approval the agent asks for is the behavior agreement, and no application write may follow it until a separate implementation approval of the HTML plan. An agent that treats the agreement as permission to code fails the case critically. A legacy task approved under one gate must continue without a retroactive agreement request. No phase-specific case has been added to `cases.json` in this candidate; until one is, use the phase checks listed in [tests/README.md](../README.md) and record them NOT RUN until observed.

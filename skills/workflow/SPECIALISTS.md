@@ -1,145 +1,51 @@
-# Specialist routing
+# Specialists
 
-The workflow coordinates; installed specialists supply the task discipline. Use the
-applicable route below, not a home-made substitute. Load only the current specialist
-and references its branch needs. Installation is not invocation, and invocation is not
-proof of a correct result. The host's permissions and instruction precedence still apply.
+The workflow coordinates; specialists supply the discipline for one kind of work. Use the route below, not a homemade substitute. Load only the specialist the current step needs.
 
-## Preflight
+## This package's own (always available)
 
-After resolving and creating or resuming the minimal task record, check the current host's actual skill inventory.
-At team setup verify the collection in [specialists.json](specialists.json); during work
-verify only routes needed by the next phase. Recheck after a host/account switch, reload,
-installation change or revised route—not before every tool call.
+Copies of Matt Pocock's skills, shipped as separate skills in this package (plugin names `workflow-axa:<name>`), each ending with a **workflow-axa adaptation** section. Phases load them from their sibling folders, so an upstream change, a removed skill or a same-named skill installed elsewhere (or a host's built-in `code-review`) can't change the workflow. Provenance and updating: VENDORED-SKILLS.md at the package root.
 
-Resolve the source, installed identifier/path, revision or content fingerprint, enabled
-state, model-invocation policy, required references/tools and project configuration.
-Use the qualified identifier advertised by the host, especially for generic names such
-as `research`, `tdd` and `code-review`. An unrelated skill with the same name is not the selected provider's.
-Do not infer absence from a user-facing slash menu alone; model-only skills can be hidden.
-
-The read-only [checker](scripts/check_specialists.py) helps inventory explicitly supplied
-local roots; see [SETUP.md](SETUP.md). It cannot establish the host's registry, permissions,
-source authenticity or successful execution. Record those separately. Do not bypass a
-host-disabled skill by reading its files as a workaround. On a host whose documented
-skill mechanism is reading files, that is a valid load—not a simulated tool invocation.
-
-Record a compact capability entry in FINDINGS (or the lightweight record): host/version,
-resolved source/identifier/fingerprint, availability evidence, applicable routes, adapters,
-exceptions and output references. A team-approved installation snapshot can be linked.
-Do not copy full skill bodies into task records. If a selected dependency changes, pause
-its dependent phase for compatibility review; never silently approve a new baseline.
-
-Missing, disabled, ambiguous, incompatible or unverified selected skills: report once,
-record the blocked phase, and continue only independent authorized work. Use an already
-approved fallback or ask once to approve setup/fallback. Creating the checkpoint and
-asking how to resolve a missing skill do not require that missing skill. Do not install,
-update, enable or rewrite specialist files without explicit setup authority.
-
-## Routes and call contract
-
-Before each call provide: task/approval paths, precise question or work unit, settled
-answers, allowed writes, relevant files/diff, required output location and the applicable
-adapter below. Invoke/load through the host's real skill mechanism; inspect the result
-and record its contribution. Reuse a loaded reference in the same phase; do not repeatedly
-invoke it for every TODO or comment. Nested specialist calls use these same boundaries.
-
-| Trigger | Invoke | Required contribution / adapter |
+| When | Read | Used by |
 |---|---|---|
-| Every new substantive goal, material scope change, or requested grilling; also newly uncovered consequential decisions | `grilling` | Inspect for missing decisions even when none were initially noticed; reuse sourced settled branches; Q adapter. No question quota or repeated interview for an unchanged approved resume. |
-| External technical research, documentation/API checks or source investigation | `research` | Primary-source findings and citations into the existing task evidence; R adapter. Local code inspection alone need not launch research. |
-| A bug, failing behavior or performance regression needs diagnosis | `diagnosing-bugs` | Symptom-specific feedback loop, evidence, causal diagnosis and cleanup; D adapter. Stop before an unauthorized fix. |
-| Test-first feature/fix work or integration tests at agreed observable interfaces | `tdd` | One behavioral test and implementation slice at a time; T adapter. Propose seams during planning and reuse their approval. |
-| Module interfaces, abstractions or test boundaries need design review | `codebase-design` | Apply its design reference to the bounded choice; no new architecture interview when the design is settled. |
-| Project terminology, ownership, domain boundaries or an architecture decision is unclear or being changed | `domain-modeling` | Reuse established terms before inventing new managers/services/concepts; clarify ambiguity and capture approved changes at the authoritative location; M adapter. Merely reading a glossary does not trigger it. |
-| Creating/revising skills, agent instructions or the structure of agent-facing records | `writing-for-agents` | Apply its writing/reference mechanics plus the local plain-language policy; ordinary checkpoint updates need no new invocation. |
-| Task code changes are ready for review, or a code review is requested | `code-review` | Separate Standards and Spec findings on the actual task changes; C adapter. Docs-only work still gets the workflow audit. |
-| The user authorizes a throwaway prototype to settle a design question | `prototype` | Evidence and a bounded disposable artifact; P adapter. Research approval alone does not authorize prototype code. |
-| A pull-request description is requested | `pr` | Draft from real evidence; do not open, publish or merge a PR without separate authorization. |
-| An approved procedure requires human-only setup/migration steps | `wizard` | A reviewed human-run procedure using its template; W adapter. Not for work the agent can perform itself. |
+| Every new substantive goal or material change; any new consequential choice | `grilling` (`../grilling/SKILL.md`) | `workflow-clarify` step 2 |
+| Test-first work at an agreed seam | `tdd` (`../tdd/SKILL.md`) | `workflow-execute` step 4 |
+| Reviewing code changes (Standards and Spec, kept separate) | `code-review` (`../code-review/SKILL.md`) | `workflow-execute` steps 6 and whole-feature review |
+| Writing or reviewing skills and agent instructions | `writing-for-agents` (`../writing-for-agents/SKILL.md`) | reviews of instruction changes |
+| An interface, seam or module boundary is in question | `codebase-design` (`../codebase-design/SKILL.md`) | `workflow-specify` step 1 |
+| A term, owner or domain boundary is unclear or changing | `domain-modeling` (`../domain-modeling/SKILL.md`) | any phase |
+| Ticket-graph execution (reference for the local adaptation) | `implement-spec` (`../implement-spec/SKILL.md`) | `workflow-execute` (never run as written) |
+| A retrospective over one or many sessions, when the user asks | `retro` (`../retro/SKILL.md`) | user-invoked |
 
-### Explicit adapters
+A detailed prompt is not an exemption from grilling; an unchanged approved task is not re-interviewed.
 
-These are team-approved integration changes, not a blanket “workflow wins” rule. Pass
-them in the call brief. If the host cannot apply the contract without conflicting
-instructions, do not invoke the specialist unchanged: record incompatibility and use
-an approved fallback. Never edit an installed upstream skill to hide the conflict.
+## Optional installed specialists
 
-- **Q — Questions:** inspect the bounded goal for unstated consequential decisions, not
-  only an already-written question list. Use the decision areas and answer-source checks
-  in [QUESTIONS.md](QUESTIONS.md). Research facts; batch nonblocking questions, ask early
-  for direction blockers, and reuse sourced settled branches. No invented scope or question
-  quota. A detailed prompt is not an exemption; unchanged approved work is not re-interviewed.
-  Apply [WRITING.md](WRITING.md) to questions and consequences. The owner persists partial
-  answers and returns them to the specialist. Shared understanding and implementation
-  approval are confirmed through VISUAL-REVIEW.md, not assumed from interview completion.
-- **R — Research:** return cited findings to the owner for FINDINGS.md; no second competing
-  report unless requested. A subagent can research in the active host session when useful;
-  without that capability, run sequentially and label it. Promise no later/background result.
-- **D — Diagnosis:** authorize diagnostic writes/probes in the task scope before running
-  them; isolate bisection from user changes. No production probes, destructive commands,
-  stress load, fixes or installs beyond approval. Show ranked hypotheses as an update, not
-  a new routine approval. If reproduction is unavailable, report the gap rather than a
-  verified cause. Record the cause in findings, not an automatic commit/PR.
-- **T — Tests:** pass the previously approved seams, expected behavior and test command.
-  Ask only for a genuinely new seam/contract decision. Missing infrastructure is a blocker,
-  not permission to install a runner, weaken a test or claim the red/green loop happened.
-- **M — Domain:** confirm changed meaning; update approved glossary/ADR paths, not a new
-  parallel documentation system. Put unresolved proposals in task decisions first. Batch
-  nonblocking terminology questions; new policy documents still need approval.
-- **C — Review:** supply PLAN.md's approved criteria as the spec and the initial worktree
-  checkpoint as the attribution baseline. Include task-attributable staged, unstaged and
-  untracked changes; `git diff <base>...HEAD` alone misses uncommitted work. A plain HEAD
-  diff is also insufficient when initial user edits exist. Do not invent a merge-base,
-  fetch/create an issue, stage or commit just to obtain a diff. Keep Standards and Spec
-  distinct, map [AUDIT.md](AUDIT.md) findings to each, and rerun affected review/checks after
-  repairs. When attribution is uncertain, resolve it before claiming a complete review.
-- **P — Prototype:** agree the branch of the design question rather than guessing when
-  ambiguous. Bound files, runtime and cleanup in the plan. Keep evidence in approved task
-  artifacts; no automatic capture commit, branch publication or production integration.
-- **W — Wizard:** author only the approved stages; inspect before execution, protect secrets,
-  and let the human run interactive steps. Bash/WSL availability is a prerequisite. Reuse
-  approved stages, but retain actual safety confirmations. No automatic commit, external
-  account changes or uploading credentials to task evidence.
+These stay external; use them only when installed, and never install them yourself ([SETUP.md](SETUP.md)). Check availability when a step needs one; a missing one blocks only that step: say so once, record it, and continue independent work or ask for an approved fallback. Use the qualified name the host shows: an unrelated skill with the same name is not this one.
 
-All specialists may use useful available subagents; otherwise apply the approved
-sequential adapter and identify self-review as such. Only the owner writes task records;
-helpers return evidence. This capability adapter does not authorize silently replacing
-a missing specialist with an improvised implementation.
+| When | Invoke | Boundaries |
+|---|---|---|
+| External research: docs, APIs, primary sources | `research` | Cited findings go to FINDINGS. No second report. Promise no background result. |
+| A bug, failure or performance regression needs a diagnosis | `diagnosing-bugs` | Authorize diagnostic writes first; no production probes, destructive commands, fixes or installs beyond approval. No reproduction means no verified cause. |
+| The user authorizes a throwaway prototype | `prototype` | Bounded files and cleanup in the plan; strict UI reuse still applies; no commit or production integration. |
+| A pull-request description is requested | `pr` | Draft from real evidence; never open, publish or merge without separate permission. |
+| An approved procedure needs human-run setup steps | `wizard` | Only approved stages; the human runs interactive steps; protect secrets. |
 
-## Manual workflows are not automatic dependencies
+Before each call, pass: task and approval paths, the exact question or work unit, settled answers, allowed writes, relevant files or diff, output location ([ARTIFACTS.md](ARTIFACTS.md)) and applicable rules (RULES.md, with any exact exception). Only the task owner writes task records; specialists and subagents return evidence. Without subagents, run sequentially and label a self-review as such.
 
-`grill-me` is a user-facing wrapper around `grilling`, not its automatic invocation alias.
-Matt's setup, handoff, spec/ticket, implementation and other user-only workflows are listed
-as `manual` in the catalogue. Do not call them automatically, strip their invocation flags,
-or chain them into this workflow. `implement` / `implement-spec` are competing execution
-workflows; some also commit. `to-spec` / `to-tickets` may publish to a tracker. Existing
-PLAN/TODO records remain authoritative; the package does not require a parallel tracker.
+[specialists.json](specialists.json) lists the upstream catalogue for teams that also install Matt's skills; the read-only [checker](scripts/check_specialists.py) inventories installed roots. Installed is not invoked, and invoked is not a correct result.
 
-When the user explicitly chooses a manual workflow, confirm only unresolved integration
-boundaries and use their existing approvals. Installation setup is a separate authorized
-operation; [SETUP.md](SETUP.md) explains how to keep its output compatible with this workflow.
+## Manual workflows are never chained in
 
-## Local visualization route
+`grill-me`, `implement`, `implement-spec`, `to-spec`, `to-tickets`, setup and handoff are user-run workflows upstream; some commit or publish to a tracker. Don't call them automatically or strip their invocation flags. PLAN/TODO stay the records. When the user asks, mirror progress to their tracker as one generated update from the records; never keep a second list by hand. If the user explicitly chooses one, confirm only the integration boundaries that are still open.
 
-Invoke this package's **`codebase-map`** for an explicit flowchart/map request and automatically for the substantive preimplementation visual review in [VISUAL-REVIEW.md](VISUAL-REVIEW.md). Resolve its actual qualified identifier and verify availability during setup/handoff. Pass inspected evidence, requirements/tasks/acceptance, mode, revision and artifact permissions. It returns the local source/report paths, freshness result and opener result; it never implements, approves, grills or calls back into workflow. Do not invoke Matt's user-only `improve-codebase-architecture` merely to draw a current flow. Missing visualizer/render capability follows the explicit setup/fallback decision path; never skip approval silently.
+`workflow-execute` owns this package's local adaptation of Implement Spec.
 
-The visual design procedure, assets and renderer are local to `codebase-map`. It reads its bundled FLOWCHART-DESIGN.md; no external diagram skill or separate diagram-design preflight is required. Matt's established specialist providers remain; the Q adapter above strengthens decision discovery. A local render is not logged as an external specialist invocation.
+## Local routes
 
-## Optional maintenance/browser helpers
+- **Phase skills** `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`: this package's procedures, picked by `workflow` or invoked directly.
+- **`codebase-map`**: flowcharts and the HTML plan report ([VISUAL-REVIEW.md](VISUAL-REVIEW.md)). It never implements, approves, grills or calls back into the workflow. Don't use Matt's `improve-codebase-architecture` just to draw a flow.
+- **`ui-design`**: load it before planning any application UI, even behavior-only UI changes. Its rule: never write CSS; reuse only classes/IDs that already exist (design kit or existing code), mirroring class and tag; when nothing matches, ask which existing element to mimic; plain unstyled HTML only on the user's explicit instruction. Pass its mode, approval source and preview limits to every worker. Code review checks markup, visual props and removed styling, not just CSS additions.
+- **Optional helpers** (skill-creator, webapp-testing): [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md); never prerequisites.
 
-[OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md) covers skill-creator and webapp-testing as opt-in candidates. They are not part of the required Matt catalogue, not installed automatically, and not prerequisites for normal workflow or diagram delivery.
-
-## Artifact contract for all routes
-
-Before delegating output-producing work, use [ARTIFACTS.md](ARTIFACTS.md). Pass the exact existing output parent, allowed writes, distinct active-run lanes and retained/protected paths. Return concise results to the owner; do not copy build trees or provision tools per call. Required tests/captures are not skipped to reduce storage. Each worker may clean only its own eligible scratch; one worker cannot prune another's run. Tool-owned destinations and project protections stay intact. This adds output boundaries without changing Matt's specialist methods or installation.
-
-## Applicable rules are part of every handoff
-
-Before specialist design, implementation or write delegation, apply RULES.md and pass effective shared modules, scoped project constraints, current rule version and any exact authorised exception. `codebase-design` examines the smallest compatible design; it cannot silently replace project vocabulary, ownership, interfaces or policy with its preferred pattern. A read-only audit may report a rule gap; approval-ready plans and dependent writes may not bypass it. Keep all existing Matt routes and invocation requirements.
-
-## Local UI-design route
-
-For application UI, load the installed local `ui-design` before dependent planning/edits, including requests that mention behaviour rather than styling. It reads shared design.md, selects scoped authority and uses existing workflow approval/records; it does not start another workflow or invoke an external designer. Prefer actual approved components/patterns, not arbitrary existing CSS. Pass mode, approval source, kit/reference revision, affected surfaces, preview restrictions and strict reuse boundary to every specialist/subagent. Missing/disabled UI skill blocks only dependent work; use only an explicitly approved compatible fallback. Missing selected presentation blocks UI integration; do not fall back to plain HTML or invented styling. Independently approved logic can continue.
-
-The prototype adapter cannot bypass strict reuse: no agent-authored app HTML/templates, CSS or inline styles, even in a prototype or legacy design-authoring task. Use only a designated approved preview of selected components. Code review checks actual markup, visual props/assets and removed styling as well as CSS additions; a scanner's no-cue result is not signoff. Backend-only work needs no UI route. Normal flowchart reports remain with codebase-map's approved local assets; do not restyle applications to match them.
+Every route: pass the output folder and protected paths from ARTIFACTS.md; each worker cleans only its own scratch. If the host can't apply a specialist's boundaries without conflict, don't run it unchanged: record the conflict and confirm a fallback with the user.

@@ -1,6 +1,57 @@
 # Rules-audit corrections and local design-kit support
 
-## Current checkpoint (R2 — authoritative, reconciled 2026-10-30)
+## Current checkpoint (2026-11-02, deployed — authoritative)
+
+- **Deployed:** workflow-axa **2.7.0-rc.8**, from the frozen isolated snapshot. G1 and G2 ran 2026-11-02 between 12:25 and 12:27 under the existing owner setup approval, after the reviewer's final GO and the coordinator's maintenance boundary.
+- **G1:** all eight skills staged under `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.8-g1/` and verified (111 files, `5003ddfb07cfe047dbe1122d7c8c4a56c0401ab9de186084260e0c284698b864`; audit MATCH), then swapped one at a time with a journal.
+  - The runtime is now 111 files at `5003ddfb...`. The source-to-runtime audit gives MATCH: 0 changed, 0 missing, 0 unexpected.
+  - The 8 Claude junctions are unchanged.
+  - The baseline (CRLF rc.4, `2c0d0658...`) is preserved byte-exact in `baseline/`. That is evidence-only recovery. The rollback source is `e9b2723`: an integrity-valid LF rc.4. It lacks the Windows helper fixes and has no live acceptance, so it is a byte-valid fallback, not a fully healthy one.
+- **G2:** before-bytes saved in `global-before/`. Applied with the installed helper, one host at a time.
+  - `~/.claude/CLAUDE.md` → `7a54ae59c4fe839e5997073410ea6680d1c7a0b8d3643fda725c9d58f08ed3f2`; `~/.codex/AGENTS.md` → `4030878c0cfbbeed4985dcef571f3e802d010d7594b27b2bcc95f33d3913a37c`. Both equal the reviewed preview; append-only.
+  - Installed `audit_installation --check-global`: DISK_MATCH, both references MATCH. `global_policy --check`: all MATCH. `activate_rules --check`: MATCH.
+- **Readiness:** the installed readiness check on both projects gives REVIEW_REQUIRED (rules 1.6.0); it is no longer blocked by the manifest.
+- **Memory:** C4 is updated to "deployed 2026-11-02".
+- **Layers:** installed and on-disk references are verified. Loaded, followed and enforced are **not** verified; the coordinator owns the four approved live sessions. One observation only: this Claude session's skill list reloaded with rc.8's ui-design description. That is not evidence that rules load in a fresh session.
+- **Live acceptance (D12):** three sessions completed read-only and one failed at startup (429). The Altinstar Codex session read START/CORE/READINESS. No complete framework-module reads were observed; the Cheflabels Opus session only grepped Ionic and design excerpts. Mitigation: scope-selected module routing in both projects, plus generic-prose consolidation; this is untested live. Details: FINDINGS "2026-11-02 live acceptance results".
+- **Final independent review (Astra, 2026-11-02):** installation and all five project files have no blocker. Four report evidence-labelling fixes were applied.
+  - Report: `review-r2-current.json/html`, corrected and re-rendered. The pre-review pair is kept as `review-r2-current.pre-final-review.json/html`.
+  - **Verdict, bounded:** installed and on-disk routing verified. Live acceptance is **INCOMPLETE**:
+    - three of four sessions completed;
+    - Claude loading is not visible in traces;
+    - no complete framework-module reads were observed;
+    - post-mitigation routing is untested;
+    - live cases 4-8 are untested or blocked;
+    - enforcement is none.
+- **Remaining (2026-11-02 continuation):**
+  - First live batch (D12) is exhausted: three sessions completed and one failed on quota. Evidence is in FINDINGS.
+  - **Additional batch (D13): STOPPED after its first attempt.** `mcp:launch:03f324583316a900c011e8cac0b345481d6cb3aeb483b5d86abe76a3bb452721` (Cheflabels, Codex gpt-6-astra medium, full-access, same neutral read-only prompt) failed at startup on 2026-11-02 at 11:54:33 UTC with "Usage limit reached: exceeded retry limit, last status: 429 Too Many Requests" (request id `req_f0b498ef070d46239097808bdc960740`). There was no model inspection. Per D13 the batch stopped: no retries, and the remaining three were not launched.
+  - **Live acceptance stays INCOMPLETE.** The next prerequisite is Codex provider availability plus a newly authorised batch, not more package work. The coordinator verified the installed, global and project hashes as unchanged.
+  - Generic-prose consolidation: done (FINDINGS "mitigation applied").
+  - Canonical `VALIDATION.md`: not synced, and it will not overwrite the concurrent 2.8 work. The rc.8 snapshot validation is the release evidence.
+  - Project edits are unstaged in both repositories (owner to commit).
+  - Report: `review-r2-current.html` is a dated, reviewed snapshot. Its `--check` will show a source mismatch, solely because of this continuation checkpoint. It is not regenerated.
+
+## Checkpoint 2026-11-02 read-only reconciliation (superseded by deployment; kept as written)
+
+- **Source:** clean HEAD `9daf5076763fadcdf8c498cfbaebcd30d71fbaa2`, 2.7.0-rc.7, rules library 1.6.0. Skills inventory: 111 files, `f805cc736c2d16a19137c01a82369982ea154753f03b6edd9375662ca031e0bb`.
+  - rc.6 (`3647c14`) audited and kept our rc.5 fixes.
+  - rc.7 adds strict UI reuse (behaviour-only).
+  - Both newer tasks were package-only.
+- **Runtime:** still CRLF 2.7.0-rc.4, rules 1.3.0. 95 files, `2c0d0658aa8b620dac009dd3b4e00f9c7d5271f7cbe94a00522e85b5cea22845`.
+- **G1/G2 not run.** No shared-rules blocks; global before-hashes unchanged; no rollback folder.
+- **rc.5 archive absent.** `6e706e9a…` is gone with the whole `.artifacts/` folder; cause unknown, not removed by this task. No current rc.6/rc.7 archive is named in the records. The rc.5 test results are history, not rc.7 proof.
+- **Projects:**
+  - Altinstar: A1, A2, A3, A5 preserved (committed upstream in `c5cd88e61`).
+  - Cheflabels: C1, C2 and C3 are absent (external change); there is uncommitted owner work (`2026-10-31-design-kit-page`, DESIGN.md r3, app routing). DESIGN.md r3:31 allows a plain-semantic-markup fallback, which conflicts with rc.7 behaviour-only.
+- **Authority:** Existing approval remains valid for the originally reviewed bounded rules fixes and setup. Execution is held because the exact rc5 candidate is unavailable, current source/project inputs changed, and materially stricter rc7 policy needs owner direction. Reverification alone does not require renewed approval of unchanged work.
+- **Resolved 2026-11-02 (DECISIONS D10-D12):** adopt and verify rc.7 with its strict UI policy; align the project exceptions; four post-deployment live sessions, managed by the coordinator. The rc.5 and rc.6 alternatives are closed.
+- **Candidate (2026-11-02):** isolated rc.8 snapshot. ZIP `cb822ad2409a25c27671fb5dfea0907f5ced989bf02f0ca0fa0ed67dcf68018f`; skills `5003ddfb07cfe047dbe1122d7c8c4a56c0401ab9de186084260e0c284698b864` (FINDINGS "isolated rc.8 release snapshot"). G1/G2 held for the final technical review and the coordinator’s maintenance boundary. Canonical files are frozen (the modular task owns them as 2.8.0-rc.1).
+- **Earlier blocker (resolved by isolation):** a concurrent writer (the modular-engineering task) is changing the same source tree. Packaging and G1/G2 are halted pending the coordinator or owner deciding isolation and ownership; see FINDINGS "rc.7 adoption unit".
+- **Now:** sole-editor work on the rc.7 candidate: verification, project alignment, the replacement package, and a fresh G1/G2 inventory and preview. G1/G2 are held pending the reviewer's technical review and the coordinator's maintenance boundary.
+- **Next safe action:** after the owner's choice, reconcile the intended candidate and scope. Then: independent review, validation of that exact candidate, and a fresh G1/G2 inventory and preview. The rc.5 G1/G2 plan below is history for an unavailable candidate.
+
+## R2 checkpoint 2026-10-30 (superseded by the 2026-11-02 checkpoint; kept as written)
 
 R2 extends this task with a live audit and the bounded fixes for the installed package and two projects, Altinstar and Cheflabels.
 

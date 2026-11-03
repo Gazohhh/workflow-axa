@@ -25,12 +25,20 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.7.0-rc.7'
+RENDERER_VERSION = '2.8.0-rc.1'
 
 
 def ui_module():
     path = Path(__file__).with_name('screen_flow.py')
     spec = importlib.util.spec_from_file_location('workflow_screen_flow', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def task_module():
+    path = Path(__file__).with_name('task_report.py')
+    spec = importlib.util.spec_from_file_location('workflow_task_report', path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -113,9 +121,9 @@ def load_json(path: Path) -> dict:
 
 TASK_OUTCOMES = {
     'planned': 'Not started', 'in-progress': 'In progress',
-    'implemented': 'Implemented — verification pending', 'verified': 'Verified',
-    'blocked': 'Blocked', 'removed': 'Removed by owner — not a passed test',
-    'superseded': 'Superseded — not a passed test', 'not-applicable': 'Not applicable',
+    'implemented': 'Implemented, not yet checked', 'verified': 'Verified',
+    'blocked': 'Blocked', 'removed': 'Removed by the owner, not a passed test',
+    'superseded': 'Replaced, not a passed test', 'not-applicable': 'Not applicable',
     'unknown': 'Unknown',
 }
 
@@ -220,7 +228,7 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
     for row in evidence.values():
         text(row.get('claim'), 'evidence.claim')
         if row.get('kind') not in ('static', 'runtime', 'design'):
-            raise ValueError('Evidence kind must be static, runtime or design')
+            raise ValueError(f"Evidence kind must be static, runtime or design (evidence {row.get('id')}: got {row.get('kind')!r})")
         references(row.get('sources'), sources, 'evidence.sources', required=True)
         text(row.get('locator'), 'evidence.locator')
         text(row.get('limits'), 'evidence.limits')
@@ -329,6 +337,8 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
             text(approval.get(field), f'approval.{field}')
     if 'ui_review' in data:
         ui_module().validate(data, root, sources, renderer_api())
+    if 'task_report' in data:
+        task_module().validate(data, sources, renderer_api())
     return sources
 
 
@@ -413,26 +423,26 @@ def validate_geometry(graph: dict, nodes: dict) -> None:
         for field, low, high in (('x', 0, width), ('y', 0, height), ('width', 128, width), ('height', 48, height)):
             coordinate(node.get(field), f'node.{field}', low, high)
         if node.get('shape') not in ('start', 'action', 'decision', 'result', 'group'):
-            raise ValueError('Node needs a start/action/decision/result/group shape')
+            raise ValueError(f"Node needs a start/action/decision/result/group shape (node {key}: got {node.get('shape')!r})")
         if 'highlight' in node and type(node['highlight']) is not bool:
             raise ValueError('node.highlight must be boolean')
         box = tuple(node[k] for k in ('x', 'y', 'width', 'height'))
         x, y, w, h = box
         if x+w > width-16 or y+h > height-16 or x < 16 or y < 16:
-            raise ValueError('Node exceeds the diagram bounds/padding')
+            raise ValueError(f'Node exceeds the diagram bounds/padding (node {key}: box {box}, view {width}x{height}, 16px padding)')
         if any(boxes_overlap(box, other, gap=12) for other in boxes.values()):
-            raise ValueError('Overlapping nodes or less than 12px separation')
+            raise ValueError(f'Overlapping nodes or less than 12px separation (node {key} vs ' + ', '.join(k for k, o in boxes.items() if boxes_overlap(box, o, gap=12)) + ')')
         boxes[key] = box
         lines = node['label'].split('\n')
         notes = node['note'].split('\n') if node['note'] else []
         available = w * .62 if node['shape'] == 'decision' else w-40
         # Conservative character budgets catch obvious clipping; browser measurements remain required.
         if len(lines) > 2 or any(len(line) * 10 > available for line in lines):
-            raise ValueError('Shorten node label or widen its shape; never shrink type')
+            raise ValueError(f'Shorten node label or widen its shape; never shrink type (node {key}: longest line needs ~{max(len(l) for l in lines) * 10}px, {available:.0f}px available, at most 2 lines)')
         if len(notes) > 2 or any(len(line) * 7 > w-40 for line in notes):
-            raise ValueError('Shorten node note or move detail below the diagram')
+            raise ValueError(f'Shorten node note or move detail below the diagram (node {key}: at most 2 lines of ~{(w-40)//7} characters)')
         if node['shape'] == 'decision' and (notes or h < 128):
-            raise ValueError('Decision diamond needs >=128px height and no note; detail belongs below')
+            raise ValueError(f'Decision diamond needs >=128px height and no note; detail belongs below (node {key}: height {h})')
         items = node.get('items', [])
         if not isinstance(items, list) or len(items) > 9 or (items and node['shape'] != 'group'):
             raise ValueError('Only group nodes have items, at most nine')
@@ -442,7 +452,7 @@ def validate_geometry(graph: dict, nodes: dict) -> None:
                 raise ValueError('Shorten group item or widen the group')
         needed = 36 + 24*len(lines) + 20*len(notes) + (36*len(items)+12 if items else 0)
         if node['shape'] != 'decision' and h < needed-12:
-            raise ValueError('Node height is too small for its text')
+            raise ValueError(f'Node height is too small for its text (node {key}: height {h}, needs {needed-12})')
     all_segments = []
     ports: dict[str, list[list]] = {}
     masks = []
@@ -463,23 +473,23 @@ def validate_geometry(graph: dict, nodes: dict) -> None:
                 raise ValueError('Connector segments need at least 12px for clear elbows')
             for box in boxes.values():
                 if segment_hits_box(a, b, box):
-                    raise ValueError('Connector crosses a node; route outside boxes')
+                    raise ValueError(f"Connector crosses a node; route outside boxes (edge {edge['from']}->{edge['to']} segment {a}->{b} crosses " + next(k for k, bx in boxes.items() if bx == box) + ')')
         for key, point, neighbor in ((edge['from'], points[0], points[1]), (edge['to'], points[-1], points[-2])):
             side = port_side(nodes[key], point)
             if not outward(side, point, neighbor):
-                raise ValueError('Connector must leave/enter the node outward, not along its boundary')
+                raise ValueError(f"Connector must leave/enter the node outward, not along its boundary (edge {edge['from']}->{edge['to']} at node {key}, point {point})")
             if any(abs(point[0]-p[0]) + abs(point[1]-p[1]) < 12 for p in ports.get(key, [])):
-                raise ValueError('Give connectors distinct ports at least 12px apart')
+                raise ValueError(f"Give connectors distinct ports at least 12px apart (node {key}, point {point})")
             ports.setdefault(key, []).append(point)
         for i, (a, b) in enumerate(segments):
             if any(segments_meet(a, b, c, d) for c, d in segments[i+2:]):
-                raise ValueError('Connector doubles back or crosses itself')
+                raise ValueError(f"Connector doubles back or crosses itself (edge {edge['from']}->{edge['to']})")
             if any(segments_meet(a, b, c, d) for c, d in all_segments):
-                raise ValueError('Connectors cross or share a stroke; reroute or split the view')
+                raise ValueError(f"Connectors cross or share a stroke; reroute or split the view (edge {edge['from']}->{edge['to']} segment {a}->{b})")
         all_segments.extend(segments)
         if edge['label']:
             if len(edge['label']) > 14 or '\n' in edge['label']:
-                raise ValueError('Keep connector labels within 14 characters, one line')
+                raise ValueError(f"Keep connector labels within 14 characters, one line (edge {edge['from']}->{edge['to']}: {edge['label']!r} has {len(edge['label'])})")
             position = edge.get('label_position')
             if not isinstance(position, list) or len(position) != 2:
                 raise ValueError('Labelled connectors need label_position [x, baseline_y]')
@@ -488,24 +498,24 @@ def validate_geometry(graph: dict, nodes: dict) -> None:
             mask = edge_label_box(edge)
             mx, my, mw, mh = mask
             if mx < 0 or my < 0 or mx+mw > width or my+mh > height:
-                raise ValueError('Connector label falls outside the view')
+                raise ValueError(f"Connector label falls outside the view (edge {edge['from']}->{edge['to']}: label box {mask}, view {width}x{height})")
             if any(boxes_overlap(mask, box, gap=4) for box in boxes.values()):
-                raise ValueError('Connector label overlaps a node')
+                raise ValueError(f"Connector label overlaps a node (edge {edge['from']}->{edge['to']}: label box {mask})")
             if any(boxes_overlap(mask, other, gap=4) for other in masks):
-                raise ValueError('Connector labels overlap')
+                raise ValueError(f"Connector labels overlap (edge {edge['from']}->{edge['to']}: label box {mask})")
             masks.append(mask)
         elif nodes[edge['from']]['shape'] == 'decision':
-            raise ValueError('Every decision branch needs an explicit label')
+            raise ValueError(f"Every decision branch needs an explicit label (edge {edge['from']}->{edge['to']})")
     for mask in masks:
         x, y, w, h = mask
         padded = (x-6, y-6, w+12, h+12)
         if any(segment_hits_box(a, b, padded) for a, b in all_segments):
-            raise ValueError('Connector label needs at least a 6px gap from routes')
+            raise ValueError(f'Connector label needs at least a 6px gap from routes (label box {mask})')
     for key, node in nodes.items():
         outgoing = [e for e in graph['edges'] if e['from'] == key]
         if node['shape'] == 'decision':
             if not 2 <= len(outgoing) <= 3 or len({e['label'].casefold() for e in outgoing}) != len(outgoing):
-                raise ValueError('A decision needs two or three distinctly labelled exits')
+                raise ValueError(f'A decision needs two or three distinctly labelled exits (node {key}: ' + ', '.join(repr(e["label"]) for e in outgoing) + ')')
 
 
 def validate_delivery(graph: dict, tasks: dict) -> None:
@@ -544,14 +554,14 @@ def validate_delivery(graph: dict, tasks: dict) -> None:
 def graph_records(graph: dict) -> str:
     details = []
     for node in graph['nodes']:
-        details.append(f'<li><strong>{esc(node["id"])} — {esc(node["label"])}</strong>: {esc(node["note"])} '
+        details.append(f'<li><strong>{esc(node["id"])}: {esc(node["label"])}</strong>. {esc(node["note"])} '
                        f'({esc(node["basis"])}, {esc(node["change"])}) {esc(node.get("uncertainty", ""))} '
                        f'Evidence {links(node["evidence"], "e")}; tasks {links(node["tasks"], "t")}.</li>')
     for edge in graph['edges']:
         details.append(f'<li><strong>{esc(edge["from"])} → {esc(edge["to"])}</strong>: {esc(edge["label"] or "continues")} '
                        f'({esc(edge["basis"])}, {esc(edge["change"])}) {esc(edge.get("uncertainty", ""))} '
                        f'Evidence {links(edge["evidence"], "e")}; tasks {links(edge["tasks"], "t")}.</li>')
-    return f'<details><summary>{esc(graph["tab"])} — nodes and relationships</summary><ol>{"".join(details)}</ol></details>'
+    return f'<details><summary>{esc(graph["tab"])}: steps and links</summary><ol>{"".join(details)}</ol></details>'
 
 
 def elbow_path(points: list) -> str:
@@ -567,7 +577,19 @@ def elbow_path(points: list) -> str:
     return result + f' L {points[-1][0]} {points[-1][1]}'
 
 
-def graph_html(graph: dict) -> str:
+FRIENDLY_CAPTIONS = {'proposed': 'Proposed, not built yet', 'current': 'As the code works today', 'delivery': 'Order of the work'}
+
+
+def friendly_tab(graph: dict) -> str:
+    """Plain tab names for central task reports; other views keep their recorded tab."""
+    if graph.get('purpose') == 'delivery':
+        return 'Work order'
+    if graph.get('purpose') == 'flow':
+        return {'proposed': 'After the change', 'current': 'Today'}.get(graph.get('kind'), graph['tab'])
+    return graph['tab']
+
+
+def graph_html(graph: dict, friendly: bool = False, delivered: bool = False) -> str:
     key = graph['id']
     start = min(graph['nodes'], key=lambda node: (node['shape'] != 'start', node['y'], node['x']))
     start_id = f'node-{len(key)}-{key}-{start["id"]}'
@@ -620,23 +642,33 @@ def graph_html(graph: dict) -> str:
             legend.append(f'<span><i class="legend-{shape}" aria-hidden="true"></i>{label}</span>')
     if any(n.get('highlight') for n in graph['nodes']):
         legend.append('<span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span>')
+    caption = f'{graph["kind"]} · {graph["purpose"]}'
+    if friendly:
+        caption = FRIENDLY_CAPTIONS['delivery' if graph['purpose'] == 'delivery' else graph['kind']]
+        if delivered and graph['kind'] == 'proposed':
+            caption = 'As built. The results are below.'  # round-5 retro: "not built yet" under "Delivered"
+    built_note = 'The proposed flow is what was built. Its checks are below.' if delivered else 'Proposed is not implemented.'
     external_note = f'<p>Other required tasks outside this view: {links(graph["external_dependencies"], "t")}</p>' if graph.get('external_dependencies') else ''
-    return (f'<figure class="panel" id="panel-{key}"><div class="figure-head"><h2>{esc(graph["title"])}</h2>'
-            f'<span>{esc(graph["kind"])} · {esc(graph["purpose"])}</span></div><p class="figure-description">{esc(graph["description"])}</p>'
+    tag = 'h3' if friendly else 'h2'
+    return (f'<figure class="panel" id="panel-{key}"><div class="figure-head"><{tag}>{esc(graph["title"])}</{tag}>'
+            f'<span>{esc(caption)}</span></div><p class="figure-description">{esc(graph["description"])}</p>'
             f'<p class="hint">Scroll sideways to explore. <a href="#{start_id}">Go to start</a>. Fit is an optional overview.</p>'
             f'<div class="canvas" tabindex="0" role="region" aria-label="{esc(graph["tab"])} diagram, scroll to explore" '
             f'data-start-id="{start_id}" style="--board-width:{graph["width"]}px">{"".join(parts)}</div>'
             f'<figcaption><div class="legend">{"".join(legend)}</div>'
-            f'{external_note}<span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure>')
+            f'{external_note}<span class="muted">Dashed outlines show a guess or an unknown. Details and evidence are below. {built_note}</span></figcaption></figure>')
 
 
-def view_controls(graphs: list, default: str) -> tuple[str, str]:
+def view_controls(graphs: list, default: str, friendly: bool = False) -> tuple[str, str]:
     inputs, labels, rules = [], [], []
+    names = {graph['id']: friendly_tab(graph) if friendly and 'kind' in graph else graph['tab'] for graph in graphs}
+    if len(set(names.values())) != len(names):
+        names = {graph['id']: graph['tab'] for graph in graphs}  # never show two identical tab names
     for graph in graphs:
         key = graph['id']
-        inputs.append(f'<input class="sr-radio" type="radio" name="diagram-view" id="view-{key}" aria-label="{esc(graph["tab"])}" '
+        inputs.append(f'<input class="sr-radio" type="radio" name="diagram-view" id="view-{key}" aria-label="{esc(names[key])}" '
                       f'aria-controls="panel-{key}" {"checked" if key == default else ""}>')
-        labels.append(f'<label for="view-{key}">{esc(graph["tab"])}</label>')
+        labels.append(f'<label for="view-{key}">{esc(names[key])}</label>')
         rules.extend([f'#view-{key}:checked~.figures #panel-{key}{{display:block}}',
                       f'#view-{key}:checked~.viewbar label[for="view-{key}"]{{border-color:var(--accent);color:var(--ink)}}',
                       f'#view-{key}:focus-visible~.viewbar label[for="view-{key}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
@@ -647,6 +679,12 @@ def view_controls(graphs: list, default: str) -> tuple[str, str]:
         zooms.append(f'<label for="zoom-{value}">{label}</label>')
         rules.extend([f'#zoom-{value}:checked~.viewbar label[for="zoom-{value}"]{{border-color:var(--ink);color:var(--ink)}}',
                       f'#zoom-{value}:focus-visible~.viewbar label[for="zoom-{value}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
+    if friendly:
+        controls = (''.join(inputs) + '<div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name">'
+                    '<span class="control-name" id="view-tabs-name">Show</span>' + ''.join(labels) +
+                    '</div><div class="zoom-tabs labelled" role="group" aria-labelledby="zoom-tabs-name">'
+                    '<span class="control-name" id="zoom-tabs-name">Zoom</span>' + ''.join(zooms) + '</div></div>')
+        return controls, '\n'.join(rules)
     controls = (''.join(inputs) + '<div class="viewbar"><div class="view-tabs" role="group" aria-label="Diagram views">' +
                 ''.join(labels) + '</div><div class="zoom-tabs" role="group" aria-label="Diagram size">' + ''.join(zooms) + '</div></div>')
     return controls, '\n'.join(rules)
@@ -674,7 +712,7 @@ def record_context_html(data: dict) -> tuple[str, str]:
                           for label, status, summary in axes)
         current = (f'<section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2>'
                    f'<p class="checkpoint-asof">As recorded: {esc(checkpoint["as_of"])} · {links([checkpoint["source"]], "s")} '
-                   f'— {esc(checkpoint["locator"])}</p><dl class="checkpoint-axes">{columns}</dl>'
+                   f', {esc(checkpoint["locator"])}</p><dl class="checkpoint-axes">{columns}</dl>'
                    f'<p class="next-action"><strong>Next safe action</strong> {esc(checkpoint["next_action"])}</p>'
                    '<p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. '
                    'Approval, completed code and acceptance are different states.</p></section>')
@@ -683,9 +721,9 @@ def record_context_html(data: dict) -> tuple[str, str]:
         entries = ''.join(
             f'<tr><td><strong>{esc(row["revision"])}</strong><small>{esc(row.get("review", "No review alias recorded"))}</small></td>'
             f'<td>{esc(row["change"])}</td><td>{esc(row["reason"])}</td>'
-            f'<td>{esc(row["status"].capitalize())}<small>{links([row["source"]], "s")} — {esc(row["locator"])}</small></td></tr>'
+            f'<td>{esc(row["status"].capitalize())}<small>{links([row["source"]], "s")}, {esc(row["locator"])}</small></td></tr>'
             for row in data['revision_log'])
-        history = ('<details class="revision-log" id="revision-history"><summary>Revision history — what changed and why</summary>'
+        history = ('<details class="revision-log" id="revision-history"><summary>Revision history: what changed and why</summary>'
                    '<p>Changed agreements, not a log of every retry. Review aliases are preserved as recorded; '
                    'a missing original is not reconstructed.</p><div class="table-scroll"><table><thead><tr>'
                    '<th>Revision / review</th><th>Change</th><th>Reason</th><th>Recorded outcome / source</th>'
@@ -714,10 +752,18 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])
     views = ordered + ([{'id': 'ui-preview', 'tab': 'UI screens'}] if 'ui_review' in data else [])
-    default = 'ui-preview' if data.get('ui_review', {}).get('open_first', False) else data['default_view']
-    controls, view_css = view_controls(views, default)
-    css = (ASSETS/'report.css').read_text(encoding='utf-8') + '\n' + view_css
-    js = (ASSETS/'report.js').read_text(encoding='utf-8')
+    ui = data.get('ui_review') or {}
+    # Application UI changes open on their screen diagram unless the input says otherwise (D14 goal).
+    default = 'ui-preview' if ui.get('kind') == 'application' or ui.get('open_first') else data['default_view']  # owner: the diagram must be seen
+    friendly = 'task_report' in data
+    controls, view_css = view_controls(views, default, friendly)
+    if friendly:
+        # Owner's report design (2026-11-03): report-style.css and report-extra.js; older reports keep report.css.
+        css = '\n'.join((ASSETS/name).read_text(encoding='utf-8') for name in ('report-style.css', 'report-style-compat.css')) + '\n' + view_css
+        js = (ASSETS/'report.js').read_text(encoding='utf-8') + '\n' + (ASSETS/'report-extra.js').read_text(encoding='utf-8')
+    else:
+        css = (ASSETS/'report.css').read_text(encoding='utf-8') + '\n' + view_css
+        js = (ASSETS/'report.js').read_text(encoding='utf-8')
     ui_html = ''
     image_policy = "'none'"
     if 'ui_review' in data:
@@ -730,13 +776,13 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     state = data['state']
     overview = data.get('report_kind') == 'task-overview'
     checkpoint_html, history_html = record_context_html(data)
-    status = {'draft': 'DRAFT — decisions or review still pending',
-              'awaiting-approval': 'AWAITING USER APPROVAL — implementation not authorized',
-              'approved': 'APPROVAL RECORDED — verify the task record before continuing',
-              'inspection': 'CURRENT STATE — inspection only, no implementation authority',
-              'superseded': 'SUPERSEDED — not authority for new implementation'}[state]
+    status = {'draft': 'DRAFT. Decisions or review are still open',
+              'awaiting-approval': 'WAITING FOR YOUR APPROVAL. No code is written yet',
+              'approved': 'APPROVAL RECORDED. Read the task record before you continue',
+              'inspection': 'CURRENT STATE. Inspection only, not a plan to build',
+              'superseded': 'REPLACED. Do not build from this plan'}[state]
     if overview:
-        status = 'SAVED TASK OVERVIEW — read the dated checkpoint; not a new approval request'
+        status = 'SAVED TASK OVERVIEW. Read the dated checkpoint. This is not a new request for approval'
     req = ''.join(f'<li id="r-{esc(r["id"])}"><strong>{esc(r["id"])}.</strong> {esc(r["text"])}<small>Source: {esc(r["origin"])}</small></li>' for r in data['requirements'])
     bounds = ''.join(f'<li>{esc(b)}</li>' for b in data['boundaries']) or '<li>No additional boundaries recorded.</li>'
     task_rows = ''.join(f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td><strong>{esc(t["title"])}</strong>'
@@ -745,54 +791,82 @@ def render(data: dict, root: Path, input_path: Path) -> str:
                         f'<td>{links(t["depends_on"], "t")}</td></tr>' for t in data['tasks'])
     task_summary = ''.join(f'<li><a href="#t-{esc(t["id"])}">{esc(t["id"])}</a> {esc(t["title"])}'
                            f'{task_outcome_html(t)}<small>Depends on: {esc(", ".join(t["depends_on"]) or "No prior task")}</small></li>' for t in data['tasks'])
-    acceptance = ''.join(f'<li id="a-{esc(a["id"])}"><strong>{esc(a["id"])} — {esc(a["text"])}</strong>'
+    acceptance = ''.join(f'<li id="a-{esc(a["id"])}"><strong>{esc(a["id"])}: {esc(a["text"])}</strong>'
                          f'<small>Verify: {esc(a["verification"])} · {links(a["requirements"], "r")}</small></li>' for a in data['acceptance'])
-    ev = ''.join(f'<article id="e-{esc(e["id"])}" class="evidence"><strong>{esc(e["id"])} · {esc(e["kind"])} — {esc(e["claim"])}</strong>'
+    ev = ''.join(f'<article id="e-{esc(e["id"])}" class="evidence"><strong>{esc(e["id"])} · {esc(e["kind"])}: {esc(e["claim"])}</strong>'
                  f'<p>{esc(e["locator"])}</p><small>Sources: {links(e["sources"], "s")}<br>Limits: {esc(e["limits"])}</small></article>' for e in data['evidence'])
     source_rows = ''.join(f'<tr id="s-{esc(s["id"])}"><td>{esc(s["id"])}</td><td><code>{esc(s["path"])}</code></td>'
                           f'<td>{esc(s["role"])}</td><td><code>{s["sha256"][:16]}…</code></td></tr>' for s in records)
     issues = ''.join(f'<li>{esc(v)}</li>' for v in data['open_decisions'])
-    issues = f'<section class="warning"><h2>Unresolved decisions — not approval-ready</h2><ul>{issues}</ul></section>' if issues else ''
+    issues = f'<section class="warning"><h2>Open decisions. The plan is not ready to approve</h2><ul>{issues}</ul></section>' if issues else ''
     uncertainty = sorted({item.get('uncertainty', '') for g in data['graphs'] for item in g['nodes'] + g['edges'] if item.get('uncertainty')})
     if uncertainty:
         issues += '<section class="warning"><h2>Evidence limits</h2><ul>' + ''.join(f'<li>{esc(v)}</li>' for v in uncertainty) + '</ul></section>'
     comparison_rows = ''.join(f'<tr><td><strong>{esc(row["label"])}</strong><small>{links(row["requirements"], "r")}</small></td>'
                               f'<td>{esc(row["current"])}<small>{links(row["evidence"], "e")}</small></td>'
                               f'<td>{esc(row["proposed"])}<small>{links(row["tasks"], "t")}</small></td></tr>' for row in data['comparison'])
-    current_heading = 'Baseline before the selected change' if overview else 'Current — recorded evidence'
-    proposed_heading = 'Reviewed scope — see checkpoint for progress' if overview else 'Reviewed scope' if state in ('approved', 'superseded') else 'Proposed scope'
+    current_heading = 'Baseline before the selected change' if overview else 'Today, from the recorded evidence'
+    proposed_heading = 'Reviewed scope (the checkpoint shows progress)' if overview else 'Reviewed scope' if state in ('approved', 'superseded') else 'Proposed scope'
     comparison = (f'<section class="comparison"><h2>What changes</h2><div class="table-scroll"><table><thead><tr>'
                   f'<th>Area</th><th>{esc(current_heading)}</th><th>{esc(proposed_heading)}</th></tr></thead>'
                   f'<tbody>{comparison_rows}</tbody></table></div></section>') if comparison_rows else ''
     if overview:
-        gate = ('<section class="approval"><h2>Authority stays in the task record.</h2><div><p>This saved overview does not '
-                'approve work, reopen settled approval or certify completed implementation. A historical review may still '
-                'say awaiting approval; use the dated checkpoint and actual approval record.</p>'
-                '<p>There is no approve button or agent connection.</p></div></section>')
+        gate = ('<section class="approval"><h2>The task record decides.</h2><div><p>This saved overview does not approve '
+                'work, reopen an approval or confirm that work is finished. An older review can still say "waiting for approval". '
+                'Use the dated checkpoint and the real approval record.</p>'
+                '<p>There is no approve button and no connection to the agent.</p></div></section>')
     elif state == 'awaiting-approval':
         gate = (f'<section class="approval"><h2>Review before code.</h2><div><p>Does this match what you want built? '
-                f'Approve plan {esc(data["revision"])} in the agent conversation, or describe what needs changing.</p>'
-                '<p>Opening or interacting with this report does not approve anything. There is no approve button, '
-                'agent connection or background implementation.</p></div></section>')
+                f'Approve plan {esc(data["revision"])} in the chat, or say what to change.</p>'
+                '<p>Opening this report does not approve anything. There is no approve button, no connection to the agent '
+                'and no work that starts in the background.</p></div></section>')
     elif state == 'approved':
         gate = (f'<section class="approval"><h2>Recorded approval reference</h2><div><p>{esc(data["approval"]["record"])}</p>'
-                f'<blockquote>{esc(data["approval"]["response"])}</blockquote><p>This renderer does not authenticate the approving '
-                'user or grant permission. Reconcile with the actual task record.</p></div></section>')
+                f'<blockquote>{esc(data["approval"]["response"])}</blockquote><p>This page cannot prove who approved, and it gives '
+                'no permission. Compare it with the real task record.</p></div></section>')
     else:
-        gate = ('<section class="approval"><h2>No implementation permission</h2><div><p>This view alone authorizes no code changes. '
-                'Resolve any decisions and use the workflow approval gate before substantive implementation.</p></div></section>')
-    flow_context = (f'<p class="flow-context">Flow reviewed for {esc(data["revision"])}. The current/baseline view describes '
-                    'the earlier inspected state; the proposed view describes the reviewed scope, not proof it was implemented.</p>') if overview else ''
+        gate = ('<section class="approval"><h2>No permission to build</h2><div><p>This page does not allow code changes. '
+                'Settle the open decisions first, then approve the plan in the chat.</p></div></section>')
+    delivered = (data.get('task_report') or {}).get('phase') == 'delivery'
+    flow_context = (f'<p class="flow-context">Flow reviewed for {esc(data["revision"])}. The "Today" view shows the code '
+                    'before the change. ' + ('The proposed view is what was built. The checks below show what was verified.</p>'
+                    if delivered else 'The proposed view shows the reviewed scope. It does not prove that the work was built.</p>')) if overview else ''
     if overview and data['mode'] == 'current':
         flow_context = '<p class="flow-context">Current flow as inspected for this saved snapshot; not a live repository map.</p>'
     task_heading = 'Tasks in the reviewed scope' if overview else 'Changes and cleanup'
     viewer_note = ('<p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p>')
-    return f'''<!doctype html>
+    head = f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src {image_policy}; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><main>
-<header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>{esc(plan_label(data['revision']))}</span></div>
-<h1>{esc(data['title'])}</h1><p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
+<header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>{esc('Delivery ' + data['revision'] if data.get('task_report', {}).get('phase') == 'delivery' else plan_label(data['revision']))}</span></div>
+<h1>{esc(data['title'])}</h1>'''
+    snapshot_html = f'''<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>{esc(data['snapshot']['repository'])} · {esc(data['snapshot'].get('branch', 'No branch recorded'))}</p>
+<p>{esc(data['snapshot']['basis'])}</p><p>Generated {esc(manifest['generated_utc'])}. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table></div></details>'''
+    tail = f'''{viewer_note}<footer>Local HTML + SVG · no external assets, uploads or approval actions · saved review snapshot; progress belongs in the existing task records</footer>
+</main><script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
+    if 'task_report' in data:
+        from types import SimpleNamespace
+        parts = SimpleNamespace(
+            controls=controls, figures=''.join(graph_html(g, friendly=True, delivered=(data.get('task_report') or {}).get('phase') == 'delivery') for g in ordered) + ui_html,
+            flow_context=flow_context, checkpoint=checkpoint_html, history=history_html, requirements=req,
+            task_rows=task_rows, evidence=ev, graph_records=''.join(graph_records(g) for g in data['graphs']),
+            snapshot=snapshot_html, uncertainty=uncertainty, outcome=task_outcome_html)
+        status_line, facts_html, body = task_module().render(data, renderer_api(), parts)
+        tag, good = task_module().status_tag(data)
+        mast = esc('Delivery ' + data['revision'] if data['task_report']['phase'] == 'delivery' else plan_label(data['revision']))
+        return f'''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src {image_policy}; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>{esc(data['title'])}</title><style>{css}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
+<div class="page"><header class="masthead"><strong>{esc(data['snapshot']['repository'])}</strong><span>{mast}</span></header>
+<main id="report"><header class="report-header"><h1 class="report-title">{esc(data['title'])}</h1>
+<p class="report-lead">{esc(data["understanding"])}</p>
+<p class="status status--{'approved' if good else esc(state)}"><span class="status__tag">{esc(tag)}</span><span>{esc(status_line)}</span></p>
+{facts_html}</header>
+{body}</main><footer class="report-footer"><p>Local HTML and SVG. No external files, uploads or approval actions. A saved snapshot: progress belongs in the task records.</p></footer></div>
+<script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
+    return f'''{head}<p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
 {checkpoint_html}{issues}{flow_context}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}{ui_html}</div></section>
 {comparison}<section class="boundaries"><h2>What will not change</h2><ul>{bounds}</ul></section>
 <div class="two-col"><section><h2>{task_heading}</h2><ul class="plain">{task_summary or '<li>Inspection only; no implementation tasks.</li>'}</ul></section>
@@ -801,10 +875,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
 <section><h2>Requested outcome</h2><ul class="plain">{req or '<li>No implementation requirements in this inspection.</li>'}</ul></section>
 <section><h2>Changes and mapped tasks</h2><div class="table-scroll"><table><thead><tr><th>Task</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody>{task_rows or '<tr><td colspan="4">Inspection only; no implementation tasks.</td></tr>'}</tbody></table></div></section>
 <section><h2>Evidence and limits</h2>{ev}</section>{''.join(graph_records(g) for g in data['graphs'])}
-<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>{esc(data['snapshot']['repository'])} · {esc(data['snapshot'].get('branch', 'No branch recorded'))}</p>
-<p>{esc(data['snapshot']['basis'])}</p><p>Generated {esc(manifest['generated_utc'])}. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table></div></details>
-</div></details>{viewer_note}<footer>Local HTML + SVG · no external assets, uploads or approval actions · saved review snapshot; progress belongs in the existing task records</footer>
-</main><script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
+{snapshot_html}
+</div></details>{tail}'''
 
 
 def check_report(path: Path, root: Path) -> list[str]:
@@ -863,6 +935,12 @@ def main() -> int:
             out.write(result)
         print(f'RENDERED: {args.output.resolve()}')
         print('Artifact creation does not approve or start implementation.')
+        data = load_json(args.input)
+        issues = task_module().prose_issues(data) if 'task_report' in data else []
+        for path, problem in issues:  # simple-english advice; fix the JSON and render a new file
+            print(f'PLAIN ENGLISH: {path}: {problem}')
+        if issues:
+            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill.')
         if args.open:
             try:
                 accepted=webbrowser.open(args.output.resolve().as_uri(),new=2)

@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+from links_helper import make_link
 SCRIPT = ROOT / 'skills/ui-design/scripts/check_design_kit.py'
 spec = importlib.util.spec_from_file_location('design_kit_tests', SCRIPT)
 k = importlib.util.module_from_spec(spec); spec.loader.exec_module(k)
@@ -153,8 +154,7 @@ class DesignKitTests(unittest.TestCase):
 
     def test_symlink_reference_rejected(self):
         target=self.root/'src/save-button.tsx';target.unlink()
-        try:target.symlink_to(self.root/'docs/approval.md')
-        except OSError:self.skipTest('Symlinks unavailable')
+        make_link(target,self.root/'docs/approval.md')
         with self.assertRaises(ValueError):self.run_check()
 
     def test_oversized_input_rejected(self):

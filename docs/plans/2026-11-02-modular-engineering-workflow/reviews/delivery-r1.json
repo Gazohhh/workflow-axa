@@ -1,0 +1,1156 @@
+{
+ "schema_version": 2,
+ "title": "workflow-axa 2.8: a modular engineering workflow — delivery",
+ "revision": "D1",
+ "mode": "compare",
+ "state": "draft",
+ "snapshot": {
+  "repository": "workflow-axa",
+  "branch": "main",
+  "basis": "Uncommitted working tree on 9daf507 at delivery, 2026-11-02. Validator PASS, 580 tests OK (11 host skips)."
+ },
+ "understanding": "/workflow is now a small router to four phase skills (clarify, specify, execute, deliver). Matt Pocock's eight skills ship inside the package as separate skills. Every rule has one owner file. Two approval gates, with a combined message for small settled changes. Tested on Altinstar and Cheflabels worktrees and reviewed by Claude and Codex.",
+ "boundaries": [
+  "No commits, pushes, installs or changes to the main Altinstar, Cheflabels or web repositories.",
+  "Strict UI kit reuse and historical report snapshots are unchanged.",
+  "Agent behavior was observed in one run per scenario, not measured as a rate."
+ ],
+ "open_decisions": [],
+ "sources": [
+  {
+   "id": "S1",
+   "path": "docs/plans/2026-11-02-modular-engineering-workflow/PLAN.md",
+   "role": "plan"
+  },
+  {
+   "id": "S2",
+   "path": "docs/plans/2026-11-02-modular-engineering-workflow/TODO.md",
+   "role": "todo"
+  },
+  {
+   "id": "S3",
+   "path": "docs/plans/2026-11-02-modular-engineering-workflow/FINDINGS.md",
+   "role": "findings"
+  },
+  {
+   "id": "S4",
+   "path": "docs/plans/2026-11-02-modular-engineering-workflow/DECISIONS.md",
+   "role": "decisions"
+  },
+  {
+   "id": "S5",
+   "path": "skills/workflow/SKILL.md",
+   "role": "code"
+  },
+  {
+   "id": "S6",
+   "path": "VALIDATION.md",
+   "role": "validation"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "R1",
+   "text": "A small /workflow that routes to reusable phase skills",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R2",
+   "text": "Clarification grounded in the code that finds missing cases",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R3",
+   "text": "A mutual agreement before planning, and plan approval before code",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R4",
+   "text": "Dependent tickets built, reviewed and checked one by one",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R5",
+   "text": "Matt Pocock's skills kept intact and integrated",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R6",
+   "text": "Clearer writing without losing technical detail",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R7",
+   "text": "One readable HTML report for the whole task",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R8",
+   "text": "Records stay the source; old reports and approvals stay valid",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R9",
+   "text": "Each skill and the whole workflow tested, compared with the old one",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  },
+  {
+   "id": "R10",
+   "text": "An honest final delivery report",
+   "origin": "PLAN Mutual agreement R1 (accepted through D5)"
+  }
+ ],
+ "evidence": [
+  {
+   "id": "E1",
+   "claim": "Package checks pass on the final tree.",
+   "kind": "runtime",
+   "sources": [
+    "S6",
+    "S3"
+   ],
+   "locator": "VALIDATION.md \"Package checks\"; FINDINGS V3",
+   "limits": "Windows host; 11 host-limit skips."
+  },
+  {
+   "id": "E2",
+   "claim": "Behavior runs on both repositories observed the phases, gates and delivery.",
+   "kind": "runtime",
+   "sources": [
+    "S6",
+    "S3"
+   ],
+   "locator": "FINDINGS E12–E18; VALIDATION.md \"Behavior runs\"",
+   "limits": "One run per scenario."
+  },
+  {
+   "id": "E3",
+   "claim": "Independent Claude and Codex reviews were applied.",
+   "kind": "static",
+   "sources": [
+    "S3"
+   ],
+   "locator": "FINDINGS E13, E17, E20",
+   "limits": "Two deferrals recorded."
+  }
+ ],
+ "acceptance": [
+  {
+   "id": "A1",
+   "text": "A small /workflow that routes to reusable phase skills",
+   "requirements": [
+    "R1"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A2",
+   "text": "Clarification grounded in the code that finds missing cases",
+   "requirements": [
+    "R2"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A3",
+   "text": "A mutual agreement before planning, and plan approval before code",
+   "requirements": [
+    "R3"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A4",
+   "text": "Dependent tickets built, reviewed and checked one by one",
+   "requirements": [
+    "R4"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A5",
+   "text": "Matt Pocock's skills kept intact and integrated",
+   "requirements": [
+    "R5"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A6",
+   "text": "Clearer writing without losing technical detail",
+   "requirements": [
+    "R6"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A7",
+   "text": "One readable HTML report for the whole task",
+   "requirements": [
+    "R7"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A8",
+   "text": "Records stay the source; old reports and approvals stay valid",
+   "requirements": [
+    "R8"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A9",
+   "text": "Each skill and the whole workflow tested, compared with the old one",
+   "requirements": [
+    "R9"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  },
+  {
+   "id": "A10",
+   "text": "An honest final delivery report",
+   "requirements": [
+    "R10"
+   ],
+   "verification": "VALIDATION.md and FINDINGS; see checks below."
+  }
+ ],
+ "tasks": [
+  {
+   "id": "T1",
+   "title": "Baseline and preservation",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R8",
+    "R9"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A8",
+    "A9"
+   ],
+   "depends_on": [],
+   "outcome": "verified",
+   "outcome_note": "Evidence in FINDINGS and VALIDATION.md."
+  },
+  {
+   "id": "T2",
+   "title": "Router, phase skills, agreement and writing rules",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R6"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A6"
+   ],
+   "depends_on": [
+    "T1"
+   ],
+   "outcome": "verified",
+   "outcome_note": "Evidence in FINDINGS and VALIDATION.md."
+  },
+  {
+   "id": "T3",
+   "title": "Central report content and reader-first layout",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R7",
+    "R8"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A7",
+    "A8"
+   ],
+   "depends_on": [
+    "T1"
+   ],
+   "outcome": "verified",
+   "outcome_note": "Evidence in FINDINGS and VALIDATION.md."
+  },
+  {
+   "id": "T4",
+   "title": "Registration, metadata and documentation",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R1",
+    "R5"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A1",
+    "A5"
+   ],
+   "depends_on": [
+    "T2",
+    "T3"
+   ],
+   "outcome": "verified",
+   "outcome_note": "Evidence in FINDINGS and VALIDATION.md."
+  },
+  {
+   "id": "T5",
+   "title": "Package and behavior checks on both repositories",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R9"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A9"
+   ],
+   "depends_on": [
+    "T4"
+   ],
+   "outcome": "verified",
+   "outcome_note": "Package checks and live runs passed; browser suites and native host discovery not run."
+  },
+  {
+   "id": "T6",
+   "title": "Independent reviews and repairs",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R5",
+    "R9"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A5",
+    "A9"
+   ],
+   "depends_on": [
+    "T5"
+   ],
+   "outcome": "verified",
+   "outcome_note": "Evidence in FINDINGS and VALIDATION.md."
+  },
+  {
+   "id": "T7",
+   "title": "Delivery record and this snapshot",
+   "kind": "requested",
+   "reason": "Part of the agreed refactor.",
+   "areas": [
+    "skills"
+   ],
+   "requirements": [
+    "R10"
+   ],
+   "evidence": [
+    "E1",
+    "E2"
+   ],
+   "acceptance": [
+    "A10"
+   ],
+   "depends_on": [
+    "T6"
+   ],
+   "outcome": "verified",
+   "outcome_note": "PLAN Outcome, VALIDATION.md and this snapshot."
+  }
+ ],
+ "comparison": [
+  {
+   "label": "Where the procedure lives",
+   "current": "One long workflow skill plus reference files; rules repeated in several places.",
+   "proposed": "A small router, four phase skills, and one owner file per rule.",
+   "requirements": [
+    "R1"
+   ],
+   "evidence": [
+    "E3"
+   ],
+   "tasks": [
+    "T2"
+   ]
+  },
+  {
+   "label": "Matt Pocock's skills",
+   "current": "Whatever copy happened to be installed; a same-named built-in could be used instead.",
+   "proposed": "Eight copies shipped as separate skills with license, hashes and an adaptation section.",
+   "requirements": [
+    "R5"
+   ],
+   "evidence": [
+    "E1"
+   ],
+   "tasks": [
+    "T4"
+   ]
+  },
+  {
+   "label": "Approvals",
+   "current": "One approval of the HTML plan.",
+   "proposed": "Agree on behavior, then approve the plan; small settled changes can do both at once.",
+   "requirements": [
+    "R3"
+   ],
+   "evidence": [
+    "E2"
+   ],
+   "tasks": [
+    "T2"
+   ]
+  },
+  {
+   "label": "The report",
+   "current": "Flowchart plus technical appendix.",
+   "proposed": "One reader-first page from request to delivery; technical details collapsed.",
+   "requirements": [
+    "R7"
+   ],
+   "evidence": [
+    "E1"
+   ],
+   "tasks": [
+    "T3"
+   ]
+  }
+ ],
+ "default_view": "proposed",
+ "graphs": [
+  {
+   "id": "current",
+   "kind": "current",
+   "purpose": "flow",
+   "tab": "Current",
+   "title": "Baseline instruction flow",
+   "description": "Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.",
+   "width": 640,
+   "height": 640,
+   "nodes": [
+    {
+     "id": "current0",
+     "label": "Inspect project",
+     "note": "Rules, identity and current code",
+     "shape": "start",
+     "x": 80,
+     "y": 32,
+     "width": 480,
+     "height": 104,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    },
+    {
+     "id": "current1",
+     "label": "Ask and prepare plan",
+     "note": "Grilling with shared references",
+     "shape": "action",
+     "x": 80,
+     "y": 184,
+     "width": 480,
+     "height": 104,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    },
+    {
+     "id": "current2",
+     "label": "Review HTML and approve",
+     "note": "Single implementation gate",
+     "shape": "action",
+     "x": 80,
+     "y": 336,
+     "width": 480,
+     "height": 104,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    },
+    {
+     "id": "current3",
+     "label": "Implement and audit",
+     "note": "Checkpoint, verify and report",
+     "shape": "result",
+     "x": 80,
+     "y": 488,
+     "width": 480,
+     "height": 104,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    }
+   ],
+   "edges": [
+    {
+     "from": "current0",
+     "to": "current1",
+     "label": "",
+     "points": [
+      [
+       320,
+       136
+      ],
+      [
+       320,
+       184
+      ]
+     ],
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    },
+    {
+     "from": "current1",
+     "to": "current2",
+     "label": "",
+     "points": [
+      [
+       320,
+       288
+      ],
+      [
+       320,
+       336
+      ]
+     ],
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    },
+    {
+     "from": "current2",
+     "to": "current3",
+     "label": "",
+     "points": [
+      [
+       320,
+       440
+      ],
+      [
+       320,
+       488
+      ]
+     ],
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    }
+   ]
+  },
+  {
+   "id": "proposed",
+   "kind": "proposed",
+   "purpose": "flow",
+   "tab": "Proposed",
+   "title": "Proposed engineering workflow",
+   "description": "Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.",
+   "width": 640,
+   "height": 944,
+   "nodes": [
+    {
+     "id": "proposed0",
+     "label": "Understand the project",
+     "note": "Inspect relevant code and journeys",
+     "shape": "start",
+     "x": 80,
+     "y": 32,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "id": "proposed1",
+     "label": "Agree behavior and scope",
+     "note": "First approval; reuse settled answers",
+     "shape": "action",
+     "x": 80,
+     "y": 184,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "id": "proposed2",
+     "label": "Specify dependent tickets",
+     "note": "Acceptance, test seams and order",
+     "shape": "action",
+     "x": 80,
+     "y": 336,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "id": "proposed3",
+     "label": "Review HTML and approve",
+     "note": "Second approval before coding",
+     "shape": "action",
+     "x": 80,
+     "y": 488,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "id": "proposed4",
+     "label": "Execute, review and verify",
+     "note": "Ready tickets; repair and integrate",
+     "shape": "action",
+     "x": 80,
+     "y": 640,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "id": "proposed5",
+     "label": "Reconcile final delivery",
+     "note": "Every outcome linked to evidence",
+     "shape": "result",
+     "x": 80,
+     "y": 792,
+     "width": 480,
+     "height": 104,
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "proposed0",
+     "to": "proposed1",
+     "label": "",
+     "points": [
+      [
+       320,
+       136
+      ],
+      [
+       320,
+       184
+      ]
+     ],
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "from": "proposed1",
+     "to": "proposed2",
+     "label": "",
+     "points": [
+      [
+       320,
+       288
+      ],
+      [
+       320,
+       336
+      ]
+     ],
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "from": "proposed2",
+     "to": "proposed3",
+     "label": "",
+     "points": [
+      [
+       320,
+       440
+      ],
+      [
+       320,
+       488
+      ]
+     ],
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "from": "proposed3",
+     "to": "proposed4",
+     "label": "",
+     "points": [
+      [
+       320,
+       592
+      ],
+      [
+       320,
+       640
+      ]
+     ],
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    },
+    {
+     "from": "proposed4",
+     "to": "proposed5",
+     "label": "",
+     "points": [
+      [
+       320,
+       744
+      ],
+      [
+       320,
+       792
+      ]
+     ],
+     "basis": "proposed",
+     "change": "modified",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [
+      "T2",
+      "T3"
+     ]
+    }
+   ]
+  }
+ ],
+ "report_kind": "task-overview",
+ "checkpoint": {
+  "as_of": "2026-11-02, delivery",
+  "source": "S1",
+  "locator": "Current checkpoint and Outcome",
+  "approval": {
+   "status": "waived",
+   "revision": "R1",
+   "summary": "D5: the user waived the extra plan pause for this task."
+  },
+  "implementation": {
+   "status": "implemented",
+   "summary": "All tickets implemented and recorded."
+  },
+  "verification": {
+   "status": "limited",
+   "summary": "Package and live runs passed; browser suites and native host discovery not run."
+  },
+  "next_action": "Owner reviews the delivery, then decides on commit and installation."
+ },
+ "task_report": {
+  "phase": "delivery",
+  "completion": "partial",
+  "agreement": {
+   "status": "approved",
+   "revision": "R1",
+   "summary": "R1–R10 accepted; later user decisions D6–D10 added.",
+   "response": "Start working toward this goal: do not stop finish/review/test everything.",
+   "source": "S4",
+   "locator": "D5"
+  },
+  "sections": [
+   {
+    "id": "request",
+    "title": "What was asked",
+    "text": "Refactor workflow-axa into a modular engineering workflow: better questions, a mutual agreement, specs and tickets, a central HTML report, test-first building, reviews, and an honest delivery report. Integrate Matt Pocock's grilling, implement-spec, code-review and tdd. Test on Altinstar-react and Cheflabels worktrees.",
+    "source": "S1",
+    "locator": "Requested outcome"
+   },
+   {
+    "id": "agreement",
+    "title": "What was agreed",
+    "text": "R1–R10 in PLAN, accepted through D5. During the work the user added: a Matt-style rewrite and a reader-first report (D6), vendoring the external skills (D7), separate skills and one owner per rule (D10), both gates in one message for small settled changes (D8), and keeping the menu as it is (D9).",
+    "source": "S4",
+    "locator": "D5–D10"
+   },
+   {
+    "id": "specification",
+    "title": "What was built",
+    "text": "A 682-word router and four phase skills; eight vendored skills with adaptation sections; grilling owns all questioning; open_items.py, handoff messages, state lines and parallel tickets from the retro; a stricter delivery check in the report helper; the reader-first report layout.",
+    "source": "S3",
+    "locator": "E15–E20"
+   },
+   {
+    "id": "decisions",
+    "title": "Decisions made",
+    "text": "D3 two approvals; D5 finish without another pause; D6 Matt style and reader-first report; D7/D10 vendored separate skills; D8 combined gates for small changes; D9 menu unchanged.",
+    "source": "S4",
+    "locator": "D1–D10"
+   },
+   {
+    "id": "risks",
+    "title": "Limits and open points",
+    "text": "Browser suites not run (no Playwright). Native discovery of the installed plugin in Claude Desktop and Codex not tested. Option B not yet triggered in a live run. Two deferred clean-ups: RULES.md vs READINESS, and UI mode definitions in three files. Changes are uncommitted; someone staged them at 15:12.",
+    "source": "S6",
+    "locator": "Not established"
+   },
+   {
+    "id": "testing",
+    "title": "How it was checked",
+    "text": "Validator and 580 unit tests. Live headless sessions on both repositories (E1–A4, 20 sessions), each loading the exact candidate; the last one confirmed the delivery-snapshot rule. A retro over 55 past sessions. Independent reviews by Claude and Codex, four rounds in total.",
+    "source": "S6",
+    "locator": "Package checks; Behavior runs; Reviews"
+   },
+   {
+    "id": "delivery",
+    "title": "Delivery summary",
+    "text": "Delivered as partial: everything agreed is built and checked, with the limits listed above still open.",
+    "source": "S1",
+    "locator": "Outcome"
+   }
+  ],
+  "tickets": [
+   {
+    "task": "T1",
+    "specification": "Baseline and preservation.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T2",
+    "specification": "Router, phase skills, agreement and writing rules.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T3",
+    "specification": "Central report content and reader-first layout.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T4",
+    "specification": "Registration, metadata and documentation.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T5",
+    "specification": "Package and behavior checks on both repositories.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T6",
+    "specification": "Independent reviews and repairs.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   },
+   {
+    "task": "T7",
+    "specification": "Delivery record and this snapshot.",
+    "expected": "See its acceptance items.",
+    "source": "S2",
+    "locator": "Ticket states"
+   }
+  ],
+  "checks": [
+   {
+    "id": "V1",
+    "title": "Package validator and unit tests",
+    "kind": "test",
+    "status": "passed",
+    "expected": "Validator PASS; all tests pass",
+    "actual": "PASS; 580 ran, OK, 11 host skips",
+    "limits": "Windows host",
+    "command": "python -X utf8 tools/validate.py; python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+    "source": "S6",
+    "locator": "Package checks"
+   },
+   {
+    "id": "V2",
+    "title": "Live workflow runs on Altinstar and Cheflabels",
+    "kind": "test",
+    "status": "passed",
+    "expected": "Phases, gates and honest delivery observed",
+    "actual": "Observed; defects found were fixed and guarded by tests",
+    "limits": "One run per scenario; option B not triggered",
+    "source": "S3",
+    "locator": "E12–E18"
+   },
+   {
+    "id": "V3",
+    "title": "Independent reviews (Claude, Codex)",
+    "kind": "review",
+    "status": "passed",
+    "expected": "Standards and Spec findings resolved",
+    "actual": "All applied except two recorded deferrals",
+    "limits": "Deferrals listed in risks",
+    "source": "S3",
+    "locator": "E13, E17, E20"
+   },
+   {
+    "id": "V4",
+    "title": "Browser visual regression suites",
+    "kind": "test",
+    "status": "not-run",
+    "expected": "Report visuals unchanged where not intended",
+    "actual": "Not run: Playwright for Python not installed",
+    "limits": "Manual screenshots only",
+    "source": "S6",
+    "locator": "Package checks"
+   }
+  ],
+  "acceptance_results": [
+   {
+    "acceptance": "A1",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A2",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A3",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A4",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A5",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A6",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A7",
+    "status": "partial",
+    "checks": [
+     "V1",
+     "V4"
+    ],
+    "note": "Layout checked by tests and screenshots; no visual baseline run.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A8",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A9",
+    "status": "partial",
+    "checks": [
+     "V1",
+     "V2",
+     "V4"
+    ],
+    "note": "Browser suites and native host discovery not run.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   },
+   {
+    "acceptance": "A10",
+    "status": "verified",
+    "checks": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "note": "Checked by the package tests, live runs and reviews.",
+    "source": "S6",
+    "locator": "Behavior runs"
+   }
+  ]
+ }
+}

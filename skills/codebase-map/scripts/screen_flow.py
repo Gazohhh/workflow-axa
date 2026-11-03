@@ -14,7 +14,8 @@ from pathlib import Path
 
 MAX_CAPTURE = 2_000_000
 MAX_CAPTURE_TOTAL = 4_000_000
-MODES = {'unselected', 'behaviour-only', 'blocked', 'functionality-only', 'approved-kit', 'design-authoring'}
+MODES = {'unselected', 'behaviour-only', 'reuse', 'plain-by-instruction', 'blocked', 'functionality-only', 'approved-kit', 'design-authoring'}
+CURRENT_MODES = {'behaviour-only', 'reuse', 'plain-by-instruction', 'approved-kit'}  # D14: existing styles only
 ELEMENTS = {'heading', 'text', 'checkbox', 'input', 'button', 'message'}
 
 
@@ -99,8 +100,8 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     if ui['authority'].get('status') not in ('unconfirmed','confirmed'):
         raise ValueError('UI authority needs confirmed/unconfirmed status')
     record(ui.get('preview'), 'Preview authority', sources, api)
-    if ui['preview'].get('status') not in ('proposed','authorised'):
-        raise ValueError('Preview authority needs proposed/authorised status')
+    if ui['preview'].get('status') not in ('proposed','authorised','not-needed'):
+        raise ValueError('Preview status is not-needed (sketches only), proposed or authorised')
     api.text(ui['preview'].get('destination'), 'preview.destination')
     acceptance = ui.get('acceptance')
     if not isinstance(acceptance, dict) or acceptance.get('status') not in ('pending','accepted'):
@@ -142,87 +143,94 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     tasks = {r['id']:r for r in data['tasks']}
     total = 0
     geometry = []
+    problems = []
     for key,s in screens.items():
-        allowed_screen = {'id','title','description','state','x','y','width','height','representation',
-                          'content','capture','sources','requirements','evidence','tasks','decisions','markers','elements','capture_context'}
-        if set(s)-allowed_screen:
-            raise ValueError('Unknown screen fields; executable markup/styles are prohibited')
-        api.text(s.get('title'), 'screen.title', 48)
-        api.text(s.get('description'), 'screen.description', 700)
-        if s.get('state') not in ('current','proposed'):
-            raise ValueError('UI screen needs current/proposed state')
-        if data['mode'] == 'current' and s['state'] != 'current':
-            raise ValueError('Current inspection cannot include proposed UI screens')
-        api.references(s.get('sources'), sources, 'screen.sources', required=True)
-        api.references(s.get('decisions'), decisions, 'screen.decisions')
-        for field,lookup in [('requirements',requirements),('evidence',evidence),('tasks',tasks)]:
-            api.references(s.get(field),lookup,'screen.'+field,
-                required=ui['kind']=='application' and (field!='tasks' or s['state']=='proposed'))
-        for decision in s['decisions']:
-            if key not in decisions[decision]['screens']:
-                raise ValueError('Screen decision mapping disagrees with decision.screens')
-        for field,low,high in [('width',280,560),('height',280,720)]:
-            api.coordinate(s.get(field),'screen.'+field,low,high)
-        if len(s['title']) * 8 > s['width'] - 145 or any(c in s['title'] for c in '\n\r'):
-            raise ValueError('Screen title does not fit beside Inspect; shorten it or widen the screen')
-        if s.get('representation') == 'capture':
-            if 'content' in s or s.get('capture') not in s['sources']:
-                raise ValueError('Captured screen needs a listed source and no invented controls')
-            src = sources[s['capture']]
-            if src['role'] != 'ui-capture' or not src['path'].lower().endswith('.png'):
-                raise ValueError('Screen capture must reference a local ui-capture PNG source')
-            raw,_,_ = png_bytes(api.safe_source(root,src['path']))
-            total += len(raw)
-            markers = api.rows(s.get('markers', []), 'capture.markers')
-            if len(markers) > 8:
-                raise ValueError('Use at most eight capture decision markers')
-            for marker in markers:
-                if not isinstance(marker, dict):
-                    raise ValueError('Capture marker must be an object')
-                if set(marker) == {'decision', 'position'}:
-                    if marker['decision'] not in s['decisions']:
-                        raise ValueError('Capture marker must name a mapped decision')
-                elif set(marker) == {'element', 'position'}:
-                    elements = s.get('elements', [])
-                    if not isinstance(elements, list) or marker['element'] not in {e.get('id') for e in elements if isinstance(e, dict)}:
-                        raise ValueError('Capture marker must name a selected element')
-                else:
-                    raise ValueError('Capture marker needs a decision or element and position')
-                position = marker['position']
-                if (not isinstance(position, list) or len(position) != 2 or
-                    any(type(n) not in (int, float) or not 0 <= n <= 1 for n in position)):
-                    raise ValueError('Capture marker position uses two fractions from 0 to 1')
-        elif s.get('representation') == 'schematic':
-            if 'capture' in s or 'markers' in s:
-                raise ValueError('Schematic screen cannot claim a captured source')
-            content = api.rows(s.get('content'),'screen.content',empty=False)
-            if len(content)>6:
-                raise ValueError('Use at most six controls/text blocks in one schematic screen')
-            if s['height'] < 120 + 48*len(content):
-                raise ValueError('Screen height is too small; expand it, do not shrink text')
-            for c in content:
-                if set(c)-{'kind','label','value','checked','disabled','decision'} or c.get('kind') not in ELEMENTS:
-                    raise ValueError('Only structured inert schematic controls are supported')
-                api.text(c.get('label'),'control.label',42)
-                if any(ch in c['label'] for ch in '\n\r'):
-                    raise ValueError('Use a single-line schematic label')
-                available = s['width'] - (86 if c.get('decision') else 48) - (26 if c['kind']=='checkbox' else 0)
-                estimate = 9 if c['kind']=='heading' else 7
-                if len(c['label']) * estimate > available:
-                    raise ValueError('Schematic label will not fit; widen or shorten it')
-                if c.get('value') is not None:
-                    api.text(c['value'],'control.value',42)
-                    if any(ch in c['value'] for ch in '\n\r') or len(c['value'])*7 > s['width']-64:
-                        raise ValueError('Schematic field value does not fit')
-                for flag in ('checked','disabled'):
-                    if flag in c and type(c[flag]) is not bool:
-                        raise ValueError('Control flags must be boolean')
-                if 'decision' in c and c['decision'] not in s['decisions']:
-                    raise ValueError('Control decision is not mapped to this screen')
-        else:
-            raise ValueError('Use a captured PNG or an explicitly labelled schematic')
+        try:
+            allowed_screen = {'id','title','description','state','x','y','width','height','representation',
+                              'content','capture','sources','requirements','evidence','tasks','decisions','markers','elements','capture_context'}
+            if set(s)-allowed_screen:
+                raise ValueError('Unknown screen fields; executable markup/styles are prohibited')
+            api.text(s.get('title'), 'screen.title', 48)
+            api.text(s.get('description'), 'screen.description', 700)
+            if s.get('state') not in ('current','proposed'):
+                raise ValueError('UI screen needs current/proposed state')
+            if data['mode'] == 'current' and s['state'] != 'current':
+                raise ValueError('Current inspection cannot include proposed UI screens')
+            api.references(s.get('sources'), sources, 'screen.sources', required=True)
+            api.references(s.get('decisions'), decisions, 'screen.decisions')
+            for field,lookup in [('requirements',requirements),('evidence',evidence),('tasks',tasks)]:
+                api.references(s.get(field),lookup,'screen.'+field,
+                    required=ui['kind']=='application' and (field!='tasks' or s['state']=='proposed'))
+            for decision in s['decisions']:
+                if key not in decisions[decision]['screens']:
+                    raise ValueError('Screen decision mapping disagrees with decision.screens')
+            for field,low,high in [('width',280,560),('height',280,720)]:
+                api.coordinate(s.get(field),'screen.'+field,low,high)
+            if len(s['title']) * 8 > s['width'] - 145 or any(c in s['title'] for c in '\n\r'):
+                raise ValueError('Screen title does not fit beside Inspect; shorten it or widen the screen')
+            if s.get('representation') == 'capture':
+                if 'content' in s or s.get('capture') not in s['sources']:
+                    raise ValueError('Captured screen needs a listed source and no invented controls')
+                src = sources[s['capture']]
+                if src['role'] != 'ui-capture' or not src['path'].lower().endswith('.png'):
+                    raise ValueError('Screen capture must reference a local ui-capture PNG source')
+                raw,_,_ = png_bytes(api.safe_source(root,src['path']))
+                total += len(raw)
+                markers = api.rows(s.get('markers', []), 'capture.markers')
+                if len(markers) > 8:
+                    raise ValueError('Use at most eight capture decision markers')
+                for marker in markers:
+                    if not isinstance(marker, dict):
+                        raise ValueError('Capture marker must be an object')
+                    if set(marker) == {'decision', 'position'}:
+                        if marker['decision'] not in s['decisions']:
+                            raise ValueError('Capture marker must name a mapped decision')
+                    elif set(marker) == {'element', 'position'}:
+                        elements = s.get('elements', [])
+                        if not isinstance(elements, list) or marker['element'] not in {e.get('id') for e in elements if isinstance(e, dict)}:
+                            raise ValueError('Capture marker must name a selected element')
+                    else:
+                        raise ValueError('Capture marker needs a decision or element and position')
+                    position = marker['position']
+                    if (not isinstance(position, list) or len(position) != 2 or
+                        any(type(n) not in (int, float) or not 0 <= n <= 1 for n in position)):
+                        raise ValueError('Capture marker position uses two fractions from 0 to 1')
+            elif s.get('representation') == 'schematic':
+                if 'capture' in s or 'markers' in s:
+                    raise ValueError('Schematic screen cannot claim a captured source')
+                content = api.rows(s.get('content'),'screen.content',empty=False)
+                if len(content)>6:
+                    raise ValueError('Use at most six controls/text blocks in one schematic screen')
+                if s['height'] < 120 + 48*len(content):
+                    raise ValueError('Screen height is too small; expand it, do not shrink text')
+                for c in content:
+                    if set(c)-{'kind','label','value','checked','disabled','decision'} or c.get('kind') not in ELEMENTS:
+                        raise ValueError('Only structured inert schematic controls are supported')
+                    api.text(c.get('label'),'control.label',42)
+                    if any(ch in c['label'] for ch in '\n\r'):
+                        raise ValueError('Use a single-line schematic label')
+                    available = s['width'] - (86 if c.get('decision') else 48) - (26 if c['kind']=='checkbox' else 0)
+                    estimate = 9 if c['kind']=='heading' else 7
+                    if len(c['label']) * estimate > available:
+                        raise ValueError('Schematic label will not fit; widen or shorten it')
+                    if c.get('value') is not None:
+                        api.text(c['value'],'control.value',42)
+                        if any(ch in c['value'] for ch in '\n\r') or len(c['value'])*7 > s['width']-64:
+                            raise ValueError('Schematic field value does not fit')
+                    for flag in ('checked','disabled'):
+                        if flag in c and type(c[flag]) is not bool:
+                            raise ValueError('Control flags must be boolean')
+                    if 'decision' in c and c['decision'] not in s['decisions']:
+                        raise ValueError('Control decision is not mapped to this screen')
+            else:
+                raise ValueError('Use a captured PNG or an explicitly labelled schematic')
+        except ValueError as exc:  # report every screen problem in one run, not one per attempt
+            problems.append(f"screen {s.get('id', key) if isinstance(s, dict) else key}: {exc}")
+            continue
         geometry.append({**{f:s[f] for f in ('id','x','y','width','height')},
                          'label':s['title'], 'note':'','shape':'group'})
+    if problems:
+        raise ValueError('; '.join(problems))
     if total > MAX_CAPTURE_TOTAL:
         raise ValueError('UI captures exceed the 4 MB total report budget')
     for d in decisions.values():
@@ -238,24 +246,38 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     graph={'width':ui.get('width'),'height':ui.get('height'),'purpose':'flow',
            'tab':'UI screens','description':ui['summary'], 'nodes':geometry,'edges':transitions}
     api.validate_geometry(graph,{n['id']:n for n in geometry})
-    if any(screen['state']=='proposed' for screen in screens.values()) and ui['preview']['status']!='authorised':
-        raise ValueError('Proposed screen drawings need explicit preview permission and recorded preview authority, including drafts')
+    # A sketch inside this offline report needs no permission (round 5: an extra question per plan);
+    # capturing a proposed screen means running a preview of the app, which does.
+    proposed_capture = any(s['state']=='proposed' and s['representation']=='capture' for s in screens.values())
+    if proposed_capture and ui['preview']['status']=='not-needed':
+        raise ValueError('preview.status not-needed is only for sketch-only reports; a captured proposed screen ran a preview')
+    if proposed_capture and ui['preview']['status']!='authorised':
+        raise ValueError('A captured proposed screen needs recorded preview authority (it ran a preview of the app); '
+                         'a labelled sketch in this report needs none')
     if ui['mode']=='approved-kit' and any(screen['representation']!='capture' for screen in screens.values()):
         raise ValueError('Approved-kit review needs actual component captures; schematics do not prove its appearance')
     if acceptance['status']=='accepted' and (ui['authority']['status']!='confirmed' or ui['mode']=='unselected'
                                            or any(d['status']!='selected' for d in decisions.values())):
         raise ValueError('An accepted design cannot retain an unselected source or unresolved design decisions')
     if ui['kind']=='application' and data['state'] in ('awaiting-approval','approved'):
-        if ui['mode']=='unselected' or ui['authority']['status']!='confirmed' or ui['preview']['status']!='authorised':
-            raise ValueError('Approval-ready UI work needs confirmed mode/source and preview authority')
+        if ui['mode']=='unselected' or ui['authority']['status']!='confirmed' or (proposed_capture and ui['preview']['status']!='authorised'):
+            raise ValueError('Approval-ready UI work needs confirmed mode/source, and preview authority for captured proposed screens')
         if any(d['status']=='open' for d in decisions.values()):
             raise ValueError('Resolve blocking UI decisions before approval-ready output')
 
 
     resolved = bindings_module().resolve(ui, root, sources)
+    # Drafts too: the combined-gates route always renders a draft (round-6 regression run).
+    if ui['kind']=='application' and ui['mode'] == 'reuse' and any(s['state'] == 'proposed' and not s.get('elements') for s in screens.values()):
+        raise ValueError('Reuse mode: every proposed screen lists the existing elements it copies '
+                         '(elements: id, source, locator, tag, classes, context, changes)')
     if ui['kind']=='application' and (data['state'] in ('awaiting-approval','approved') or acceptance['status']=='accepted'):
-        if ui['mode'] != 'approved-kit' or resolved is None:
-            raise ValueError('Strict kit-only UI: approval-ready application screens need approved-kit binding and real selected captures; no plain-HTML/design-authoring fallback.')
+        if ui['mode'] not in CURRENT_MODES:
+            raise ValueError(f"Approval-ready UI needs a current mode (behaviour-only, reuse or plain-by-instruction); got {ui['mode']!r}. "
+                             'Unmatched elements stay blocked until the user names an element to mimic.')
+        if ui['mode'] == 'approved-kit' and resolved is None:
+            raise ValueError('Legacy approved-kit review needs its kit binding and real selected captures')
+
 
 
 
@@ -314,7 +336,7 @@ def screen_svg(screen: dict, root: Path, sources: dict, api, suffix: str) -> str
                 parts.append(f'<a href="#ui-decision-{d}" aria-label="Review decision {d}"><circle class="ui-marker" cx="{cx}" cy="{y-5}" r="13"/>'
                              f'<text class="ui-marker-text" x="{cx}" y="{y-1}" text-anchor="middle">{d}</text></a>')
             y+=48
-    caption=('Capture · selected kit references' if screen.get('elements') else 'Capture · kit provenance not established') if screen['representation']=='capture' else 'Layout sketch · not a component capture'
+    caption=(('Screenshot · kit parts listed below' if 'item' in screen['elements'][0] else 'Screenshot · copied elements listed below') if screen.get('elements') else 'Screenshot of the page') if screen['representation']=='capture' else 'Sketch · not a screenshot'
     parts.append(f'<text class="ui-footnote" x="20" y="{height-16}">{caption}</text></svg>')
     return ''.join(parts)
 
@@ -345,7 +367,7 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
             capture,iw,ih=png_bytes(api.safe_source(root,sources[s['capture']]['path']))
             full_screen=(f'<img class="ui-capture-detail" width="{iw}" height="{ih}" alt="{e(s["description"])}" '
                          f'src="data:image/png;base64,{base64.b64encode(capture).decode("ascii")}"/>')
-        details.append(f'<details id="{detail}" class="ui-screen-detail"><summary>{e(s["title"])} — screen and sources</summary>'
+        details.append(f'<details id="{detail}" class="ui-screen-detail"><summary>{e(s["title"])}: screen and sources</summary>'
                        f'<p>{e(s["description"])}</p>{full_screen}'
                        f'{bindings.selection_html(s, resolved, sources, api)}'
                        f'<p class="ui-evidence">State: {e(s["state"])}. Sources: {refs}. '
@@ -353,34 +375,34 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
     decisions=[]
     for d in ui['decisions']:
         options=' / '.join(e(o) for o in d['options'])
-        state='Open — owner decision needed' if d['status']=='open' else 'Deferred — design remains unfinished' if d['status']=='deferred' else 'Selected: '+e(d['selection'])
+        state='Open: the owner must decide' if d['status']=='open' else 'Deferred: the design is not finished' if d['status']=='deferred' else 'Selected: '+e(d['selection'])
         record_text=('<p>'+e(d.get('reason',''))+'</p>') if d['status']=='deferred' else ''
         if d['status']=='selected':
             record_text=f'<p>Recorded at {api.links([d["source"]],"s")}: {e(d["locator"])}. {e(d["summary"])}</p>'
         decisions.append(f'<article id="ui-decision-{e(d["id"])}" class="ui-decision"><h3>{e(d["id"])} · {e(d["title"])}</h3>'
                          f'<p>{e(d["question"])}</p><p>Alternatives: {options}.</p><p><strong>{state}</strong></p>{record_text}</article>')
-    illustration=('<p class="ui-notice"><strong>Illustrative UI example — outside this report’s implementation scope.</strong> '
+    illustration=('<p class="ui-notice"><strong>Example UI only. It is outside the scope of this report.</strong> '
                   'These are fictional screens to demonstrate the report format, not an approved project kit.</p>') if ui['kind']=='illustration' else ''
     authority=ui['authority'];preview=ui['preview']
-    legacy_note = ('<p class="ui-notice"><strong>Historical/draft UI mode — not current implementation authority.</strong> '
-                   'Strict kit reuse now prohibits agent-authored application HTML, CSS and inline styles. '
-                   'No plain-markup or design-authoring fallback is permitted.</p>') if ui['mode'] in {'functionality-only','design-authoring'} else ''
+    legacy_note = ('<p class="ui-notice"><strong>Old or draft UI mode. It does not allow implementation now.</strong> '
+                   'The current rule: no new CSS; reuse classes and elements that already exist (design kit or existing code); '
+                   'plain unstyled HTML only when the user explicitly allows it.</p>') if ui['mode'] in {'functionality-only','design-authoring'} else ''
     source_note=f'{e(authority["summary"])} Reference: {api.links([authority["source"]],"s")}, {e(authority["locator"])}.'
     first=ui['screens'][0]['id']
     return (f'<figure class="panel ui-review" id="panel-ui-preview"><div class="figure-head"><h2>{e(ui["title"])}</h2>'
             '<span>screens · interaction · design</span></div>'
             f'<p class="figure-description">{e(ui["summary"])}</p>{illustration}{legacy_note}'
             f'<div class="ui-authority"><p><strong>Design mode:</strong> {e(ui["mode"])} · {e(authority["status"])}.</p>'
-            f'<p>{source_note}</p><p><strong>Preview:</strong> {e(preview["destination"])} — {e(preview["status"])}. '
+            f'<p>{source_note}</p><p><strong>Preview:</strong> {e(preview["destination"])}, {e(preview["status"])}. '
             f'{e(preview["summary"])}</p><p><strong>Design acceptance:</strong> {e(ui["acceptance"]["status"])}. '
             f'{e(ui["acceptance"]["summary"])}</p></div>'
             '<p class="hint">Screen frames are connected by actions. Markers refer to design decisions below. '
             f'<a href="#ui-screen-{e(first)}">Go to first screen</a>. Scroll at readable size; Fit is an overview.</p>'
             '<noscript><p class="hint">Screen Fit needs JavaScript; use normal-size scrolling and the screen details below.</p></noscript>'
             f'<div class="canvas ui-canvas" tabindex="0" role="region" aria-label="UI screen flow, scroll to explore" '
-            f'data-start-id="ui-screen-{e(first)}"><div class="ui-scaled" style="--ui-width:{w}px;--ui-height:{h}px">'
+            f'data-start-id="ui-screen-{e(first)}" style="--board-width:{w}px"><div class="ui-scaled" style="--ui-width:{w}px;--ui-height:{h}px">'
             f'<div class="ui-board">{"".join(routes)}{"".join(cards)}</div></div></div>'
             f'<figcaption>{e(ui["limit"])} Selecting or inspecting a screen does not record approval or change the application.</figcaption>'
-            '<section class="ui-decisions"><h2>Design decisions attached to the screens</h2>'+''.join(decisions)+'</section>'
+            + ('<section class="ui-decisions"><h2>Design decisions on these screens</h2>'+''.join(decisions)+'</section>' if decisions else '') +
             '<details class="ui-screen-index"><summary>Inspect screens and their sources</summary>'+''.join(details)+'</details>'
             '</figure>')

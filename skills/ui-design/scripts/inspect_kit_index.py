@@ -102,7 +102,7 @@ def main(argv=None) -> int:
         out = inspect(args.root, args.index, args.story, args.catalogue, args.item, args.scope, args.previous)
         print(json.dumps(out, ensure_ascii=True, indent=2))
         return 2 if out['state'] == 'BLOCKED' else 0
-    except (OSError, ValueError, UnicodeError, TypeError, RecursionError) as exc:
+    except (OSError, ValueError, UnicodeError, TypeError, RecursionError, RuntimeError) as exc:  # RuntimeError: "~" with no home
         print(json.dumps({'state': 'BLOCKED', 'reason': str(exc), 'implementation_approved': False}))
         return 2
 

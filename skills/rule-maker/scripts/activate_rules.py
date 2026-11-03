@@ -154,8 +154,15 @@ def main(argv=None) -> int:
     try:
         home, claude, codex = profile_roots(args)
         changes = build_plan(home, claude, codex, args.host)
+        library = Path(__file__).resolve().parents[1] / "rules"
         for c in changes:
             print(f"{'MATCH' if c.before == c.after else 'MISSING' if c.before is None else 'UPDATE'}: {c.path}")
+            text = c.before.decode("utf-8", "replace") if isinstance(c.before, bytes) else str(c.before or "")
+            found = re.search(r"[@`]([^\s`]+)/START\.md", text)
+            if c.before != c.after and found and Path(found.group(1)).resolve() != library.resolve():
+                # A rules audit read this as "out of date" when only the checked copy differed (round 8).
+                print(f"  note: the block points to {found.group(1)}, not this copy ({library.as_posix()}); "
+                      "run this check from that installed copy to see whether its content is current.")
         if args.check:
             print("Disk references only; live loading and enforced actions remain unverified.")
             return int(any(c.before != c.after for c in changes))

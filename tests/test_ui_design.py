@@ -222,16 +222,17 @@ class UiDiffTests(unittest.TestCase):
 
 
 class UiPolicyContractTests(unittest.TestCase):
-    def test_eighth_local_skill_registered_once(self):
+    def test_ui_design_registered_once_among_twenty_one(self):
         data=json.loads((ROOT/'.claude-plugin/plugin.json').read_text())
-        self.assertEqual(len(data['skills']),8)
+        self.assertEqual(len(data['skills']),21)
         self.assertEqual(data['skills'].count('./skills/ui-design'),1)
 
     def test_strict_modes_and_no_kit_invention(self):
         text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
-        for name in ('behaviour-only','approved-kit','design-authoring','legacy','blocked/unselected','preview'):
+        for name in ('behaviour-only','reuse','blocked','plain-by-instruction','Mirror the element','screen diagram'):
             self.assertIn(name,text)
-        self.assertIn('no plain-HTML fallback',text)
+        self.assertIn('No new CSS, ever.',text)
+        self.assertIn("Is there an existing element I should mimic?",text)
 
     def test_ordinary_loading_covers_markup_not_only_css(self):
         text=(ROOT/'skills/rule-maker/rules/START.md').read_text()
@@ -241,7 +242,7 @@ class UiPolicyContractTests(unittest.TestCase):
 
     def test_workflow_routes_before_substantive_plan(self):
         text=(ROOT/'skills/workflow/SKILL.md').read_text()
-        self.assertLess(text.index('`ui-design`'),text.index('## 4.'))
+        self.assertLess(text.index('ui-design/SKILL.md'),text.index('## 4.'))
         self.assertIn('preview/release limits',text)
 
     def test_handoffs_review_status_doctor_and_setup_connected(self):
@@ -251,9 +252,9 @@ class UiPolicyContractTests(unittest.TestCase):
 
     def test_report_exemption_is_narrow(self):
         text=(ROOT/'skills/ui-design/CONTRACT.md').read_text()
-        self.assertIn('Preview and report boundary',text)
+        self.assertIn('Report diagram',text)
         self.assertIn('codebase-map',text)
-        self.assertIn('only routine HTML/CSS generation exception',text)
+        self.assertIn('report code, not application code',text)
 
     def test_no_new_record_or_ui_tool_by_default(self):
         text=(ROOT/'skills/ui-design/SKILL.md').read_text()

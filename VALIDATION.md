@@ -1,4 +1,70 @@
-# Validation — workflow-axa 2.7.0-rc.7
+# Validation — workflow-axa 2.8.0-rc.1
+
+## Modular refactor (2.8.0-rc.1) — observed results
+
+Task: `docs/plans/2026-11-02-modular-engineering-workflow/` (PLAN, TODO, FINDINGS E11–E20, DECISIONS D1–D10). Host: Windows 11, Python 3.14.2, Claude Code CLI with Opus 5.5, codex-cli 0.166.0. Every result below was observed on 2026-11-02; each behavior run is one run, not a statistical sample.
+
+### Pre-refactor baseline
+
+Commit `9daf507` (2.7.0-rc.7) plus task records: `tools/validate.py` PASS; unittest 545 ran, 11 skipped (from `reviews/implementation-r1.json`). The rc.8 snapshot under the rules-audit task's artifacts is the comparison package for behavior runs.
+
+### Package checks (final state)
+
+| Check | Result |
+|---|---|
+| `python -X utf8 tools/validate.py` | PASS: twenty registered skills, metadata, word budgets, required files, relative links |
+| `python -X utf8 -m unittest discover -s tests -p "test_*.py"` | 620 ran, OK, 11 skipped (after the D14 design loop, FINDINGS V21). Every skip is a host limit (no file-symlink privilege, no FIFO, no POSIX mode bits); symlink/FIFO rejection stays unverified on Windows |
+| Vendored skills | Upstream file hashes and the unchanged upstream text inside each `SKILL.md` match VENDORED-SKILLS.md (test proven to fail on a one-character edit) |
+| Report layout | Legacy inputs render byte-identically apart from timestamps; reader-first layout checked by screenshot at 1280 and 390 px (`.artifacts/.../checks/report-readability/after-*.png`). No visual-baseline test covers task reports |
+| Visual regression (same environment) | PASS: rc.8 snapshot vs candidate, 4 legacy-fixture captures pixel-identical (Playwright 1.64.1, installed Chrome). Shipped 2.2.1 baselines: NOT_VERIFIED (other environment) |
+| Browser suites | PASS: browser_smoke 20, ui_browser_smoke 19, kit_browser_smoke 10 checks |
+| Native plugin discovery | PASS: installed from the local marketplace; a fresh session without `--plugin-dir` resolved `/workflow-axa:workflow` from the package (20 skills, ~1,760 always-on tokens) |
+
+### Behavior runs (headless `claude -p --plugin-dir`, exact candidate source)
+
+Worktrees: `D:/Altinstar/wfaxa-eval`, `D:/Altinstar/wfaxa-eval-base` (sparse; branch `eval/workflow-axa-*`) and `D:/Cheflabels-labeler-V2-wfaxa-eval`. Main checkouts and the separate web repository were not modified.
+
+| Run | What it tested | Observed |
+|---|---|---|
+| E2 vs E1/E1b | Same Altinstar prompt on rc.8 and candidate | Both grounded; candidate added cents/BTC, both brands, kit consequence. E1 (pre-fix router) skipped gate one; E1b (fixed router) held it |
+| E3 (6 turns) | Cheflabels, wrong premise, contradictory and partial answers, scoped reopening | Found the false premise, derived follow-ups from code, revised only affected agreement items, reached gate two with a kit-reusing plan |
+| E4 | Direct `workflow-execute` without gate two | Refused, wrote nothing |
+| E1-t3, C2 | Execution and delivery in fresh sessions | Red→green observed; independent reviews found real defects (wrong endpoint); deliveries honest and partial; external repo untouched |
+| A2 s2/s3, A3, A4 | Multi-session resume, agreement, plan, build, in-scope repair, task extension | Resumed from records alone; state lines at turn end; repair handled without new gates; extension added as revision r2 |
+| A5–A11 (loops 4–6) | Lightweight boundary, combined gates, router invocation, identity questions, HTML report for small changes | Found and fixed: a rewrite regression (visible changes treated as lightweight), clarify asking plan approval itself, router not invoking phases, identity questions bundled with approvals, borrowed shortcuts. Observed after fixes: combined approval (A6), full execute→independent review→deliver chain (A7), identity-only question (A11 s1), HTML report for a one-line change (A11 s3) |
+| A4 s2, A4 s3 | Explicit plan waiver; direct `workflow-deliver` | Waiver honored; agent-written ticket recorded `by: agent`. After the snapshot rule became a "Done when" condition, a direct deliver call made the dated snapshot unprompted, kept the earlier report, and downgraded a stale verdict to partial |
+
+Defects found by these runs and fixed: router not invoking phase skills; questions before tracing; skipped `tdd`; no baseline run; repair changing visible behavior shipped before asking; delivery snapshot skipped. Each fix has a static regression test (`test_behavioral_cases.py`). Re-observed live: router invoking phases (E1b, A11), state lines (A2–A11), `by: agent` (A4 s2), delivery snapshot (A4 s3, A7 s2), baseline run before changes (A6 s2), independent review subagent (A7 s2), HTML report for small changes (A11 s3). Not re-observed: reading `tdd` before the first test, asking before a visible repair.
+
+### Reviews
+
+Independent Claude (fresh context) and Codex reviews: R1 (13 findings), Codex R2 (17), Codex R3 (14), final Claude review (15), all applied (the two deferrals were later done, E22). Retros: 55 real sessions (nine fixes, E16) and the ~25 evaluation sessions (five fixes, E23).
+
+### Not established
+
+- Claude Desktop discovery (Claude Code CLI and Codex verified; Codex via project-scoped `.agents/skills`, which took precedence over the global rc.8 copy).
+- Statistical reliability: one run per scenario.
+- Renderer tests show structure and consistency; they cannot prove a projection matches its records' meaning or that a recorded check ran.
+
+## 2.7.0-rc.8 — history, not 2.8.0-rc.1 evidence
+
+Date: 2 November 2026. rc.8 is the committed rc.7 tree (`9daf507`) plus the Windows verification fixes listed in CHANGELOG. Run on the owner's Windows 11 machine: Python 3.14.2, Git 2.38.0.windows.1, Pillow 12.1.0. Python Playwright is not installed. Checks ran with `PYTHONDONTWRITEBYTECODE=1` and `python -B`; output went to the console.
+
+### Observed package checks (rc.8, Windows)
+
+- Unmodified rc.7 on this host (before the fixes): validator PASS; unittest **545 ran = 534 passed + 11 skipped**.
+- rc.8 source: `tools/validate.py` PASS (exit 0). `python -X utf8 -m unittest discover -s tests -p "test_*.py"`: exit 0, **546 ran = 535 passed + 11 skipped**.
+  - Skipped: 5 symlink-dependent tests; 4 file-symlink rejection tests ("file-link rejection is unverified here"); 1 POSIX-mode test ("mode preservation is unverified here"); 1 FIFO test.
+  - Directory-link rejection was exercised through NTFS junctions.
+- The release archive and extracted-tree results are recorded below once run.
+
+### Not run or unverified (rc.8)
+
+- No browser suites: Playwright is not installed here and was not installed. rc.7's browser results (Linux) are history and do not cover rc.8.
+- On this host: file-symlink rejection and POSIX file-mode preservation.
+- No live Claude/Codex sessions; no application tests, builds or backend calls.
+
+## Earlier candidate (2.7.0-rc.7) — history, not rc.8 evidence
 
 Date: 30 October 2026. Based on the actual supplied rc.6 archive. Tests use Python 3.13/Linux and Chromium 144.0.7559.96 with already installed Playwright. This release changes the package only, not an application, live kit, user profile, memory, device or global installation.
 

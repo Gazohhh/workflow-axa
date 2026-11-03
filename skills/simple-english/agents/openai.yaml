@@ -1,0 +1,3 @@
+interface:
+  display_name: "simple-english"
+  short_description: "Write reports and docs in plain English, no AI slop"

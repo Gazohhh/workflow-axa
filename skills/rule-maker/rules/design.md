@@ -1,27 +1,36 @@
-# Application UI: strict kit reuse — no agent-authored presentation
+# Application UI: reuse existing styles, never write CSS
 
-This is the shared **kit-only** policy for ordinary requests, /workflow and delegated work. It applies to application HTML/JSX/templates, page composition, CSS, visual properties, assets and native/rendered UI. Backend-only work needs no kit. Preserve existing presentation and user changes; do not strip styles or rewrite old interfaces.
+The shared UI policy for ordinary requests, /workflow and delegated work (owner decision D14, from the owner's styling rules). It applies to application HTML/JSX/templates, page composition, CSS, visual properties, assets and native/rendered UI. Backend-only work needs none of it. Preserve existing presentation and user changes; do not strip styles or rewrite old interfaces.
 
-## Select before implementation
+## The rules
 
-Load local **ui-design** before dependent planning/edits. For each new substantive UI task, establish the exact component/pattern source, selected entries, variants, states, area and preview access. An explicit owner choice or still-valid same-task decision counts; do not ask again for every control. DESIGN.md, a folder name, a screenshot, an installed framework or an approval label alone is not proof of a usable selection. If the source is missing, conflicting, stale, inaccessible or incomplete, **STOP affected UI integration and ask**. Independently authorised logic/read-only work can continue.
+1. **No new CSS, ever.** Do not create, modify or inject CSS: no new stylesheet rules, no `<style>` blocks, no `style=""` attributes, no CSS-in-JS, theme overrides or arbitrary visual props. JavaScript style mutation, canvas/SVG or native attributes are not loopholes.
+2. **Only existing styles.** Use only classes and IDs already defined in the project's stylesheets or already present in its HTML/templates: the design kit when the project has one, otherwise the existing code. A script hook is not styling: prefer a new `data-*` attribute that no stylesheet targets; never invent a class or ID for styling.
+3. **Mirror the element, with its context.** A new element copies both the **class list** (all of it, no class dropped or added) and the **HTML tag** of the existing element it imitates, so it looks and behaves the same; `class_rules.py <root> --match <tag> <classes>` must find that existing element. Class and tag are not enough when its look depends on where it sits: list every rule that names the class (ui-design `scripts/class_rules.py`), and place the copy inside the same wrapper as any rule marked as needing context; also check rules of the new place that style its children (for example `.title div`). Compare the parent it comes from with the parent it goes into (`class_rules.py <root> --compare <from> <into>`): any layout or inherited text difference (a heading makes text bold), even a small one, means it is not a match; compare every placement you offer, before offering it. Ask rule 4's question; never recommend the copy anyway. An existing component (kit or code) is reused through its API, not rebuilt from its DOM.
+4. **Search, then ask, then (only if told) plain.**
+   - **Search** the existing code (and the design kit, if any) for an element that already does what the new element is for.
+   - **Ask** when nothing matches, and stop that element, using exactly: *"I couldn't find a matching style for [element]. Is there an existing element I should mimic?"* You may list existing elements of the **same tag** the user could pick. Never offer new CSS (not even as a one-off exception), an invented class, or another tag's classes as options.
+   - **Plain only on instruction.** Only when the user explicitly says to proceed without a match, or confirms no similar element exists, add the element as plain HTML with no classes and no styling. Record their words.
+5. **Verify before finishing.** Check the final diff: no new CSS properties anywhere, and every class/ID used already exists in the project's source files. Name the file that defines each reused class.
 
-- **behaviour-only:** repair or extend authorised logic without adding/replacing interface markup or changing existing presentation. Do not create plain controls as a fallback. Existing interface preservation does not retroactively approve that screen for reuse elsewhere.
-- **approved-kit:** reuse the selected real components through supported APIs and approved composition patterns. Wiring approved imports, events, data and documented slots is allowed; writing new native tags, wrappers, copied DOM or layout to reproduce them is not. Existing approved controls may internally render HTML/CSS; reuse is not authoring those internals.
-- **blocked/unselected:** leave the missing UI work pending. Ask for the exact approved source or defer to the designer. There is no plain-HTML fallback, silent substitution or speculative styled prototype.
+## Where styles come from
 
-## Hard boundary for application work
+- **Projects with a design kit** (a catalogue, Storybook, DESIGN_KIT.md or similar named in project instructions): search the kit first, then existing code. Read local ui-design/LIVE-KIT.md for code-backed catalogues.
+- **Projects without one:** existing code is the source. The rules above apply unchanged; "no kit" is never permission to write CSS.
 
-Do **not** create, modify or inject application CSS, inline styles, style blocks, CSS-in-JS, arbitrary utility classes, theme overrides or new visual assets. Do **not** invent HTML, JSX/TSX native-element structure, Angular/Blade/Vue templates, cosmetic wrappers or page layouts. A reusable component's supported approved variant is allowed; an arbitrary colour/spacing/size prop is not. SDK/native attributes, canvas/SVG, Unity/Pixi/Three visuals and JavaScript DOM/style mutation are not loopholes. Preserve established runtime rendering mechanisms; do not change their visual contract without a separate policy decision.
+A filename, folder, screenshot or framework name alone does not prove which element to mirror; the decision is recorded in the task with the exact source file and element. Existing approved controls may internally render HTML/CSS; reusing them is not authoring those internals.
 
-A feature request, implementation approval, kit setup, a legacy design-authoring mode or 'make it work' does not waive this boundary. Even accessibility or clipping repairs must identify a missing approved component capability and stop the dependent edit rather than introducing unapproved markup/styles or shipping an inaccessible substitute. A genuinely necessary new design or component goes to the designated designer/maintainer. Revising this policy is separate explicit rule-maintenance work, not an automatic exception offered by the agent.
+## Modes (recorded per UI task)
 
-## Code-backed kit; short project pointers
-
-Use the designated project-local catalogue of actual framework components and examples. Read local ui-design/LIVE-KIT.md. Component code and adjacent examples define current appearance; generate the inventory from those sources, never maintain parallel hand-written property/style lists in several Markdown files. Project instructions point to the catalogue and retain project constraints. Human approval/intended-use decisions still need a single recorded source. A source change does not renew consent automatically. Check missing/deleted components, consumers, story references, dependencies and theme/brand scope before reuse; no guessed replacements or automatic deletion/migration.
+- **behaviour-only:** logic changes inside an existing interface; markup and appearance stay as they are.
+- **reuse:** new or changed elements built only from existing classes/IDs/components, mirroring class and tag (rules 2–3).
+- **blocked:** no matching element yet; the question in rule 4 is open. Independent logic and tests can continue.
+- **plain-by-instruction:** the user explicitly allowed plain unstyled HTML for named elements (rule 4).
 
 ## Verify and report
 
-Record selections in the existing task. Check actual task-attributable changes, including deletions and visual props, against the boundary. Check accessible behaviour and relevant states through existing approved controls. Static scans are review aids, not proof of compliance. New source changes need targeted reconciliation; historical approvals/reports remain unchanged. Keep behaviour, design acceptance and release readiness distinct.
+Record each reused element with its source file in the existing task. Check task-attributable changes, including deletions and visual props, against the rules; static scans help but are not proof. Accessibility stays required: use an existing accessible element or ask; never ship an inaccessible substitute. Keep behaviour, design acceptance and release readiness distinct.
 
-The approved **codebase-map report renderer** is a narrow exception: generate its existing HTML/SVG shell and embed authorised real captures/component references. Do not rewrite its theme, run raw application markup inside it, create application prototypes under a reports path, or use report maintenance as application styling permission. Current UI decisions come from kit references, not from invented mockups. Older schematic reports remain historical illustrations, not implementation authority.
+Every UI-visible change shows a **screen diagram** in the HTML plan report (codebase-map UI-FLOW.md): real captures of the current and proposed screens when they can be made safely, otherwise a clearly labelled layout sketch. A missing diagram makes the report a draft.
+
+The codebase-map report renderer is a narrow exception: it generates its own HTML/SVG shell. That is not permission to style the application or to build application prototypes under a reports path.

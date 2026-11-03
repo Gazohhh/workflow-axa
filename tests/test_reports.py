@@ -43,9 +43,9 @@ class ReportTests(unittest.TestCase):
 
     def test_full_example_validates_and_renders(self):
         content = self.render()
-        self.assertIn('AWAITING USER APPROVAL',content)
+        self.assertIn('WAITING FOR YOUR APPROVAL',content)
         self.assertEqual(content.count('class="map"'),3)
-        self.assertIn('implementation not authorized',content)
+        self.assertIn('No code is written yet',content)
         self.assertNotIn('<button type="submit"',content)
         self.assertIn('no approve button',content)
 
@@ -55,7 +55,7 @@ class ReportTests(unittest.TestCase):
 
     def test_proposed_design_can_remain_draft(self):
         self.data.update(mode='proposed',state='draft',graphs=[self.data['graphs'][1]],open_decisions=['Choose the error behavior.'])
-        self.assertIn('not approval-ready',self.render())
+        self.assertIn('not ready to approve',self.render())
 
     def test_pending_decision_blocks_approval_ready_state(self):
         self.data['open_decisions']=['New behavior is not settled.']
@@ -81,7 +81,7 @@ class ReportTests(unittest.TestCase):
     def test_recorded_approval_is_not_authentication(self):
         self.data['state']='approved'
         self.data['approval']={'revision':'P1','record':'Synthetic PLAN Approval','response':'Synthetic fixture approval, not a real authorization'}
-        self.assertIn('does not authenticate',self.render())
+        self.assertIn('cannot prove who approved',self.render())
 
     def test_unsupported_mode_is_rejected(self):
         self.data['mode']='implement'

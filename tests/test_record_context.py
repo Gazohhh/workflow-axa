@@ -31,7 +31,7 @@ class RecordContextTests(unittest.TestCase):
     def test_old_schema_two_has_no_new_required_fields(self):
         self.data = json.loads((self.root/'review.json').read_text())
         output = self.render()
-        self.assertIn('AWAITING USER APPROVAL', output)
+        self.assertIn('WAITING FOR YOUR APPROVAL', output)
         self.assertNotIn('id="checkpoint-heading"', output)
         self.assertNotIn('id="revision-history"', output)
 
@@ -40,7 +40,7 @@ class RecordContextTests(unittest.TestCase):
         for label in ('Approval', 'Implementation', 'Verification / acceptance', 'Next safe action', 'As recorded:'):
             self.assertIn(label, out)
         self.assertIn('SAVED TASK OVERVIEW', out)
-        self.assertIn('Authority stays in the task record.', out)
+        self.assertIn('The task record decides.', out)
         self.assertNotIn('Approve plan P1 in the agent conversation', out)
         self.assertIn('Baseline before the selected change', out)
         self.assertNotIn('Proposed — not implemented', out)

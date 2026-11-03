@@ -181,6 +181,19 @@ class HomeResolutionTests(unittest.TestCase):
         self.assertIn('BLOCKED', out)
         self.assertIn('~', self.expanded)
 
+    def test_kit_checkers_tilde_root_without_home_are_blocked_not_crashed(self):
+        sys.path.insert(0, str(ROOT / 'skills/ui-design/scripts'))
+        self.addCleanup(sys.path.remove, str(ROOT / 'skills/ui-design/scripts'))
+        kit_check = load('kit_check_under_test', 'skills/ui-design/scripts/check_design_kit.py')
+        kit_index = load('kit_index_under_test', 'skills/ui-design/scripts/inspect_kit_index.py')
+        for main, args in ((kit_check.main, ('--root', '~', '--catalog', 'DESIGN.json')),
+                           (kit_index.main, ('--root', '~', '--index', 'index.json'))):
+            with self.subTest(main=main.__module__):
+                code, out = self.call(main, *args)
+                self.assertEqual(code, 2)
+                self.assertIn('BLOCKED', out)
+                self.assertIn('~', self.expanded)
+
     def test_activation_with_explicit_roots_never_expands_a_home(self):
         self.call(activation.main, '--check', '--claude-dir', str(self.dir / 'claude'),
                   '--codex-home', str(self.dir / 'codex'))

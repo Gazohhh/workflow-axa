@@ -134,9 +134,9 @@
     },
     {
       "id": "T3",
-      "title": "Route player through shared validation; remove old helper",
+      "title": "Route the player through shared validation and remove the old helper",
       "kind": "prerequisite",
-      "reason": "Fixing only the shared formatter would leave the player bypass.",
+      "reason": "If only the shared formatter changes, the player still bypasses it.",
       "requirements": [
         "R1",
         "R2"
@@ -190,7 +190,7 @@
       "requirements": [
         "R1"
       ],
-      "verification": "Add/run tests for negative home and negative away at shared, web and player entrypoints; expect ValueError."
+      "verification": "Add/run tests for negative home and negative away at shared, web and player entrypoints. Expect ValueError."
     },
     {
       "id": "A2",
@@ -198,13 +198,13 @@
       "requirements": [
         "R2"
       ],
-      "verification": "Run zero/positive examples through both display paths and compare exact strings; verify obsolete-helper references are removed."
+      "verification": "Run zero/positive examples through both display paths and compare exact strings. Make sure that no reference to the old helper remains."
     }
   ],
   "graphs": [
     {
       "kind": "current",
-      "title": "Current — two separate paths",
+      "title": "Current: two separate paths",
       "nodes": [
         {
           "id": "N1",
@@ -408,7 +408,7 @@
       "id": "current",
       "purpose": "flow",
       "tab": "Current flow",
-      "description": "Static inspection of the bundled fixture. Each path returns score text; neither rejects negative values.",
+      "description": "Static inspection of the bundled fixture. Each path returns score text. Neither path rejects negative values.",
       "width": 1280,
       "height": 640
     },
@@ -417,8 +417,8 @@
       "kind": "proposed",
       "purpose": "flow",
       "tab": "Feature flow",
-      "title": "Proposed — one check, two outcomes",
-      "description": "Both display paths use the existing formatter. Reject either negative input; otherwise return exactly the existing score text. Proposed behavior, not a runtime observation.",
+      "title": "Proposed: one check, two outcomes",
+      "description": "Both display paths use the existing formatter. Reject either negative input. Otherwise return exactly the existing score text. Proposed behavior, not a runtime observation.",
       "width": 1280,
       "height": 736,
       "nodes": [
@@ -629,8 +629,8 @@
       "kind": "proposed",
       "purpose": "delivery",
       "tab": "Build plan",
-      "title": "Build plan — after approval only",
-      "description": "These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins; no diagram action grants it.",
+      "title": "Build plan: after approval only",
+      "description": "These are delivery dependencies, not the feature runtime. Approval must be recorded before T1 begins. No diagram action grants it.",
       "width": 1280,
       "height": 848,
       "nodes": [

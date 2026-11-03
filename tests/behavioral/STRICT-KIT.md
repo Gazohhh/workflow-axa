@@ -1,6 +1,6 @@
 # Strict kit-reuse live-host acceptance — NOT RUN
 
-Candidate: 2.7.0-rc.7. Baseline: rc.6. Run on the actual Claude/Codex/T3 profiles with neutral prompts in disposable repositories and compare actual reads, decisions and diffs. Package tests below are not substitutes. Keep expected outcomes outside the worker prompt. No production calls, app builds, spending or profile changes without authority.
+Candidate: 2.7.0-rc.8 (strict kit policy introduced in rc.7). Baseline: rc.6. Run on the actual Claude/Codex/T3 profiles with neutral prompts in disposable repositories and compare actual reads, decisions and diffs. Package tests below are not substitutes. Keep expected outcomes outside the worker prompt. No production calls, app builds, spending or profile changes without authority.
 
 | Case | Setup / request | Required outcome |
 |---|---|---|

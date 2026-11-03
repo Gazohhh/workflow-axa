@@ -17,7 +17,7 @@ Use the read-only `scripts/audit_installation.py` with explicit candidate instal
 | Correctness | Version-sensitive claims against installed configuration and matching primary docs. Separate verified fact, recommendation and unverified history. |
 | Contradictions | Root/scoped/global rules, relevant memories, artifact retention, review history, documentation and concurrency requirements. Expose both sides before proposing a choice. |
 | Verification safety | Current command, prerequisites/implicit builds, effective backend and mock isolation, permitted writes, quiet-host needs, current baseline and actual gate proof. |
-| UI authority | The local ui-design route, area-specific mode, designated kit/reference and preview boundary. Kit files or styling classes alone grant nothing. |
+| UI authority | The local ui-design route, area-specific mode, designated kit/reference and preview boundary; project UI rules agree with design.md (no CSS, copy existing elements with their wrapper, ask when nothing matches) and with each other. A stricter project rule (for example "candidate entries need the owner's OK") wins and is stated where agents read it. |
 | Placement and language | Shared standards versus local contracts; concise routing versus long runbooks; plain explanations without forced vocabulary or arbitrary quotas. |
 | Discoverability | Actual host/profile paths, imports, scope selectors and worker instructions. A manual skill read does not prove ordinary-prompt loading. |
 

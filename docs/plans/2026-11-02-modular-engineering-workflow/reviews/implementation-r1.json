@@ -1,0 +1,738 @@
+{
+  "schema_version": 2,
+  "title": "A modular workflow with explicit agreements",
+  "revision": "R1",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa",
+    "branch": "main",
+    "basis": "Source 9daf507 plus new task records; unrelated audit edits preserved. Baseline package validator passed; 545 tests ran with 11 skips."
+  },
+  "understanding": "Four reusable phase skills will coordinate clarification, specifications, approved execution and final delivery. The report gains a readable complete task record. The user authorized this refactor through completion in D5; no further approval pause applies to this task. Future substantive tasks retain two approval gates.",
+  "boundaries": [
+    "Preserve strict UI reuse, historical snapshots, task records and artifact protection.",
+    "No host installations, other-project changes, remote tracker actions, commits or publication.",
+    "Actual model behavior and unavailable browser checks are reported separately from package tests."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-02-modular-engineering-workflow/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-02-modular-engineering-workflow/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-02-modular-engineering-workflow/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-02-modular-engineering-workflow/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S5",
+      "path": "skills/workflow/SKILL.md",
+      "role": "code"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Small coordinator and independently reusable phase skills",
+      "origin": "User goal and PLAN R1 requirements"
+    },
+    {
+      "id": "R2",
+      "text": "Grounded clarification and explicit two-gate agreement",
+      "origin": "User goal and PLAN R1 requirements"
+    },
+    {
+      "id": "R3",
+      "text": "Dependent ticket execution, review, testing and delivery",
+      "origin": "User goal and PLAN R1 requirements"
+    },
+    {
+      "id": "R4",
+      "text": "Readable central report with historical compatibility",
+      "origin": "User goal and PLAN R1 requirements"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "Current workflow owns most phase procedure; the report already maps requirements, tasks, evidence and checkpoints.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E1-E10 and skills/workflow/SKILL.md",
+      "limits": "Source inspection; not proof that a model follows the instructions."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "Small coordinator and independently reusable phase skills",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "PLAN verification seams; retained package results, source-loaded agent scenarios and independent review."
+    },
+    {
+      "id": "A2",
+      "text": "Grounded clarification and explicit two-gate agreement",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "PLAN verification seams; retained package results, source-loaded agent scenarios and independent review."
+    },
+    {
+      "id": "A3",
+      "text": "Dependent ticket execution, review, testing and delivery",
+      "requirements": [
+        "R3"
+      ],
+      "verification": "PLAN verification seams; retained package results, source-loaded agent scenarios and independent review."
+    },
+    {
+      "id": "A4",
+      "text": "Readable central report with historical compatibility",
+      "requirements": [
+        "R4"
+      ],
+      "verification": "PLAN verification seams; retained package results, source-loaded agent scenarios and independent review."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Capture baseline and preserve history",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "tests"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2",
+      "title": "Extract phase skills and shared agreements",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "skills/workflow",
+        "skills/workflow-clarify",
+        "skills/workflow-specify",
+        "skills/workflow-execute",
+        "skills/workflow-deliver"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Extend the existing report with sourced outcomes",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "skills/codebase-map",
+        "tests"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Integrate registration, metadata and documentation",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "tools/validate.py",
+        "README.md"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T2",
+        "T3"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Run regression and actual behavior checks",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "tests"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T4"
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Review and repair relevant findings",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "task-attributable changes"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T5"
+      ]
+    },
+    {
+      "id": "T7",
+      "title": "Record final delivery and acceptance",
+      "kind": "requested",
+      "reason": "Implements the bounded R1 requirements with preserved evidence.",
+      "areas": [
+        "task records and final HTML"
+      ],
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "depends_on": [
+        "T6"
+      ]
+    }
+  ],
+  "comparison": [
+    {
+      "label": "Phase ownership",
+      "current": "One main skill carries ordered procedures and many conditional references.",
+      "proposed": "A small coordinator selects four independent phase skills using shared policies.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "tasks": [
+        "T2",
+        "T4"
+      ]
+    },
+    {
+      "label": "Agreement and completion",
+      "current": "Understanding and implementation approval share a report gate; final results live mainly in records.",
+      "proposed": "Separate behavior and implementation approvals; a central report shows sourced specifications, checks and final outcomes.",
+      "requirements": [
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "tasks": [
+        "T2",
+        "T3",
+        "T7"
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "graphs": [
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Current",
+      "title": "Baseline instruction flow",
+      "description": "Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.",
+      "width": 640,
+      "height": 640,
+      "nodes": [
+        {
+          "id": "current0",
+          "label": "Inspect project",
+          "note": "Rules, identity and current code",
+          "shape": "start",
+          "x": 80,
+          "y": 32,
+          "width": 480,
+          "height": 104,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "current1",
+          "label": "Ask and prepare plan",
+          "note": "Grilling with shared references",
+          "shape": "action",
+          "x": 80,
+          "y": 184,
+          "width": 480,
+          "height": 104,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "current2",
+          "label": "Review HTML and approve",
+          "note": "Single implementation gate",
+          "shape": "action",
+          "x": 80,
+          "y": 336,
+          "width": 480,
+          "height": 104,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "current3",
+          "label": "Implement and audit",
+          "note": "Checkpoint, verify and report",
+          "shape": "result",
+          "x": 80,
+          "y": 488,
+          "width": 480,
+          "height": 104,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "current0",
+          "to": "current1",
+          "label": "",
+          "points": [
+            [
+              320,
+              136
+            ],
+            [
+              320,
+              184
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "current1",
+          "to": "current2",
+          "label": "",
+          "points": [
+            [
+              320,
+              288
+            ],
+            [
+              320,
+              336
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "current2",
+          "to": "current3",
+          "label": "",
+          "points": [
+            [
+              320,
+              440
+            ],
+            [
+              320,
+              488
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Proposed",
+      "title": "Proposed engineering workflow",
+      "description": "Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.",
+      "width": 640,
+      "height": 944,
+      "nodes": [
+        {
+          "id": "proposed0",
+          "label": "Understand the project",
+          "note": "Inspect relevant code and journeys",
+          "shape": "start",
+          "x": 80,
+          "y": 32,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "id": "proposed1",
+          "label": "Agree behavior and scope",
+          "note": "First approval; reuse settled answers",
+          "shape": "action",
+          "x": 80,
+          "y": 184,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "id": "proposed2",
+          "label": "Specify dependent tickets",
+          "note": "Acceptance, test seams and order",
+          "shape": "action",
+          "x": 80,
+          "y": 336,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "id": "proposed3",
+          "label": "Review HTML and approve",
+          "note": "Second approval before coding",
+          "shape": "action",
+          "x": 80,
+          "y": 488,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "id": "proposed4",
+          "label": "Execute, review and verify",
+          "note": "Ready tickets; repair and integrate",
+          "shape": "action",
+          "x": 80,
+          "y": 640,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "id": "proposed5",
+          "label": "Reconcile final delivery",
+          "note": "Every outcome linked to evidence",
+          "shape": "result",
+          "x": 80,
+          "y": 792,
+          "width": 480,
+          "height": 104,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "proposed0",
+          "to": "proposed1",
+          "label": "",
+          "points": [
+            [
+              320,
+              136
+            ],
+            [
+              320,
+              184
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "from": "proposed1",
+          "to": "proposed2",
+          "label": "",
+          "points": [
+            [
+              320,
+              288
+            ],
+            [
+              320,
+              336
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "from": "proposed2",
+          "to": "proposed3",
+          "label": "",
+          "points": [
+            [
+              320,
+              440
+            ],
+            [
+              320,
+              488
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "from": "proposed3",
+          "to": "proposed4",
+          "label": "",
+          "points": [
+            [
+              320,
+              592
+            ],
+            [
+              320,
+              640
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        },
+        {
+          "from": "proposed4",
+          "to": "proposed5",
+          "label": "",
+          "points": [
+            [
+              320,
+              744
+            ],
+            [
+              320,
+              792
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ]
+        }
+      ]
+    }
+  ]
+}

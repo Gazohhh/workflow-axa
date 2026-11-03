@@ -46,15 +46,46 @@ class StrictKitTests(unittest.TestCase):
     def test_missing_binding_is_not_approved_from_capture(self):
         self.ui.pop('kit_binding')
         for s in self.ui['screens']:s.pop('elements');s.pop('capture_context')
-        with self.assertRaisesRegex(ValueError,'Strict kit-only'):self.render()
+        with self.assertRaisesRegex(ValueError,'Legacy approved-kit review needs its kit binding'):self.render()
     def test_legacy_plain_mode_cannot_be_approval_ready(self):
         self.ui['mode']='functionality-only'
-        with self.assertRaisesRegex(ValueError,'Strict kit-only'):self.render()
+        with self.assertRaisesRegex(ValueError,'current mode'):self.render()
     def test_legacy_design_authoring_is_not_an_escape(self):
         self.ui['mode']='design-authoring'
-        with self.assertRaisesRegex(ValueError,'Strict kit-only'):self.render()
+        with self.assertRaisesRegex(ValueError,'current mode'):self.render()
+    def test_current_reuse_modes_can_be_approval_ready_without_a_kit_binding(self):
+        # D14: existing classes (kit or code) are allowed; a labelled sketch or capture may show the screens.
+        self.ui.pop('kit_binding')
+        for s in self.ui['screens']:s.pop('elements');s.pop('capture_context')
+        for mode in ('plain-by-instruction','behaviour-only'):
+            self.ui['mode']=mode
+            with self.subTest(mode=mode):self.assertIn('ui-review',self.render())
+    def reuse(self):
+        self.ui.pop('kit_binding',None);self.ui['mode']='reuse';self.screen['state']='proposed'
+        for s in self.ui['screens']:s.pop('capture_context',None);s['elements']=[
+            {'id':'E1','source':'STORY','locator':'src/kit.stories.ts:3','tag':'div','classes':['sm-chip','info-chip'],'context':'inside div.dashboard-info-line-chip','changes':'Text "Top"'}]
+    def test_reuse_mode_lists_the_copied_elements(self):
+        # Retro: ui-design asks for the reused elements per screen; reports had nowhere to put them.
+        self.reuse();out=self.render()
+        for text in ('Existing elements this screen copies','&lt;div class=&quot;sm-chip info-chip&quot;&gt;','src/kit.stories.ts:3','Screenshot · copied elements listed below','Context: inside div.dashboard-info-line-chip'):
+            self.assertIn(text,out)
+    def test_reused_element_needs_its_context(self):
+        # Round-4 retro: the copied pill lost its look because its style came from the parent wrapper.
+        self.reuse();self.screen['elements'][0].pop('context')
+        with self.assertRaisesRegex(ValueError,'context'):self.render()
+    def test_reuse_mode_proposed_screen_needs_its_elements(self):
+        self.reuse();self.screen.pop('elements')
+        with self.assertRaisesRegex(ValueError,'lists the existing elements it copies'):self.render()
+        # Round-6 regression run: the combined-gates route renders drafts, which skipped this check.
+        self.data['state']='draft'
+        with self.assertRaisesRegex(ValueError,'lists the existing elements it copies'):self.render()
+    def test_reused_element_rejects_markup_unknown_source_and_bad_classes(self):
+        for field,value,msg in (('locator','<b>x</b>','plain text'),('source','NOPE','supplied source'),
+                                ('classes',['a b'],'existing class names'),('tag','div style','plain tag'),('context','<p>','plain text')):
+            self.reuse();self.screen['elements'][0][field]=value
+            with self.subTest(field=field),self.assertRaisesRegex(ValueError,msg):self.render()
     def test_unselected_and_blocked_modes_not_ready(self):
-        for mode in ('unselected','blocked','behaviour-only'):
+        for mode in ('unselected','blocked'):
             self.ui['mode']=mode
             with self.subTest(mode=mode),self.assertRaises(ValueError):self.render()
     def test_malformed_binding_source_is_rejected_cleanly(self):
@@ -141,9 +172,10 @@ class StrictKitTests(unittest.TestCase):
 class StrictPolicyTests(unittest.TestCase):
     def test_no_ordinary_escape_modes(self):
         core=(ROOT/'skills/rule-maker/rules/design.md').read_text()
-        self.assertIn('no plain-html fallback',core.lower())
-        self.assertIn('legacy design-authoring',core)
-        self.assertIn('separate explicit rule-maintenance',core)
+        self.assertIn('No new CSS, ever.',core)
+        self.assertIn('Plain only on instruction.',core)
+        self.assertIn('Record their words',core)
+        self.assertIn('"no kit" is never permission to write CSS',core)
     def test_one_code_backed_catalogue(self):
         text=(ROOT/'skills/ui-design/LIVE-KIT.md').read_text()
         self.assertIn('actual framework components',text)

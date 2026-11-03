@@ -25,7 +25,7 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 
 ## Run the current skill and candidate fairly
 
-For this release use 2.7.0-rc.3 as the comparison baseline, not the original first workflow. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
+For 2.8.0-rc.1 use the pinned pre-refactor revision `9daf507` (2.7.0-rc.7) as the comparison baseline, not the original first workflow. rc.8 changed only Windows verification tooling, so it does not change the behavior being compared. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
 constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
@@ -58,14 +58,14 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.7.0-rc.7; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.1; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
 
 The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
 
-Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install all eight local skills plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
+Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install all twenty local skills of the version under test (eight before 2.8.0) plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
 
 An optional browser smoke runner uses already installed Python Playwright and a supplied Chromium executable:
 
@@ -124,7 +124,7 @@ The new `test_version_facts.py` exercises real read-only file inspection, scoped
 
 ## UI-design integration
 
-Install all eight skills, then run the [UI acceptance cases](behavioral/UI-DESIGN.md) using [their scenario data](behavioral/ui-design.json). They are NOT RUN until observed in actual hosts. `test_ui_design.py` covers read-only diff parsing, styling and markup cues, malformed/partial inputs, legitimate semantic changes, no-write/no-approval behaviour and local route contracts. These mechanical assertions do not prove a model follows the policy.
+Install all local skills of the version under test (twenty from 2.8.0), then run the [UI acceptance cases](behavioral/UI-DESIGN.md) using [their scenario data](behavioral/ui-design.json). They are NOT RUN until observed in actual hosts. `test_ui_design.py` covers read-only diff parsing, styling and markup cues, malformed/partial inputs, legitimate semantic changes, no-write/no-approval behaviour and local route contracts. These mechanical assertions do not prove a model follows the policy.
 
 ## Rules audit and design kit
 
@@ -139,3 +139,9 @@ Live UI report cases: [UI-SCREEN-FLOW.md](behavioral/UI-SCREEN-FLOW.md). These f
 ## rc.7 strict kit reuse
 
 `test_strict_kit.py` covers exact item/variant/state/composition references, changed/deleted sources, scope, stale capture inputs, legacy-mode rejection, preserved report assets and snapshot history. `test_kit_index.py` checks the optional read-only local index adapter. `tools/kit_browser_smoke.py` checks real renderer output and element links using synthetic source/capture fixtures, not a real project kit. The strict live-host matrix is [STRICT-KIT.md](behavioral/STRICT-KIT.md); all 26 cases are NOT RUN. Old live UI case expectations that permitted raw markup/design-authoring have been deliberately superseded; no agent runs are invented.
+
+## Modular phases and central report (2.8.0-rc.1)
+
+`test_task_report.py` exercises the optional `task_report` content through the renderer's public interface: sourced sections, per-ticket specifications, agreement authority kept separate from implementation approval, check and acceptance-result consistency, unknown keys in the new objects, escaping, partial delivery, and no new sections for inputs without the object. The validator now requires the twelve registered skills and their word budgets. These checks cover the renderer and package structure, not whether an agent follows the phase skills.
+
+Agent behavior for the four phase skills needs actual sessions: a request with a missing requirement reaching clarify, each phase skill invoked directly without its prerequisite, separate gate-one and gate-two responses including a refusal and a scope change, a dependent multi-ticket execution with ticket and whole-feature reviews, an interruption between gates, a missing specialist, and a delivery with an unverified item. Compare with the `9daf507` baseline on the same prompts. Record which skill copies actually loaded. Results are recorded in [VALIDATION.md](../VALIDATION.md) once observed; until then they are NOT RUN.

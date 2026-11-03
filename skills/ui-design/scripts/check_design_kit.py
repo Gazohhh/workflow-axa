@@ -238,7 +238,7 @@ def main(argv=None):
         result = inspect(args.root, args.catalog, args.item, args.scope)
         print(json.dumps(result, indent=2))
         return {"REVIEW_REQUIRED": 0, "DRAFT": 1, "BLOCKED": 2}[result["state"]]
-    except (OSError, ValueError, UnicodeError, TypeError, RecursionError) as exc:
+    except (OSError, ValueError, UnicodeError, TypeError, RecursionError, RuntimeError) as exc:  # RuntimeError: "~" with no home
         print(json.dumps({"state": "BLOCKED", "reason": str(exc), "approval_authenticated": False, "implementation_approved": False}))
         return 2
 

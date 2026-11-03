@@ -19,7 +19,7 @@ Use rule-maker/INSTALLATION.md and scripts/audit_installation.py --check-global 
 
 ## UI and report route
 
-Check local ui-design, shared design.md, CONTRACT.md, VERIFY.md, LIVE-KIT.md and the diff/index helpers. Strict kit reuse forbids agent-authored application markup/CSS/inline styles and plain-HTML fallbacks. Behaviour-only repairs preserving presentation need no complete kit; new UI needs selected approved components/patterns. A sample, filename or tag is not approval.
+Check local ui-design, shared design.md, CONTRACT.md, VERIFY.md, LIVE-KIT.md and the diff/index helpers. The UI rule forbids new CSS, allows only existing classes (kit or code) and plain HTML only on explicit instruction. Behaviour-only repairs preserving presentation need no complete kit; new UI needs selected approved components/patterns. A sample, filename or tag is not approval.
 
 Check codebase-map/kit_bindings.py and its ui-design sibling. Distinguish current story-source observations, declared approval, real capture provenance and actual renderer use. Missing/deleted/stale sources block their selection, not unrelated work. Do not build a kit, refresh approval hashes or create substitute templates. No UI framework or tool-level enforcement is installed.
 

@@ -1,8 +1,8 @@
-# UI examples under strict kit reuse
+# UI examples: existing styles only (D14)
 
 ## No design source
 
-Owner: “Add notification settings.” Agent: “I can implement the approved settings logic, but this screen has no selected approved controls/layout. Which existing kit or pattern should I use, or should I leave the UI for the designer?” No plain form, CSS reset, temporary public route or mockup is created.
+Owner: “Add notification settings.” The agent searches the kit and the existing code for each element. A toggle row already exists in `settings.page.html:40` (`ion-item` > `ion-toggle`), so the new row mirrors it with the same tags and classes. Nothing matches the time picker, so the agent asks exactly: “I couldn't find a matching style for the time picker. Is there an existing element I should mimic?” and stops that element. No new CSS, invented class, plain stand-in or mockup; plain HTML only if the owner explicitly says so.
 
 ## Explicit choice
 

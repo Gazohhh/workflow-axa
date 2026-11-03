@@ -20,4 +20,4 @@ Read UI-FLOW.md for the complete optional contract. The sample has no applicatio
 
 ## rc.7 compatibility note
 
-The included rc.6 HTML files are retained historical demonstrations. Their schematic/plain-preview and design-authoring discussion does not grant current application permission. Strict kit reuse in rule-maker/rules/design.md supersedes those modes for new work. New approval-ready application reports use actual kit references, captured states and capture input fingerprints. Do not update the old HTML to imply approval; use UI-FLOW.md for current input fields.
+The included rc.6 HTML files are retained historical demonstrations. Their schematic/plain-preview and design-authoring discussion does not grant current application permission. The D14 rule in rule-maker/rules/design.md (existing styles only) supersedes those modes for new work. New approval-ready application reports use actual kit references, captured states and capture input fingerprints. Do not update the old HTML to imply approval; use UI-FLOW.md for current input fields.

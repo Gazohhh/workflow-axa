@@ -189,6 +189,15 @@ class RulesActivationTests(unittest.TestCase):
         self.codex.mkdir();p=self.codex/'AGENTS.override.md';p.write_text('Existing override')
         changes=self.plan();self.assertEqual(len(changes),3)
         a.load_file_helpers().apply_plan(changes);self.assertIn(a.START,p.read_text());self.assertTrue(p.read_text().startswith('Existing override'))
+    def test_check_explains_a_block_pointing_at_another_copy(self):
+        # Round 8: a rules audit read UPDATE as "out of date" when only the checked copy differed.
+        import contextlib,io
+        self.claude.mkdir();other=self.home/'installed/rules'
+        (self.claude/'CLAUDE.md').write_text(a.block('claude',other))
+        out=io.StringIO()
+        with contextlib.redirect_stdout(out):
+            a.main(['--check','--host','claude','--home',str(self.home),'--claude-dir',str(self.claude)])
+        self.assertIn('UPDATE',out.getvalue());self.assertIn('not this copy',out.getvalue())
     def test_empty_override_untouched(self):
         self.codex.mkdir();p=self.codex/'AGENTS.override.md';p.write_text(' \n')
         self.assertEqual(len(self.plan()),2);self.assertEqual(p.read_text(),' \n')
@@ -227,7 +236,7 @@ class ReadinessContractTests(unittest.TestCase):
 
     def test_workflow_gate_precedes_task_creation(self):
         t=(ROOT/'skills/workflow/SKILL.md').read_text()
-        self.assertLess(t.index('## 0. Check rules readiness'),t.index('Before creating any task folder'))
+        self.assertLess(t.index('## 1. Check rules readiness'),t.index('Before creating any task folder'))
         self.assertIn('even if rule-maker never ran',t)
     def test_scoped_exception_and_bootstrap_are_documented(self):
         t=(ROOT/'skills/rule-maker/rules/READINESS.md').read_text()
@@ -243,4 +252,4 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertNotIn('diagram-design',c['skills'])
         self.assertIn('grilling',c['skills'])
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.6.0')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.7.0')

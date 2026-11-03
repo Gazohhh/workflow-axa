@@ -1,0 +1,12 @@
+/* Older token names used by ui-review.css, mapped onto report-style.css tokens. */
+:root {
+  --paper: var(--color-bg);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --rule: var(--color-line);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-soft);
+  --sans: var(--font-sans);
+  --serif: var(--font-serif);
+  --mono: var(--font-mono);
+}

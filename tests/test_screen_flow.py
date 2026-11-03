@@ -65,7 +65,7 @@ class ScreenFlowTests(unittest.TestCase):
         for label in ['What changes','What will not change','Changes and cleanup','How completion will be checked','Technical evidence and task details','UI screens']:
             self.assertIn(label,html)
         self.assertEqual(html.count('class="map"'),3)
-        self.assertIn('Illustrative UI example',html)
+        self.assertIn('Example UI only',html)
         self.assertIn('data-only', (ROOT/'skills/codebase-map/UI-FLOW.md').read_text())
 
     def test_old_schema2_input_has_no_ui_assets_or_view(self):
@@ -98,9 +98,19 @@ class ScreenFlowTests(unittest.TestCase):
         self.ui['screens'][0]['content'][1]={'kind':'input','label':'Value','value':'X'*42}
         with self.assertRaisesRegex(ValueError,'field value'):self.render()
 
-    def test_draft_cannot_draw_proposed_screens_without_preview_permission(self):
+    def test_sketch_only_report_can_say_preview_not_needed(self):
+        # Round-6 retro: a sketch-only plan claimed "authorised" preview that no record held.
+        self.ui['preview']['status']='not-needed'
+        self.assertIn('not-needed',self.render())
+        self.capture()
+        with self.assertRaisesRegex(ValueError,'only for sketch-only reports'):self.render()
+
+    def test_sketches_need_no_preview_permission_but_proposed_captures_do(self):
+        # Round 5: the plan stopped to ask permission for a sketch inside the offline report.
         self.ui['preview']['status']='proposed'
-        with self.assertRaisesRegex(ValueError,'preview permission'):self.render()
+        self.assertIn('ui-review',self.render())
+        self.capture()
+        with self.assertRaisesRegex(ValueError,'captured proposed screen needs recorded preview authority'):self.render()
 
     def test_draft_kit_cannot_substitute_schematics(self):
         self.ui['mode']='approved-kit'
@@ -144,7 +154,7 @@ class ScreenFlowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'confirmed mode'):self.render()
 
     def test_no_automatic_plain_preview_permission(self):
-        self.ready();self.ui['preview']['status']='proposed'
+        self.ready();self.ui['mode']='behaviour-only';self.capture();self.ui['preview']['status']='proposed'
         with self.assertRaisesRegex(ValueError,'preview authority'):self.render()
 
     def test_open_visual_choice_blocks_actual_approval(self):
@@ -153,7 +163,7 @@ class ScreenFlowTests(unittest.TestCase):
 
     def test_legacy_plain_mode_no_longer_authorises_new_application_report(self):
         self.ready()
-        with self.assertRaisesRegex(ValueError,'Strict kit-only'): self.render()
+        with self.assertRaisesRegex(ValueError,'current mode'): self.render()
 
     def test_approved_kit_cannot_use_schematic_as_visual_proof(self):
         self.ready();self.ui['mode']='approved-kit'
@@ -239,6 +249,14 @@ class ScreenFlowTests(unittest.TestCase):
         self.ui['screens'][0]['height']=280
         with self.assertRaisesRegex(ValueError,'too small'):self.render()
 
+    def test_every_screen_problem_is_reported_in_one_run(self):
+        # Round-4 retro: one error per render cost seven attempts.
+        first,second=self.ui['screens'][0],self.ui['screens'][1]
+        first['height']=280;second['title']='X'*60
+        with self.assertRaises(ValueError) as caught:self.render()
+        self.assertIn('screen '+first['id']+': ',str(caught.exception))
+        self.assertIn('screen '+second['id']+': ',str(caught.exception))
+
     def test_too_many_screens_requires_split(self):
         for n in range(3):
             s=copy.deepcopy(self.ui['screens'][0]);s['id']='NEW'+str(n);self.ui['screens'].append(s)
@@ -258,6 +276,15 @@ class ScreenFlowTests(unittest.TestCase):
         self.assertIn('href="#ui-decision-D1"',html)
         self.assertIn('screen and sources',html)
         self.assertNotIn('fetch(',html)
+
+    def test_application_ui_opens_on_its_screen_diagram(self):
+        # D14 goal: the owner did not see the screen diagram because it hid behind a tab.
+        self.application()
+        self.ui.pop('open_first',None)
+        self.assertRegex(self.render(),r'id="view-ui-preview"[^>]*checked')
+        # Retro: open_first false was copied from the illustration example into a real plan and hid it again.
+        self.ui['open_first']=False
+        self.assertRegex(self.render(),r'id="view-ui-preview"[^>]*checked')
 
     def test_report_manifest_tracks_new_renderer_version(self):
         version=json.loads((ROOT/".claude-plugin/plugin.json").read_text())["version"]
@@ -280,7 +307,7 @@ class InstallAuditExtraFiles(unittest.TestCase):
         self.assertTrue((self.skills/'rule-maker/rules/OLD.md').exists())
 
     def test_unrelated_external_skills_are_not_flagged(self):
-        p=self.skills/'grilling';p.mkdir();(p/'SKILL.md').write_text('external')
+        p=self.skills/'research';p.mkdir();(p/'SKILL.md').write_text('external')
         self.assertEqual(self.audit.inspect([self.skills])['candidates'][0]['state'],'MATCH')
 
     def test_cache_files_are_not_policy_drift(self):
@@ -295,8 +322,8 @@ class ScreenFlowPolicyTests(unittest.TestCase):
         self.assertIn('not replace the report',text)
     def test_design_source_selection_is_not_filename_authority(self):
         text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
-        self.assertIn('exact component/pattern source',text)
-        self.assertIn('same-task decision',text)
+        self.assertIn('A filename, folder, screenshot or framework name alone does not prove',text)
+        self.assertIn('exact source file',text)
     def test_no_automatic_plain_html_fallback(self):
         text=(ROOT/'skills/ui-design/SKILL.md').read_text()
         self.assertIn('No new plain-HTML controls',text)

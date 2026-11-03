@@ -522,3 +522,125 @@ Inputs (full values):
 - `baseline/` (CRLF rc.4) is **baseline recovery**: known-broken helpers, evidence only.
 
 Not claimed: atomic transaction, live loading, model compliance, permission enforcement.
+
+## 2026-11-02 reconciliation (read-only)
+
+Facts are as in the PLAN checkpoint. Only the evidence not recorded there:
+- Global before-hashes are unchanged: `~/.claude/CLAUDE.md` `00f02bbcfe951eb2b9ed77f0bac37e275fcb042c419c922a26b30b1e7ef8a963`; `~/.codex/AGENTS.md` `4960d3275bc14bb49fd53d5729585e7db5396335188a588b7a2439e8af7b54af`; `ARTIFACTS.md` `93600618976be853d6604742ed9a1d6428057a314ea0b8eceb671db0507b02a3`. No Codex override.
+- Memory hashes are unchanged since the YAML fix.
+- Altinstar `AGENTS.md`: the working copy `931e6548…` (CRLF) is identical to our edited version; committed in `c5cd88e61`.
+- Cheflabels `AGENTS.md` is `705701ef247c359e103718ad8450b87fe1674a9adc3efe9f33b3528fbac06a71`, which differs from HEAD `2b41ba8` only in line 3. The C1-C3 text is absent, and nothing was re-applied.
+- **Policy conflict.** rc.7 `skills/rule-maker/rules/design.md:9` ("Do not create plain controls as a fallback") and `:17` (accessibility repairs need an approved component) conflict with:
+  - the owner brief section 7 ("preserve necessary semantic controls and accessibility requirements");
+  - Cheflabels `DESIGN.md` r3:31 ("build behaviour with plain semantic Ionic markup").
+  Altinstar DESIGN_KIT draft-1 (existing components through props) is compatible.
+- rc.7 UPGRADE section 1 keeps the supported route (replace all eight folders; then the installed copy's `--check-global` and `activate --check`). The staged-swap safeguards still apply, but the candidate inventory must be re-established for the chosen package.
+
+## 2026-11-02 rc.7 adoption unit (D10-D12) — halted on a concurrent writer
+
+- **Project alignment** (CRLF kept, nothing staged, owner work preserved):
+  - Cheflabels `AGENTS.md` `d2e53fb23e526280ec78ca242021e84b418c320b3a790457586f60abec6dddd6`: C1 Node range, C2 pointer, line-3 strict scope wording.
+  - Cheflabels `DESIGN.md` `2b3d1eee3f1a33844d0e85eb78dbd16421054d34dd6c8caea98af890a3d47ef0`: lines 5, 25 and 31 (authority wording only).
+  - Altinstar `AGENTS.md` `fe808a376dfb4ba9cff51db81f667c872ee2268e5a933104ffad326af487cf53` and `DESIGN_KIT.md` `dfc85d9ac85711fbab1d454ec3b622e89e1a173519d053401ab132dadaae522d`: behaviour-only wording.
+  - Generic duplication removal is deferred until routing is verified live.
+- **Versions verified:** Cheflabels Capacitor 8.5.3 declared, lock and installed; Altinstar Capacitor 8.5.0; Node 22.19.0. The earlier "version-sensitive acceptance blocked" note is retired.
+- **Windows verification:**
+  - Pristine rc.7: validator PASS; 545 ran = 534 passed + 11 skipped.
+  - rc.8 source, before the collision: validator PASS; 546 ran = 535 passed + 11 skipped.
+- **Package fixes, rc.8** (labelled because content changed): kit CLIs catch `RuntimeError`; the design-kit symlink test uses links_helper; tilde regression for the kit CLIs; coherent rc.8 labels and notes.
+- **Pristine rc.7 archive:** `.artifacts/2026-10-30-rules-audit-design-kit/release/workflow-axa-2.7.0-rc.7.zip`, sha256 `7b694a851da4661640b207a5ba6facf74f40a299ffa6f00128ebf1f51618496f`, 226 entries.
+  - Includes the historical `review-r2.html` and `review-r2.json`, which the rc.7 test requires. Excludes this task's PLAN, FINDINGS and DECISIONS.
+  - Extracted: validator PASS; 545 ran = 533 passed + 12 skipped; DISK_MATCH. The first build, which excluded the review, failed that test and was discarded (`0adab002...`).
+- **BLOCKER:** the separate task `2026-11-02-modular-engineering-workflow` started implementing in the same tree around 12:11-12:12 (`skills/workflow/SKILL.md`, new `tests/test_task_report.py`). The validator core budget changed from 1236 to 686 words. No rc.8 package or G1/G2 until the coordinator or owner decides isolation and ownership. Options sent: pause and rebase / isolated build from `9daf507` plus my files / deploy pristine rc.7 now.
+
+### 2026-11-02 isolated rc.8 release snapshot (frozen audit baseline; canonical tree left untouched)
+
+- **Route:**
+  - A read-only `git -c core.autocrlf=false archive 9daf5076763fadcdf8c498cfbaebcd30d71fbaa2` into `.artifacts/2026-10-30-rules-audit-design-kit/release/rc8-snapshot/workflow-axa/`. All 229 base files were verified against their Git blob ids.
+  - Overlay: 17 owned files copied whole from the canonical tree, each hash-verified against its recorded after-hash.
+  - `plugin.json` and `render_report.py` were rebuilt as base blob plus the single rc.7→rc.8 version line. The canonical `render_report.py` (`1be59c4a…`) contains another task's hunks and was **not** copied. The rebuilt files are `af46e42eca2f114823c3529ab8cdfab5f25568126c36784ac19cf53ac5ed0592` and `f4aa60fe7d8b8eb601636766e0d26751669adb1631d5506ec5b143e9a3f0e5dd`; the reviewer reached the same values independently.
+  - No version-file collision was observed.
+  - Snapshot-only change: `VALIDATION.md` cites the isolated proof. The canonical copy is frozen while the modular task is active, and needs syncing later.
+  - Provenance: `release/rc8-snapshot.provenance.json`, sha256 `08ad98cc12d6f8792676815e5972115cb5ef88849e7b6f826edd5f194f93e366`.
+- **Isolated proof** (shared-workspace runs are not counted): snapshot validator PASS (1,236 words); unittest exit 0, 546 ran = 534 passed + 12 skipped (one extra skip: no `.git`).
+- **Archive** `release/workflow-axa-2.7.0-rc.8.zip`: sha256 **`cb822ad2409a25c27671fb5dfea0907f5ced989bf02f0ca0fa0ed67dcf68018f`**, 226 entries, 835,054 bytes.
+  - Excludes this audit's PLAN, FINDINGS and DECISIONS; keeps the historical review files.
+  - The checked pre-validation archive `d878787c…` differs only in `VALIDATION.md`.
+  - Extracted: validator PASS; 546 ran = 534 passed + 12 skipped; self-audit DISK_MATCH at 2.7.0-rc.8.
+  - Intermediates removed after recording.
+- **Final rc.8 skills inventory:** 111 files, **`5003ddfb07cfe047dbe1122d7c8c4a56c0401ab9de186084260e0c284698b864`**. This is the G1 staging source and target.
+- **G2 preview** with the snapshot helper bound to the runtime library: unchanged. CLAUDE.md `00f02bbc…` → `7a54ae59c4fe839e5997073410ea6680d1c7a0b8d3643fda725c9d58f08ed3f2`; Codex `4960d327…` → `4030878c0cfbbeed4985dcef571f3e802d010d7594b27b2bcc95f33d3913a37c`. Append-only.
+- **Fallback kept:** pristine rc.7 archive `7b694a85…`.
+- **Ownership:** the modular task proceeds as 2.8.0-rc.1 in the canonical tree and preserves the rc.8 fixes. The canonical root and package files are frozen for this task; only this task's records remain ours. Generic duplicate removal is still pending until routing is verified.
+
+### 2026-11-02 G1/G2 execution evidence
+
+- **Journal:** `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.8-g1/journal.jsonl`. It records: start, staged-verified, premove-recheck-ok, 8 x (live->baseline, staged->live, postcheck-ok), swap-complete, 2 x g2-before-saved-preview-matches, 2 x g2-applied (ok).
+- **Prechecks:**
+  - snapshot 111 files at `5003ddfb...`; runtime 95 files at `2c0d0658...`;
+  - the newest runtime file dates from 2026-10-30 14:09, so there was no sign of a concurrent installer writer, and no installer-like processes were running;
+  - the runtime root, its ancestors and the 8 folders are ordinary, with no internal reparse points;
+  - same volume; rollback parent absent; no Codex override.
+- **Post-checks:** listed in the PLAN checkpoint. The `staged/` and `quarantine/` folders are empty; `baseline/` holds the 95 rc.4 files byte-exact.
+- **C4 memory:** `98a9ecb7...` → `5e1b2063854fadf2638df3d41cfa0a1b62fce61db41d99a4ad3ee3daeb56f437`; index `08bc185a...` → `aba18d9d8a93764ad3f4f43f277ac524345b6f0d6a65ca2b0e4a3bb2700c2722`; YAML OK.
+- **Not done here:** live sessions, canonical `VALIDATION.md` sync, generic duplicate removal.
+
+## 2026-11-02 live acceptance results and routing consolidation
+
+### Live sessions (D12; coordinator-launched; no more launches or retries)
+
+| # | Session | Result | Trace evidence (tool calls, not self-report) |
+|---|---|---|---|
+| 1 | Altinstar, Opus: `mcp:launch:6414ebe8e8cc4eb177342b589c721f1f6ab5bf7da04c70257054695bd5a6f4a2` | Completed, read-only | Inspected by me: greps and reads of project source, plus a grep of `DESIGN_KIT.md`. **No shared-module file reads and no ui-design invocation.** Its reasoning mentions "the loaded start and core files", which is consistent with the Claude `@` imports but is self-report. |
+| 2 | Altinstar, Astra: `mcp:launch:c4df7bbf96941cbf27ef12911277bffe325cfdf4753c5de90f22bf392cb4ca55` | Completed, read-only | Per the coordinator's trace review: read START, CORE, READINESS and workflow (pos 3); `src/AGENTS.md`, ui-design, design and the catalogue (pos 6); CONTRACT (pos 7). **No TS or React module reads.** |
+| 3 | Cheflabels, Opus: `mcp:launch:3e942de94eac90ad0a58b59024904cee46c3827d7ea65ab175c0e588333ad7f3` | Completed, read-only | Per the coordinator's trace review: READINESS, first 80 lines (pos 4); grep of ionic/design (pos 8). **No full TS or Angular module reads; no ui-design skill.** |
+| 4 | Cheflabels, Astra: `mcp:launch:baa857ee9a00a879e11897d0593504c93bea6966b271592fa267ec5f90f78182` | **Failed at startup** (usage limit 429, retry limit exceeded) | No model inspection. **There is no fourth completed session.** |
+
+None of the three completed sessions edited files, tested, built, called a backend or delegated.
+
+Classification:
+- **Codex (Altinstar session only):** read START/CORE/READINESS (observed reads). The Cheflabels Codex session failed to start.
+- **Claude:** loading of START/CORE is not observable in tool traces; the `@` imports are configured and confirmed on disk.
+- **Framework modules:** no complete framework-module reads observed; the Cheflabels Opus session only grepped Ionic and design excerpts (partial omission).
+
+### Mitigation applied (routing, not proof)
+
+Project edits, all CRLF, unstaged, read-only Git, with concurrent owner work preserved:
+
+- **Altinstar root `AGENTS.md`** (`c98d30cab26204cd1af57c8eb3f04a969a8f0600f6b43d438d1c01db64a0a128`):
+  - The pointer now names the scope-selected modules (`typescript.md` 4.9, `react.md` 18.3, `vite.md`, `capacitor.md` for native/plugin work, `threejs.md`/`pixijs.md`, `unity.md`, `design.md` via ui-design).
+  - The "Writing code" intro routes general structure, comments and verification to `CORE.md`.
+  - Removed as generic duplicates: the "reuse before adding" and "flat main path" bullets, and the general comment bullet. The measured-comment example stays as one line.
+  - All local contracts are kept: owner questions, unasked-cleanup history, typed outcomes, callback owner guards, boundary parsing list, inverted flags, regression fixtures, measured performance, the "code done, to verify" status.
+- **Altinstar `src/AGENTS.md`** (`dec4b672959f9d7847026cfee3125bc39947fee0ae83e777f243bce38cb18e48`):
+  - The React Compiler is no longer grouped with React 19-only APIs: it can target React 18 through its runtime (shared `react.md`), is not installed here, and packages stay as installed.
+  - The two "one-line reason" caps are removed, and explanations are still required.
+- **Cheflabels `AGENTS.md`** (`9ab99b8cff9a2807e980bdf9d1c1d70cb800740a9d48375553d02ffe679dd1ef`): the pointer names the scope-selected modules (`typescript.md` 5.8, `angular.md` 20, `ionic.md` 8, `capacitor.md` only for native/plugin/lifecycle/live-update work, `design.md` via ui-design). There was no generic duplicate prose to remove.
+- **Unchanged since the earlier unit:** Cheflabels `DESIGN.md` `2b3d1eee...`, Altinstar `DESIGN_KIT.md` `dfc85d9a...`.
+- **Post-mitigation routing is UNTESTED live.** All four authorised sessions are used and no more are authorised.
+- Codex load at Altinstar root + `src`: 30,480 of 32,768 bytes.
+
+### Final independent review (Astra, 2026-11-02)
+
+**Verdict:** installation (G1/G2) and all five project rule files have no blocker. The reviewer asked for four evidence-labelling fixes in the report; all four are applied:
+1. E3 now says "the Altinstar Codex session".
+2. "No session read framework modules" now reads "no complete framework-module reads observed; the Cheflabels Opus session only grepped Ionic and design excerpts".
+3. Before-graph B5 ("Shared rules read") is marked inferred (not traced), separately from the observed CRLF helper failure.
+4. The now-graph N4→N6 branch (no framework or UI work) is marked configured and inferred. It was not exercised, because every live prompt was UI work.
+
+**Remaining gaps** (live acceptance is INCOMPLETE):
+- The fourth session failed to start.
+- Claude loading of START/CORE is not visible in tool traces.
+- No complete framework-module reads were observed.
+- Post-mitigation routing is untested live, and no further sessions are authorised.
+- Live cases 4-8 are blocked or untested.
+- Enforcement is none (no hooks).
+- Generic duplicate removal is done only where clearly generic.
+- The canonical `VALIDATION.md` is not synced; the rc.8 snapshot validation is the release evidence.
+
+### D13 additional batch (2026-11-02): stopped on a provider failure
+
+- `mcp:launch:03f324583316a900c011e8cac0b345481d6cb3aeb483b5d86abe76a3bb452721` ("Rules routing retest 1/4 — Cheflabels Astra"; Codex gpt-6-astra, full-access): read by me.
+  - The activity shows the neutral read-only prompt, then "Workspace ready", then the error "Usage limit reached: exceeded retry limit, last status: 429 Too Many Requests, request id req_f0b498ef070d46239097808bdc960740". Run times: 11:54:28 to 11:54:33 UTC.
+  - No tool calls and no model output.
+- Batch stopped per D13; no retries; the remaining three not launched. No new loading evidence; the D12 evidence and the INCOMPLETE verdict are unchanged.

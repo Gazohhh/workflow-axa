@@ -16,13 +16,13 @@ The script accepts a package root, its `skills` directory, or its `skills/rule-m
 
 ## Install byte for byte
 
-Copy the eight complete skill folders without changing their bytes: extract the release ZIP, or copy from an LF checkout of this package (its `.gitattributes` keeps `skills/` LF even where `core.autocrlf` is true). Do not pass the files through an editor, archive tool or Git setting that rewrites line endings, and do not copy `__pycache__`. The library is checked against raw-byte hashes, so a copy that differs only in CRLF line endings still fails. The helpers name that case `line_ending_only` (and say "only by CRLF line endings"), meaning: reinstall, rather than hunt for edits.
+Copy every skill folder the package registers (the `NAMES` list in `scripts/audit_installation.py`) without changing their bytes: extract the release ZIP, or copy from an LF checkout of this package (its `.gitattributes` keeps `skills/` LF even where `core.autocrlf` is true). Do not pass the files through an editor, archive tool or Git setting that rewrites line endings, and do not copy `__pycache__`. The library is checked against raw-byte hashes, so a copy that differs only in CRLF line endings still fails. The helpers name that case `line_ending_only` (and say "only by CRLF line endings"), meaning: reinstall, rather than hunt for edits.
 
 Check in two steps:
 1. From the package you are installing, run `audit_installation.py --candidate <installed skills folder>`. It must report MATCH. This compares bytes only.
 2. Then run the **installed** copy's `audit_installation.py --check-global` or `activate_rules.py --check`. Global blocks point at the library of whichever copy runs the check, so only the installed copy verifies the installed route.
 
-The shared baseline is the eight skill folders at the package version, `~/.workflow-axa/ARTIFACTS.md` and the two managed global blocks; nothing inside projects. MATCH proves equality with the local package you ran the check from, not where that package came from: there is no signature. Each machine is a separate installation, and updating one does not update another.
+The shared baseline is every skill folder the package registers at its version, `~/.workflow-axa/ARTIFACTS.md` and the two managed global blocks; nothing inside projects. MATCH proves equality with the local package you ran the check from, not where that package came from: there is no signature. Each machine is a separate installation, and updating one does not update another.
 
 ## Trace live loading
 

@@ -5,7 +5,7 @@ A prompt prepared in another assistant does not replace investigation, approval,
 ## Start a task
 
 ```text
-/workflow-axa:workflow Investigate <problem> in <repository/area>. Goal: <observable outcome>. Constraints/protected areas: <limits>. Read the existing code and project rules first; find and reuse a related existing task before creating records; ask when identity is unclear. Establish the record before substantial discovery. Map callers, alternatives, cleanup, tests, and affected docs. Verify and invoke the relevant installed specialists using SPECIALISTS.md. Use grilling to uncover missing decisions even in a detailed request; reuse sourced answers. Batch nonblocking decisions; ask early only where a decision blocks useful progress. Map my requirements to existing-code evidence and the actual gap, then prepare PLAN/TODO and open the current/proposed HTML review. Stop for approval before application implementation.
+/workflow-axa:workflow Investigate <problem> in <repository/area>. Goal: <observable outcome>. Constraints/protected areas: <limits>. Read the existing code and project rules first; find and reuse a related existing task before creating records; ask when identity is unclear. Establish the record before substantial discovery. Map callers, alternatives, cleanup, tests, and affected docs. Verify and invoke the relevant installed specialists using SPECIALISTS.md. Use grilling to uncover missing decisions even in a detailed request; reuse sourced answers. Batch nonblocking decisions; ask early only where a decision blocks useful progress. Map my requirements to existing-code evidence and the actual gap, summarize the intended behavior, scope and acceptance, and stop for my agreement. After I agree, prepare the TODO tickets and open the current/proposed HTML review. Stop for approval before application implementation.
 ```
 
 Replace placeholders with known information, not assumptions. Do not invent a solution merely to make the prompt look prepared. Include a reproduction and expected behavior when known. For research-only work, explicitly say that no implementation is authorized.
@@ -61,3 +61,20 @@ Standalone Claude uses `/codebase-map`; Codex uses `$codebase-map`. The mode wor
 ```
 
 You do not need to include all these reminders every time; the workflow itself carries the rules. A prepared prompt can settle decisions, but cannot disable the required proactive check just by being long.
+
+## Handoff message
+
+When the user has to pass status to another agent session, another machine, a person or a tracker, don't make them write it. Generate it from the checkpoint and TODO, ready to paste, in this shape:
+
+```text
+For: <recipient: session name, machine, person or tracker>
+Task: <task folder> — <one-line goal>
+State: <agreed / approved / implementing / delivered>; next safe action: <step>
+Pull: <branch and commit, or "local changes on <machine>, not pushed">
+Done (with evidence): <ticket — V-ID, one line each>
+Open: <ticket — what blocks it>
+Don't touch: <files or areas another session owns>
+Needs from you: <the exact question or human step, or "nothing">
+```
+
+Only facts in the records go in; say "unknown" rather than guessing. For a tracker, post this as one update when the user asks; the records stay the source.

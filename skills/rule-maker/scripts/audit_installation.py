@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 SKILLS = Path(__file__).resolve().parents[2]
-NAMES = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker", "ui-design")
+NAMES = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker", "ui-design", "workflow-clarify", "workflow-specify", "workflow-execute", "workflow-deliver", "grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling", "implement-spec", "retro")
 MAX_BYTES = 2_000_000
 MAX_FILES = 512
 
@@ -128,7 +128,7 @@ def inspect(candidates: list[Path], baseline: Path = SKILLS) -> dict:
             "candidates": rows, "multiple_copies": len(rows) > 1,
             "host_loading": "NOT_VERIFIED", "compliance": "NOT_VERIFIED", "enforcement": "NOT_VERIFIED",
             "limits": ["Comparison is against this trusted local package, not a remote latest release or security signature.",
-                       "Only the eight named workflow-axa skill trees are compared, including unexpected files; unrelated skills and hidden host caches are not scanned. No file is removed.",
+                       "Only the named workflow-axa skill trees (NAMES) are compared, including unexpected files; unrelated skills and hidden host caches are not scanned. No file is removed.",
                        "Matching bytes or global blocks do not prove the host selected or followed them."]}
 
 

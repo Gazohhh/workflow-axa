@@ -17,7 +17,7 @@ For the next bounded scope, establish:
 - Existing project agreements identify architecture/ownership and protected/generated files that matter to the change. Root or scoped files and approved linked records are valid sources; no mandatory filename migration.
 - Verification commands or an explicitly agreed verification approach are known; avoid executing unreviewed commands. Missing tests are not a claimed pass.
 - Output destinations, resource limits, data/credential handling and permissions are understood for the planned operations.
-- For application UI, read design.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. Missing kit coverage blocks new UI integration, including plain-HTML fallbacks. Behaviour-only fixes preserving existing markup/appearance need no complete kit; selected approved references still cover any reuse. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
+- For application UI, read design.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. No CSS is ever written; new elements reuse existing classes/IDs (design kit or existing code) and an unmatched element waits for the user's answer on what to mimic. Behaviour-only fixes preserving existing markup/appearance need no kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
 - Material conflicts and user decisions are resolved or clearly bounded by an authorised exception.
 
 A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project needs an agreed minimal setup before scaffolding; do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
@@ -45,7 +45,7 @@ Name the actual gaps and practical consequences rather than a generic disclaimer
 
 ## 4. A limited exception is not "ignore rules"
 
-Record in the existing task/checkpoint or, for a no-file request, the current conversation: approving response, reason, exact omitted requirements, intended root/worktree, task, operations, affected paths, applicable rule versions and an explicit expiry (normally this task or a named work unit). No separate waiver report or permanent global opt-out.
+Record in the existing task/checkpoint or, for a no-file request, the current conversation: approving response, reason, exact omitted requirements, intended root/worktree, task, operations, affected paths, applicable rule versions and an explicit expiry, in the user's words, that says whether later revisions are covered ("this task folder, all revisions" or "revision rN only"). No separate waiver report or permanent global opt-out.
 
 Exceptions may cover a known documentation gap or agreed limited verification method. They cannot disable platform/organisation protections, authorise external systems/production writes, reveal secrets, invent approval, bypass unknown ownership, override undisclosed conflicts or silently expand scope. The user must have authority over the exception. A policy marked non-waivable remains so. Unknown risk is not magically accepted by "do it anyway".
 

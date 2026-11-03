@@ -1,38 +1,54 @@
-# Write for the reader; retain the evidence
+# Writing
 
-Applies to questions, chat updates, plans, review findings, HTML, PDFs and completion reports. Assume no prior project or technical knowledge unless the user explicitly asks for a specialist-only format. Be adult, direct and accurate, not childish or padded. Explain the concrete situation and consequence before a technical term. Respect the user's language and requested length.
+How to write anything a person reads: questions, chat updates, plans, tickets, findings, reports. Agent instructions (skills, AGENTS.md) follow this package's `writing-for-agents` skill (`../writing-for-agents/SKILL.md`) for structure; this file covers the human-facing text.
 
-## Useful order
+## The reader
 
-Start with what the user needs to understand or decide. Explain what happens today, what would change and why it matters. Keep exact names, files, commands, types and caveats available underneath or in a linked evidence section. The main explanation must stand on its own; important exclusions, risks and unanswered questions cannot be hidden as technical detail.
+Assume no project or technical background unless the user asks for a specialist format. Be direct and adult: explain the situation and its consequence before any technical term. Keep the user's language and requested length.
 
-Define a necessary unfamiliar term on first use; otherwise prefer everyday words. Use the same product term consistently. Preserve authoritative terminology and quoted requirements; explain them rather than quietly rewriting their meaning. Reuse approved audience/glossary choices, and ask only when genuinely new meaning is ambiguous. Do not add an introductory lecture to every update.
+## Order
 
-## Examples (illustrative, not user-provided code)
+1. What the reader needs to understand or decide.
+2. What happens today, what changes, why it matters.
+3. Exact names, files, commands and caveats underneath, or in the evidence section.
+
+The top part must stand on its own. Exclusions, risks and open questions belong there, never only in the details.
+
+Define an unfamiliar term once; otherwise use everyday words. Use one name per concept, and the project's own name when it has one.
 
 | Less useful | Clearer |
 |---|---|
-| “Should the preference persist?” | “Should the app remember this setting after someone closes and reopens it?” |
-| “The fixture is regenerated after a GREEN gate.” | “Once Unity's required checks pass, recreate the saved sample data used by the web tests so it matches the controls Unity provides.” Keep the exact command/file beneath it. |
-| “Hydration parity is maintained.” | State which screen or saved data remains consistent, and under which condition. Do not invent those facts when the source does not identify them. |
-| “Implemented a robust, production-ready solution.” | Name the changed behavior, checks that actually passed and environments not tested. |
+| "Should the preference persist?" | "Should the app remember this setting after someone closes and reopens it?" |
+| "Hydration parity is maintained." | Which screen or saved data stays consistent, under which condition. |
+| "Implemented a robust, production-ready solution." | The changed behavior, the checks that passed, the environments not tested. |
 
-A short technical label may remain in a diagram when the visible explanation defines it. Do not fill every node with paths and reference IDs, or substitute a card wall for the approved flowchart. Reports should distinguish observed behavior from a proposal without relying on color alone.
+## Cut
 
-## Remove writing slop
+Delete filler, repeated headings, empty template sections, invented certainty and second copies of a decision. Don't create a file just to look thorough. When you say something is slop, show it: the repeated paragraph or unsupported claim, and why removing it loses nothing.
 
-Delete filler, repeated headings, empty template sections and status prose that adds no information. Avoid unexplained abbreviations, invented certainty, unnecessary analogies and duplicate copies of decisions. “No slop” is not itself a review result. Demonstrate the correction: show the unnecessary helper, repeated paragraph or unsupported claim and why it can be removed without losing meaning.
+## Keep the meaning
 
-Use the existing authoritative docs. Do not create a new glossary, plan, summary or handoff file solely to make output look comprehensive. Necessary contractual/API wording can be precise and lengthy; brevity must not discard a condition.
+Simpler words must keep the rule. Before rewording a requirement, finding or technical sentence, check that each part survives:
 
-## Cold-reader check for consequential deliverables
+| Part | Ask | Lost looks like |
+|---|---|---|
+| Actor | Who acts or is affected? | "The setting is saved" when only admins can save it |
+| Condition | When does it apply? | Dropping "after the first sync" |
+| Obligation | Must, may, must not, or only proposed? | "We keep old reports" for "never rewrite them" |
+| Result | What can be observed? | "Handled" for "rejected with an error message" |
+| Exception | What is excluded? | Omitting the lightweight-edit route |
+| Evidence | How strong is the support? | A file read presented as a passed test |
 
-Before presenting an approval report, substantial plan or final explanation, reread it without relying on the conversation. Can a new reader explain the goal, current/proposed difference, unchanged behavior, important consequences, requested decision and completion checks? Can a technical reader locate supporting evidence?
+If plain words can't carry a part, keep the precise wording and explain it. Shorter is never the goal on its own.
 
-When available, give a separate reviewer only the artifact and audience, not the conversation; ask for their interpretation and identify mismatches. Otherwise perform and label a self-review. This is not an extra routine approval or proof of usability. Testing with a real nontechnical teammate remains stronger evidence. Record specific corrections in existing findings, not a new writing-audit document for every task.
+Write chat messages and reports with `../simple-english/SKILL.md` (Plain mode and its workflow-axa adaptation).
 
-## Say which time and which state
+## Cold-reader check
 
-Use “Baseline before this change” for earlier code, “Approved scope” for agreed work, and a dated current checkpoint for progress. Avoid several unqualified “today” paragraphs. Explain approval, implementation and verification separately: “R3 is approved and coded; the phone appearance still needs acceptance” is clearer than “R3 done.”
+Before presenting an approval report, a substantial plan or a final report, reread it as someone who missed the conversation. Can they explain the goal, what changes, what stays the same, the decision asked of them and how completion is checked? Can a developer find the evidence? Check each claim against it: "the full suite passes" names any failures it already had; "every finding is fixed" counts the open ones; "what works now" lists only what a check showed.
 
-Keep a short reason for each changed agreement in the existing revision log; send detailed failed attempts to the existing evidence section. A status update or test retry is not a plan revision. Preserve older reasoning and aliases without asking readers to reconstruct the current state from them.
+When you can, give an independent reviewer only the document and its audience, ask them to restate those five things, and compare part by part with the table above. Each mismatch is a writing defect. Without a reviewer, write the restatement yourself before rereading the records, and say it was a self-check.
+
+## Say which state
+
+Use "before this change" for the old code, "agreed" for gate one, "approved plan" for gate two, and a dated checkpoint for progress. Report agreement, approval, implementation and verification separately: "R3 is agreed and approved, coded, and still needs a phone check" beats "R3 done."

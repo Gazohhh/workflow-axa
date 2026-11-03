@@ -1,0 +1,114 @@
+{
+  "schema_version": 2,
+  "title": "Shared rules for Altinstar and Cheflabels: before and now",
+  "revision": "R2-current",
+  "mode": "current",
+  "state": "inspection",
+  "snapshot": {
+    "repository": "workflow-axa 2.7.0-rc.8 installed from an isolated snapshot; Altinstar and Cheflabels rule files",
+    "branch": "Snapshot = commit 9daf507 plus 19 recorded rc.8 files (provenance 08ad98cc...). Runtime C:/Users/Cem/.agents/skills = 111 files 5003ddfb.... Release ZIP cb822ad2.... Canonical D:/workflow-axa is concurrently owned by the modular 2.8.0-rc.1 task and is not this snapshot.",
+    "basis": "Disk checks, installed-helper checks, package tests in the isolated snapshot (546 ran = 534 passed + 12 skipped), and four live sessions (three completed, one failed to start). Global, runtime and project files lie outside this report root and are cited through FINDINGS.",
+    "limits": "Profiles: T3 Claude Opus 5.5 (~/.claude) and T3 managed Codex gpt-6-astra (~/.codex). Loaded, followed and enforced are only partly observed; the routing added after the sessions is untested live. One machine only: teammates do not get this install automatically. Pending the reviewer's final diff review."
+  },
+  "understanding": "You wanted one central set of shared rules that ordinary sessions in both projects pick up without slash commands, while each project keeps only its own knowledge. Before: only the artifact policy was activated, and the installed copy failed its own integrity check. Now: rc.8 is installed byte-exact, both global files activate the shared core, and both projects point to it, with scope-selected modules and rc.7's strict UI policy. Live sessions showed Codex reading the shared core but no session reading framework modules, so routing was sharpened; that change has not been tested live.",
+  "requirements": [
+    {"id": "R1", "text": "Ordinary sessions in both projects load the shared core without slash commands.", "origin": "Owner brief section 3C"},
+    {"id": "R2", "text": "The installed copy verifiably matches the reviewed package bytes.", "origin": "Owner brief sections 1 and 4"},
+    {"id": "R3", "text": "Projects keep their own knowledge; general rules are not duplicated into them.", "origin": "Owner brief section 3A/3B; DECISIONS D2, D11"},
+    {"id": "R4", "text": "UI work follows rc.7 strict kit reuse; candidates and missing entries stay pending.", "origin": "DECISIONS D10, D11"}
+  ],
+  "boundaries": [
+    "No application code, styles, dependencies, builds, tests of the apps or backend calls.",
+    "No hooks or permission changes; status line untouched.",
+    "No canonical D:/workflow-axa root or package writes after the snapshot; the modular task owns them.",
+    "Project rule edits are unstaged; the owner commits them.",
+    "No automatic update of teammates' machines."
+  ],
+  "open_decisions": [
+    "Independent reviewer's final diff review of the project edits and this report is pending."
+  ],
+  "sources": [
+    {"id": "S1", "path": "docs/plans/2026-10-30-rules-audit-design-kit/PLAN.md", "role": "plan"},
+    {"id": "S2", "path": "docs/plans/2026-10-30-rules-audit-design-kit/FINDINGS.md", "role": "findings"},
+    {"id": "S3", "path": "docs/plans/2026-10-30-rules-audit-design-kit/DECISIONS.md", "role": "decisions"},
+    {"id": "S4", "path": ".artifacts/2026-10-30-rules-audit-design-kit/release/rc8-snapshot.provenance.json", "role": "evidence"}
+  ],
+  "evidence": [
+    {"id": "E1", "claim": "Before: the global files activated only the artifact policy, the runtime was a CRLF rc.4 copy that failed its own integrity check, and no project pointed to the shared library.", "kind": "static", "sources": ["S2"], "locator": "FINDINGS R2 live audit F1, F2", "limits": "Disk state on 2026-10-30."},
+    {"id": "E2", "claim": "Now: the runtime holds 111 files byte-identical to the rc.8 snapshot, and both global files carry the shared-rules block (installed audit DISK_MATCH, global checks MATCH).", "kind": "static", "sources": ["S1", "S2", "S4"], "locator": "PLAN deployed checkpoint; FINDINGS G1/G2 execution evidence", "limits": "Disk and helper checks; not live loading."},
+    {"id": "E3", "claim": "Live traces: Codex sessions read START, CORE and READINESS; no session read framework modules; one session failed to start.", "kind": "runtime", "sources": ["S2"], "locator": "FINDINGS 2026-11-02 live acceptance results", "limits": "Three completed sessions; Claude imports are not visible as tool reads."},
+    {"id": "E4", "claim": "Projects now name scope-selected shared modules, route general code guidance to CORE, and keep local contracts.", "kind": "static", "sources": ["S2"], "locator": "FINDINGS mitigation applied", "limits": "Routing added after the sessions; untested live."},
+    {"id": "E5", "claim": "Owner adopted rc.7 strict UI reuse and approved aligning project exceptions and four live sessions.", "kind": "design", "sources": ["S3"], "locator": "DECISIONS D10-D12", "limits": "Owner direction, not runtime evidence."}
+  ],
+  "acceptance": [
+    {"id": "A1", "text": "Case 1: an ordinary task in each project loads the shared core.", "requirements": ["R1"], "verification": "Installed: yes. Loaded: Codex read START/CORE (session 2); Claude imports configured but not visible in traces. Followed: partial. Enforced: none. Cheflabels Codex session failed to start."},
+    {"id": "A2", "text": "Case 2: root and nested work load the right files without excess.", "requirements": ["R1", "R3"], "verification": "Loaded: Codex read src/AGENTS.md in Altinstar (session 2). Nested Codex cwd untested (T3 starts at root). Post-mitigation routing untested."},
+    {"id": "A3", "text": "Case 3: both TypeScript projects resolve the same shared typescript.md.", "requirements": ["R1", "R3"], "verification": "Installed: one runtime copy via junctions. Loaded: no session read typescript.md (partial omission). Mitigation names it per project; untested live."},
+    {"id": "A4", "text": "Case 4: a shared update reaches fresh sessions without project edits.", "requirements": ["R1"], "verification": "Isolated marker experiment blocked (no T3 profile binding). Partial: the rc.8 install reached the runtime with no project edit needed for routing; live pickup of a specific change not shown."},
+    {"id": "A5", "text": "Case 5: an empty project gets the missing-rules decision.", "requirements": ["R1"], "verification": "Live untested (no fixture approved). Package tests cover readiness helpers only."},
+    {"id": "A6", "text": "Case 6: missing module, stale path or conflicting install is disclosed.", "requirements": ["R2"], "verification": "Tested locally: helper tests (CRLF-only vs hidden edit, unexpected files, refusals). Live untested."},
+    {"id": "A7", "text": "Case 7: an old memory contradicting a rule is surfaced.", "requirements": ["R3"], "verification": "Live untested. The contradicting memories were marked superseded (D1)."},
+    {"id": "A8", "text": "Case 8: resumed or delegated work keeps scope and approval.", "requirements": ["R3"], "verification": "Live untested. Observed only in this task's own coordination."},
+    {"id": "A9", "text": "Case 9: UI work without authority invents no styling or kit approval.", "requirements": ["R4"], "verification": "Partial: sessions proposed changes only through existing components and read the kit routes (sessions 1, 2); no session invoked ui-design except session 2's reads. No edits were allowed, so compliance under editing is untested."},
+    {"id": "A10", "text": "Case 10: no indirect builds or backend calls.", "requirements": ["R1"], "verification": "Observed: no builds, tests or backend calls in the three completed sessions (read-only boundary given)."},
+    {"id": "A11", "text": "Case 11: renderer and artifact protections work.", "requirements": ["R2"], "verification": "Tested locally: package report tests pass in the snapshot; this report rendered with exclusive creation. Browser checks not run."},
+    {"id": "A12", "text": "Case 12: unsupported host features are reported, not claimed.", "requirements": ["R1"], "verification": "Reported: Codex has no imports (read instruction only); no hooks; T3 cannot bind profiles; no spend cap. No enforcement claimed."}
+  ],
+  "tasks": [
+    {"id": "T1", "title": "Build and verify the isolated rc.8 package", "kind": "requested", "reason": "Package changes required an identifiable release.", "requirements": ["R2"], "evidence": ["E2"], "acceptance": ["A6", "A11"], "areas": [".artifacts/.../release"], "depends_on": [], "outcome": "verified", "outcome_note": "Snapshot and extracted archive: validator PASS; 546 ran = 534 passed + 12 skipped."},
+    {"id": "T2", "title": "Replace the runtime copy (G1)", "kind": "requested", "reason": "The CRLF copy blocked every integrity-checked helper.", "requirements": ["R2"], "evidence": ["E1", "E2"], "acceptance": ["A6"], "areas": ["C:/Users/Cem/.agents/skills"], "depends_on": ["T1"], "outcome": "verified", "outcome_note": "Byte-exact 111 files; baseline kept; junctions unchanged."},
+    {"id": "T3", "title": "Activate the shared core globally (G2)", "kind": "requested", "reason": "Required for loading without slash commands.", "requirements": ["R1"], "evidence": ["E2"], "acceptance": ["A1"], "areas": ["~/.claude/CLAUDE.md", "~/.codex/AGENTS.md"], "depends_on": ["T2"], "outcome": "verified", "outcome_note": "Disk and installed-helper checks MATCH; live loading only partly observed."},
+    {"id": "T4", "title": "Align project routing and UI exceptions", "kind": "requested", "reason": "Owner decisions D10-D11.", "requirements": ["R3", "R4"], "evidence": ["E4", "E5"], "acceptance": ["A2", "A3", "A9"], "areas": ["Altinstar AGENTS.md, src/AGENTS.md, DESIGN_KIT.md", "Cheflabels AGENTS.md, DESIGN.md"], "depends_on": [], "outcome": "implemented", "outcome_note": "Unstaged; pending final review; post-change routing untested live."}
+  ],
+  "comparison": [
+    {"label": "Shared core in ordinary sessions (before → now)", "current": "Before: loaded only if the model picked a workflow skill; installed helpers blocked by CRLF.", "proposed": "Now: global block imports START/CORE for Claude and tells Codex to read them; Codex reads observed, Claude imports not visible in traces.", "requirements": ["R1", "R2"], "evidence": ["E1", "E2", "E3"], "tasks": ["T2", "T3"]},
+    {"label": "Framework modules (before → now)", "current": "Before: no project pointer; selection left to START alone.", "proposed": "Now: projects name scope-selected modules; no live session had read them, and the sharper routing is untested live.", "requirements": ["R1", "R3"], "evidence": ["E3", "E4"], "tasks": ["T4"]},
+    {"label": "UI authority (before → now)", "current": "Before: functionality-only fallbacks allowed plain semantic markup.", "proposed": "Now: rc.7 strict kit reuse; approved entries within recorded scope only, otherwise behaviour-only or pending.", "requirements": ["R4"], "evidence": ["E5"], "tasks": ["T4"]}
+  ],
+  "default_view": "now",
+  "graphs": [
+    {
+      "id": "before", "kind": "current", "purpose": "flow", "tab": "Before (Oct 30)",
+      "title": "Before: shared rules depended on skill choice",
+      "description": "What loaded as an ordinary session started in either project on 2026-10-30. Observed on disk; selection was not traced.",
+      "width": 1440, "height": 464,
+      "nodes": [
+        {"id": "B1", "label": "Ordinary session", "note": "No slash command", "shape": "start", "x": 48, "y": 96, "width": 224, "height": 96, "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"id": "B2", "label": "Global rules", "note": "Artifact policy only", "shape": "action", "x": 320, "y": 96, "width": 224, "height": 96, "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"id": "B3", "label": "Project rules", "note": "No shared pointer", "shape": "action", "x": 592, "y": 96, "width": 224, "height": 96, "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"id": "B4", "label": "Model picks\na skill?", "note": "", "shape": "decision", "x": 864, "y": 64, "width": 256, "height": 160, "highlight": true, "basis": "inferred", "change": "unchanged", "evidence": ["E1"], "tasks": [], "uncertainty": "Depended on the model matching a skill description; not traced."},
+        {"id": "B5", "label": "Shared rules read", "note": "Helpers blocked: CRLF", "shape": "result", "x": 864, "y": 320, "width": 256, "height": 96, "highlight": true, "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"id": "B6", "label": "No shared core", "note": "Project rules only", "shape": "result", "x": 1200, "y": 96, "width": 208, "height": 96, "basis": "inferred", "change": "unchanged", "evidence": ["E1"], "tasks": [], "uncertainty": "Inferred from the missing global block."}
+      ],
+      "edges": [
+        {"from": "B1", "to": "B2", "label": "", "points": [[272, 144], [320, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"from": "B2", "to": "B3", "label": "", "points": [[544, 144], [592, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"from": "B3", "to": "B4", "label": "", "points": [[816, 144], [864, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E1"], "tasks": []},
+        {"from": "B4", "to": "B5", "label": "Yes", "label_position": [1028, 276], "points": [[992, 224], [992, 320]], "basis": "inferred", "change": "unchanged", "evidence": ["E1"], "tasks": [], "uncertainty": "Not traced."},
+        {"from": "B4", "to": "B6", "label": "No", "label_position": [1160, 128], "points": [[1120, 144], [1200, 144]], "basis": "inferred", "change": "unchanged", "evidence": ["E1"], "tasks": [], "uncertainty": "Not traced."}
+      ]
+    },
+    {
+      "id": "now", "kind": "current", "purpose": "flow", "tab": "Now (Nov 2)",
+      "title": "Now: shared core configured; modules routed by scope",
+      "description": "What is configured on disk after deployment (verified), with what live traces showed. Module selection after the latest routing change is untested live.",
+      "width": 1440, "height": 464,
+      "nodes": [
+        {"id": "N1", "label": "Ordinary session", "note": "No slash command", "shape": "start", "x": 48, "y": 96, "width": 224, "height": 96, "basis": "observed", "change": "unchanged", "evidence": ["E3"], "tasks": []},
+        {"id": "N2", "label": "Shared core block", "note": "Claude import, Codex read", "shape": "action", "x": 320, "y": 96, "width": 224, "height": 96, "highlight": true, "basis": "observed", "change": "unchanged", "evidence": ["E2", "E3"], "tasks": ["T2", "T3"]},
+        {"id": "N3", "label": "Project rules", "note": "Pointer + module list", "shape": "action", "x": 592, "y": 96, "width": 224, "height": 96, "basis": "observed", "change": "unchanged", "evidence": ["E4"], "tasks": ["T4"]},
+        {"id": "N4", "label": "Framework\nor UI work?", "note": "", "shape": "decision", "x": 864, "y": 64, "width": 256, "height": 160, "basis": "observed", "change": "unchanged", "evidence": ["E4"], "tasks": []},
+        {"id": "N5", "label": "Read named modules", "note": "Not seen in 3 traces", "shape": "action", "x": 864, "y": 320, "width": 256, "height": 96, "highlight": true, "basis": "unknown", "change": "unchanged", "evidence": ["E3", "E4"], "tasks": ["T4"], "uncertainty": "No live session read framework modules; the sharper routing was added afterwards and is untested."},
+        {"id": "N6", "label": "Work under rules", "note": "Follow-through partial", "shape": "result", "x": 1200, "y": 96, "width": 208, "height": 96, "basis": "unknown", "change": "unchanged", "evidence": ["E3"], "tasks": [], "uncertainty": "Read-only sessions only; behaviour under editing untested."}
+      ],
+      "edges": [
+        {"from": "N1", "to": "N2", "label": "", "points": [[272, 144], [320, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E2"], "tasks": []},
+        {"from": "N2", "to": "N3", "label": "", "points": [[544, 144], [592, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E2"], "tasks": []},
+        {"from": "N3", "to": "N4", "label": "", "points": [[816, 144], [864, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E4"], "tasks": []},
+        {"from": "N4", "to": "N5", "label": "Yes", "label_position": [1028, 276], "points": [[992, 224], [992, 320]], "basis": "unknown", "change": "unchanged", "evidence": ["E3"], "tasks": [], "uncertainty": "Not observed in live traces."},
+        {"from": "N4", "to": "N6", "label": "No", "label_position": [1160, 128], "points": [[1120, 144], [1200, 144]], "basis": "observed", "change": "unchanged", "evidence": ["E3"], "tasks": []},
+        {"from": "N5", "to": "N6", "label": "", "points": [[1120, 368], [1304, 368], [1304, 192]], "basis": "unknown", "change": "unchanged", "evidence": ["E3"], "tasks": [], "uncertainty": "Untested live."}
+      ]
+    }
+  ]
+}

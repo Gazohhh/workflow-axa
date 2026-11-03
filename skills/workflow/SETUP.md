@@ -1,6 +1,6 @@
 # Team setup and dependency checks
 
-This skill uses Matt Pocock's collection as a separate dependency. Installing
+Since 2.8.0 the specialists the workflow procedure needs (`grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, plus `implement-spec` and `retro`) ship as this package's own skills, copied from Matt Pocock's collection (VENDORED-SKILLS.md at the package root); nothing below is required for them. Install the package as one set: a separately installed Matt copy with the same name is never what the workflow loads, and keeping both only adds a confusing duplicate to the host's list. Matt Pocock's full collection remains an optional separate install for the other routes (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) and for personal use. Installing
 `workflow-axa` alone does **not** install that collection. Flowchart design is local to codebase-map. Keep one collection installation route per
 agent; plugin plus copied skills can create duplicate names. The catalogue records the
 27 names observed on 2026-10-09, including 11 model-invocable routes. Upstream metadata
@@ -47,11 +47,11 @@ automatically install or authenticate themselves.
 
 ## 2. Align repository setup once
 
-**2.6.0 requires this package's six local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, and `plan-review`.** The Claude plugin registers all six. Direct installations must copy each complete folder into the host's skill root. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.8.0 requires this package's twenty local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver` and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec` and `retro`.** (2.6.0 had the first six; 2.7 added `rule-maker` and `ui-design`.) The Claude plugin registers all twenty. Direct installations must copy each complete folder into the same host skill root, as siblings from one version: the four phase skills read their shared policies from the installed `workflow` folder and stop when it is missing or from another version. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
-Record the workflow version/source, both resolved local skill identifiers, routing-policy location/scope, actual load evidence and specialist snapshot. Test a plain request **without** `/workflow` or `$workflow`, an explicitly invoked task and a negative trigger. If routing fails, fix setup before relying on implicit use. There is no guarantee of model obedience from Markdown alone.
+Record the workflow version/source, the resolved identifiers of the local skills, routing-policy location/scope, actual load evidence and specialist snapshot. Test a plain request **without** `/workflow` or `$workflow`, an explicitly invoked task and a negative trigger. If routing fails, fix setup before relying on implicit use. There is no guarantee of model obedience from Markdown alone.
 
 
 Matt's `setup-matt-pocock-skills` is **user-invoked**. Run its actual qualified command when
@@ -85,7 +85,7 @@ For a standalone skill copy, use the same `scripts/check_specialists.py` relativ
 skill directory. To check only the routes needed for the next phase:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only grilling research
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only research diagnosing-bugs
 ```
 
 `--profile routed` checks 11 automatic Matt routes; `collection` checks the 27 historically recorded Matt names. Local visualization files are validated with the package, not as external specialists.
@@ -122,7 +122,7 @@ Generating a report does not approve it. Preserve an earlier approved baseline.
 Before resuming after a host switch or collection update:
 
 ```powershell
-python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only grilling research --baseline "C:\Path\To\Private\approved-inventory.json"
+python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\Installed\MattSkills" --only research diagnosing-bugs --baseline "C:\Path\To\Private\approved-inventory.json"
 ```
 
 Changed content blocks automatic reuse of the affected route until reviewed; new file
@@ -134,11 +134,11 @@ not silently accept `latest` or invent an upstream commit hash from a version st
 ## 5. Run a runtime smoke test, then normal tasks
 
 In a disposable project with only the intended workflow version and approved specialist installations,
-first make a plain behavioral-change request with no skill name. Verify workflow loaded, code was inspected, requirements/evidence/tasks were mapped and the visual review was shown before application changes. Test rejection/correction and subsequent approval. Then request a research/plan task with one genuine decision. Verify the trace shows the
+first make a plain behavioral-change request with no skill name. Verify workflow loaded and routed to `workflow-clarify`, code was inspected, and the behavior agreement was presented in PLAN and chat (gate one) with no tickets or code yet. After agreeing, verify `workflow-specify` produced tickets with dependencies and test seams and showed the HTML plan report (gate two) before application changes. Test rejection/correction at each gate and subsequent approval; a gate-two correction to behavior must return to clarify. Invoke one phase skill directly on a task missing its prerequisite and verify it refuses and names the earlier phase. Then request a research/plan task with one genuine decision. Verify the trace shows the
 qualified `grilling` specialist actually loaded, facts investigated rather than asked,
 and the question batch saved to the existing task record. Approve a bounded code fix
 with explicit test seams; verify the diagnosis/TDD/review routes, no repeated approval,
-and no stage/commit/push. Terminate mid-step and test cold continuation on another host.
+and no stage/commit/push. Verify `workflow-execute` reviewed each ticket on Standards and Spec and `workflow-deliver` reported unverified or partial work honestly. Terminate mid-step and test cold continuation on another host; resumption must keep both recorded gates.
 
 Also test a disabled specialist, same-name duplicate, changed supporting file and
 unavailable subagents. Apply [SPECIALISTS.md](SPECIALISTS.md), not guessed aliases or a
@@ -170,8 +170,8 @@ or reinstall the collection to make a version check pass.
 
 In a fresh session with no external diagram skill available, request a visual review.
 Verify codebase-map loads its local design guide, produces the approved flowchart, and
-stops before application implementation. Necessary questions still use grilling; actual
-research, diagnosis, TDD and review continue to use Matt's installed skills when relevant.
+stops before application implementation. Necessary questions still use the bundled grilling; TDD and review use the
+bundled copies; research and diagnosis use Matt's installed skills when relevant.
 A local Python render does not prove that this host-level behavior passed.
 
 
@@ -205,7 +205,7 @@ References checked 26 October 2026: [Claude instruction scopes/imports](https://
 
 ## Shared rules and missing project setup (2.7 candidate)
 
-Install `rule-maker` and `ui-design` with the existing six skills (eight total). Its rules are referenced centrally, not copied into repositories. Run its `scripts/activate_rules.py` preview/apply/check from the final stable installation after approval. Preserve existing artifact activation. The helper changes only managed global reference sections; no automatic hooks, permissions changes or remote updater. New/missing projects trigger readiness even without a setup command. Test the actual installed host/profile; package checks are not live enforcement proof.
+Install `rule-maker` and `ui-design` with the existing six skills (eight total in 2.7; 2.8.0 adds the four phase skills and eight vendored skills for twenty). Its rules are referenced centrally, not copied into repositories. Run its `scripts/activate_rules.py` preview/apply/check from the final stable installation after approval. Preserve existing artifact activation. The helper changes only managed global reference sections; no automatic hooks, permissions changes or remote updater. New/missing projects trigger readiness even without a setup command. Test the actual installed host/profile; package checks are not live enforcement proof.
 
 ## UI boundary integration
 

@@ -1,5 +1,7 @@
 # Offline flowchart report contract
 
+For a complete engineering task, use the optional sourced task content described in [TASK-REPORT.md](TASK-REPORT.md). It adds agreement, specifications, checks and delivery to this same renderer. Ordinary diagrams and historical inputs retain their existing contract.
+
 Design the flow locally using [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md); no separately installed diagram skill is required. Python 3.10+ standard library packages that explicit layout into local HTML/SVG; it does not install or invoke skills. Copy this complete skill folder for a standalone installation. The output has no CDN, fonts, telemetry, uploads or approval action. Edit the JSON and render a new revision; this is not a collaborative whiteboard.
 
 ## Run
@@ -76,7 +78,7 @@ Existing HTML remains unchanged and its schema-1 source manifest is still accept
 
 PLAN/TODO/FINDINGS/DECISIONS remain authoritative. Hashes include saved input JSON and all supplied sources, including uncommitted bytes. `--check` detects changes/missing supplied files, not omitted/new files, fabricated evidence, semantic correctness, trustworthy approval or malicious manifest modification. Source paths and report text may be sensitive; sanitize evidence before sharing.
 
-The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed. Geometry checks catch common defects; actual browser label measurements and review remain required. Print displays all diagrams; expand required technical details before printing. No PDF export or browser installation is implied. A successful structural check is not a complete accessibility/usability audit or proof of agent obedience.
+The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed. Geometry checks catch common defects; actual browser label measurements and review remain required. For that review, `scripts/screenshot_report.py <report.html> <output-folder>` takes desktop and narrow screenshots with the installed Edge or Chrome (nothing is installed; files are never overwritten); look at the images. Print displays all diagrams; expand required technical details before printing. No PDF export or browser installation is implied. A successful structural check is not a complete accessibility/usability audit or proof of agent obedience.
 
 
 ## Maintaining the approved presentation

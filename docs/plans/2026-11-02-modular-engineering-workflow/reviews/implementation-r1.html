@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Ct/4BgYIGLXq783UVb4B4liFvGHnUs1jSYOGFzy3QsY='; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>A modular workflow with explicit agreements</title><style>:root {
+  --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --rule:#cdd0d5;
+  --accent:#bf4520; --accent-tint:#f5e9e4;
+  --sans:'Geist','Inter','Segoe UI',system-ui,sans-serif;
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --mono:'Geist Mono',ui-monospace,'Cascadia Mono',monospace;
+  color-scheme:light;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.6 var(--sans); }
+main { max-width:1392px; margin:auto; padding:36px 56px 48px; }
+a { color:var(--ink); text-underline-offset:4px; }
+a:hover { color:var(--accent); }
+a:focus-visible,summary:focus-visible,.canvas:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+header { padding-bottom:24px; }
+.mast { display:flex; justify-content:space-between; gap:20px; border-bottom:1px solid var(--rule); padding-bottom:14px; font:11px/1.5 var(--mono); letter-spacing:.1em; color:var(--muted); }
+.mast strong { font-weight:500; color:var(--ink); }
+h1 { font:400 clamp(38px,4vw,58px)/1.08 var(--serif); letter-spacing:-.035em; margin:25px 0 14px; max-width:1080px; }
+h2 { font-size:20px; line-height:1.4; font-weight:600; margin:0 0 12px; }
+.status { font:11px/1.6 var(--mono); letter-spacing:.04em; color:var(--accent); margin:0 0 14px; }
+.lead { font-size:16px; color:var(--muted); margin:0; max-width:1040px; }
+.muted,small { color:var(--muted); }
+.review { position:relative; border-top:1px solid var(--ink); }
+.sr-radio { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%); white-space:nowrap; }
+.viewbar { display:flex; justify-content:space-between; align-items:center; gap:16px; border-bottom:1px solid var(--rule); min-height:60px; }
+.view-tabs,.zoom-tabs { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.view-tabs label,.zoom-tabs label { cursor:pointer; user-select:none; line-height:58px; color:var(--muted); border-bottom:2px solid transparent; font-size:14px; }
+.view-tabs label { font-weight:550; }
+.zoom-tabs { gap:14px; flex-shrink:0; }
+.zoom-tabs label { font:11px/58px var(--mono); }
+.figures { --scale:1; }
+#zoom-125:checked~.figures { --scale:1.25; }
+#zoom-150:checked~.figures { --scale:1.5; }
+#zoom-fit:checked~.figures .map { width:100%; min-width:0; }
+.panel { display:none; margin:0; }
+.figure-head { display:flex; justify-content:space-between; align-items:baseline; gap:24px; padding:22px 0 4px; }
+.figure-head h2 { font-size:18px; margin:0; }
+.figure-head span { font:10px var(--mono); color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+.figure-description { margin:6px 0 12px; font-size:13px; color:var(--muted); max-width:1100px; }
+.hint { margin:0 0 4px; font-size:11px; color:var(--muted); }
+.canvas { max-width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; scrollbar-color:#9198a5 transparent; overscroll-behavior-x:contain; cursor:grab; }
+.canvas.dragging { cursor:grabbing; user-select:none; }
+.map { display:block; width:calc(var(--board-width) * var(--scale)); min-width:calc(var(--board-width) * var(--scale)); height:auto; }
+.node-shape { fill:#fff; stroke:var(--ink); stroke-width:1.2; }
+.start .node-shape,.result .node-shape { fill:#edf0f2; stroke:var(--muted); }
+.focal .node-shape { fill:var(--accent-tint); stroke:var(--accent); stroke-width:1.4; }
+.node.inferred .node-shape,.node.unknown .node-shape { stroke-dasharray:5 4; }
+.connector { fill:none; stroke:var(--muted); stroke-width:1.4; }
+.connector.inferred,.connector.unknown { stroke-dasharray:5 4; }
+.map marker path { fill:var(--muted); }
+.node-title { font:600 18px var(--sans); fill:var(--ink); }
+.node-note { font:13px var(--sans); fill:var(--muted); }
+.node-item { font:15px var(--sans); fill:var(--ink); }
+.arrow-label rect { fill:var(--paper); }
+.edge-label { font:10px var(--mono); letter-spacing:1px; fill:var(--muted); }
+figcaption { font-size:12px; color:var(--muted); margin:12px 0 24px; }
+.legend { display:flex; flex-wrap:wrap; align-items:center; gap:16px 32px; border-top:1px solid var(--rule); padding:16px 0 10px; }
+.legend span { display:flex; align-items:center; gap:10px; }
+.legend i { display:inline-block; width:26px; height:16px; border:1px solid var(--muted); background:#fff; }
+.legend-start { border-radius:10px; }
+.legend-action,.legend-group { border-radius:3px; }
+.legend .legend-decision { width:16px; height:16px; transform:rotate(45deg); margin:0 5px; }
+.legend .legend-focus { background:var(--accent-tint); border-color:var(--accent); border-radius:3px; }
+.comparison { border-top:1px solid var(--ink); padding-top:24px; margin-top:8px; }
+.comparison h2,.boundaries h2 { font:400 30px var(--serif); }
+.table-scroll { max-width:100%; overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:14px; text-align:left; }
+th { font:10px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:14px 18px 12px 0; border-bottom:1px solid var(--rule); vertical-align:bottom; }
+td { padding:16px 24px 16px 0; border-bottom:1px solid var(--rule); vertical-align:top; }
+td:first-child { width:20%; }
+td:last-child { padding-right:0; }
+.comparison td:nth-child(2) { width:36%; color:var(--muted); }
+small { display:block; font-size:12px; line-height:1.6; margin-top:5px; }
+.boundaries { padding-top:24px; }
+.boundaries ul { padding-left:20px; font-size:14px; }
+.two-col { display:grid; grid-template-columns:1fr 1.2fr; gap:48px; margin:32px 0; }
+.plain { list-style:none; padding:0; margin:0; }
+.plain li { padding:13px 0; border-bottom:1px solid var(--rule); font-size:14px; }
+.approval { border-top:1px solid var(--ink); padding:24px 0; display:grid; grid-template-columns:230px 1fr; gap:32px; }
+.approval h2 { font:400 30px var(--serif); }
+.approval p { margin:0 0 10px; font-size:14px; }
+.warning { padding:18px 0; margin:0 0 20px; border-top:1px solid var(--accent); border-bottom:1px solid var(--rule); }
+.warning h2 { color:var(--accent); font-size:17px; }
+details { border-top:1px solid var(--rule); padding:17px 0; }
+summary { font-size:14px; font-weight:550; cursor:pointer; list-style-position:inside; }
+.appendix-body { padding-top:24px; }
+.appendix-body section { margin-bottom:30px; }
+.appendix table { min-width:840px; font-size:12px; }
+.appendix td:first-child { width:auto; }
+.appendix ol { font-size:12px; padding-left:22px; }
+.appendix ol li { margin:10px 0; }
+.evidence { padding:18px 0; border-top:1px solid var(--rule); }
+.evidence strong { font-size:14px; }
+.evidence p,code { font:12px/1.8 var(--mono); overflow-wrap:anywhere; }
+.snapshot p { font-size:12px; }
+footer { border-top:1px solid var(--rule); padding-top:14px; margin-top:28px; color:var(--muted); font:10px/1.7 var(--mono); }
+li,tr,article { scroll-margin-top:24px; }
+@media(max-width:800px) {
+  main { padding:22px 20px 36px; }
+  h1 { font-size:39px; }
+  .mast { font-size:9px; }
+  .viewbar { display:block; }
+  .view-tabs { gap:18px; }
+  .view-tabs label { font-size:12px; line-height:46px; }
+  .zoom-tabs { justify-content:flex-end; border-top:1px solid var(--rule); }
+  .zoom-tabs label { line-height:34px; }
+  .figure-head { display:block; }
+  .figure-head span { display:block; margin-top:8px; }
+  .comparison table { min-width:740px; }
+  .two-col,.approval { grid-template-columns:1fr; gap:20px; }
+}
+@media print {
+  main { max-width:none; padding:0; }
+  .viewbar,.hint { display:none!important; }
+  .panel { display:block!important; break-inside:avoid; }
+  .canvas { overflow:visible; }
+  .map { width:100%!important; min-width:0!important; }
+  .figure-head { margin-top:25px; }
+  .approval { break-inside:avoid; }
+  a { color:inherit; }
+}
+
+.task-checkpoint { border-top:1px solid var(--ink); padding:20px 0 24px; }
+.task-checkpoint h2 { font:400 28px var(--serif); margin:0 0 6px; }
+.checkpoint-asof,.checkpoint-limit,.flow-context { font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.checkpoint-asof { margin:0 0 18px; }
+.checkpoint-axes { display:grid; grid-template-columns:1fr 1fr 1fr; gap:28px; margin:0 0 16px; }
+.checkpoint-axes > div { min-width:0; }
+.checkpoint-axes dt { font:10px/1.6 var(--mono); text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.checkpoint-axes dd { margin:5px 0 0; font-size:14px; overflow-wrap:anywhere; }
+.checkpoint-axes dd p { margin:5px 0 0; font-size:13px; color:var(--muted); }
+.next-action { font-size:14px; border-top:1px solid var(--rule); padding-top:14px; margin:0; overflow-wrap:anywhere; }
+.next-action strong { margin-right:12px; }
+.checkpoint-limit { margin:12px 0 0; }
+.flow-context { margin:0 0 14px; }
+.revision-log { margin-bottom:12px; }
+.revision-log > p { font-size:12px; color:var(--muted); }
+.revision-log table { min-width:740px; }
+.revision-log td { overflow-wrap:anywhere; }
+@media(max-width:800px) { .checkpoint-axes { grid-template-columns:1fr; gap:16px; } }
+@media print { .task-checkpoint { break-inside:avoid; } }
+
+#view-proposed:checked~.figures #panel-proposed{display:block}
+#view-proposed:checked~.viewbar label[for="view-proposed"]{border-color:var(--accent);color:var(--ink)}
+#view-proposed:focus-visible~.viewbar label[for="view-proposed"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-current:checked~.figures #panel-current{display:block}
+#view-current:checked~.viewbar label[for="view-current"]{border-color:var(--accent);color:var(--ink)}
+#view-current:focus-visible~.viewbar label[for="view-current"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-100:checked~.viewbar label[for="zoom-100"]{border-color:var(--ink);color:var(--ink)}
+#zoom-100:focus-visible~.viewbar label[for="zoom-100"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-125:checked~.viewbar label[for="zoom-125"]{border-color:var(--ink);color:var(--ink)}
+#zoom-125:focus-visible~.viewbar label[for="zoom-125"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-150:checked~.viewbar label[for="zoom-150"]{border-color:var(--ink);color:var(--ink)}
+#zoom-150:focus-visible~.viewbar label[for="zoom-150"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-fit:checked~.viewbar label[for="zoom-fit"]{border-color:var(--ink);color:var(--ink)}
+#zoom-fit:focus-visible~.viewbar label[for="zoom-fit"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><main>
+<header><div class="mast"><strong>workflow-axa</strong><span>Plan R1</span></div>
+<h1>A modular workflow with explicit agreements</h1><p class="status draft">DRAFT — decisions or review still pending</p><p class="lead">Four reusable phase skills will coordinate clarification, specifications, approved execution and final delivery. The report gains a readable complete task record. The user authorized this refactor through completion in D5; no further approval pause applies to this task. Future substantive tasks retain two approval gates.</p></header>
+<section class="review" aria-label="Flowchart review"><input class="sr-radio" type="radio" name="diagram-view" id="view-proposed" aria-label="Proposed" aria-controls="panel-proposed" checked><input class="sr-radio" type="radio" name="diagram-view" id="view-current" aria-label="Current" aria-controls="panel-current" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-100" aria-label="100% diagram size" checked><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-125" aria-label="125% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-150" aria-label="150% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-fit" aria-label="Fit diagram size" ><div class="viewbar"><div class="view-tabs" role="group" aria-label="Diagram views"><label for="view-proposed">Proposed</label><label for="view-current">Current</label></div><div class="zoom-tabs" role="group" aria-label="Diagram size"><label for="zoom-100">100%</label><label for="zoom-125">125%</label><label for="zoom-150">150%</label><label for="zoom-fit">Fit</label></div></div><div class="figures"><figure class="panel" id="panel-proposed"><div class="figure-head"><h2>Proposed engineering workflow</h2><span>proposed · flow</span></div><p class="figure-description">Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.</p><p class="hint">Scroll sideways to explore. <a href="#node-8-proposed-proposed0">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Proposed diagram, scroll to explore" data-start-id="node-8-proposed-proposed0" style="--board-width:640px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="640" height="944" viewBox="0 0 640 944" role="img" aria-labelledby="proposed-title proposed-desc"><title id="proposed-title">Proposed engineering workflow</title><desc id="proposed-desc">Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.</desc><defs><marker id="arrow-proposed" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="proposed0" data-to="proposed1" data-points="[[320, 136], [320, 184]]" d="M 320 136 L 320 184" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="proposed1" data-to="proposed2" data-points="[[320, 288], [320, 336]]" d="M 320 288 L 320 336" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="proposed2" data-to="proposed3" data-points="[[320, 440], [320, 488]]" d="M 320 440 L 320 488" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="proposed3" data-to="proposed4" data-points="[[320, 592], [320, 640]]" d="M 320 592 L 320 640" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="proposed4" data-to="proposed5" data-points="[[320, 744], [320, 792]]" d="M 320 744 L 320 792" marker-end="url(#arrow-proposed)"/><g id="node-8-proposed-proposed0" class="node start proposed " data-id="proposed0" data-box="80,32,480,104"><title>Understand the project. proposed / modified. </title><rect class="node-shape" x="80" y="32" width="480" height="104" rx="20"/><text class="node-title" x="320" y="80" text-anchor="middle">Understand the project</text><text class="node-note" x="320" y="104" text-anchor="middle">Inspect relevant code and journeys</text></g><g id="node-8-proposed-proposed1" class="node action proposed " data-id="proposed1" data-box="80,184,480,104"><title>Agree behavior and scope. proposed / modified. </title><rect class="node-shape" x="80" y="184" width="480" height="104" rx="6"/><text class="node-title" x="320" y="232" text-anchor="middle">Agree behavior and scope</text><text class="node-note" x="320" y="256" text-anchor="middle">First approval; reuse settled answers</text></g><g id="node-8-proposed-proposed2" class="node action proposed " data-id="proposed2" data-box="80,336,480,104"><title>Specify dependent tickets. proposed / modified. </title><rect class="node-shape" x="80" y="336" width="480" height="104" rx="6"/><text class="node-title" x="320" y="384" text-anchor="middle">Specify dependent tickets</text><text class="node-note" x="320" y="408" text-anchor="middle">Acceptance, test seams and order</text></g><g id="node-8-proposed-proposed3" class="node action proposed " data-id="proposed3" data-box="80,488,480,104"><title>Review HTML and approve. proposed / modified. </title><rect class="node-shape" x="80" y="488" width="480" height="104" rx="6"/><text class="node-title" x="320" y="536" text-anchor="middle">Review HTML and approve</text><text class="node-note" x="320" y="560" text-anchor="middle">Second approval before coding</text></g><g id="node-8-proposed-proposed4" class="node action proposed " data-id="proposed4" data-box="80,640,480,104"><title>Execute, review and verify. proposed / modified. </title><rect class="node-shape" x="80" y="640" width="480" height="104" rx="6"/><text class="node-title" x="320" y="688" text-anchor="middle">Execute, review and verify</text><text class="node-note" x="320" y="712" text-anchor="middle">Ready tickets; repair and integrate</text></g><g id="node-8-proposed-proposed5" class="node result proposed " data-id="proposed5" data-box="80,792,480,104"><title>Reconcile final delivery. proposed / modified. </title><rect class="node-shape" x="80" y="792" width="480" height="104" rx="20"/><text class="node-title" x="320" y="840" text-anchor="middle">Reconcile final delivery</text><text class="node-note" x="320" y="864" text-anchor="middle">Every outcome linked to evidence</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span></div><span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure><figure class="panel" id="panel-current"><div class="figure-head"><h2>Baseline instruction flow</h2><span>current · flow</span></div><p class="figure-description">Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.</p><p class="hint">Scroll sideways to explore. <a href="#node-7-current-current0">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Current diagram, scroll to explore" data-start-id="node-7-current-current0" style="--board-width:640px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="current-title current-desc"><title id="current-title">Baseline instruction flow</title><desc id="current-desc">Arrows show the next phase after its conditions are met. A missing approval or unresolved material choice pauses dependent work. This describes workflow behavior, not a claim of enforced host execution.</desc><defs><marker id="arrow-current" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="current0" data-to="current1" data-points="[[320, 136], [320, 184]]" d="M 320 136 L 320 184" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="current1" data-to="current2" data-points="[[320, 288], [320, 336]]" d="M 320 288 L 320 336" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="current2" data-to="current3" data-points="[[320, 440], [320, 488]]" d="M 320 440 L 320 488" marker-end="url(#arrow-current)"/><g id="node-7-current-current0" class="node start observed " data-id="current0" data-box="80,32,480,104"><title>Inspect project. observed / unchanged. </title><rect class="node-shape" x="80" y="32" width="480" height="104" rx="20"/><text class="node-title" x="320" y="80" text-anchor="middle">Inspect project</text><text class="node-note" x="320" y="104" text-anchor="middle">Rules, identity and current code</text></g><g id="node-7-current-current1" class="node action observed " data-id="current1" data-box="80,184,480,104"><title>Ask and prepare plan. observed / unchanged. </title><rect class="node-shape" x="80" y="184" width="480" height="104" rx="6"/><text class="node-title" x="320" y="232" text-anchor="middle">Ask and prepare plan</text><text class="node-note" x="320" y="256" text-anchor="middle">Grilling with shared references</text></g><g id="node-7-current-current2" class="node action observed " data-id="current2" data-box="80,336,480,104"><title>Review HTML and approve. observed / unchanged. </title><rect class="node-shape" x="80" y="336" width="480" height="104" rx="6"/><text class="node-title" x="320" y="384" text-anchor="middle">Review HTML and approve</text><text class="node-note" x="320" y="408" text-anchor="middle">Single implementation gate</text></g><g id="node-7-current-current3" class="node result observed " data-id="current3" data-box="80,488,480,104"><title>Implement and audit. observed / unchanged. </title><rect class="node-shape" x="80" y="488" width="480" height="104" rx="20"/><text class="node-title" x="320" y="536" text-anchor="middle">Implement and audit</text><text class="node-note" x="320" y="560" text-anchor="middle">Checkpoint, verify and report</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span></div><span class="muted">Dashed outlines indicate inference or unknowns; details and evidence are below. Proposed is not implemented.</span></figcaption></figure></div></section>
+<section class="comparison"><h2>What changes</h2><div class="table-scroll"><table><thead><tr><th>Area</th><th>Current — recorded evidence</th><th>Proposed scope</th></tr></thead><tbody><tr><td><strong>Phase ownership</strong><small><a href="#r-R1">R1</a></small></td><td>One main skill carries ordered procedures and many conditional references.<small><a href="#e-E1">E1</a></small></td><td>A small coordinator selects four independent phase skills using shared policies.<small><a href="#t-T2">T2</a> <a href="#t-T4">T4</a></small></td></tr><tr><td><strong>Agreement and completion</strong><small><a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a></small></td><td>Understanding and implementation approval share a report gate; final results live mainly in records.<small><a href="#e-E1">E1</a></small></td><td>Separate behavior and implementation approvals; a central report shows sourced specifications, checks and final outcomes.<small><a href="#t-T2">T2</a> <a href="#t-T3">T3</a> <a href="#t-T7">T7</a></small></td></tr></tbody></table></div></section><section class="boundaries"><h2>What will not change</h2><ul><li>Preserve strict UI reuse, historical snapshots, task records and artifact protection.</li><li>No host installations, other-project changes, remote tracker actions, commits or publication.</li><li>Actual model behavior and unavailable browser checks are reported separately from package tests.</li></ul></section>
+<div class="two-col"><section><h2>Changes and cleanup</h2><ul class="plain"><li><a href="#t-T1">T1</a> Capture baseline and preserve history<small>Depends on: No prior task</small></li><li><a href="#t-T2">T2</a> Extract phase skills and shared agreements<small>Depends on: T1</small></li><li><a href="#t-T3">T3</a> Extend the existing report with sourced outcomes<small>Depends on: T1</small></li><li><a href="#t-T4">T4</a> Integrate registration, metadata and documentation<small>Depends on: T2, T3</small></li><li><a href="#t-T5">T5</a> Run regression and actual behavior checks<small>Depends on: T4</small></li><li><a href="#t-T6">T6</a> Review and repair relevant findings<small>Depends on: T5</small></li><li><a href="#t-T7">T7</a> Record final delivery and acceptance<small>Depends on: T6</small></li></ul></section>
+<section><h2>How completion will be checked</h2><ul class="plain"><li id="a-A1"><strong>A1 — Small coordinator and independently reusable phase skills</strong><small>Verify: PLAN verification seams; retained package results, source-loaded agent scenarios and independent review. · <a href="#r-R1">R1</a></small></li><li id="a-A2"><strong>A2 — Grounded clarification and explicit two-gate agreement</strong><small>Verify: PLAN verification seams; retained package results, source-loaded agent scenarios and independent review. · <a href="#r-R2">R2</a></small></li><li id="a-A3"><strong>A3 — Dependent ticket execution, review, testing and delivery</strong><small>Verify: PLAN verification seams; retained package results, source-loaded agent scenarios and independent review. · <a href="#r-R3">R3</a></small></li><li id="a-A4"><strong>A4 — Readable central report with historical compatibility</strong><small>Verify: PLAN verification seams; retained package results, source-loaded agent scenarios and independent review. · <a href="#r-R4">R4</a></small></li></ul></section></div>
+<section class="approval"><h2>No implementation permission</h2><div><p>This view alone authorizes no code changes. Resolve any decisions and use the workflow approval gate before substantive implementation.</p></div></section><details class="appendix" id="technical-details"><summary>Technical evidence and task details</summary><div class="appendix-body">
+<section><h2>Requested outcome</h2><ul class="plain"><li id="r-R1"><strong>R1.</strong> Small coordinator and independently reusable phase skills<small>Source: User goal and PLAN R1 requirements</small></li><li id="r-R2"><strong>R2.</strong> Grounded clarification and explicit two-gate agreement<small>Source: User goal and PLAN R1 requirements</small></li><li id="r-R3"><strong>R3.</strong> Dependent ticket execution, review, testing and delivery<small>Source: User goal and PLAN R1 requirements</small></li><li id="r-R4"><strong>R4.</strong> Readable central report with historical compatibility<small>Source: User goal and PLAN R1 requirements</small></li></ul></section>
+<section><h2>Changes and mapped tasks</h2><div class="table-scroll"><table><thead><tr><th>Task</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody><tr id="t-T1"><td><strong>T1</strong></td><td><strong>Capture baseline and preserve history</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: tests</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td>—</td></tr><tr id="t-T2"><td><strong>T2</strong></td><td><strong>Extract phase skills and shared agreements</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: skills/workflow, skills/workflow-clarify, skills/workflow-specify, skills/workflow-execute, skills/workflow-deliver</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T1">T1</a></td></tr><tr id="t-T3"><td><strong>T3</strong></td><td><strong>Extend the existing report with sourced outcomes</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: skills/codebase-map, tests</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T1">T1</a></td></tr><tr id="t-T4"><td><strong>T4</strong></td><td><strong>Integrate registration, metadata and documentation</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: tools/validate.py, README.md</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T2">T2</a> <a href="#t-T3">T3</a></td></tr><tr id="t-T5"><td><strong>T5</strong></td><td><strong>Run regression and actual behavior checks</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: tests</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T4">T4</a></td></tr><tr id="t-T6"><td><strong>T6</strong></td><td><strong>Review and repair relevant findings</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: task-attributable changes</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T5">T5</a></td></tr><tr id="t-T7"><td><strong>T7</strong></td><td><strong>Record final delivery and acceptance</strong><small>requested: Implements the bounded R1 requirements with preserved evidence.<br>Areas: task records and final HTML</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a><br><a href="#e-E1">E1</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A4">A4</a></td><td><a href="#t-T6">T6</a></td></tr></tbody></table></div></section>
+<section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · static — Current workflow owns most phase procedure; the report already maps requirements, tasks, evidence and checkpoints.</strong><p>FINDINGS E1-E10 and skills/workflow/SKILL.md</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Source inspection; not proof that a model follows the instructions.</small></article></section><details><summary>Current — nodes and relationships</summary><ol><li><strong>current0 — Inspect project</strong>: Rules, identity and current code (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current1 — Ask and prepare plan</strong>: Grilling with shared references (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current2 — Review HTML and approve</strong>: Single implementation gate (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current3 — Implement and audit</strong>: Checkpoint, verify and report (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current0 → current1</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current1 → current2</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>current2 → current3</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li></ol></details><details><summary>Proposed — nodes and relationships</summary><ol><li><strong>proposed0 — Understand the project</strong>: Inspect relevant code and journeys (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed1 — Agree behavior and scope</strong>: First approval; reuse settled answers (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed2 — Specify dependent tickets</strong>: Acceptance, test seams and order (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed3 — Review HTML and approve</strong>: Second approval before coding (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed4 — Execute, review and verify</strong>: Ready tickets; repair and integrate (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed5 — Reconcile final delivery</strong>: Every outcome linked to evidence (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed0 → proposed1</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed1 → proposed2</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed2 → proposed3</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed3 → proposed4</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>proposed4 → proposed5</strong>: continues (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>workflow-axa · main</p>
+<p>Source 9daf507 plus new task records; unrelated audit edits preserved. Baseline package validator passed; 545 tests ran with 11 skips.</p><p>Generated 2026-11-02T11:08:39.752827+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-S1"><td>S1</td><td><code>docs/plans/2026-11-02-modular-engineering-workflow/PLAN.md</code></td><td>plan</td><td><code>8df54fc9d15f6af2…</code></td></tr><tr id="s-S2"><td>S2</td><td><code>docs/plans/2026-11-02-modular-engineering-workflow/TODO.md</code></td><td>todo</td><td><code>57ffed3c7456cdfc…</code></td></tr><tr id="s-S3"><td>S3</td><td><code>docs/plans/2026-11-02-modular-engineering-workflow/FINDINGS.md</code></td><td>findings</td><td><code>585880fdfd5cff5d…</code></td></tr><tr id="s-S4"><td>S4</td><td><code>docs/plans/2026-11-02-modular-engineering-workflow/DECISIONS.md</code></td><td>decisions</td><td><code>b64d4746ff913114…</code></td></tr><tr id="s-S5"><td>S5</td><td><code>skills/workflow/SKILL.md</code></td><td>code</td><td><code>3af6a63dc881a6cf…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>docs/plans/2026-11-02-modular-engineering-workflow/reviews/implementation-r1.json</code></td><td>projection</td><td><code>0e4c0080c8de15d2…</code></td></tr></tbody></table></div></details>
+</div></details><p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p><footer>Local HTML + SVG · no external assets, uploads or approval actions · saved review snapshot; progress belongs in the existing task records</footer>
+</main><script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.7.0-rc.7", "layout_version": 2, "style": "workflow-editorial-v1", "revision": "R1", "report_kind": "review", "generated_utc": "2026-11-02T11:08:39.752827+00:00", "sources": [{"id": "S1", "role": "plan", "path": "docs/plans/2026-11-02-modular-engineering-workflow/PLAN.md", "sha256": "8df54fc9d15f6af21c971242b826a7633218199c729260d05a50f01a8797b8f7"}, {"id": "S2", "role": "todo", "path": "docs/plans/2026-11-02-modular-engineering-workflow/TODO.md", "sha256": "57ffed3c7456cdfc7a7f1190448f2518fe3e5352b1d943600f18f9b02ec5e465"}, {"id": "S3", "role": "findings", "path": "docs/plans/2026-11-02-modular-engineering-workflow/FINDINGS.md", "sha256": "585880fdfd5cff5dcd94bd9b0c61c898a183890216d644d827055b4751bc9401"}, {"id": "S4", "role": "decisions", "path": "docs/plans/2026-11-02-modular-engineering-workflow/DECISIONS.md", "sha256": "b64d4746ff913114700ceb544d68a91e4214dc6e56544b089ad4fdd46477f9bd"}, {"id": "S5", "role": "code", "path": "skills/workflow/SKILL.md", "sha256": "3af6a63dc881a6cfe59c569dbb6b600b73e22adc6eab83cf4ceeafbf650440b0"}, {"id": "report-input", "role": "projection", "path": "docs/plans/2026-11-02-modular-engineering-workflow/reviews/implementation-r1.json", "sha256": "0e4c0080c8de15d201a36f182429a6f9940bb1e55ca5ce92dbef83131ec12bfd"}]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+</script></body></html>

@@ -29,7 +29,7 @@
     "Preview generation does not approve application implementation, visual design or release."
   ],
   "open_decisions": [
-    "Select the real project component/kit or explicitly authorise a bounded functionality-only preview.",
+    "Name the existing element each control copies (kit or existing code: same tag, classes and wrapper), or ask which element to mimic; never new CSS.",
     "D1: checkbox or switch? D2: feedback inside the form or an approved floating message?",
     "Agree the actual preview destination, verification commands and required designer acceptance before implementation."
   ],
@@ -135,7 +135,7 @@
       "id": "T3",
       "title": "Apply the selected presentation",
       "kind": "prerequisite",
-      "reason": "Use only the chosen kit/pattern or the expressly authorised functional preview.",
+      "reason": "Use only the existing elements chosen to copy; plain HTML only on the owner's explicit instruction.",
       "requirements": [
         "R1",
         "R2"
@@ -790,7 +790,7 @@
       "summary": "Fictional illustration only. No real project kit or styling decision has been selected."
     },
     "preview": {
-      "status": "authorised",
+      "status": "not-needed",
       "source": "UIREF",
       "locator": "Preview authority",
       "summary": "This isolated local report example only; no new application route or production UI.",
@@ -800,7 +800,7 @@
       "status": "pending",
       "summary": "No design alternative has been accepted for either project."
     },
-    "width": 1280,
+    "width": 1152,
     "height": 1024,
     "open_first": true,
     "screens": [
@@ -809,7 +809,7 @@
         "title": "01 · Edit preference",
         "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
         "state": "proposed",
-        "x": 32,
+        "x": 16,
         "y": 48,
         "width": 320,
         "height": 384,
@@ -861,7 +861,7 @@
         "title": "02 · Saving",
         "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
         "state": "proposed",
-        "x": 480,
+        "x": 416,
         "y": 48,
         "width": 320,
         "height": 384,
@@ -914,7 +914,7 @@
         "title": "03 · Saved",
         "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. Screen state is proposed for the example only.",
         "state": "proposed",
-        "x": 928,
+        "x": 816,
         "y": 48,
         "width": 320,
         "height": 384,
@@ -968,7 +968,7 @@
         "title": "04 · Save failed",
         "description": "Illustrative notification setting; neither current application was inspected or styled for this preview. A failed save keeps the selection so the user can retry.",
         "state": "proposed",
-        "x": 480,
+        "x": 416,
         "y": 592,
         "width": 320,
         "height": 384,
@@ -1025,16 +1025,16 @@
         "label": "Save",
         "points": [
           [
-            352,
+            336,
             240
           ],
           [
-            480,
+            416,
             240
           ]
         ],
         "label_position": [
-          416,
+          376,
           216
         ]
       },
@@ -1044,16 +1044,16 @@
         "label": "Saved",
         "points": [
           [
-            800,
+            736,
             240
           ],
           [
-            928,
+            816,
             240
           ]
         ],
         "label_position": [
-          864,
+          776,
           216
         ]
       },
@@ -1063,16 +1063,16 @@
         "label": "Failed",
         "points": [
           [
-            640,
+            576,
             432
           ],
           [
-            640,
+            576,
             592
           ]
         ],
         "label_position": [
-          688,
+          624,
           512
         ]
       },
@@ -1082,28 +1082,28 @@
         "label": "Retry",
         "points": [
           [
-            800,
+            736,
             784
           ],
           [
-            864,
+            784,
             784
           ],
           [
-            864,
+            784,
             496
           ],
           [
-            736,
+            672,
             496
           ],
           [
-            736,
+            672,
             432
           ]
         ],
         "label_position": [
-          800,
+          728,
           476
         ]
       }

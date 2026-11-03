@@ -7,7 +7,7 @@ The package supplies the kit workflow, templates and a read-only checker. It doe
 - `ui-design kit-audit <area>`: read-only inventory of the owner's designated components, pages, style sources and existing catalogue. State missing access and unapproved candidates. Return findings in chat or existing task records. No screenshots/builds/network unless authorised.
 - `ui-design kit-setup <area>`: prepare a minimal proposal for the existing project's catalogue/preview surface, component scope, owner and acceptance. Apply only after exact approval. It is not permission to design new components or install a UI tool.
 - `ui-design kit-check <catalogue>`: inspect authority, actual sources, supported options/patterns and freshness. The optional JSON checker below assists; it never authenticates a human approval.
-- Ordinary UI work selects behaviour-only / approved-kit or blocks through CONTRACT.md. No agent-authored HTML/templates, CSS or inline styles; no plain-markup or design-authoring fallback. A kit review or setup command does not approve the original feature.
+- Ordinary UI work selects behaviour-only / approved-kit or blocks through CONTRACT.md. No new CSS; elements reuse existing classes (kit first, then existing code); plain HTML only on the user's explicit instruction. A kit review or setup command does not approve the original feature.
 
 These are arguments to the one ui-design skill, not separate installed skills. Plugin example: `/workflow-axa:ui-design kit-audit settings`. A caller may route here automatically for a genuine kit setup/review request, but normal backend work never needs a kit.
 

@@ -18,7 +18,7 @@ Prefer generated entries from actual component examples; maintain intended-use/a
 
 ## Gaps and designer work
 
-Record concrete missing coverage in existing TODOs, not another backlog. Missing components do not grant styling permission. Block missing UI integration and ask for an approved source or designer input. No agent-authored HTML/CSS, including a plain preview.
+Record concrete missing coverage in existing TODOs, not another backlog. Missing components do not grant styling permission. Block missing UI integration and ask for an approved source or designer input. No new CSS; reuse existing classes; ask which element to mimic when none matches.
 
 ## History
 

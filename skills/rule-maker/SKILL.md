@@ -15,7 +15,7 @@ Distinguish shared defaults from project-specific facts, decisions, paths and ex
 
 ## 2. Resolve the necessary decisions
 
-For substantive setup or policy changes, use the installed Matt `grilling` specialist through the workflow's established adapter. Investigate discoverable facts yourself; ask about unresolved owners, restrictions, verification expectations and real policy conflicts. Do not infer intended conventions from every existing mistake. A missing specialist is disclosed; use only an explicitly approved fallback.
+For substantive setup or policy changes, use this package's `grilling` skill. Investigate discoverable facts yourself; ask about unresolved owners, restrictions, verification expectations and real policy conflicts. Do not infer intended conventions from every existing mistake. A missing specialist is disclosed; use only an explicitly approved fallback.
 
 Use `domain-modeling` for unclear project vocabulary and `codebase-design` to examine proposed ownership/boundaries against the actual code. Their recommendations do not authorize a redesign or override approved project decisions. Keep terminology understandable before technical vocabulary.
 
@@ -39,4 +39,4 @@ Re-run readiness on the original task's scope. Setup approval does not approve a
 
 Modes: `audit` uses [AUDIT.md](AUDIT.md) for the full requested rules scope and is read-only; it is not merely task readiness. `setup` prepares a scoped proposal; `update` compares current rules with observed gaps. With no mode, establish intent before writes. Use [rules/POLICY.md](rules/POLICY.md) when memory, current rules or approvals conflict; show the behavioural effect before recommending policy changes.
 
-For application UI rules, use shared design.md and local ui-design. Record project-specific approved sources, coverage and preview authority only; do not choose a kit from arbitrary existing classes or build one during setup. Missing kit coverage blocks new UI integration; independently authorised behaviour-only work may continue. No plain-HTML fallback or legacy design-authoring exemption. Resolve project conflicts explicitly. No automatic migration when a designer later publishes a kit.
+For application UI rules, use shared design.md and local ui-design. Record project-specific approved sources, coverage and preview authority only; do not build a kit during setup. Missing kit coverage does not block UI work: existing elements in the code can be copied (same tag, classes and wrapper), and an element with no match waits for design.md rule 4's question. UI follows design.md (D14): no new CSS; existing classes only; plain HTML only on explicit instruction. Resolve project conflicts explicitly. No automatic migration when a designer later publishes a kit.

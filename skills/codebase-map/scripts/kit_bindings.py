@@ -5,6 +5,7 @@ import hashlib
 import html
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 
@@ -21,8 +22,11 @@ def kit_api():
 def resolve(ui: dict, root: Path, sources: dict) -> dict | None:
     binding = ui.get('kit_binding')
     if binding is None:
-        if any('elements' in s or 'capture_context' in s for s in ui['screens']):
+        if any('capture_context' in s for s in ui['screens']):
             raise ValueError('Component selections need an explicit kit_binding; no guessed catalogue.')
+        for screen in ui['screens']:
+            if 'elements' in screen:
+                check_reused(screen['elements'], sources)
         return None
     k = kit_api()
     if not isinstance(binding, dict) or set(binding) not in ({'source', 'scope'}, {'source', 'scope', 'projection'}):
@@ -119,6 +123,54 @@ def resolve(ui: dict, root: Path, sources: dict) -> dict | None:
             'source': binding['source'], 'scope': scope}
 
 
+REUSED_FIELDS = {'id', 'source', 'locator', 'tag', 'classes', 'context', 'changes'}
+TAG = re.compile(r'[a-z][a-z0-9-]{0,40}')
+CLASS = re.compile(r'-?[A-Za-z_][A-Za-z0-9_-]{0,80}')
+ELEMENT_ID = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,15}')
+
+
+def check_reused(elements, sources: dict) -> None:
+    """Without a kit catalogue, `elements` names the existing markup a screen copies (D14 reuse)."""
+    if not isinstance(elements, list) or not 1 <= len(elements) <= 20:
+        raise ValueError('List one to twenty reused elements per screen.')
+    seen = set()
+    for element in elements:
+        if not isinstance(element, dict) or set(element) != REUSED_FIELDS:
+            raise ValueError('A reused element needs exactly id, source, locator, tag, classes, context and changes '
+                             '(the existing element it copies); raw markup and styles are prohibited.')
+        if not isinstance(element['id'], str) or not ELEMENT_ID.fullmatch(element['id']) or element['id'] in seen:
+            raise ValueError('Reused element IDs must be short and unique within the screen.')
+        seen.add(element['id'])
+        if element['source'] not in sources:
+            raise ValueError(f"Reused element {element['id']} must cite a supplied source (the file it copies).")
+        for field in ('locator', 'context', 'changes'):
+            value = element[field]
+            if not isinstance(value, str) or not value.strip() or len(value) > 300 or any(c in value for c in '<>{}'):
+                raise ValueError(f'Reused element {field} must be plain text (no markup or styles).')
+        if not isinstance(element['tag'], str) or not TAG.fullmatch(element['tag']):
+            raise ValueError('Reused element tag must be a plain tag name, for example "div" or "ion-chip".')
+        classes = element['classes']
+        if not isinstance(classes, list) or len(classes) > 20 or not all(isinstance(c, str) and CLASS.fullmatch(c) for c in classes):
+            raise ValueError('Reused element classes must be a list of existing class names (empty when it has none).')
+
+
+def reused_html(screen: dict, api) -> str:
+    e = html.escape
+    rows = []
+    for item in screen['elements']:
+        classes = f' class="{" ".join(item["classes"])}"' if item['classes'] else ''
+        rows.append(f'<tr id="ui-element-{e(screen["id"])}-{e(item["id"])}"><td><strong>{e(item["id"])}</strong></td>'
+                    f'<td>{api.links([item["source"]],"s")} · {e(item["locator"])}</td>'
+                    f'<td><code>{e("<" + item["tag"] + classes + ">")}</code><small>Context: {e(item["context"])}</small></td>'
+                    f'<td>{e(item["changes"])}</td></tr>')
+    return ('<section class="ui-elements"><h3>Existing elements this screen copies</h3>'
+            '<p class="muted">Same tag, classes and wrapper as the cited markup; no new CSS. '
+            'The capture or sketch still needs review against the built screen.</p>'
+            '<div class="table-scroll appendix"><table><thead><tr><th>On screen</th><th>Copied from</th>'
+            '<th>Tag, classes and context</th><th>Intended changes</th></tr></thead><tbody>' + ''.join(rows) +
+            '</tbody></table></div></section>')
+
+
 def snapshot_records(resolved: dict | None, sources: dict) -> list[dict]:
     if resolved is None:
         return []
@@ -135,8 +187,10 @@ def snapshot_records(resolved: dict | None, sources: dict) -> list[dict]:
 
 def selection_html(screen: dict, resolved: dict | None, sources: dict, api) -> str:
     if resolved is None:
+        if screen.get('elements'):
+            return reused_html(screen, api)
         return ('<p class="muted"><strong>Component provenance not established.</strong> '
-                'This legacy/illustrative view is not proof of approved-kit reuse.</p>')
+                'This view shows structure, not proof of the final look.</p>')
     e = html.escape
     paths = {row['path']: key for key, row in sources.items()}
     paths.update({row['path']: row['id'] for row in snapshot_records(resolved, sources)})

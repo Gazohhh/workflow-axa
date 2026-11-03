@@ -1,0 +1,3 @@
+interface:
+  display_name: "Workflow execute"
+  short_description: "Build approved tickets with tests, reviews and integration checks"

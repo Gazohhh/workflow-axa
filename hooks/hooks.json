@@ -1,0 +1,49 @@
+{
+  "description": "Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/truncated_read.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_reads.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_reads.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/plain_reply.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
