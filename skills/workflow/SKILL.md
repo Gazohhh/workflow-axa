@@ -14,7 +14,7 @@ Read [RULES.md](RULES.md) before planning or writing, even if rule-maker never r
 ## 2. Find the task
 
 1. State the repository, branch and local changes; never touch the user's edits.
-2. Pick the mode. **Explain** is read-only. **Research, plan or audit** never authorizes code. **Implement** passes the gates below.
+2. Pick the mode. **Explain** is read-only; a later "fix it" or "push when done" makes it Implement: invoke `workflow-clarify`. **Research, plan or audit** never authorizes code. **Implement** passes the gates below.
 3. Before creating any task folder, follow [TASK-FOLDER.md](TASK-FOLDER.md) to find and reuse the task. A new chat is not a new task. When a related task might match, create nothing: invoke `workflow-clarify`, which asks "separate task or revision?" with its first questions.
 4. Checkpoint before long discovery (no files allowed: keep it in chat and say what can't be recovered).
 5. A new, unrelated goal in a long session: checkpoint and offer a fresh session.
@@ -23,7 +23,7 @@ Also: `codebase-map`, `task-status`, `resume-task`.
 
 ## 3. Route
 
-Read the checkpoint's `Agreement` and `Approval` lines. A task approved under the old single gate counts as both, for its recorded scope (`legacy`). Take the first matching row:
+Read the checkpoint's `Agreement` and `Approval` lines (`legacy`: [RULES.md](RULES.md)). Take the first matching row:
 
 | Task state | Next skill |
 |---|---|

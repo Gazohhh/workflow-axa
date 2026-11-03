@@ -1,11 +1,20 @@
 """Digest Claude Code session transcripts for a workflow retrospective.
 
 usage: python -X utf8 -I scripts/digest_sessions.py <project-transcript-dir> <out.md> [--min-user N]
-Read-only over the transcripts. Emits per-session facts and every human message (truncated).
+Read-only over the transcripts. Emits per-session facts and every human message (truncated), with anything
+that looks like a password or token replaced by <redacted> (Hooqd retro: a pasted server password reached the digest).
 """
 import collections, json, pathlib, re, sys
 
-SKIP_USER = re.compile(r'^(<local-command|<command-name>|<system-reminder>|<task-notification>|<cross-session|<agent-message|\[Request interrupted|Caveat:)')
+# A value after a secret keyword, and any long token mixing upper case, lower case and digits.
+SECRET_AFTER = re.compile(r'(?i)\b(password|passwd|pwd|pw|token|secret|api[_-]?key|credentials?)(\s*[:=]\s*|\s+)(\S+)')
+SECRET_TOKEN = re.compile(r'\b(?=\w*[A-Z])(?=\w*[a-z])(?=\w*\d)\w{16,}\b')
+SKIP_USER = re.compile(r'^(<local-command|<command-name>|<command-message>|<system-reminder>|<task-notification>|<cross-session|<agent-message|\[Request interrupted|Caveat:)')
+
+
+def redact(text):
+    text = SECRET_AFTER.sub(lambda m: m[1] + m[2] + '<redacted>', text)
+    return SECRET_TOKEN.sub('<redacted>', text)
 
 
 def text_of(content):
@@ -44,11 +53,12 @@ def digest(path):
                 continue
             t = text_of(content).strip()
             if t and not SKIP_USER.match(t) and not rec.get('isMeta'):
-                s['user'].append((ts or '')[:16] + ' ' + re.sub(r'\s+', ' ', t)[:400])
-            elif t.startswith('<command-name>'):
+                s['user'].append((ts or '')[:16] + ' ' + redact(re.sub(r'\s+', ' ', t))[:400])
+            elif '<command-name>' in t[:200]:
                 m = re.search(r'<command-name>(.*?)</command-name>.*?<command-args>(.*?)</command-args>', t, re.S)
                 if m:
-                    s['user'].append((ts or '')[:16] + ' [CMD ' + m[1] + '] ' + re.sub(r'\s+', ' ', m[2])[:300])
+                    s['skills'].append(m[1])  # a typed /skill expands without a Skill tool call
+                    s['user'].append((ts or '')[:16] + ' [CMD ' + m[1] + '] ' + redact(re.sub(r'\s+', ' ', m[2]))[:300])
         elif rec.get('type') == 'assistant' and isinstance(content, list):
             s['assistant_turns'] += 1
             for c in content:
@@ -60,7 +70,7 @@ def digest(path):
                     s['skills'].append(inp.get('skill'))
                 if name == 'AskUserQuestion':
                     s['asks'] += 1
-                    s['ask_qs'] += [q.get('question', '')[:160] for q in inp.get('questions', [])]
+                    s['ask_qs'] += [redact(q.get('question', ''))[:160] for q in inp.get('questions', [])]
     return s
 
 

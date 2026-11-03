@@ -685,3 +685,19 @@ Sources: `digest_sessions.py` on both r22 project log folders, then a scan for t
 
 
 **V31 — Codex host check (2026-11-03).** Codex CLI 0.164.0-alpha.11.1 from the VS Code extension (not on PATH, nothing installed) ran `task-status` read-only on the r22 short copy. It loaded `C:\Users\Cem\.agents\skills\task-status\SKILL.md` and `rule-maker\rules\START.md` from the installed copy, matched all 11 delivery fingerprints to the current files, and reported the task complete with only the commit left to the owner. Git refused live inspection inside the Codex sandbox because of folder ownership. Codex did not change Git configuration. Log: `eval/r23-codex.log`.
+
+
+## E52 — Hooqd retro: the router's promise was skipped, and a phase gate (2026-11-03)
+
+Session `d--Hooqd/1c643bcb` (2 owner messages). `/workflow` investigated a team-form error read-only and correctly found the cause: one 15-second limit for every request, uploads included. It offered fixes A, B and C and asked "should I start the fix as a workflow task ... I would confirm the behaviour with you before any code changes." The owner answered "Let's do that than, push when your done to master and merge to staging and production". The agent then loaded no phase skill. It wrote no task folder, agreement or plan report, used no fresh reviewer, wrote no delivery record, and pushed to master, release/staging and release/production. Its own work was good: tests first, all project gates green, branch sync checked. No hook noticed, because the hooks only check phases that loaded. The pasted server password was used with `plink -pw`, so it is stored in that session log. The owner was advised to change it and to consider an SSH key.
+
+Fixes (owner approved 2026-11-03):
+- `hooks/phase_gate.py` (PreToolUse): after `/workflow`, code edits (Edit/Write tools and in-place Bash edits such as `sed -i` or a Python write) and `git commit/push/merge` are blocked until a phase skill runs. Free: `docs/plans`, `.artifacts`, anything outside the project folder, and a lightweight edit declared in chat. Test cases come from the Hooqd session.
+- Router: a later "fix it" or "push when done" after Explain starts `workflow-clarify`. The legacy rule moved to RULES.md.
+- RULES.md: one table for when rules setup, a design kit, legacy approval and old plan folders apply.
+- `digest_sessions.py`: values that look like a password or token become `<redacted>`, and a typed `/skill` counts as a skill (the digest had said "skills: []").
+- Hooqd: the missing task folder `docs/plans/2026-11-03-upload-timeout/` was written afterwards. It says plainly that the gates and the separate review did not happen. It is not committed.
+
+Live check: r24 found two holes. The gate watched only the Edit tool, so `sed -i` went through, and it exempted every Temp path, including a project under Temp. After the fix, r25 was blocked once, then loaded `workflow-clarify`, recorded revision r2 and asked for both gates. No file changed and nothing was committed.
+
+**V32** — validator PASS (21 skills, 699 router words); 642 run, OK, 11 host skips; installed copies synced.
