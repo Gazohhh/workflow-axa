@@ -682,3 +682,6 @@ Sources: `digest_sessions.py` on both r22 project log folders, then a scan for t
 
 
 **V30 — both r22 deliveries closed (2026-11-03).** Short: the owner asked for the click-through by probe page. 14 of 14 checks passed in headless Edge, the probe failed on the old files, a fresh agent reran it, and the delivery is complete. Long: the owner accepted the r1 look and chose Q7 b. The agent opened revision r2 with both gates in one message, then built T3 test-first (20 of 21 before, 21 of 21 after), with a fresh reviewer and a fresh final check. The delivery is complete. All seven report sources have 0 plain-English problems. A complete delivery report still says "You still need to accept it", because delivery and owner acceptance are separate steps.
+
+
+**V31 — Codex host check (2026-11-03).** Codex CLI 0.164.0-alpha.11.1 from the VS Code extension (not on PATH, nothing installed) ran `task-status` read-only on the r22 short copy. It loaded `C:\Users\Cem\.agents\skills\task-status\SKILL.md` and `rule-maker\rules\START.md` from the installed copy, matched all 11 delivery fingerprints to the current files, and reported the task complete with only the commit left to the owner. Git refused live inspection inside the Codex sandbox because of folder ownership. Codex did not change Git configuration. Log: `eval/r23-codex.log`.
