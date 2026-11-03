@@ -14,7 +14,7 @@ A task follows the user's goal, not the chat, date or `/workflow` call. A relate
 | Clear extension of the active task | Keep the folder; add the requirement as a proposed revision; reopen only what it affects. |
 | Related task is complete | Unless the user said which, `workflow-clarify` asks "new revision of it or separate task?" with its first questions. |
 | The task's checkpoint names another worktree than the current one | Stop and ask which worktree is meant; write nothing here. |
-| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. Ask with the plan: reuse the main checkout's install at the same lockfile (a link, removed at the end), or the owner installs. |
+| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. Ask with the plan: the owner installs in the worktree, or you link the main checkout's install at the same lockfile. In a workspace (monorepo) install the linked packages point into the main checkout, so prefer the owner's install there. Remove a link as a link (`rmdir` on Windows, `rm` without `-r`); a recursive delete through it deletes the main checkout's files. |
 | No relevant record, or user asks for separate work | Create the project's established location, else `docs/plans/YYYY-MM-DD-<slug>/`. |
 | Location unreadable or ownership contested | Say so and ask. Unreadable is not "no match". |
 
