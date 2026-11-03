@@ -90,3 +90,12 @@ On 2026-11-03 the user answered:
 - **Eval branches:** "Delete them". Deleted locally: Altinstar-react `eval/workflow-axa-2.8.0-rc.1` and `eval/workflow-axa-rc8-baseline` (both at `d63970a5b`), Cheflabels `eval/workflow-axa-2.8.0-rc.1` (at `2b41ba8`); both tips are base commits still on the main branches. Nothing remote.
 
 All rule edits stay uncommitted (D17).
+
+## D19 — Final rules-audit decisions (decided)
+
+On 2026-11-03 the owner answered the last audit questions; all applied and pushed:
+
+- Altinstar (`4edf3d61c`, `57e77feba`, `d9259dc16`, `5888b902d`, `5f6289b5d`): `style={{}}` runtime exception named in root AGENTS.md and the CLAUDE.md subagent brief; measurement: the agent measures web/React changes, the owner runs Unity/native device builds and the measurement stays pending until then; versions recorded (AGP 8.13.0, Gradle 8.13, Java 21, iOS 16.0, Swift tools 5.9, MobX 6.16, mobx-react-lite 4.1, gsap 3.15, Blender 5.2.1, Python 3.10); `engines.node >=22.13`; owner runs the Unity player build; the untracked `scenario-unity-performance` skill left untouched.
+- Cheflabels (`cb6de05`, `4bf8146`, `2c84170`, `5790571`): type check builds into `.artifacts/checks/typecheck`; failing-spec names instead of the stale count; `httpMock.verify()`; `ionViewWillLeave`; backend work loads php.md and laravel.md; risk modules load too; owner starts native builds, store uploads and live-update publishes; hand-kept native files listed (traced from git history); feature runbooks moved to `docs/architecture/feature-runbooks.md`; tracked permission that edited a backend controller removed.
+- Memories: Altinstar `feedback-audit-verification-scope` and Cheflabels `feedback_no_nested_ternaries` marked historical (nothing deleted).
+- Global blocks: all checkers report MATCH from the installed copy; the audit's UPDATE came from the `D:` copy's path. No refresh needed.
