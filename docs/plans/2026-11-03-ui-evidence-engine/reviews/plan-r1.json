@@ -1,0 +1,1317 @@
+{
+  "schema_version": 2,
+  "title": "UI evidence and preview engine for plan reports",
+  "revision": "r1",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa (D:\\workflow-axa)",
+    "branch": "main at 0b4e4b4",
+    "basis": "Read-only audit of workflow-axa and of the Cheflabels reference (D:\\Cheflabels-labeler-V2) on 2026-11-03. Nothing was run, built or contacted."
+  },
+  "understanding": "Today a plan report shows the current screen as a screenshot when that is safe, and the proposed screen as a labelled sketch. You want real screens and real components wherever that is safe. Each element links to its real source and approval status. When an accurate picture is not possible, the report refuses visual approval.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Inspect the existing workflow, renderer, design rules and project architecture before proposing changes.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R1)."
+    },
+    {
+      "id": "R2",
+      "text": "Discover approved kit components, variants, wrappers, styles and actual usage from source code, never from documentation alone.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R2)."
+    },
+    {
+      "id": "R3",
+      "text": "Use real application screenshots for current UI and isolated renders of real components for proposed UI.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R3)."
+    },
+    {
+      "id": "R4",
+      "text": "Keep the original framework, styling, fonts, assets and responsive behavior. Never recreate application components with invented HTML, CSS or SVG.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R4)."
+    },
+    {
+      "id": "R5",
+      "text": "Show each screen before and after, with connected user actions, highlighted changes and design-decision callouts.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R5)."
+    },
+    {
+      "id": "R6",
+      "text": "Link every preview element to its real source component, variant, approval status and decision.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R6)."
+    },
+    {
+      "id": "R7",
+      "text": "Support framework-specific capture adapters through one shared interface.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R7)."
+    },
+    {
+      "id": "R8",
+      "text": "Verify preview fidelity, missing assets, runtime errors and unintended visual changes.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R8)."
+    },
+    {
+      "id": "R9",
+      "text": "Keep approved review snapshots and detect stale previews when components change.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R9)."
+    },
+    {
+      "id": "R10",
+      "text": "Keep the existing report styling and approval workflow. Improve only the application previews.",
+      "origin": "The owner's request of 2026-11-03 (PLAN.md ## Requirements R10)."
+    }
+  ],
+  "boundaries": [
+    "Approved and candidate components stay distinct.",
+    "No application code changes in this task, and no invented UI to make a preview work. Anything a project needs is proposed to its owner as a separate task.",
+    "No invented HTML, CSS or SVG for application UI. D14 stays, and the report shell keeps the owner's design.",
+    "Visual approval is blocked when an accurate picture is impossible.",
+    "No production contact during capture and no installs.",
+    "No screen that shows personal data is captured. No pixel blurring is promised."
+  ],
+  "open_decisions": [
+    "U1 Architecture. (a) Contract and element verification first, then two real adapters (Cheflabels, Altinstar). Recommended. (b) The full adapter engine at once. (c) Kit routes only: capture only approved kit pages.",
+    "U2 Browser automation. The engine needs an installed browser automation tool (Playwright). Altinstar has it and Cheflabels does not. (a) You install it where you want real previews, and the other projects keep sketches (recommended). (b) Use the installed Edge in headless mode only. That gives screenshots but no console or network records.",
+    "U3 Cheflabels offline kit capture. A safe capture of the kit page needs an offline configuration and a fixture translation file in Cheflabels. (a) A separate Cheflabels task with its own gates. Recommended. (b) Not now, and Cheflabels keeps sketches.",
+    "U4 Machine-readable approval status. Approval status now lives in a Markdown table (Cheflabels DESIGN.md). (a) The adapter reads that table as it is, with no project change. Recommended. (b) Each project adds a small JSON status file."
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-03-ui-evidence-engine/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-03-ui-evidence-engine/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-03-ui-evidence-engine/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-03-ui-evidence-engine/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S5",
+      "path": "skills/codebase-map/scripts/screen_flow.py",
+      "role": "code"
+    },
+    {
+      "id": "S6",
+      "path": "skills/codebase-map/scripts/kit_bindings.py",
+      "role": "code"
+    },
+    {
+      "id": "S7",
+      "path": "skills/codebase-map/scripts/screenshot_report.py",
+      "role": "code"
+    },
+    {
+      "id": "S8",
+      "path": "skills/ui-design/scripts/class_rules.py",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "Today the agent finds an element with class_rules.py, writes ui_review elements by hand, and screen_flow.py draws either an embedded PNG or a sketch labelled \"Sketch · not a screenshot\".",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S8",
+        "S6",
+        "S5"
+      ],
+      "locator": "FINDINGS E1; class_rules.py:84-106, :144-185; kit_bindings.py:220; screen_flow.py:19, :81-279, :295-339",
+      "limits": "Read only. The tools were not run."
+    },
+    {
+      "id": "E2",
+      "claim": "Nothing confirms that a cited file:line really has the claimed tag, classes and wrapper. check_reused tests the format only.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S6"
+      ],
+      "locator": "FINDINGS E2; kit_bindings.py:226-248",
+      "limits": "Read only."
+    },
+    {
+      "id": "E3",
+      "claim": "Discovery is a text scan of CSS and markup, a Storybook index reader and a hand-kept kit JSON checker. Nothing extracts components, inputs, variants or usage counts.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S8"
+      ],
+      "locator": "FINDINGS E3; class_rules.py:14-15",
+      "limits": "Read only."
+    },
+    {
+      "id": "E4",
+      "claim": "screenshot_report.py captures local .html files only, at 1280 and 500 px, with no URL, element crop or ready wait. Proposed screens are always sketches.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S7"
+      ],
+      "locator": "FINDINGS E4",
+      "limits": "Read only. No capture was run."
+    },
+    {
+      "id": "E5",
+      "claim": "Before and after screens, arrows, hand-placed markers and decision callouts exist, up to six screens. Changes are not highlighted from the real page.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E5",
+      "limits": "Read only."
+    },
+    {
+      "id": "E6",
+      "claim": "Reuse mode links an element to its source, tag, classes and wrapper, but not to a variant or an approval status. Decisions link to screens, not to elements.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S6"
+      ],
+      "locator": "FINDINGS E6",
+      "limits": "Read only."
+    },
+    {
+      "id": "E7",
+      "claim": "No capture adapter or shared adapter interface exists. The Storybook reader is the only adapter-like code.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E7",
+      "limits": "Read only."
+    },
+    {
+      "id": "E8",
+      "claim": "PNG structure and size limits are tested. Nothing records console errors, failed requests or missing assets for applications.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E8",
+      "limits": "Read only."
+    },
+    {
+      "id": "E9",
+      "claim": "Presented reports are never overwritten. Reuse mode hashes only the files it cites, not every file a component depends on.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E9",
+      "limits": "Read only."
+    },
+    {
+      "id": "E10",
+      "claim": "The offline report shell, its strict content policy, the owner's report design and the approval gates exist and stay.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E10",
+      "limits": "Read only."
+    },
+    {
+      "id": "E11",
+      "claim": "Cheflabels has a real kit page at /design-kit with about 30 real components and fixed fixtures. Production builds remove it.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E11 (design-kit.routes.ts:9-14, angular.json:66-75, app.component.ts:96-101)",
+      "limits": "Cheflabels files are outside this repository. This report cites them through FINDINGS only."
+    },
+    {
+      "id": "E12",
+      "claim": "Cheflabels keeps approval status only in the Status column of DESIGN.md. About 14 entries are not on the kit page.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E12",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E13",
+      "claim": "The Cheflabels kit page still loads translations over HTTP, and the development environment points at the live backend. No offline translation folder exists.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E13 (app.module.ts:20-22, axa-translate-loader.ts:39-43)",
+      "limits": "Cited through FINDINGS only. Nothing was contacted."
+    },
+    {
+      "id": "E14",
+      "claim": "Cheflabels has no Storybook and no Playwright. One earlier capture of the kit page exists.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E14",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E15",
+      "claim": "Safe real Cheflabels screens need application changes: offline configuration, fixture translations, a fake session, user rights, data mocks and a browser that blocks non-local requests.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E15",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E16",
+      "claim": "Live data screens, fresh translations, printing, the Wi-Fi wizard, camera, live updates and native safe areas cannot be captured without a server or device.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E16",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E17",
+      "claim": "Altinstar (React 18, Vite 7) has Playwright 1.60 and a harness that renders real components with stubbed services. It injects its own styles and fonts.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E17 (test/e2e/mobile-layout/globalSetup.ts)",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E18",
+      "claim": "Next.js needs mocks for server components and data. Vue on Vite is close to React. Unity has no DOM classes, so class mirroring does not apply.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E18",
+      "limits": "Cited through FINDINGS only."
+    },
+    {
+      "id": "E19",
+      "claim": "Capture risks are production contact, committed tokens, personal data in images, running project code, and fidelity limits such as fonts and Ionic mode.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E19",
+      "limits": "Cited through FINDINGS only."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "U-T1",
+      "title": "Evidence manifest and renderer validation",
+      "kind": "requested",
+      "reason": "A real preview needs a manifest that the renderer can test. Missing evidence must block visual approval.",
+      "requirements": [
+        "R3",
+        "R4",
+        "R6",
+        "R8",
+        "R10"
+      ],
+      "evidence": [
+        "E4",
+        "E8",
+        "E10"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A13"
+      ],
+      "areas": [
+        "skills/codebase-map/scripts/screen_flow.py",
+        "skills/codebase-map/scripts/render_report.py",
+        "New manifest module in skills/codebase-map/scripts/",
+        "UI-FLOW.md"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "U-T2",
+      "title": "Element verification against the cited source",
+      "kind": "requested",
+      "reason": "Today a cited file:line is tested for format only.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A3"
+      ],
+      "areas": [
+        "skills/codebase-map/scripts/kit_bindings.py",
+        "skills/ui-design/scripts/class_rules.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "U-T3",
+      "title": "Adapter interface and the static HTML adapter",
+      "kind": "requested",
+      "reason": "One interface lets the workflow keep one flow. The static HTML adapter grows from today's screenshot tool.",
+      "requirements": [
+        "R3",
+        "R7",
+        "R8"
+      ],
+      "evidence": [
+        "E3",
+        "E4",
+        "E7"
+      ],
+      "acceptance": [
+        "A4",
+        "A5"
+      ],
+      "areas": [
+        "skills/codebase-map/scripts/screenshot_report.py",
+        "New adapter module in skills/codebase-map/scripts/"
+      ],
+      "depends_on": [
+        "U-T1"
+      ]
+    },
+    {
+      "id": "U-T4",
+      "title": "Staleness from dependency fingerprints",
+      "kind": "requested",
+      "reason": "Today only the cited files are hashed, so a changed dependency goes unnoticed.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E9"
+      ],
+      "acceptance": [
+        "A6",
+        "A7"
+      ],
+      "areas": [
+        "The manifest module",
+        "skills/codebase-map/scripts/render_report.py --check"
+      ],
+      "depends_on": [
+        "U-T1"
+      ]
+    },
+    {
+      "id": "U-T5",
+      "title": "Report view with real before and after images",
+      "kind": "requested",
+      "reason": "Today markers are placed by hand and elements do not link to variant, approval or decision.",
+      "requirements": [
+        "R4",
+        "R5",
+        "R6",
+        "R10"
+      ],
+      "evidence": [
+        "E5",
+        "E6",
+        "E10"
+      ],
+      "acceptance": [
+        "A8"
+      ],
+      "areas": [
+        "skills/codebase-map/scripts/screen_flow.py",
+        "Report assets"
+      ],
+      "depends_on": [
+        "U-T1",
+        "U-T2"
+      ]
+    },
+    {
+      "id": "U-T6",
+      "title": "Angular/Ionic adapter for an approved kit route (Cheflabels)",
+      "kind": "requested",
+      "reason": "Cheflabels is one of the two real users that justify a shared interface. The ticket is dropped if U3 is (b).",
+      "requirements": [
+        "R2",
+        "R3",
+        "R7"
+      ],
+      "evidence": [
+        "E11",
+        "E12",
+        "E13",
+        "E14",
+        "E15"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "A new adapter file in workflow-axa only"
+      ],
+      "depends_on": [
+        "U-T3"
+      ]
+    },
+    {
+      "id": "U-T7",
+      "title": "React/Vite adapter on the project's own harness (Altinstar)",
+      "kind": "requested",
+      "reason": "Altinstar is the second real user and already has Playwright and a component harness.",
+      "requirements": [
+        "R2",
+        "R3",
+        "R7"
+      ],
+      "evidence": [
+        "E17"
+      ],
+      "acceptance": [
+        "A10"
+      ],
+      "areas": [
+        "A new adapter file in workflow-axa only"
+      ],
+      "depends_on": [
+        "U-T3"
+      ]
+    },
+    {
+      "id": "U-T8",
+      "title": "Live check on the adapted projects with the network blocked",
+      "kind": "requested",
+      "reason": "Only a real run on both projects shows that capture works without network contact.",
+      "requirements": [
+        "R3",
+        "R8",
+        "R9"
+      ],
+      "evidence": [
+        "E13",
+        "E17",
+        "E19"
+      ],
+      "acceptance": [
+        "A11",
+        "A12"
+      ],
+      "areas": [
+        "Test worktrees only, no application change"
+      ],
+      "depends_on": [
+        "U-T6",
+        "U-T7"
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "A preview without a valid manifest stays a sketch and blocks visual approval.",
+      "requirements": [
+        "R3",
+        "R10"
+      ],
+      "verification": "Unit tests with fixture manifests, and the package suite."
+    },
+    {
+      "id": "A2",
+      "text": "Console errors, failed requests or missing assets in the manifest also block visual approval.",
+      "requirements": [
+        "R8"
+      ],
+      "verification": "Unit tests with fixture manifests, and the package suite."
+    },
+    {
+      "id": "A3",
+      "text": "Rendering fails when a cited file:line does not have the claimed tag, classes or wrapper.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "verification": "Tests with matching and drifted sources."
+    },
+    {
+      "id": "A4",
+      "text": "The static HTML adapter captures localhost URLs only, crops to the element, waits for a ready signal and records runtime problems.",
+      "requirements": [
+        "R3",
+        "R7",
+        "R8"
+      ],
+      "verification": "Tests with a fake browser."
+    },
+    {
+      "id": "A5",
+      "text": "The capture runner blocks and reports any non-local request.",
+      "requirements": [
+        "R8"
+      ],
+      "verification": "Tests with a fake browser."
+    },
+    {
+      "id": "A6",
+      "text": "A change to any fingerprinted file marks the preview stale.",
+      "requirements": [
+        "R9"
+      ],
+      "verification": "Tests that change a fingerprinted file."
+    },
+    {
+      "id": "A7",
+      "text": "An approved snapshot is never rewritten.",
+      "requirements": [
+        "R9"
+      ],
+      "verification": "Tests that compare the snapshot bytes before and after."
+    },
+    {
+      "id": "A8",
+      "text": "The report shows real before and after images, highlights from element positions, and element links to source, variant, approval and decision, inside the existing design.",
+      "requirements": [
+        "R5",
+        "R6",
+        "R10"
+      ],
+      "verification": "Snapshot tests, and a browser look at the report at desktop and narrow width."
+    },
+    {
+      "id": "A9",
+      "text": "The adapter discovers the kit page's components and their approved or candidate status from DESIGN.md and the source. It captures one approved component in isolation with no request leaving localhost.",
+      "requirements": [
+        "R2",
+        "R3",
+        "R7"
+      ],
+      "verification": "Capture with the network blocked."
+    },
+    {
+      "id": "A10",
+      "text": "The adapter renders one real component through the project's harness. It records the harness's own injected styles and fonts as a fidelity limit.",
+      "requirements": [
+        "R2",
+        "R3",
+        "R7"
+      ],
+      "verification": "Capture with the network blocked, with the fidelity limits recorded."
+    },
+    {
+      "id": "A11",
+      "text": "Each project gets a plan report with real previews, or \"visual approval blocked\" with the reason.",
+      "requirements": [
+        "R8",
+        "R9"
+      ],
+      "verification": "One plan report per project."
+    },
+    {
+      "id": "A12",
+      "text": "No capture shows personal data.",
+      "requirements": [
+        "R3",
+        "R8"
+      ],
+      "verification": "Every capture is looked at for personal data before it goes into a report."
+    },
+    {
+      "id": "A13",
+      "text": "A preview comes from the real application build, with its framework, styles, fonts and assets as shipped. Any markup the agent wrote itself is rejected.",
+      "requirements": [
+        "R4"
+      ],
+      "verification": "Unit tests with fixture manifests, and the package suite."
+    }
+  ],
+  "graphs": [
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "Today: a proposed screen reaches the report as a sketch",
+      "description": "How a proposed screen gets into a plan report today. Arrows show the order of the steps. Static reading only.",
+      "width": 1280,
+      "height": 400,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Find element",
+          "note": "class_rules.py --match",
+          "shape": "start",
+          "x": 48,
+          "y": 152,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1",
+            "E3"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N2",
+          "label": "Element list",
+          "note": "Written by hand",
+          "shape": "action",
+          "x": 352,
+          "y": 152,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N3",
+          "label": "Format check",
+          "note": "Shape only, not source",
+          "shape": "action",
+          "x": 656,
+          "y": 152,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N4",
+          "label": "Labelled sketch",
+          "note": "Not a screenshot",
+          "shape": "result",
+          "x": 960,
+          "y": 152,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1",
+            "E4"
+          ],
+          "tasks": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "copies",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              272,
+              200
+            ],
+            [
+              352,
+              200
+            ]
+          ],
+          "label_position": [
+            312,
+            172
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "then",
+          "evidence": [
+            "E2"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              576,
+              200
+            ],
+            [
+              656,
+              200
+            ]
+          ],
+          "label_position": [
+            616,
+            172
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "label": "draws",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              880,
+              200
+            ],
+            [
+              960,
+              200
+            ]
+          ],
+          "label_position": [
+            920,
+            172
+          ]
+        }
+      ]
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "After the change",
+      "title": "After: real evidence or a blocked visual approval",
+      "description": "How a proposed screen gets into a plan report after the change. Arrows show the order of the steps. Nothing here was run.",
+      "width": 1520,
+      "height": 448,
+      "nodes": [
+        {
+          "id": "P1",
+          "label": "Discover",
+          "note": "Adapter reads source",
+          "shape": "start",
+          "x": 48,
+          "y": 104,
+          "width": 224,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3",
+            "E7"
+          ],
+          "tasks": [
+            "U-T3",
+            "U-T6",
+            "U-T7"
+          ]
+        },
+        {
+          "id": "P2",
+          "label": "Isolated render",
+          "note": "Real component, manifest",
+          "shape": "action",
+          "x": 352,
+          "y": 104,
+          "width": 224,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E4",
+            "E8"
+          ],
+          "tasks": [
+            "U-T1",
+            "U-T3"
+          ]
+        },
+        {
+          "id": "P3",
+          "label": "Validate",
+          "note": "Manifest and file:line",
+          "shape": "action",
+          "x": 656,
+          "y": 104,
+          "width": 224,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2",
+            "E9"
+          ],
+          "tasks": [
+            "U-T1",
+            "U-T2",
+            "U-T4"
+          ]
+        },
+        {
+          "id": "P4",
+          "label": "Valid?",
+          "note": "",
+          "shape": "decision",
+          "x": 960,
+          "y": 72,
+          "width": 192,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "U-T1"
+          ]
+        },
+        {
+          "id": "P5",
+          "label": "Real preview",
+          "note": "Linked to source",
+          "shape": "result",
+          "x": 1232,
+          "y": 104,
+          "width": 240,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E5",
+            "E6"
+          ],
+          "tasks": [
+            "U-T5"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "P6",
+          "label": "Visual approval\nblocked",
+          "note": "Sketch stays",
+          "shape": "result",
+          "x": 936,
+          "y": 328,
+          "width": 240,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": [
+            "U-T1"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "P1",
+          "to": "P2",
+          "label": "then",
+          "evidence": [
+            "E7"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "U-T3"
+          ],
+          "points": [
+            [
+              272,
+              152
+            ],
+            [
+              352,
+              152
+            ]
+          ],
+          "label_position": [
+            312,
+            124
+          ]
+        },
+        {
+          "from": "P2",
+          "to": "P3",
+          "label": "then",
+          "evidence": [
+            "E8"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "U-T1"
+          ],
+          "points": [
+            [
+              576,
+              152
+            ],
+            [
+              656,
+              152
+            ]
+          ],
+          "label_position": [
+            616,
+            124
+          ]
+        },
+        {
+          "from": "P3",
+          "to": "P4",
+          "label": "then",
+          "evidence": [
+            "E2"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "U-T1"
+          ],
+          "points": [
+            [
+              880,
+              152
+            ],
+            [
+              960,
+              152
+            ]
+          ],
+          "label_position": [
+            920,
+            124
+          ]
+        },
+        {
+          "from": "P4",
+          "to": "P5",
+          "label": "yes",
+          "evidence": [
+            "E5"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "U-T5"
+          ],
+          "points": [
+            [
+              1152,
+              152
+            ],
+            [
+              1232,
+              152
+            ]
+          ],
+          "label_position": [
+            1192,
+            124
+          ]
+        },
+        {
+          "from": "P4",
+          "to": "P6",
+          "label": "no",
+          "evidence": [
+            "E4"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "U-T1"
+          ],
+          "points": [
+            [
+              1056,
+              232
+            ],
+            [
+              1056,
+              328
+            ]
+          ],
+          "label_position": [
+            1084,
+            288
+          ]
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "Proposed screen",
+      "current": "Always a labelled sketch of generic controls.",
+      "proposed": "A real isolated render with an evidence manifest, where capture is safe.",
+      "requirements": [
+        "R3"
+      ],
+      "evidence": [
+        "E1",
+        "E4"
+      ],
+      "tasks": [
+        "U-T1",
+        "U-T3",
+        "U-T6",
+        "U-T7"
+      ]
+    },
+    {
+      "label": "Cited file:line",
+      "current": "Tested for format only.",
+      "proposed": "Must contain the claimed tag, classes and wrapper, or rendering fails.",
+      "requirements": [
+        "R2",
+        "R6"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "U-T2"
+      ]
+    },
+    {
+      "label": "Finding components",
+      "current": "A text scan of CSS and markup.",
+      "proposed": "An adapter lists components, variants and usages from source.",
+      "requirements": [
+        "R2",
+        "R7"
+      ],
+      "evidence": [
+        "E3",
+        "E7"
+      ],
+      "tasks": [
+        "U-T3",
+        "U-T6",
+        "U-T7"
+      ]
+    },
+    {
+      "label": "Change highlights",
+      "current": "Markers placed by hand.",
+      "proposed": "Highlights taken from the real element positions.",
+      "requirements": [
+        "R5"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "tasks": [
+        "U-T5"
+      ]
+    },
+    {
+      "label": "Element links",
+      "current": "Source, tag, classes and wrapper only.",
+      "proposed": "Also the variant, the approval status and the decision.",
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E6",
+        "E12"
+      ],
+      "tasks": [
+        "U-T5",
+        "U-T6"
+      ]
+    },
+    {
+      "label": "Runtime problems",
+      "current": "Not recorded for applications.",
+      "proposed": "Console errors, failed requests and missing assets go into the manifest.",
+      "requirements": [
+        "R8"
+      ],
+      "evidence": [
+        "E8"
+      ],
+      "tasks": [
+        "U-T1",
+        "U-T3"
+      ]
+    },
+    {
+      "label": "Staleness",
+      "current": "Only the cited files are hashed.",
+      "proposed": "Every dependency is fingerprinted, and a change marks the preview stale.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E9"
+      ],
+      "tasks": [
+        "U-T4"
+      ]
+    },
+    {
+      "label": "No accurate picture",
+      "current": "A sketch, and visual approval can still go ahead.",
+      "proposed": "The sketch stays and the report shows \"visual approval blocked\".",
+      "requirements": [
+        "R3",
+        "R10"
+      ],
+      "evidence": [
+        "E4",
+        "E16"
+      ],
+      "tasks": [
+        "U-T1"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "planning",
+    "screen_change": "none",
+    "agreement": {
+      "status": "not-approved",
+      "summary": "Agreement r1 is proposed and not agreed. Questions U1 to U4 are open. Nothing is built before you agree to the behavior and approve the plan.",
+      "source": "S1",
+      "locator": "PLAN.md ## Agreement"
+    },
+    "sections": [
+      {
+        "id": "request",
+        "title": "Request",
+        "text": "Show real screens and real components in plan reports wherever that can be done safely. Link every element to its real source and approval status. Refuse visual approval when an accurate picture is not possible.\n\nThis is a new, separate task from the owner's request of 2026-11-03.",
+        "source": "S1",
+        "locator": "PLAN.md ## Goal in plain words, ## Requirements"
+      },
+      {
+        "id": "agreement",
+        "title": "What will change",
+        "text": "Agreement r1 covers the requirements R1 to R10, the architecture and the boundaries. U1 to U4 are open. If U3 is (b), U-T6 is dropped and Cheflabels keeps sketches. U-T8 then checks Altinstar only.\n\nworkflow-axa gets a framework-neutral evidence contract. Each capture has one manifest with the image, viewport, component and variant, approval status, decision IDs, runtime problems and dependency fingerprints. The renderer accepts a real preview only with a valid manifest.\n\nAdapters behind one interface discover, render, capture, report runtime problems and fingerprint dependencies. The planned adapters are static HTML, Angular/Ionic for Cheflabels and React/Vite for Altinstar. Unity and other non-DOM screens use a manual capture, or visual approval is blocked.\n\nNot included: application code changes, invented UI, installs, production contact, pixel blurring and capture of screens with personal data.",
+        "source": "S1",
+        "locator": "PLAN.md ## Agreement, ## Proposed architecture, ## Boundaries"
+      },
+      {
+        "id": "specification",
+        "title": "How it will be built",
+        "text": "Eight tickets, U-T1 to U-T8. U-T1 (manifest) and U-T2 (element verification) depend on nothing. U-T3 (adapter interface and static HTML adapter) and U-T4 (staleness) depend on U-T1. U-T5 (report view) depends on U-T1 and U-T2.\n\nU-T6 (Cheflabels) and U-T7 (Altinstar) depend on U-T3. U-T6 also needs a separate Cheflabels task for offline translations and configuration (U3 a). U-T8 depends on U-T6 if it is kept, on U-T7 and on U2.",
+        "source": "S2",
+        "locator": "TODO.md U-T1 to U-T8 (depends on)"
+      },
+      {
+        "id": "decisions",
+        "title": "Decisions",
+        "text": "Four questions are open: U1 architecture, U2 browser automation, U3 Cheflabels offline kit capture and U4 machine-readable approval status. The recommended answer for each is (a).\n\nThe recommended architecture builds the contract and element verification first, then exactly two real adapters. Two real users justify a shared interface. With only one, the interface is a guess.",
+        "source": "S4",
+        "locator": "DECISIONS.md U1-U4; PLAN.md ## Tradeoffs"
+      },
+      {
+        "id": "risks",
+        "title": "Risks and assumptions",
+        "text": "The Cheflabels kit page still loads translations over HTTP, and its development environment points at the live backend. A capture without an offline configuration contacts production.\n\nOther risks are committed tokens in environment files, personal data in captures, running project code to capture, and fidelity limits. Examples of fidelity limits are the 500 px minimum width, fonts, Ionic md and iOS modes, and WebView differences.\n\nSome screens cannot be captured without a server or device. They keep sketches and block visual approval.",
+        "source": "S3",
+        "locator": "FINDINGS.md E13, E16, E19"
+      },
+      {
+        "id": "testing",
+        "title": "How it will be checked",
+        "text": "Each ticket has a Verify line in TODO. U-T1 uses unit tests with fixture manifests and the package suite. U-T2 uses matching and drifted sources. U-T3 uses a fake browser. U-T4 uses fingerprint tests. U-T5 uses snapshot tests and a browser look at desktop and narrow width.\n\nU-T6 and U-T7 capture with the network blocked. U-T7 also records fidelity limits. U-T8 makes one plan report per project with real previews, or \"visual approval blocked\" with the reason. Every capture is looked at for personal data before it goes into a report.",
+        "source": "S2",
+        "locator": "TODO.md U-T1 to U-T8 (Verify)"
+      }
+    ],
+    "tickets": [
+      {
+        "task": "U-T1",
+        "specification": "Add a manifest module in skills/codebase-map/scripts/ and validate manifests in screen_flow.py and render_report.py. Update UI-FLOW.md.",
+        "expected": "A preview without a valid manifest stays a sketch and blocks visual approval. Console errors, failed requests or missing assets block it too. A preview comes from the real application build, and any markup the agent wrote itself is rejected.",
+        "source": "S2",
+        "locator": "TODO.md U-T1"
+      },
+      {
+        "task": "U-T2",
+        "specification": "Before rendering, read each cited file:line and compare its tag, classes and wrapper with the claim in the report.",
+        "expected": "A cited file:line without the claimed tag, classes or wrapper fails rendering.",
+        "source": "S2",
+        "locator": "TODO.md U-T2"
+      },
+      {
+        "task": "U-T3",
+        "specification": "Define the adapter interface with five operations: discover, render, capture, runtime problems and fingerprints. Build the static HTML adapter from screenshot_report.py in a new adapter module.",
+        "expected": "Capture works on localhost URLs only, crops to the element, waits for a ready signal and records runtime problems. Any non-local request is blocked and reported.",
+        "source": "S2",
+        "locator": "TODO.md U-T3"
+      },
+      {
+        "task": "U-T4",
+        "specification": "Fingerprint every file that a captured component depends on, in the manifest module and render_report.py --check.",
+        "expected": "A change to any fingerprinted file marks the preview stale. An approved snapshot is never rewritten.",
+        "source": "S2",
+        "locator": "TODO.md U-T4"
+      },
+      {
+        "task": "U-T5",
+        "specification": "Show real before and after images inside the existing report design, in screen_flow.py and the report assets. Draw highlights from the real element positions.",
+        "expected": "The report shows real images, highlights from element positions and element links to source, variant, approval and decision.",
+        "source": "S2",
+        "locator": "TODO.md U-T5"
+      },
+      {
+        "task": "U-T6",
+        "specification": "Build an Angular/Ionic adapter for an approved kit route, as Cheflabels /design-kit, in a new adapter file in workflow-axa only. It needs a separate Cheflabels task for offline translations and configuration (U3 a).",
+        "expected": "The adapter discovers the kit components and their approved or candidate status from DESIGN.md and the source. It captures one approved component in isolation with no request leaving localhost. If U3 is (b), this ticket is dropped.",
+        "source": "S2",
+        "locator": "TODO.md U-T6"
+      },
+      {
+        "task": "U-T7",
+        "specification": "Build a React/Vite adapter on the project's own harness, as the Altinstar mobile-layout harness, in a new adapter file in workflow-axa only.",
+        "expected": "The adapter renders one real component through the harness. It records the injected styles and fonts of the harness as a fidelity limit.",
+        "source": "S2",
+        "locator": "TODO.md U-T7"
+      },
+      {
+        "task": "U-T8",
+        "specification": "Run a live capture on the adapted projects in test worktrees only, after U2 is settled. Block the network and keep personal data off the screen. Make no application change.",
+        "expected": "Each project gets a plan report with real previews, or \"visual approval blocked\" with the reason. No capture shows personal data.",
+        "source": "S2",
+        "locator": "TODO.md U-T8"
+      }
+    ],
+    "checks": [],
+    "acceptance_results": []
+  }
+}
