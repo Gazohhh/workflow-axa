@@ -113,3 +113,15 @@ Reproduced on 2026-11-03 at HEAD 0b4e4b4 (package 2.8.0-rc.1, rules 1.8.0), by s
 - Current F1-F6 implementation is verified at local public-hook and offline replay boundaries. Live positive write/restart remains unverified, without creating additional paid work.
 - Keep D:/wfaxa-pilot/workflow-host-fixture-rc4 as small replay evidence because its report and PLAN bytes are inputs. It contains no build or dependencies. Raw traces/caches remain outside archives.
 - The first delivery draft was rendered and inspected before record wording was corrected. Preserve it and progress-r4. The final delivery snapshot uses delivery-r4-final.html/json.
+
+## R5a review and verification checkpoint
+Self-review (no subagents, as authorized): Standards PASS for minimal instruction changes at LIVE-KIT/VERIFY owners; no vendored edits, new dependencies, CSS, hook bypass or automatic approval. Spec PASS for approved real-component example registration, renderer/caller coverage and settled capture guidance. Human intent remains in DESIGN.md; styling remains in source. Live behavior is NOT VERIFIED until the five-project batch.
+
+V-R5-1: 40 strict-kit tests passed before changes. Initial full suite ran 886 tests with 10 failures and 13 skips while release metadata was incomplete; failures were version/document/manifest consistency checks, including the report renderer version. Necessary failure evidence: .artifacts/2026-11-03-audit-hardening/rollout/package-tests.txt. Corrected package version references and started a complete final rerun; do not claim success before exit. Metadata validator and git diff --check now pass.
+
+All five target worktrees were created at their originals' committed HEADs under D:/wfaxa-pilot/rollout-<project>. Original branch/status snapshots are retained privately in rollout/original-baselines.json. Altinstar's existing uncommitted work was not copied or changed. Native dependencies, application builds, production endpoints and installs remain outside the test's automatic scope.
+
+## R5a final package verification
+V-R5-2: Final full suite ran 886 tests in 158.134 seconds: 13 skips and one failure, test_current_validation_section_names_this_package, because the new current-validation section omitted its source identity row. Added the actual base commit plus explicit uncommitted rc.5 qualifier. Reran all 19 test_docs_consistency tests: PASS (8.424 seconds). Validator PASS and git diff --check PASS. No behavior or test assertions changed after the full suite; no third full run is needed for this documentation repair. Logs stay in the same private rollout parent. Self-review of the final repair: Standards/Spec PASS; live behavior remains pending.
+
+Codex pre-install preservation check compared all 175 registered files against the base Git commit: no local modifications or missing files. Remote main was verified at45670f28ce506d5df43a9e632c9fd2cdcdcc9931 before publication. Installation will use a new Git download, not this candidate directory. No original application commit, branch change or push is part of this action.

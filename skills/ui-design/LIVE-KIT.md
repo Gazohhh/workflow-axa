@@ -18,9 +18,9 @@ Rebuilding/reloading the existing catalogue reflects component changes. A new in
 ## Setup sequence through ui-design
 
 1. `kit-audit <area>` finds designated real components, existing preview tooling and authority. Search is inventory, not approval. No installation, routes, builds or captures without permission.
-2. `kit-setup <area>` proposes connecting the existing sources and examples, short project pointers, owner approval and safe preview/verification. Never author a new HTML/CSS catalogue or application design. When a new component, example template, layout, Storybook installation or custom adapter is needed, name that gap for the designer/maintainer and stop that work. Do not install a tool merely to satisfy this skill.
+2. `kit-setup <area>` proposes connecting existing sources, short project pointers and safe preview/verification. Setup is not application implementation approval. After approval, normal execution may add the minimum framework example and registration that render real components or mirror existing tags, classes and wrappers. A missing example alone is not a designer blocker. New visual designs, styling, dependencies or custom preview infrastructure remain outside that reuse scope; name the specific gap before dependent work. Do not install a tool merely to satisfy this skill.
 3. `kit-check <catalogue>` checks selected sources/scope. A Markdown catalogue remains valid; do not force conversion. If a JSON profile is used, it is a generated projection or the sole existing catalogue, not another independently maintained truth source.
-4. Record exact selections in the existing task, generate the existing review with captured screens and per-element references, obtain normal approval, then wire only selected supported component APIs.
+4. Check claimed variants against their renderer and real callers, including host wrappers/styles. A declared type or enum is not proof of a working example. Identify absent, inert and context-dependent variants in the plan before approval; preserve distinct existing variants. Record exact selections in the existing task, generate the existing review with captured screens and per-element references, obtain normal approval, then wire only selected supported component APIs.
 
 ## Optional read-only Storybook index adapter
 

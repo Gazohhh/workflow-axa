@@ -1,8 +1,12 @@
-# Workflow AXA — 2.8.0-rc.4
+# Workflow AXA — 2.8.0-rc.5
 
-## Candidate: approval recovery and quiet waiting
+## Candidate: source-backed design-kit examples
 
-This isolated candidate adds registration protocol checks, precise revision parsing, workspace-bound report approval, completed-question presentation evidence and reliable whole-read checks. Approval waits end without workflow Stop feedback. External host goals require the recovery in `skills/workflow/TASK-FOLDER.md`; this package cannot cancel another Stop evaluator. See CANDIDATE-REVIEW.md for the defect matrix and VALIDATION.md for current evidence. It has not been installed into active sessions.
+Approved kit work can add small framework examples that reuse real components and existing markup patterns. Check variants against their renderers and real callers, and capture settled presentation states. Setup still requires implementation approval. No new styling or preview dependencies are introduced. The five-project Claude Code evaluation is pending; package checks do not establish live behavior.
+
+## Earlier candidate: approval recovery and quiet waiting
+
+The rc.4 candidate added registration protocol checks, precise revision parsing, workspace-bound report approval, completed-question presentation evidence and reliable whole-read checks. Approval waits end without workflow Stop feedback. External host goals require the recovery in `skills/workflow/TASK-FOLDER.md`; this package cannot cancel another Stop evaluator. CANDIDATE-REVIEW.md and VALIDATION.md preserve that checkpoint's evidence and limits.
 
 ## Earlier candidate: readable tickets and bounded permissions
 

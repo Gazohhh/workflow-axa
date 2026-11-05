@@ -2,6 +2,17 @@
 
 ## Current verification
 
+Candidate workflow-axa 2.8.0-rc.5 retains shared rules 1.8.2 and 21 registered skills. This revision clarifies source-backed example creation, actual variant coverage and capture readiness. The approved five-project live evaluation has not started. Prior host evidence below does not certify this revision.
+
+| Evidence | Result and limit |
+|---|---|
+| Source commit | `45670f28ce506d5df43a9e632c9fd2cdcdcc9931` plus the rc.5 instruction and release metadata changes. |
+| Focused kit checks | 40 tests passed. |
+| Full suite | 886 tests, 13 environment/platform skips; one documentation failure because this source identity row was missing. All other checks passed. The documentation checks are rerun after adding this row. |
+| Live evaluation | Pending. No new paid process has run. |
+
+## History - rc.4 verification
+
 Candidate workflow-axa 2.8.0-rc.4, shared rules 1.8.2, 21 registered skills. Isolated source snapshot at D:/wfaxa-pilot/workflow-fixes. No live installation.
 
 | Evidence | Current result and limit |

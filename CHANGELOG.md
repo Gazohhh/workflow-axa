@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0-rc.5 — source-backed examples (2026-11-05)
+
+- Allow approved minimal framework examples and registration using real components and existing markup patterns; setup alone still grants no implementation authority.
+- Verify claimed variants against renderers and real callers before promising coverage.
+- Capture after presentation and finite transitions complete; compare equivalent caller contexts and disclose unsupported examples.
+- No new tooling, dependencies, styling or enforcement claims. Five-project live evaluation remains pending.
+
 ## 2.8.0-rc.4 — session recovery candidate (2026-11-05)
 
 - Distinguish report revisions from requirement IDs. Bind report/chat approvals and withdrawals to their actual workspace/task.
