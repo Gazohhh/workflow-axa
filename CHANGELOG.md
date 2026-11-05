@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.7 — focused retrospective fixes (2026-11-06)
+
+- Separate approval checkpoint status from the quoted owner answer, so pending visual acceptance does not reject an approved implementation. Preserve report fingerprints, quote provenance and refusal/withdrawal checks.
+- Handle modern transcript records in the retrospective digest and count host permission denials separately.
+- Add regression tests. Candidate suite: 879 passed, 13 skipped; native Claude confirms the conditional approval permits its scoped write. Broader project evaluation remains partial.
+
 ## 2.8.0-rc.6 — live evaluation repairs (2026-11-05)
 
 - Preserve real framework identifiers in reused-element references; accept SwatchTile and Form.Group without replacing them with inferred HTML tags. References remain escaped, bounded and tied to source records.

@@ -2,7 +2,11 @@
 
 ## Current verification
 
-Candidate workflow-axa 2.8.0-rc.6, shared rules 1.8.2, 21 registered skills.
+Candidate workflow-axa 2.8.0-rc.7, shared rules 1.8.2, 21 registered skills.
+
+The rc.7 candidate suite ran 892 tests: 879 passed, 13 skipped, zero failures. Native Claude accepted the full conditional approval for a one-file marker only after plan presentation. The updated digest parsed four additional completed native transcripts, including host denial records. This does not establish all framework behavior or owner acceptance.
+
+The following table preserves earlier verification history.
 
 | Evidence | Result and limit |
 |---|---|

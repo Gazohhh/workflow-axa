@@ -586,6 +586,24 @@ class ApprovalGateTests(unittest.TestCase):
 
     # E8 / D1: the agent can write the line, not the user's message
 
+    def test_implementation_approval_keeps_separate_acceptance_conditions(self):
+        answer = ('Approve the proposed plan-r1.html for implementation. '
+                  'Visual acceptance, performance and release remain pending, not waived.')
+        approved = f'- Approval: revision r1 approved by owner: "{answer}" (report reviews/plan-r1.html).'
+        self.task(TASK, approved)
+        rows = [ROUTER] + self.approval(answer)
+        self.assertIsNone(self.decision(rows, "Edit", {"file_path": self.code}))
+        self.task(TASK, approved.replace('r1 approved by owner', 'r1 pending'))
+        self.assertEqual(self.decision(rows, "Edit", {"file_path": self.code}), "deny")
+
+    def test_quoted_refusal_is_not_an_approved_checkpoint(self):
+        for answer in ('Not approved', 'Never approved', 'Unapproved', 'Approval is pending', 'Awaiting approval',
+                       'Pending', 'Do not implement', 'I withdraw approval', 'No'):
+            with self.subTest(answer=answer):
+                self.task(TASK, f'- Approval: revision r1 approved: "{answer}" (report reviews/plan-r1.html).')
+                rows = [ROUTER] + self.approval(answer)
+                self.assertEqual(self.decision(rows, "Edit", {"file_path": self.code}), "deny")
+
     def test_the_quoted_words_must_come_from_a_real_user_message(self):
         self.task(TASK, APPROVED)
         tool_result = user([{"type": "tool_result", "tool_use_id": "t", "content": "Yes to both"}])

@@ -1,6 +1,10 @@
-# Workflow AXA — 2.8.0-rc.6
+# Workflow AXA — 2.8.0-rc.7
 
-## Candidate: framework references and setup routing
+## Candidate: approval wording and transcript compatibility
+
+Implementation approval can coexist with pending visual acceptance. The gate now separates checkpoint status from the quoted answer while preserving provenance, fingerprints and refusal/withdrawal checks. The retro digest accepts modern host records. Local regression tests and a native Claude scoped-write test pass. Broader project evaluation remains partial.
+
+## Earlier candidate: framework references and setup routing
 
 Live evaluation exposed two helper failures: React component names were rejected as element references, and screenshot timeouts escaped as exceptions. References now preserve source component names as inert text, and a timeout returns a clear failure while preserving completed captures. A setup answer explicitly routes through rule-maker. The five-project evaluation remains in progress; these changes do not grant approval or prove complete visual coverage.
 

@@ -70,3 +70,6 @@ This authorizes integrating the tested rc.4 candidate (including preserved UI-li
 
 ## D-rollout-2: Live evaluation budget
 2026-11-05, by: user. "Approve the $100 batch limit" answers the explicit proposal: at most25 Claude Code Opus5.5 CLI processes, each capped at USD4, USD100 total CLI-reported usage, including staged agreement/approval/revision/restart tests, up to3 repair retries and one final retrospective. No subagents or fallback models. Count launched failures against process limits. Run sequentially, inspect reported usage after each process, and reserve headroom rather than launching nominal caps against the full remaining balance. Stop if model identity or usage cannot be established. No inference process has been launched in this batch yet.
+
+## D-rc7-publication
+2026-11-06, owner: "Publish workflow fixes and Git-update both". Authorizes publishing the two locally and natively tested package fixes, then updating Claude and Codex from the pushed Git revision. Preserve every application worktree without merging application work.

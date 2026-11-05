@@ -27,11 +27,13 @@ def text_of(content):
 
 def digest(path):
     s = dict(user=[], skills=[], tools=collections.Counter(), asks=0, ask_qs=[], errors=0, compactions=0,
-             first=None, last=None, assistant_turns=0, denied=0, hook_denied=0)
+             first=None, last=None, assistant_turns=0, denied=0, hook_denied=0, host_denied=0)
     for line in open(path, encoding='utf8', errors='replace'):
         try:
             rec = json.loads(line)
         except ValueError:
+            continue
+        if not isinstance(rec, dict):
             continue
         ts = rec.get('timestamp')
         if ts:
@@ -41,7 +43,11 @@ def digest(path):
             s['compactions'] += 1
         if rec.get('isSidechain'):
             continue
+        if rec.get('type') == 'system' and rec.get('subtype') == 'permission_denied':
+            s['host_denied'] += 1  # Separate events may describe an already-counted tool error.
         msg = rec.get('message') or {}
+        if not isinstance(msg, dict):
+            continue
         content = msg.get('content')
         if rec.get('type') == 'user':
             if isinstance(content, list) and any(isinstance(c, dict) and c.get('type') == 'tool_result' for c in content):
@@ -91,6 +97,7 @@ def main():
             top = ', '.join(f'{k}:{v}' for k, v in s['tools'].most_common(8))
             f.write(f"## {p.stem}  ({(s['first'] or '')[:16]} → {(s['last'] or '')[:16]}, {p.stat().st_size // 1024} KB)\n")
             f.write(f"- human messages: {len(s['user'])}; assistant turns: {s['assistant_turns']}; compactions: {s['compactions']}; tool errors: {s['errors']} (denied {s['denied']}); hook denials: {s['hook_denied']}\n")
+            f.write(f"- host permission denials: {s['host_denied']} (separate stream events; may overlap tool errors)\n")
             f.write(f"- skills: {s['skills']}\n- AskUserQuestion calls: {s['asks']}\n- tools: {top}\n")
             for q in s['ask_qs'][:12]:
                 f.write(f'  - Q: {q}\n')

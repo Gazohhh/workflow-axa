@@ -93,6 +93,29 @@ class VendoredSkillTests(unittest.TestCase):
                            check=True, capture_output=True)
             self.assertIn("tool errors: 1 (denied 0); hook denials: 1", out.read_text(encoding="utf-8"))
 
+    def test_session_digest_accepts_stream_system_messages(self):
+        # Native CLI stream-json has string messages for permission denials.
+        with tempfile.TemporaryDirectory() as tmp:
+            logs = Path(tmp) / "logs"
+            logs.mkdir()
+            rows = [
+                {"type": "system", "subtype": "permission_denied", "message": "Permission denied"},
+                {"type": "system", "message": "status"},
+                {"type": "user", "message": {"content": "Continue the approved task"}},
+                None,
+            ]
+            (logs / "s1.jsonl").write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+            out = Path(tmp) / "digest.md"
+            result = subprocess.run([sys.executable, "-X", "utf8", "-I",
+                                     str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+                                    capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("human messages: 1", text)
+            self.assertIn("Continue the approved task", text)
+            self.assertIn("host permission denials: 1", text)
+            self.assertIn("tool errors: 0", text)
+
     def test_session_digest_hides_secrets_and_counts_typed_commands(self):
         # Hooqd retro: a pasted server password reached the digest, and a typed /workflow showed as "skills: []".
         with tempfile.TemporaryDirectory() as tmp:

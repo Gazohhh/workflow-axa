@@ -1046,6 +1046,9 @@ REVOKED = re.compile(r"\b(?:revoke[sd]?|withdraw[sn]?|withdrawn|retract(?:ed|s)?
                      r"|\bcancel (?:this|the) (?:task|approval|plan)\b|\bdo not (?:implement|continue)\b|\bdon't (?:implement|continue)\b")
 RESTRICTS = re.compile(r"\b(?:but|except|only|without|nothing in|no changes? (?:to|in)|must not|never|leave)\b")
 CONTINUES = re.compile(r'\b(?:continue|resume)\b')
+WAITING_APPROVAL = re.compile(r'\b(?:approval|implementation|decision)\s+(?:(?:is|remains?|still)\s+)*'
+                              r'(?:pending|awaiting)\b|\b(?:pending|awaiting)\s+(?:approval|permission|decision)\b', re.I)
+REFUSED_APPROVAL = re.compile(r'\b(?:not|never|no)\s+(?:yet\s+)?approved\b|\bunapproved\b', re.I)
 
 
 def revoked_after(state: dict, task: str, after: int = -1) -> bool:
@@ -1114,7 +1117,10 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
     if not found:
         return 'has no `- Approval:` line'
     line = found.group(1).strip()
-    if NEGATIVE.search(line) or not POSITIVE.search(line):
+    # The checkpoint status and the verbatim answer are separate fields. A later
+    # acceptance gate can remain pending inside an implementation approval.
+    marker = QUOTE.sub('', line)
+    if NEGATIVE.search(marker) or not POSITIVE.search(marker):
         return f'does not approve a revision (`{line[:160]}`)'
     reports = tuple(re.findall(r'([\w.-]+\.html)\b', line))
     revisions = revision_numbers(line)
@@ -1137,7 +1143,10 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
     quotes = [a or b for a, b in QUOTE.findall(line) if re.search(r'\w', a or b)]
     if not quotes:
         return 'quotes none of the user\'s words; record their approval in double quotes, exactly as they wrote it'
-    if any(clean(q) in {'no', 'nope', 'not yet', 'not now', 'nee', 'niet', 'decline', 'hold off'} for q in quotes):
+    if any(clean(q) in {'no', 'nope', 'not yet', 'not now', 'nee', 'niet', 'decline', 'hold off',
+                       'pending', 'awaiting', 'proposed', 'not waived', 'not given'}
+           or REVOKED.search(clean(q)) or WAITING_APPROVAL.search(q)
+           or REFUSED_APPROVAL.search(q) for q in quotes):
         return 'quotes an explicit refusal or delay, not implementation approval'
     recorded = frozenset(clean(a or b) for a, b in QUOTE.findall(text))
     notes = []
