@@ -2,6 +2,14 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.2 (2026-11-04)
+
+- Clarify D14 permission: no agent-recommended plain-HTML fallback and no blanket yes treated as that exception. Preserve legitimate element-specific owner instructions and stricter project rules. **Project action:** no automatic rewrite; reconcile contradictory guidance before the next affected UI unit. Related phase instructions now distinguish explicit paid-evaluation budgets and legacy approval recovery. No new external dependency or automatic deployment.
+
+## 1.8.1 (2026-11-04)
+
+- Consolidate workflow entry/readiness ownership in READINESS.md; RULES.md remains a compatibility pointer. No new application coding or UI policy. **Project action:** no rule-copy migration; check the affected shared references when using this candidate. This metadata does not accept an earlier delivery or D7–D10 on the owner's behalf.
+
 ## 1.8.0 (2026-11-03)
 
 - A project may carry one line in its root AGENTS.md: `workflow-axa rules checked: <version> (<date>)`. Only a passed setup or audit writes it, with the owner's approval. It is information, never a requirement: a project without it is checked as before. **Project action:** none; add the line after the next passed audit.

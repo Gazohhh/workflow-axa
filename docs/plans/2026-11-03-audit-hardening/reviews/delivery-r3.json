@@ -1,0 +1,1748 @@
+{
+  "schema_version": 2,
+  "title": "Audit fixes: approvals, recovery, verification and less repeated work",
+  "revision": "r1",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa (D:/workflow-axa, main worktree)",
+    "branch": "main at 9e8338e. The task changes are staged or unstaged and not committed.",
+    "basis": "On 2026-11-04 a fresh reconciler read the records again after V11. The test results come from FINDINGS V11. The reconciler ran validate.py once more and did not build the work."
+  },
+  "understanding": "You want the defects from the audit fixed so that workflow-axa takes fewer unauthorized actions, recovers more clearly and repeats less work. The fixes change package files only and keep the four phases, both gates and the report design.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "After /workflow, application code edits and git writes are allowed only when the current task's Approval line approves the current revision. The user's words that the line quotes must appear in a real user message. Loading clarify or specify allows only task records and the report.",
+      "origin": "PLAN.md Goal and acceptance, A1."
+    },
+    {
+      "id": "R2",
+      "text": "Negated or quoted \"lightweight\" wording grants nothing. A lightweight edit needs a recorded line that names its files.",
+      "origin": "PLAN.md Goal and acceptance, A2."
+    },
+    {
+      "id": "R3",
+      "text": "Another task's approval does not authorize the current task. A valid approval survives resumption. A changed scope does not inherit it.",
+      "origin": "PLAN.md Goal and acceptance, A3."
+    },
+    {
+      "id": "R4",
+      "text": "Reading a phase SKILL.md whole counts as loading that phase, as the router documents.",
+      "origin": "PLAN.md Goal and acceptance, A4."
+    },
+    {
+      "id": "R5",
+      "text": "The gate also runs for the PowerShell tool and MCP write tools. It catches common shell writes: redirection, tee, cp, mv, Set-Content, git apply, git checkout and git reset. The docs say plainly that command-text filtering is advice, not a security boundary.",
+      "origin": "PLAN.md Goal and acceptance, A5."
+    },
+    {
+      "id": "R6",
+      "text": "An interrupted record write leaves the old file intact. A concurrent change is refused, never silently lost.",
+      "origin": "PLAN.md Goal and acceptance, A6."
+    },
+    {
+      "id": "R7",
+      "text": "\"Stop\" ends implementation: no review loop and no return to execute. Paused, blocked, cancelled and partial each have one clear route. The handoff names what changed, what was verified, what remains and the next safe action.",
+      "origin": "PLAN.md Goal and acceptance, A7."
+    },
+    {
+      "id": "R8",
+      "text": "A failure counts as existing only when the same test fails the same way. Five existing failures that become four existing plus one new are reported as one new failure.",
+      "origin": "PLAN.md Goal and acceptance, A8."
+    },
+    {
+      "id": "R9",
+      "text": "A baseline is reused only while its command, commit, diff and environment still match. The required checks run again after the last repair.",
+      "origin": "PLAN.md Goal and acceptance, A9."
+    },
+    {
+      "id": "R10",
+      "text": "A small change uses one builder and one independent review. A small change is one ticket with named files and no interface, data, dependency or security change. It leaves that route when it turns risky. An unchanged diff gets no second review.",
+      "origin": "PLAN.md Goal and acceptance, A10."
+    },
+    {
+      "id": "R11",
+      "text": "Words that carry uncertainty, permission or a proposal keep their meaning. The wording check runs before the report is written, never blocks a valid report and covers every report kind. An approved or presented report is never overwritten. A report counts as presented once the task records name it.",
+      "origin": "PLAN.md Goal and acceptance, A11."
+    },
+    {
+      "id": "R12",
+      "text": "The test suite passes in a path with spaces and under POSIX.",
+      "origin": "PLAN.md Goal and acceptance, A12."
+    },
+    {
+      "id": "R13",
+      "text": "One current verification summary exists. It is tied to a commit and an environment and is generated where practical. The other documents point to it.",
+      "origin": "PLAN.md Goal and acceptance, A13."
+    },
+    {
+      "id": "R14",
+      "text": "A release package is built from an explicit include list, without Git internals, caches, secrets or evaluation output.",
+      "origin": "PLAN.md Goal and acceptance, A14."
+    }
+  ],
+  "boundaries": [
+    "Only workflow-axa package files change: hooks, scripts, skills, docs and tests.",
+    "No application repository changes, no global settings or permission changes and no automatic commits.",
+    "The four phases, grilling, grounded planning, both gates, task reuse, history, shared rules and artifact protections stay.",
+    "Pinned specialist methods, the D14 UI rule and the approved report design stay.",
+    "No package code changes before you agree to the behavior and approve the plan."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-03-audit-hardening/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-03-audit-hardening/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-03-audit-hardening/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-03-audit-hardening/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S5",
+      "path": "hooks/phase_gate.py",
+      "role": "code"
+    },
+    {
+      "id": "S6",
+      "path": "skills/workflow/scripts/record.py",
+      "role": "code"
+    },
+    {
+      "id": "S7",
+      "path": "skills/workflow-execute/SKILL.md",
+      "role": "code"
+    },
+    {
+      "id": "S8",
+      "path": "skills/codebase-map/scripts/render_report.py",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "After /workflow, loading workflow-clarify alone allows an Edit of application code and git push. session_state turns any phase name in the transcript into one yes or no, and clarify counts the same as execute.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E1; phase_gate.py:49-73, :71",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository. Also rechecked by hand."
+    },
+    {
+      "id": "E2",
+      "claim": "Chat text \"This is NOT a lightweight edit\" grants the lightweight exemption, because LIGHTWEIGHT matches the bare phrase in any assistant text.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E2; phase_gate.py:45, :68-69",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository. Also rechecked by hand."
+    },
+    {
+      "id": "E3",
+      "claim": "A phase loaded for task A satisfies the check for a new task B later in the same session.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E3",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository."
+    },
+    {
+      "id": "E4",
+      "claim": "The gate misses many shell writes, for example redirection, tee, cp, mv, Set-Content, git apply, git checkout -- file and git reset --hard. A records path anywhere in a command exempts the whole command, and the cd target is judged instead of the written file.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E4; phase_gate.py:85, :87",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository."
+    },
+    {
+      "id": "E5",
+      "claim": "A whole read of a phase SKILL.md does not count as loading the phase, so edits stay blocked. The router documents that read as its fallback.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E5; workflow/SKILL.md:36",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository."
+    },
+    {
+      "id": "E6",
+      "claim": "The PowerShell tool and MCP write tools are outside the hooks.json matcher, so the gate never runs for them.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E6; hooks/hooks.json PreToolUse matcher",
+      "limits": "Read from hooks.json. The matcher is Edit|Write|MultiEdit|NotebookEdit|Bash."
+    },
+    {
+      "id": "E7",
+      "claim": "It is unknown which transcript a subagent's hook call receives. If it is the subagent's own transcript, it has no /workflow line and is not gated.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E7",
+      "limits": "Unknown. Not reproduced."
+    },
+    {
+      "id": "E8",
+      "claim": "The agent can write the PLAN.md Approval line itself, because task records are writable before approval. The real user answer is a user message in the transcript, which the hook can read.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E8",
+      "limits": "A limit, not a reproduced defect."
+    },
+    {
+      "id": "E9",
+      "claim": "workflow-execute and phase_reads.py require a fresh worker for every ticket, a fresh reviewer, and a re-review of every repair, record-only repairs included. workflow-deliver requires a fresh reconciler.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S7"
+      ],
+      "locator": "FINDINGS E9; workflow-execute/SKILL.md:29, :32, :33; phase_reads.py:58-59; workflow-deliver:14",
+      "limits": "Read from the instructions."
+    },
+    {
+      "id": "E10",
+      "claim": "Measured runs: one-ticket rename r22-short used 4 agents, $9.25 and 84 turns. r22-long used 11 agents, $16.35 and 133 turns. Its T2 review and its whole-feature review started 9 seconds apart on the same unchanged diff.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E10",
+      "limits": "Costs are running totals from the headless summaries of this session."
+    },
+    {
+      "id": "E11",
+      "claim": "The baseline records failure counts only. Five existing failures that become four existing plus one new pass as unchanged. The rules library already says to compare actual tests, not totals.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S7"
+      ],
+      "locator": "FINDINGS E11; workflow-execute/SKILL.md:28; rule-maker/rules/operations.md:17",
+      "limits": "Read from the instructions."
+    },
+    {
+      "id": "E12",
+      "claim": "A baseline records no command, commit, diff state or environment, so a resumed session can reuse a stale one.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E12; TASK-FOLDER.md:55",
+      "limits": "Read from the instructions."
+    },
+    {
+      "id": "E13",
+      "claim": "No rule says that the required checks run again after the last repair, and task_report.py cannot detect a stale check itself.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S7"
+      ],
+      "locator": "FINDINGS E13; workflow-execute step 8",
+      "limits": "Read from the instructions and the helper."
+    },
+    {
+      "id": "E14",
+      "claim": "In a checkout path with spaces, 11 tests fail because activate_rules.py refuses such paths. Under WSL, 2 tests fail because a test reads the live D:/workflow-axa checkout.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E14; activate_rules.py:57-58; test_truncated_read_hook.py:15, 49-57",
+      "limits": "The 11 Windows skips are real host limits. The POSIX run executed them and they passed."
+    },
+    {
+      "id": "E15",
+      "claim": "hooks.json runs python. On a host with only python3, no hook starts, so the gate enforces nothing.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E15; hooks/hooks.json",
+      "limits": "A risk. Not reproduced on such a host."
+    },
+    {
+      "id": "E16",
+      "claim": "simple-english bans should, would, may, might and could, and task_report.py flags them. WRITING.md requires must, may and must not to be kept. Following the advice can turn an unproven cause into a false certainty.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E16; simple-english/SKILL.md:20; task_report.py:170; workflow/WRITING.md:37",
+      "limits": "Read from the skills and the helper."
+    },
+    {
+      "id": "E17",
+      "claim": "render_report.py writes the HTML first and runs the wording check after. --open opens the file even with problems. Review reports without a task_report block get no wording check.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S8"
+      ],
+      "locator": "FINDINGS E17; render_report.py:944, :948",
+      "limits": "Read from the renderer."
+    },
+    {
+      "id": "E18",
+      "claim": "--replace-unpresented checks only that the renderer made the file, so it would overwrite an approved report. Three documents still say that every re-render needs a new file.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S8"
+      ],
+      "locator": "FINDINGS E18; simple-english/SKILL.md:91; TASK-FOLDER.md:97",
+      "limits": "Read from the renderer and the docs."
+    },
+    {
+      "id": "E19",
+      "claim": "Measured: the mulcol task made plan-r1, -v2 and -v3 within two minutes, and all three were opened.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E19",
+      "limits": "This happened before --replace-unpresented existed."
+    },
+    {
+      "id": "E20",
+      "claim": "record.py writes in place. A kill during the write leaves an empty or cut-off record. Two writers at once lose one write. tick T1 can tick T1.2 and turns a cancelled line into a ticked one.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S6"
+      ],
+      "locator": "FINDINGS E20; record.py save() :33, new :62",
+      "limits": "Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository."
+    },
+    {
+      "id": "E21",
+      "claim": "A user's \"stop\" routes to deliver. Deliver requires the whole-feature review or hands back to execute, and execute repeats while a ticket is ready. No stopped, paused or cancelled state exists.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S7"
+      ],
+      "locator": "FINDINGS E21; workflow/SKILL.md:32; workflow-deliver:12; workflow-execute/SKILL.md:25",
+      "limits": "Read from the instructions."
+    },
+    {
+      "id": "E22",
+      "claim": "The docs contradict each other on the skill count (20 or 21), the rules version (1.6.0 or 1.8.0), the test count and the browser and host checks. VALIDATION names no source commit.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E22",
+      "limits": "Read from README, CHANGELOG, VALIDATION, UPGRADE and VENDORED-SKILLS."
+    },
+    {
+      "id": "E23",
+      "claim": "No release or ZIP tool exists, although VALIDATION describes one. No inclusion policy and no root LICENSE exist. No secret-like files were found.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E23; VALIDATION:135, :184",
+      "limits": "Read from the repository files."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Approval-bound gate",
+      "kind": "requested",
+      "reason": "Edits and git writes get permission from the current task's recorded approval, not from any phase name.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
+      ],
+      "acceptance": [
+        "AC1",
+        "AC2"
+      ],
+      "areas": [
+        "hooks/phase_gate.py",
+        "hooks/hooks.json",
+        "skills/workflow/SKILL.md (router note)"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "V1 and V9: hook tests pass in the final suite. The whole-feature review found 2 hard issues in the gate, which were fixed with tests."
+    },
+    {
+      "id": "T2",
+      "title": "Safe record writes",
+      "kind": "requested",
+      "reason": "An interrupted or concurrent write no longer empties a record or loses a change.",
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E20"
+      ],
+      "acceptance": [
+        "AC3"
+      ],
+      "areas": [
+        "skills/workflow/scripts/record.py"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "V2: 14 record safety tests pass. One fresh review found no hard findings. Symlink and POSIX file-mode cases did not run on this Windows host."
+    },
+    {
+      "id": "T3",
+      "title": "Stop and recovery routes",
+      "kind": "requested",
+      "reason": "A stop ends implementation, and each unfinished state has one route and a clear handoff.",
+      "requirements": [
+        "R7"
+      ],
+      "evidence": [
+        "E21"
+      ],
+      "acceptance": [
+        "AC4"
+      ],
+      "areas": [
+        "skills/workflow/TASK-FOLDER.md",
+        "skills/workflow/SKILL.md (router table)",
+        "skills/workflow-execute/SKILL.md",
+        "skills/workflow-deliver/SKILL.md",
+        "skills/resume-task/SKILL.md",
+        "handoff message"
+      ],
+      "depends_on": [
+        "T2"
+      ],
+      "outcome": "verified",
+      "outcome_note": "V3: stop, pause and cancel routing tests pass. D10 (by: agent) keeps skills/resume-task/SKILL.md unchanged, because the router and TASK-FOLDER hold the route back."
+    },
+    {
+      "id": "T4",
+      "title": "Baselines by identity",
+      "kind": "requested",
+      "reason": "A new failure is not hidden by a matching count, and a stale baseline is not reused.",
+      "requirements": [
+        "R8",
+        "R9"
+      ],
+      "evidence": [
+        "E11",
+        "E12",
+        "E13"
+      ],
+      "acceptance": [
+        "AC5"
+      ],
+      "areas": [
+        "skills/workflow-execute/SKILL.md",
+        "skills/workflow-deliver/SKILL.md",
+        "skills/workflow/TASK-FOLDER.md",
+        "compare_failures.py (new)"
+      ],
+      "depends_on": [
+        "T3"
+      ],
+      "outcome": "verified",
+      "outcome_note": "V3, V10 and V11: compare_failures.py and baseline_state.py tests pass. A fresh review found 3 hard defects, fixed test-first."
+    },
+    {
+      "id": "T5",
+      "title": "Reports and wording",
+      "kind": "requested",
+      "reason": "The wording advice keeps the meaning, runs before the file is written and never overwrites an approved report.",
+      "requirements": [
+        "R11"
+      ],
+      "evidence": [
+        "E16",
+        "E17",
+        "E18",
+        "E19"
+      ],
+      "acceptance": [
+        "AC6"
+      ],
+      "areas": [
+        "skills/codebase-map/scripts/render_report.py",
+        "skills/codebase-map/scripts/task_report.py",
+        "skills/simple-english/SKILL.md (adaptation)",
+        "skills/workflow/WRITING.md",
+        "skills/workflow/TASK-FOLDER.md",
+        "renderer help text"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "V4 and V9: report and helper tests pass. The whole-feature review covered this ticket."
+    },
+    {
+      "id": "T6",
+      "title": "Proportional agents",
+      "kind": "requested",
+      "reason": "A small change uses fewer agents and no repeated review of an unchanged diff.",
+      "requirements": [
+        "R10"
+      ],
+      "evidence": [
+        "E9",
+        "E10"
+      ],
+      "acceptance": [
+        "AC7"
+      ],
+      "areas": [
+        "skills/workflow-execute/SKILL.md",
+        "skills/workflow-deliver/SKILL.md",
+        "hooks/phase_reads.py"
+      ],
+      "depends_on": [
+        "T3"
+      ],
+      "outcome": "verified",
+      "outcome_note": "V3 and V8: guard tests pass. One-ticket live tasks used 1 subagent call each, against 4 for r22-short."
+    },
+    {
+      "id": "T7",
+      "title": "Portability",
+      "kind": "requested",
+      "reason": "The suite passes in a path with spaces and under POSIX, and a missing python is reported.",
+      "requirements": [
+        "R12"
+      ],
+      "evidence": [
+        "E14",
+        "E15"
+      ],
+      "acceptance": [
+        "AC8"
+      ],
+      "areas": [
+        "tests/",
+        "activate_rules.py tests",
+        "skills/workflow-doctor/SKILL.md (note)"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "V11: the suite passed in a path with spaces (763 ran, 13 skipped) and under WSL (763 ran, 16 skipped)."
+    },
+    {
+      "id": "T8",
+      "title": "Docs and release",
+      "kind": "requested",
+      "reason": "One generated verification summary replaces contradicting counts, and a release package has an explicit include list.",
+      "requirements": [
+        "R13",
+        "R14"
+      ],
+      "evidence": [
+        "E22",
+        "E23"
+      ],
+      "acceptance": [
+        "AC9",
+        "AC10"
+      ],
+      "areas": [
+        "VALIDATION.md",
+        "README.md",
+        "CHANGELOG.md",
+        "UPGRADE.md",
+        "VENDORED-SKILLS.md",
+        "tools/validate.py",
+        "tools/build_release.py (new)"
+      ],
+      "depends_on": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7"
+      ],
+      "outcome": "verified",
+      "outcome_note": "V6 and V9: release and docs tests pass. VALIDATION.md was regenerated, and the release zip was rebuilt with 184 files."
+    },
+    {
+      "id": "T9",
+      "title": "Live acceptance",
+      "kind": "requested",
+      "reason": "Real host runs show whether the gate blocks each bypass and allows each legitimate route.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R10"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E9",
+        "E10",
+        "E20",
+        "E21"
+      ],
+      "acceptance": [
+        "AC11"
+      ],
+      "areas": [
+        "Headless Claude runs on fixtures",
+        "Codex runs where available"
+      ],
+      "depends_on": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6"
+      ],
+      "outcome": "verified",
+      "outcome_note": "V7, V10 and D11: eight live rounds, a live PowerShell-tool denial and a Codex run with write access that changed nothing without approval."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC1",
+      "text": "Every E1-E7 bypass case is blocked. Every legitimate route still works: an approved current task, a recorded lightweight line, a whole read of a phase SKILL.md and a resumed valid approval.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "verification": "Hook regression tests in the package suite. Each test fails before the fix. For E7, a hook log in a fixture run shows which transcript a subagent's hook call receives."
+    },
+    {
+      "id": "AC2",
+      "text": "The gate runs for the PowerShell tool and MCP write tools and blocks the listed shell writes. Explicit edit tools fail closed when the transcript cannot be read. A short section says what is enforced and what is not.",
+      "requirements": [
+        "R5"
+      ],
+      "verification": "Hook tests for each tool and each write pattern. Read the new section."
+    },
+    {
+      "id": "AC3",
+      "text": "An interrupted write leaves the old record. A second writer is refused. A BOM and mixed line endings are kept. tick T1 does not tick T1.2 or a cancelled line.",
+      "requirements": [
+        "R6"
+      ],
+      "verification": "record.py tests for an interrupted write, two writers, a BOM, mixed endings and T1 against T1.2."
+    },
+    {
+      "id": "AC4",
+      "text": "Stop goes to the partial delivery record without a review loop. Paused, blocked, cancelled and partial each route once. A failed review stops after two tries with a recorded reason. The handoff names changed files, verified work, remaining work and the next safe action.",
+      "requirements": [
+        "R7"
+      ],
+      "verification": "Routing guard tests for each state."
+    },
+    {
+      "id": "AC5",
+      "text": "Five existing failures that become four existing plus one new are reported as one new failure. A changed command, commit, diff or environment invalidates the baseline.",
+      "requirements": [
+        "R8",
+        "R9"
+      ],
+      "verification": "compare_failures.py tests for both cases."
+    },
+    {
+      "id": "AC6",
+      "text": "The five audit sentences keep their meaning after the advice. Quoted and code text is exempt. A re-render that replaces a file named in the task records, or a file with approved state, is refused. Repeated wording fixes keep one file.",
+      "requirements": [
+        "R11"
+      ],
+      "verification": "Renderer and helper tests on the five sentences and on the refused replace."
+    },
+    {
+      "id": "AC7",
+      "text": "A small change uses one builder and one independent review. It leaves the small route when it turns risky. A record or wording repair needs no re-review.",
+      "requirements": [
+        "R10"
+      ],
+      "verification": "Guard tests on the instruction wording. A replay of the r22-short case counts its agent calls."
+    },
+    {
+      "id": "AC8",
+      "text": "The package suite passes in a checkout path with spaces and under WSL.",
+      "requirements": [
+        "R12"
+      ],
+      "verification": "Run the suite in a path with spaces and under WSL."
+    },
+    {
+      "id": "AC9",
+      "text": "A generated Current verification section names the commit, the environment, the commands and the results. validate.py fails when a skill or version count in prose differs from plugin.json.",
+      "requirements": [
+        "R13"
+      ],
+      "verification": "A validate.py test with a count mismatch. Read the generated section."
+    },
+    {
+      "id": "AC10",
+      "text": "The release package holds only paths from the include list, with no Git internals, caches, secrets or evaluation output.",
+      "requirements": [
+        "R14"
+      ],
+      "verification": "A build_release.py test that lists the package contents."
+    },
+    {
+      "id": "AC11",
+      "text": "Live runs, within the D5 limit, show each bypass blocked and each legitimate route allowed. Their results are reported apart from the static and helper tests, and unavailable hosts are named.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R10"
+      ],
+      "verification": "Headless Claude runs on fixtures, plus Codex runs where available."
+    }
+  ],
+  "graphs": [
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "Today: any phase name in the session allows the edit",
+      "description": "How an edit or git write gets permission today. Arrows show the order of the checks. Reproduced with probe scripts at 0b4e4b4.",
+      "width": 1280,
+      "height": 400,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "/workflow loaded",
+          "note": "Router typed or loaded",
+          "shape": "start",
+          "x": 48,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N2",
+          "label": "Scan the session",
+          "note": "Any phase name, any task",
+          "shape": "action",
+          "x": 496,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "N3",
+          "label": "Edit allowed",
+          "note": "Clarify counts as execute",
+          "shape": "result",
+          "x": 944,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "edit or git",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              336,
+              200
+            ],
+            [
+              496,
+              200
+            ]
+          ],
+          "label_position": [
+            416,
+            172
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "name found",
+          "evidence": [
+            "E1",
+            "E3"
+          ],
+          "change": "unchanged",
+          "basis": "observed",
+          "tasks": [],
+          "points": [
+            [
+              784,
+              200
+            ],
+            [
+              944,
+              200
+            ]
+          ],
+          "label_position": [
+            864,
+            172
+          ]
+        }
+      ]
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "After the change",
+      "title": "After: the current task's approval and the user's real words allow the edit",
+      "description": "How an edit or git write gets permission after T1. Arrows show the order of the checks. If a check fails, the edit is blocked. Not built yet.",
+      "width": 1520,
+      "height": 480,
+      "nodes": [
+        {
+          "id": "P1",
+          "label": "/workflow loaded",
+          "note": "Edit or git write",
+          "shape": "start",
+          "x": 48,
+          "y": 152,
+          "width": 224,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "id": "P2",
+          "label": "Which phase?",
+          "note": "",
+          "shape": "decision",
+          "x": 352,
+          "y": 136,
+          "width": 224,
+          "height": 128,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "id": "P3",
+          "label": "Records only",
+          "note": "PLAN, TODO, report",
+          "shape": "result",
+          "x": 336,
+          "y": 336,
+          "width": 256,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "id": "P4",
+          "label": "Approval line",
+          "note": "Current task and revision",
+          "shape": "action",
+          "x": 656,
+          "y": 152,
+          "width": 256,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3",
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "id": "P5",
+          "label": "Quoted user words",
+          "note": "Found in a real user message",
+          "shape": "action",
+          "x": 992,
+          "y": 152,
+          "width": 256,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "id": "P6",
+          "label": "Edit allowed",
+          "note": "Code and git writes",
+          "shape": "result",
+          "x": 1328,
+          "y": 152,
+          "width": 176,
+          "height": 96,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "P1",
+          "to": "P2",
+          "label": "",
+          "evidence": [
+            "E1"
+          ],
+          "change": "unchanged",
+          "basis": "proposed",
+          "tasks": [],
+          "points": [
+            [
+              272,
+              200
+            ],
+            [
+              352,
+              200
+            ]
+          ]
+        },
+        {
+          "from": "P2",
+          "to": "P3",
+          "label": "plan phases",
+          "evidence": [
+            "E1"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "T1"
+          ],
+          "points": [
+            [
+              464,
+              264
+            ],
+            [
+              464,
+              336
+            ]
+          ],
+          "label_position": [
+            520,
+            308
+          ]
+        },
+        {
+          "from": "P2",
+          "to": "P4",
+          "label": "execute",
+          "evidence": [
+            "E1"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "T1"
+          ],
+          "points": [
+            [
+              576,
+              200
+            ],
+            [
+              656,
+              200
+            ]
+          ],
+          "label_position": [
+            616,
+            172
+          ]
+        },
+        {
+          "from": "P4",
+          "to": "P5",
+          "label": "",
+          "evidence": [
+            "E8"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "T1"
+          ],
+          "points": [
+            [
+              912,
+              200
+            ],
+            [
+              992,
+              200
+            ]
+          ]
+        },
+        {
+          "from": "P5",
+          "to": "P6",
+          "label": "",
+          "evidence": [
+            "E8"
+          ],
+          "change": "added",
+          "basis": "proposed",
+          "tasks": [
+            "T1"
+          ],
+          "points": [
+            [
+              1248,
+              200
+            ],
+            [
+              1328,
+              200
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "Permission for an edit",
+      "current": "Any phase name anywhere in the session allows code edits and git writes. Clarify counts the same as execute.",
+      "proposed": "The current task's Approval line must approve the current revision, and its quoted user words must appear in a real user message. Clarify and specify allow records and the report only.",
+      "requirements": [
+        "R1",
+        "R3"
+      ],
+      "evidence": [
+        "E1",
+        "E3",
+        "E8"
+      ],
+      "tasks": [
+        "T1"
+      ]
+    },
+    {
+      "label": "Lightweight edits",
+      "current": "The bare phrase \"lightweight edit\" in any assistant text grants the exemption, even when negated.",
+      "proposed": "A recorded line that names the files grants it. Negated or quoted wording grants nothing.",
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "T1"
+      ]
+    },
+    {
+      "label": "What the gate sees",
+      "current": "PowerShell, MCP write tools and many shell writes pass. A whole read of a phase SKILL.md does not count as loading it.",
+      "proposed": "The gate runs for PowerShell and MCP write tools and catches common shell writes. A whole read counts as loading the phase.",
+      "requirements": [
+        "R4",
+        "R5"
+      ],
+      "evidence": [
+        "E4",
+        "E5",
+        "E6"
+      ],
+      "tasks": [
+        "T1"
+      ]
+    },
+    {
+      "label": "Record writes",
+      "current": "record.py writes in place. An interrupted or concurrent write can empty a record or lose a change.",
+      "proposed": "A temp file replaces the record. A change made since the read is refused.",
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E20"
+      ],
+      "tasks": [
+        "T2"
+      ]
+    },
+    {
+      "label": "When the user says stop",
+      "current": "Stop routes to deliver, which can send the agent back into building.",
+      "proposed": "Stop goes to the partial record. Paused, blocked and cancelled each have one route.",
+      "requirements": [
+        "R7"
+      ],
+      "evidence": [
+        "E21"
+      ],
+      "tasks": [
+        "T3"
+      ]
+    },
+    {
+      "label": "Baselines",
+      "current": "Failures are compared by count, and a baseline has no command, commit, diff or environment.",
+      "proposed": "Failures are compared by test ID and first error line. A baseline is reused only while its inputs match.",
+      "requirements": [
+        "R8",
+        "R9"
+      ],
+      "evidence": [
+        "E11",
+        "E12",
+        "E13"
+      ],
+      "tasks": [
+        "T4"
+      ]
+    },
+    {
+      "label": "Report wording and re-render",
+      "current": "The advice removes uncertainty words, runs after the file is written and allows overwriting an approved report.",
+      "proposed": "The advice keeps the meaning and runs first for every report kind. A shown or approved report is never replaced.",
+      "requirements": [
+        "R11"
+      ],
+      "evidence": [
+        "E16",
+        "E17",
+        "E18",
+        "E19"
+      ],
+      "tasks": [
+        "T5"
+      ]
+    },
+    {
+      "label": "Agents for a small change",
+      "current": "Every ticket gets a fresh worker and a fresh reviewer, and every repair gets a re-review.",
+      "proposed": "One builder and one independent review, with an escalation rule. No second review of an unchanged diff.",
+      "requirements": [
+        "R10"
+      ],
+      "evidence": [
+        "E9",
+        "E10"
+      ],
+      "tasks": [
+        "T6"
+      ]
+    },
+    {
+      "label": "Tests on other machines",
+      "current": "11 tests fail in a path with spaces, and 2 fail under WSL.",
+      "proposed": "Tests build paths from the checkout root and pass in both places.",
+      "requirements": [
+        "R12"
+      ],
+      "evidence": [
+        "E14",
+        "E15"
+      ],
+      "tasks": [
+        "T7"
+      ]
+    },
+    {
+      "label": "Verification docs and release",
+      "current": "The docs disagree on counts and versions. No release tool exists.",
+      "proposed": "One generated verification summary, a release package from an include list and an MIT LICENSE.",
+      "requirements": [
+        "R13",
+        "R14"
+      ],
+      "evidence": [
+        "E22",
+        "E23"
+      ],
+      "tasks": [
+        "T8"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "delivery",
+    "completion": "complete",
+    "agreement": {
+      "status": "approved",
+      "revision": "r1",
+      "response": "Yes to both",
+      "summary": "You agreed to the behavior and approved the plan, revision r1, on 2026-11-03 with the answers D1 to D5.",
+      "source": "S4",
+      "locator": "DECISIONS.md ## Approval (owner, 2026-11-03), D6; PLAN.md ## Current checkpoint, Agreement and Approval"
+    },
+    "sections": [
+      {
+        "id": "request",
+        "title": "Request",
+        "text": "Fix the defects that the owner's audit found in workflow-axa 2.8.0-rc.1. The goal is fewer unauthorized actions, clearer recovery and less repeated work. The goal is not more instructions or a larger test count.\n\nThis is a separate task. It fixes defects in the package that the task 2026-11-02-modular-engineering-workflow built.",
+        "source": "S1",
+        "locator": "PLAN.md ## Goal and acceptance; ## Current checkpoint, Task identity"
+      },
+      {
+        "id": "agreement",
+        "title": "What will change",
+        "text": "Edits and git writes get permission only from the current task's approval, with the user's real words. The gate sees more tools and more shell writes.\n\nRecord writes become safe against interruption and a second writer. A stop ends implementation, and each unfinished state has one route. Baselines compare test IDs and stop being reused when their inputs change.\n\nReport wording advice keeps the meaning and runs before the file is written. A small change uses fewer agents. The tests pass on other machines. One generated summary replaces the contradicting counts, and a release package comes from an include list.\n\nNot included: application repositories, global settings, permission changes and automatic commits.\n\nYour answers D1 to D5 are part of it. Approval needs the Approval line plus your real words. Small changes use the small route. The project gets an MIT license and a release tool now. T9 uses at most 8 live Claude runs plus useful Codex runs.",
+        "source": "S1",
+        "locator": "PLAN.md ## Agreement; ## Goal and acceptance A1-A14; ## Approach and scope"
+      },
+      {
+        "id": "specification",
+        "title": "How it will be built",
+        "text": "Nine tickets, ordered by impact. First come T1 approvals, T2 records and T3 stop and recovery. Then come T4 baselines, T5 reports and wording, T6 proportional agents, T7 portability, T8 docs and release and T9 live acceptance.\n\nThe main session builds each ticket. Only package files change: hooks, scripts, skills, docs and tests.",
+        "source": "S1",
+        "locator": "PLAN.md ## Approach and scope"
+      },
+      {
+        "id": "milestones",
+        "title": "Order of work",
+        "text": "T1, T2, T5 and T7 depend on no other ticket. T3 follows T2, because it uses the records that T2 writes. T4 and T6 follow T3.\n\nT8 follows T1 to T7, because it documents their final state. T9 follows T1 to T6 and stays within the D5 limit.",
+        "source": "S2",
+        "locator": "TODO.md T1-T9, Depends on"
+      },
+      {
+        "id": "decisions",
+        "title": "Decisions",
+        "text": "You answered Q1 to Q5 on 2026-11-03.\n\nD1 (Q1): \"Line + your real words\". Code edits and git writes need the current task's Approval line, and the user's words that it quotes must appear in a real user message.\n\nD2 (Q2): \"1 builder + 1 review\". The small route in T6 applies, with the escalation rule.\n\nD3 (Q3): \"MIT.\" T8 adds an MIT LICENSE at the root.\n\nD4 (Q4): \"Build the release tool now.\" T8 adds tools/build_release.py.\n\nD5 (Q5): \"Allow up to 8 Claude runs plus Codex runs where useful, but avoid unnecessary paid runs.\" T9 stays within that limit.",
+        "source": "S4",
+        "locator": "DECISIONS.md ## Answers (owner, 2026-11-03), D1-D5"
+      },
+      {
+        "id": "risks",
+        "title": "Risks and assumptions",
+        "text": "The hook blocks the explicit edit tools that it sees. It cannot see every shell write or edits outside Claude Code. It cannot prove that a record is true beyond a match of the user's words in the transcript. Codex gets no hooks. SETUP.md says so.\n\nE7 is settled: a subagent's hook call receives the parent's transcript, so the gate judges subagent edits by the parent's task (V-E7).\n\nA host with only python3 starts no hook (E15). The doctor now reports a missing python (T7).\n\nOpen minor from round 8: a record that names a draft before the owner saw it blocks --replace-unpresented, so a second report file appears. It is a proposal for the follow-up review.",
+        "source": "S3",
+        "locator": "FINDINGS.md V-E7, V7 Round 8; PLAN.md ## Approach and scope, Enforcement honesty"
+      },
+      {
+        "id": "testing",
+        "title": "How it will be checked",
+        "text": "Each confirmed defect gets a regression test that fails before the fix. The full package suite runs once per ticket and once at the end.\n\nT1, T2 and T3 each get one fresh reviewer. The other tickets get one combined review at the end. Live runs: at most 8 Claude runs plus Codex runs where useful (D5), and no run is repeated without a reason.",
+        "source": "S1",
+        "locator": "PLAN.md ## Approach and scope, Budgets"
+      },
+      {
+        "id": "delivery",
+        "title": "Delivery",
+        "text": "Asked and agreed: fix the audit defects E1 to E23 in the package files, as A1 to A14 describe. Built: all nine tickets. Fixes from the live loop and from the whole-feature review were added, each with a test.\n\nChanged files: the hooks (phase_gate.py, phase_reads.py, plain_reply.py, hooks.json), record.py and the new compare_failures.py and baseline_state.py. Also the renderer, task_report.py, the phase and router skills and the docs. New files: LICENSE, tools/build_release.py, tools/verification_summary.py and five test modules. The sibling task 2026-11-03-ui-evidence-engine also has record changes in the same tree.\n\nChecks (V11): 763 tests ran OK on Windows, in a path with spaces and under WSL. validate.py passed again at delivery. It prints NOT RUN for host validation and live evaluations.\n\nReviews: T1, T2 and one review of T3, T4 and T6 had fresh reviewers. A fresh whole-feature review found 3 hard and 11 soft issues. All were fixed or recorded. A fresh review of baseline_state.py found 3 hard defects, fixed test-first.\n\nNo acceptance gap remains. The PLAN Outcome still names delivery-r2 and says partial. Agent choices D7 to D10 wait for your review.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11; DECISIONS.md D7-D11; TODO.md T1-T9"
+      }
+    ],
+    "tickets": [
+      {
+        "task": "T1",
+        "specification": "Permission comes from the current task's PLAN.md Approval line for the current revision, in the worktree of the edited file. The user's words that the line quotes must appear in a real user message. Clarify and specify allow records and the report only. A whole read of a phase SKILL.md counts as loading it. A lightweight edit needs a recorded line that names files.\n\nThe hooks.json matcher adds the PowerShell tool and MCP write tools. More shell write patterns are caught, and paths are resolved. Explicit edit tools fail closed when the transcript cannot be read. A short section says what is enforced.\n\nT1 also settles E7. A hook log in a fixture run shows which transcript a subagent's hook call receives. Then T1 gates subagents or documents the gap.",
+        "expected": "Each E1-E7 bypass is blocked, and each legitimate route still works. One fresh reviewer reviews the ticket.",
+        "source": "S2",
+        "locator": "TODO.md T1"
+      },
+      {
+        "task": "T2",
+        "specification": "record.py writes to a temp file in the same folder, copies the file mode and replaces the record. It refuses the write when the file changed since it was read, with a hash check under a lock file. new creates the file exclusively. tick matches the exact ID and never ticks a cancelled line. A BOM and mixed line endings are kept.",
+        "expected": "An interrupted or concurrent write never empties a record or loses a change. One fresh reviewer reviews the ticket.",
+        "source": "S2",
+        "locator": "TODO.md T2"
+      },
+      {
+        "task": "T3",
+        "specification": "Add the stopped, paused and cancelled states. Stop goes to the partial record in deliver without a review loop. Blocked is not done. A failed review stops after two tries with a recorded reason. The lightweight path skips the whole-feature check. The handoff lists changed files, verified work, remaining work and the next safe action.",
+        "expected": "Each state has one route, and a stop never returns to building. One fresh reviewer reviews the ticket.",
+        "source": "S2",
+        "locator": "TODO.md T3"
+      },
+      {
+        "task": "T4",
+        "specification": "The baseline records failing test IDs with their first error line, plus the command, the commit, a diff hash and the environment. A new compare_failures.py compares two runs. The baseline is reused only while all inputs match. The required checks run again after the last repair.",
+        "expected": "A new failure is reported even when the count stays the same. A changed input invalidates the baseline.",
+        "source": "S2",
+        "locator": "TODO.md T4"
+      },
+      {
+        "task": "T5",
+        "specification": "Uncertainty, permission and proposal words become advice that keeps the meaning. Quoted and code text is exempt. The check runs before the file is written, for every report kind. --open does not run while problems remain. --replace-unpresented refuses a file that the task records name, shown or approved, and a file with approved state. The docs agree with the renderer.",
+        "expected": "The five audit sentences keep their meaning. A shown or approved report cannot be replaced. Repeated wording fixes keep one file.",
+        "source": "S2",
+        "locator": "TODO.md T5"
+      },
+      {
+        "task": "T6",
+        "specification": "Add the small route and its escalation rule. Parallel workers run only for independent tickets with separate files. A repair to records or wording needs no re-review. The last ticket's review counts as the whole-feature review when nothing changed after it. Reconciliation reuses the reviewer on the small route.",
+        "expected": "A one-ticket change uses fewer agent calls than r22-short, and no unchanged diff is reviewed twice.",
+        "source": "S2",
+        "locator": "TODO.md T6"
+      },
+      {
+        "task": "T7",
+        "specification": "Tests build paths from the checkout root. Activation tests use a temporary library without spaces, plus one test that expects the refusal. The doctor reports when python is missing.",
+        "expected": "The suite passes in a path with spaces and under WSL.",
+        "source": "S2",
+        "locator": "TODO.md T7"
+      },
+      {
+        "task": "T8",
+        "specification": "Add a generated Current verification section with the commit, the environment, the commands and the results. validate.py rejects skill or version counts in prose that differ from plugin.json. Add tools/build_release.py with an explicit include list. Add an MIT LICENSE at the root (D3).",
+        "expected": "The docs give one set of counts, and the release package lists no excluded path.",
+        "source": "S2",
+        "locator": "TODO.md T8"
+      },
+      {
+        "task": "T9",
+        "specification": "Run headless Claude sessions on fixtures for each bypass and each legitimate route, and Codex runs where they are useful. D5 allows at most 8 Claude runs and no unnecessary paid runs.",
+        "expected": "The live results are reported apart from the static and helper tests, and unavailable hosts are named.",
+        "source": "S2",
+        "locator": "TODO.md T9"
+      }
+    ],
+    "checks": [
+      {
+        "id": "C1",
+        "title": "Package suite, final run (V11)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "All tests pass.",
+        "actual": "Windows: 763 ran, OK, 13 skipped (host limits).",
+        "limits": "Not rerun by the reconciler. FINDINGS V9 records the run on the final state.",
+        "source": "S3",
+        "locator": "FINDINGS.md V11",
+        "command": "python -X utf8 -m unittest discover -s tests -q"
+      },
+      {
+        "id": "C2",
+        "title": "Package validator, rerun at delivery",
+        "kind": "inspection",
+        "status": "passed",
+        "expected": "validate.py passes.",
+        "actual": "PASS: package structure, manifest consistency, minimal metadata, twenty-one local skills, relative links, core budget (700 workflow words).",
+        "limits": "It prints NOT RUN for Claude and Codex host validation and live behavioral evaluations.",
+        "source": "S1",
+        "locator": "Delivery rerun 2026-11-04, after the review fixes",
+        "command": "python -X utf8 -I tools/validate.py"
+      },
+      {
+        "id": "C3",
+        "title": "Approval gate tests (V1)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Each bypass is denied and each legitimate route is allowed.",
+        "actual": "tests/test_phase_gate_hook.py passes inside C1.",
+        "limits": "Red seen per rule, test-first or by mutation, as V1 records.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1"
+      },
+      {
+        "id": "C4",
+        "title": "Record safety tests (V2)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "No lost or emptied record.",
+        "actual": "tests/test_record_safety.py, 14 cases, passes inside C1.",
+        "limits": "Symlink and POSIX file-mode cases did not run on Windows.",
+        "source": "S3",
+        "locator": "FINDINGS.md V2"
+      },
+      {
+        "id": "C5",
+        "title": "Stop, baseline and small-route tests (V3)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Each state routes once, and 5 to 4 plus 1 is NEW.",
+        "actual": "tests/test_stop_and_baseline.py and the guard tests pass inside C1.",
+        "limits": "The baseline input comparison has no unit test.",
+        "source": "S3",
+        "locator": "FINDINGS.md V3"
+      },
+      {
+        "id": "C6",
+        "title": "Report and wording tests (V4)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Wording advice keeps the meaning, and approved reports are not replaced.",
+        "actual": "tests/test_reports.py and tests/test_task_report.py pass inside C1.",
+        "limits": "None beyond the suite limits.",
+        "source": "S3",
+        "locator": "FINDINGS.md V4"
+      },
+      {
+        "id": "C7",
+        "title": "Path with spaces and WSL runs",
+        "kind": "test",
+        "status": "passed",
+        "expected": "The whole suite passes in a path with spaces and under WSL.",
+        "actual": "Path with spaces: 763 ran, OK, 13 skipped. WSL python3 3.12.3: 763 ran, OK, 16 skipped.",
+        "limits": "WSL skipped 3 more tests, because Pillow is not installed there. Not rerun by the reconciler.",
+        "source": "S3",
+        "locator": "FINDINGS.md V11"
+      },
+      {
+        "id": "C8",
+        "title": "Docs and release tests (V6)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Counts agree, and the package lists no excluded path.",
+        "actual": "tests/test_release.py and tests/test_docs_consistency.py pass inside C1.",
+        "limits": "No release package was built at delivery.",
+        "source": "S3",
+        "locator": "FINDINGS.md V6"
+      },
+      {
+        "id": "C9",
+        "title": "Live worktree loop (V7)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Each bypass is blocked and each legitimate route works on real hosts.",
+        "actual": "Eight rounds in four repositories. Round 8 found no approval violation and no new serious defect.",
+        "limits": "The Codex rounds were read-only. C15 adds the write-enabled Codex run. Not rerun at delivery.",
+        "source": "S3",
+        "locator": "FINDINGS.md V7; DECISIONS.md D11"
+      },
+      {
+        "id": "C10",
+        "title": "Fresh review of T1",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings closed.",
+        "actual": "2 hard findings, fixed and rechecked.",
+        "limits": "Later changes were covered by the whole-feature review (C13).",
+        "source": "S3",
+        "locator": "FINDINGS.md V1"
+      },
+      {
+        "id": "C11",
+        "title": "Fresh review of T2",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings closed.",
+        "actual": "No hard findings. 4 soft findings fixed.",
+        "limits": "None recorded.",
+        "source": "S3",
+        "locator": "FINDINGS.md V2"
+      },
+      {
+        "id": "C12",
+        "title": "Fresh review of T3, T4 and T6",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings closed.",
+        "actual": "2 hard findings (no route back from a stop, lost \"reconcile again\"), fixed.",
+        "limits": "Later changes were covered by the whole-feature review (C13).",
+        "source": "S3",
+        "locator": "FINDINGS.md V3"
+      },
+      {
+        "id": "C13",
+        "title": "Fresh whole-feature review (V9)",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings closed on the final files.",
+        "actual": "3 hard and 11 soft issues. All were fixed with tests or recorded (D11).",
+        "limits": "The fixes were checked by tests and the final runs, not by a second review.",
+        "source": "S3",
+        "locator": "FINDINGS.md V9"
+      },
+      {
+        "id": "C14",
+        "title": "Agent calls per small task (V8)",
+        "kind": "inspection",
+        "status": "passed",
+        "expected": "A one-ticket task uses one builder and one reviewer.",
+        "actual": "Two one-ticket live tasks used 1 subagent call each, against 4 for r22-short.",
+        "limits": "Session costs include rules setup, so they are not a clean cost comparison.",
+        "source": "S3",
+        "locator": "FINDINGS.md V8"
+      },
+      {
+        "id": "C15",
+        "title": "Live PowerShell and Codex write runs (V10)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "No write before approval on either host.",
+        "actual": "PowerShell Set-Content was denied, and src/app.txt stayed \"Hello world\". Codex with workspace-write changed nothing and asked.",
+        "limits": "One run each in throwaway fixtures. Codex has no hooks, so its result shows model behavior, not enforcement.",
+        "source": "S3",
+        "locator": "FINDINGS.md V10"
+      },
+      {
+        "id": "C16",
+        "title": "Baseline state tests (V10)",
+        "kind": "test",
+        "status": "passed",
+        "expected": "A changed command, commit, diff or environment gives RERUN.",
+        "actual": "tests/test_baseline_state.py has 6 tests and passes inside C1.",
+        "limits": "None beyond the suite limits.",
+        "source": "S3",
+        "locator": "FINDINGS.md V10, V11"
+      },
+      {
+        "id": "C17",
+        "title": "Fresh review of baseline_state.py (V11)",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings closed.",
+        "actual": "3 hard and 4 soft findings, fixed test-first.",
+        "limits": "The fixes were checked by tests and the final runs, not by a second review.",
+        "source": "S3",
+        "locator": "FINDINGS.md V11"
+      }
+    ],
+    "acceptance_results": [
+      {
+        "acceptance": "AC1",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C3",
+          "C13"
+        ],
+        "note": "Hook tests block E1 to E6 and allow the legitimate routes. E7 was measured live. The whole-feature review fixes (\"no report\" approvals) have tests. D7 and D8 are agent choices.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC2",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C3",
+          "C15"
+        ],
+        "note": "Hook tests cover the PowerShell and MCP matcher and the listed shell writes. V10: a live PowerShell-tool Set-Content was denied before approval. SETUP.md has the section on what is enforced.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC3",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C4"
+        ],
+        "note": "14 record safety tests pass: interrupted write, second writer BLOCKED, BOM, mixed endings and exact tick. Symlink and POSIX mode cases did not run.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC4",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C5"
+        ],
+        "note": "Routing tests for stop, pause and cancel pass, and the handoff has Changed files and Not tested lines. The live loop showed stop then continue.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC5",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C5",
+          "C16",
+          "C17"
+        ],
+        "note": "The 5 to 4 plus 1 case is reported as NEW. baseline_state.py prints RERUN when the command, commit, diff or environment changed (tests red, then green).",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC6",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C6"
+        ],
+        "note": "Tests show uncertainty words as advice, quoted text exempt, the check before writing and a refused replace for named or approved reports. One open minor from round 8.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC7",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C5",
+          "C14"
+        ],
+        "note": "Guard tests on the small route and the escalation rule pass. V8: one-ticket live tasks used 1 subagent call, against 4 before.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC8",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C7"
+        ],
+        "note": "V11: the suite passed on the final state in a path with spaces (763 ran) and under WSL (763 ran).",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC9",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C2",
+          "C8"
+        ],
+        "note": "validate.py rejects count mismatches in tests. VALIDATION.md has a regenerated section that names the commit, the environment, the commands and the results.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC10",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C8"
+        ],
+        "note": "tests/test_release.py lists the package contents. V9 rebuilt the release zip with 184 files.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      },
+      {
+        "acceptance": "AC11",
+        "status": "verified",
+        "checks": [
+          "C15"
+        ],
+        "note": "Eight live rounds, a live PowerShell-tool denial and a Codex run with write access that changed nothing without approval. D11 records the authority. Reported apart from the unit tests.",
+        "source": "S3",
+        "locator": "FINDINGS.md V1-V11"
+      }
+    ]
+  },
+  "report_kind": "task-overview",
+  "checkpoint": {
+    "as_of": "2026-11-04",
+    "source": "S1",
+    "locator": "Current checkpoint",
+    "approval": {
+      "status": "approved",
+      "revision": "r1",
+      "summary": "The owner approved the agreement and plan r1 on 2026-11-03: \"Yes to both\"."
+    },
+    "implementation": {
+      "status": "implemented",
+      "summary": "All nine tickets were built in the package files. The fixes from the live loop and from the whole-feature review were added with tests."
+    },
+    "verification": {
+      "status": "passed",
+      "summary": "V11: the suite passed on the final state on Windows, in a path with spaces and under WSL (763 ran each). validate.py passed again at delivery. Host validation inside validate.py is NOT RUN. The live runs are separate."
+    },
+    "next_action": "The owner session updates the PLAN Outcome and checkpoint to this delivery. Then the owner accepts it and reviews D7 to D10."
+  }
+}

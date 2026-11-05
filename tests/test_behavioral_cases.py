@@ -91,9 +91,9 @@ class InstructionRegressionTests(unittest.TestCase):
     def test_router_invokes_phases_instead_of_running_them(self):
         # E1 evaluation: an agent ran clarification from the routing table and treated grilling answers as agreement.
         router=self.text('SKILL.md')
-        self.assertIn('never run a phase from it',router)
+        self.assertIn('The table routes; it does not replace a phase',router)
         # A9: the router was loaded but no phase skill was invoked.
-        self.assertIn('your next action is invoking the phase skill',router)
+        self.assertIn('Invoke the phase skill §3 selects',router)
         # A10 then D13: the identity question goes with clarify's first questions, never with approvals.
         self.assertIn('which asks "separate task or revision?" with its first questions',router)
         self.assertIn('never ask it alongside approvals',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
@@ -124,7 +124,7 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('changes the agreement: write a new agreement revision',specify)
         self.assertIn('so a needed check is never dropped silently',specify)
         execute=(ROOT/'skills/workflow-execute/SKILL.md').read_text(encoding='utf-8')
-        self.assertIn('hand every ticket, even a single one, to a fresh worker',execute)
+        self.assertIn('Small route: one ticket, named files only',execute)
         self.assertIn('Stop and ask which worktree is meant',(ROOT/'skills/workflow/TASK-FOLDER.md').read_text(encoding='utf-8'))
         # Round-5 retro: project rule missed until review; context difference recommended anyway; open finding ticked.
         self.assertIn('- **Rules**: the project rules',(ROOT/'skills/workflow-specify/SKILL.md').read_text(encoding='utf-8'))
@@ -140,7 +140,7 @@ class InstructionRegressionTests(unittest.TestCase):
         # Round-6b retro: delivery reread the agreement, shipped a user-decision fix, overclaimed passes.
         deliver=(ROOT/'skills/workflow-deliver/SKILL.md').read_text(encoding='utf-8')
         self.assertIn('Reading the agreement differently from its words is a gap',deliver)
-        self.assertIn('run the reconciliation in a fresh one',deliver)
+        self.assertIn("a fresh one that didn't build the work reconciles",deliver)
         self.assertIn('A finding the reviewer calls a user decision',(ROOT/'skills/workflow-execute/SKILL.md').read_text(encoding='utf-8'))
         self.assertIn('names any failures it already had',(ROOT/'skills/workflow/WRITING.md').read_text(encoding='utf-8'))
         # Old-docs test: resume offered to rewrite an old review JSON to 'approved'.
@@ -156,7 +156,7 @@ class InstructionRegressionTests(unittest.TestCase):
     def test_phase_skills_resolve_their_sibling_workflow_folder(self):
         for phase in ('clarify','specify','execute','deliver'):
             text=(ROOT/f'skills/workflow-{phase}/SKILL.md').read_text()
-            self.assertIn('`../workflow/` from this SKILL.md',text)
+            self.assertRegex(text,r'(?:from|sibling) `\.\./workflow/`')
             self.assertNotIn('different package version',text)
 
     def test_retro_findings_stay_fixed(self):
@@ -176,17 +176,19 @@ class InstructionRegressionTests(unittest.TestCase):
         # W2: a later session could not read "Q1 a" because only the question, not its options, was saved.
         self.assertIn('with its exact options, letters and recommendation',questions)
         # E30 retro: tools named where records are written; reviewers labelled correctly.
-        self.assertIn('never a shell heredoc',self.text('TASK-FOLDER.md'))
+        self.assertIn('correct quoting, encoding and an authorised target',self.text('TASK-FOLDER.md'))
         self.assertIn('task_report.py scaffold',(ROOT/'skills/workflow-deliver/SKILL.md').read_text())
         self.assertIn('independent, axes sequential',(ROOT/'skills/code-review/SKILL.md').read_text())
         self.assertIn("I don't need to see the plan",self.text('VISUAL-REVIEW.md'))
         self.assertIn('needs human',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         execute=(ROOT/'skills/workflow-execute/SKILL.md').read_text()
-        self.assertIn('Run every ready ticket whose files overlap nothing running',execute)
+        self.assertIn('Parallel work needs independent tickets and separate files',execute)
+        self.assertIn('budget',execute)
         # A6 s2: self-review despite subagents, and no deliver after execution.
-        self.assertIn('the reviewer must be a fresh subagent that reads that file',execute)
+        self.assertIn('one fresh subagent reviews both axes, reading that file',execute)
         self.assertIn('Execution is done only when deliver has run',execute)
-        self.assertIn('(full suites included) once before changing anything',execute)
+        self.assertIn('reuse a baseline whose inputs still match',execute)
+        self.assertIn('Compare failures by name',execute)
         self.assertIn('goes to the user before you ship it',execute)
         self.assertIn('read `../tdd/SKILL.md` before the first test',execute)
         gates=self.text('VISUAL-REVIEW.md')

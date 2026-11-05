@@ -30,6 +30,7 @@ Default zoom is 100% native size inside a locally scrollable panel. Native radio
 | `mode` / `state` | current/proposed/compare; inspection/draft/awaiting-approval/approved/superseded. Current-only uses inspection. |
 | `snapshot` | Repository label, optional branch/worktree, inspection basis and limits. Do not call uncommitted work a clean HEAD snapshot. |
 | `boundaries`, `open_decisions` | Text arrays for exclusions and unresolved material decisions. Open decisions prevent approval-ready state. |
+| `write_paths` | Optional array of repository-relative files, or folders ending in `/`, that the plan may change. Shown as the first "What will not change" item and stored in the report manifest; after approval the phase gate blocks other file writes (task records stay writable). No wildcards, `..` or absolute paths. |
 | `sources` | `id`, existing root-relative `path`, `role`. Approval-ready needs plan/todo/findings roles. Only hashes/paths, not source contents, are copied automatically. |
 | `requirements` | `id`, `text`, `origin` identifying an actual request/answer/policy. |
 | `evidence` | `id`, `claim`, `kind` static/runtime/design, source IDs, `locator`, `limits`. Design intent is not observed runtime/code. |
@@ -39,6 +40,10 @@ Default zoom is 100% native size inside a locally scrollable panel. Native radio
 | `default_view` | Graph ID. Compare opens a **proposed flow**, not a build checklist, table or settings hierarchy. |
 | `graphs` | Up to six individually scoped views. Compare includes current and proposed kinds; multiple graphs of a kind are allowed. |
 | `approval` | Approved state only: matching revision, real record reference and response. Structure validation is not authentication. |
+
+### Qualified source tickets
+
+Keep source identities unchanged. JSON IDs use `[A-Za-z][A-Za-z0-9_-]{0,47}`; a source ticket `D4/T8` therefore uses a **report-only** alias such as `D4-T8`, and a title beginning `D4/T8 — <action>`. Use that alias consistently in graph, dependency, comparison and task references. Retain the original ID in source locators. Check uniqueness; do not blindly replace characters when two IDs could collapse to the same alias. This maps a projection, not a new task, revision or source-file migration.
 
 ### Graph and geometry
 

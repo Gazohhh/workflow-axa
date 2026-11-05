@@ -1,20 +1,32 @@
-# Workflow AXA — 2.8.0-rc.1
+# Workflow AXA — 2.8.0-rc.3
+
+## Candidate: readable tickets and bounded permissions
+
+Full replacement of the available rc.2 source bundle. This candidate addresses the owner's supplied TODO/protocol and reported live-trial gaps without redesigning the workflow. See [candidate review](CANDIDATE-REVIEW.md), [validation](VALIDATION.md), [upgrade](UPGRADE.md), and [six targeted live cases](RC3-CASES.md).
+
+- Readable labelled tickets; legacy checkboxes and revision-qualified IDs remain supported. Implemented is not verified; missing device acceptance and owner-removed work are not test passes.
+- Explicit paid-evaluation budgets include orchestration, child calls and the retro. Vague reassurance, unresolved placeholders and agent proposals do not grant a cap. No billing enforcement is claimed.
+- D14 reuse remains: never write CSS. Do not recommend plain HTML or infer its scoped exception from a blanket yes.
+- Reconcile evidenced legacy report approvals without inventing revision IDs. Unresolved authority goes to a focused question, never a suggestion to bypass the hook.
+- Partial-read warnings resolve the actual installed root, including Git Bash paths, arbitrary release names and quoted spaces.
+
+No new skill, external dependency, global installation or project migration. Existing reports/styles, pinned specialists and task-history files remain unchanged. The owner reported that the older baseline was overwritten: test this candidate by itself unless a separate trusted comparison copy is available and approved. D7–D10 and prior delivery acceptance are not answered by this release.
 
 ## Start here
 
 1. Type `/workflow` (plugin: `/workflow-axa:workflow`) followed by what you want. That's the only command you need.
 2. It reads the code and asks you the questions only you can answer. The first run in a project may stop once to offer rule setup.
 3. **Pause 1:** it describes what will be built. Reply "agree" or say what to change.
-4. **Pause 2:** it shows the tickets and an HTML plan. Reply "approve" or say what to change. Small, settled changes ask both at once; "I don't need to see the plan, go" skips this pause.
+4. **Pause 2:** it shows the tickets and an HTML plan. Reply "approve" or say what to change. Small, settled changes ask both at once; an explicit waiver requires a task/revision-bound plan in chat and the whole actual answer. It is not an agent-selected shortcut.
 5. It builds ticket by ticket with tests and reviews, then gives a delivery report: what was done, what was checked, what still needs you.
 
 The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`task-status` for where things stand, `retro` for a look back at past sessions).
 
-Full replacement package: **twenty skills** (twelve workflow-axa skills plus eight vendored from Matt Pocock), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+Full replacement package: **21 skills** (12 workflow-axa skills plus 9 vendored: eight of Matt Pocock's and `simple-english`; the list is in `.claude-plugin/plugin.json`), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
 
 ## This update: `/workflow` routes to four phase skills
 
-`/workflow` is now a small coordinator. It finds the task, checks rules readiness, reads the task's records and hands over to the phase skill those records call for. Each phase skill owns its procedure, checks its own entry conditions and can be invoked directly; a direct call is as safe as going through `/workflow`.
+`/workflow` is now a small coordinator. It finds the task, checks rules readiness, reads the task's records and hands over to the phase skill those records call for. Each phase owns its procedure and entry conditions. Direct invocation must satisfy the same conditions; this is an instruction requirement, not proof of equal live-host enforcement.
 
 | Phase skill | What it does | Ends with |
 |---|---|---|
@@ -29,7 +41,7 @@ Full replacement package: **twenty skills** (twelve workflow-axa skills plus eig
 
 **Central report (optional).** A schema-2 report may carry an additive `task_report` object: request, agreement, specification, per-ticket specifications, decisions, risks, checks, acceptance results and delivery, each citing its source record. PLAN/TODO/FINDINGS/DECISIONS stay authoritative; the report is a dated projection, not approval. Reports without `task_report` render as before. Contract: [TASK-REPORT.md](skills/codebase-map/TASK-REPORT.md).
 
-`workflow-execute` adapts Implement Spec's ticket-graph method locally. It never branches, commits, merges or touches a tracker, and it does not invoke or alter the upstream skill. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** Matt Pocock's `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` (plus `implement-spec` and `retro` as references) ship as separate skills in this package (plugin names `workflow-axa:<name>`), copied at a pinned commit under their MIT license ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)). Each keeps the upstream text and ends with a workflow-axa adaptation. The phases load these sibling skills, so an upstream change, a removed skill or a host's same-named command can't change the workflow; `tools/vendor_specialists.py` regenerates them after a reviewed upstream update. Optional installed specialists (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them. This candidate also contains rc.8's Windows verification fixes.
+`workflow-execute` adapts Implement Spec's ticket-graph method locally. It never branches, commits, merges or touches a tracker, and it does not invoke or alter the upstream skill. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** Matt Pocock's `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` (plus `implement-spec` and `retro` as references) ship as separate skills in this package (plugin names `workflow-axa:<name>`), copied at a pinned commit under their MIT license ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)). `simple-english` (AminBlg/SimpleEnglish, MIT) ships the same way; the workflow uses it for every HTML report and delivery message. Each keeps the upstream text and ends with a workflow-axa adaptation. The phases load these sibling skills, so an upstream change, a removed skill or a host's same-named command can't change the workflow; `tools/vendor_specialists.py` regenerates them after a reviewed upstream update. Optional installed specialists (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them. This candidate also contains rc.8's Windows verification fixes.
 
 ## UI policy (2.8, owner decision D14): never write CSS; reuse existing classes
 
@@ -40,7 +52,7 @@ Agents **never create, modify or inject CSS**: no stylesheet rules, no `<style>`
 | Existing interface logic fix | Keep its markup and appearance; change only the agreed behaviour. |
 | New or changed element | Search the design kit (if any) and the existing code for an element with the same purpose; mirror its class and tag; record it as `file:line`. |
 | Nothing matches | Stop that element and ask: "I couldn't find a matching style for [element]. Is there an existing element I should mimic?" |
-| You explicitly allow plain HTML, or confirm nothing similar exists | Add that element as plain HTML with no classes and no styling; your words are recorded. |
+| You explicitly instruct plain HTML for the named element, or directly confirm no similar element in answer to its mimic question | Add only that element without classes/styling; record the question and full answer. The agent must not recommend plain HTML or infer this exception from a blanket yes. |
 | No design kit in the project | Same rules, with existing code as the only source. "No kit" never means "write CSS". |
 | Ordinary prompt without /workflow | Same rules when the shared rules are loaded. Verify actual host loading; installation alone is not proof. |
 
@@ -78,7 +90,7 @@ Plugin syntax is shown; standalone names depend on the host. The main sequence i
 
 ## Install and check
 
-Replace the complete plugin or all **twenty complete skill folders** together: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec` and `retro`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed Matt skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
+Replace the complete plugin or all **21 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro` and `simple-english`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed Matt skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global
@@ -86,6 +98,19 @@ python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
 ```
 
 These read-only checks do not repair settings or prove loading. Existing correct references remain valid when the install path stays fixed. For missing references, use the activation helper's preview/apply procedure after reviewing it. No host hook, auto-updater or tool sandbox is installed.
+
+## Checks and release (source checkout)
+
+The release ZIP holds what an installation needs: `.claude-plugin/`, the registered skills, `hooks/`, `LICENSE`, `docs/DESIGN.md` and these documents. It leaves out `tests/`, `tools/`, task records (`docs/plans/`) and evaluation output, so run the checks from a clone of the repository:
+
+```bash
+python -X utf8 -m unittest discover -s tests -p "test_*.py"
+python -X utf8 -I tools/validate.py
+python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md
+python -X utf8 -I tools/build_release.py
+```
+
+`validate.py` also fails when this README, the current CHANGELOG entry, UPGRADE or VENDORED-SKILLS state a skill count or a package or rules version that differs from the manifests. `verification_summary.py` rewrites only VALIDATION's current section; browser, visual and host checks stay NOT_RUN unless you pass their results. `build_release.py` writes `workflow-axa-<version>.zip` with sorted entries and fixed timestamps, prints its files and SHA-256, and refuses files whose names look like secrets (a name check only: it does not scan file contents). It writes to `dist/` when Git ignores that folder, otherwise to `.artifacts/release/`. The project's own code is MIT licensed ([LICENSE](LICENSE)); vendored skills keep their own licence files.
 
 [Upgrade guide](UPGRADE.md) · [Validation](VALIDATION.md) · [Central report contract](skills/codebase-map/TASK-REPORT.md) · [Strict reuse scenarios](tests/behavioral/STRICT-KIT.md) · [UI report contract](skills/codebase-map/UI-FLOW.md).
 
@@ -95,4 +120,4 @@ Non-UI report behaviour is unchanged; `task_report` is optional and additive. Hi
 
 Original rc.6 HTML samples remain as **historical schematic demonstrations, not the current permission policy or project-kit evidence**. See their example README. No replacement styled application sample is manufactured in this release.
 
-This candidate's package and test results are pending and will be recorded in [VALIDATION.md](VALIDATION.md); recorded results concern observed tooling only. Live Claude/Codex/T3 compliance and real project-kit execution are not established here. A model can still disobey instructions; no absolute guarantee is claimed. No application source, real kit, user profile, memory or project instructions were changed by creating this archive.
+Test and validator results, with the commit and environment they ran on, are in the "Current verification" section of [VALIDATION.md](VALIDATION.md); older results there are history. Recorded results concern observed tooling only. Live Claude/Codex/T3 compliance and real project-kit execution are not established here. A model can still disobey instructions; no absolute guarantee is claimed. No application source, real kit, user profile, memory or project instructions were changed by creating this archive.

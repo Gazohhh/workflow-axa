@@ -1,0 +1,1907 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XNlPRks2SEO+bwidW9ZDDuJ16oIYgRQx1Ek6rAbWP0g='; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Audit fixes: approvals, recovery, verification and less repeated work</title><style>/* ==========================================================================
+   Review report — editorial, white, lean
+   ========================================================================== */
+
+/* Tokens
+   ========================================================================== */
+:root {
+  --color-bg: #fff;
+  --color-ink: #1f2330;
+  --color-muted: #545d6e;   /* 6.6:1 on white */
+  --color-faint: #6b7280;   /* 4.8:1 on white, minimum for small text */
+  --color-line: #e4e6ea;
+  --color-line-strong: #1f2330;
+  --color-wash: #f7f8f9;
+  --color-accent: #b5401c;  /* 5.4:1 on white */
+  --color-accent-soft: #fbf1ec;
+  --color-accent-line: #efd2c6;
+  --color-ok: #2b6535;
+  --color-ok-soft: #e8f2ea;
+  --color-ok-line: #cfe0d2;
+
+  --font-sans: 'Geist', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, monospace;
+
+  --measure: 70ch;
+  --radius: 6px;
+  --toc-width: 200px;
+  --gap: 48px;
+  --sticky-offset: 20px;
+
+  color-scheme: light;
+}
+
+/* Base
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sticky-offset);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font: 15px/1.6 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-line);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+code,
+.code {
+  font: 12.5px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.muted,
+small {
+  color: var(--color-muted);
+}
+
+.visually-hidden,
+.sr-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  padding: 10px 14px;
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: #fff;
+}
+
+/* Page frame
+   ========================================================================== */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px 48px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 0 12px;
+  border-bottom: 1px solid var(--color-line);
+  font: 11px/1.5 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-faint);
+}
+
+.masthead strong {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* Report header
+   ========================================================================== */
+.report-header {
+  padding: 28px 0 32px;
+}
+
+.report-title {
+  max-width: 26ch;
+  margin: 0 0 10px;
+  font: 400 clamp(32px, 3.6vw, 46px)/1.08 var(--font-serif);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.report-lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent);
+  font-size: 14px;
+}
+
+.status--approved {
+  border-left-color: var(--color-ok);
+}
+
+.status__tag {
+  flex: none;
+  font: 500 11px/1.6 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-accent);
+}
+
+.status--approved .status__tag {
+  color: var(--color-ok);
+}
+
+/* At-a-glance facts */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 28px 0 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.facts__item {
+  min-width: 0;
+  padding: 14px 18px 14px 0;
+}
+
+.facts__item + .facts__item {
+  padding-left: 18px;
+  border-left: 1px solid var(--color-line);
+}
+
+.facts dt {
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.facts dd a {
+  text-decoration: none;
+}
+
+.facts__value--attention {
+  color: var(--color-accent);
+}
+
+/* Layout: sticky contents beside the report
+   ========================================================================== */
+.layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 28px 0;
+}
+
+.toc__title {
+  margin: 0 0 8px;
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  font-size: 13px;
+}
+
+.toc__list > li {
+  counter-increment: toc;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  padding: 5px 0;
+  color: var(--color-muted);
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.toc__link::before {
+  content: counter(toc, decimal-leading-zero);
+  font: 11px/1.75 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.toc__link:hover {
+  color: var(--color-ink);
+}
+
+.toc__link[aria-current='true'] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.toc__link[aria-current='true']::before {
+  color: var(--color-accent);
+}
+
+.toc__flag {
+  display: block;
+  grid-column: 2;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.toc__extra {
+  display: block;
+  margin-top: 14px;
+  padding: 5px 0 5px 20px;
+  font-size: 13px;
+  color: var(--color-faint);
+}
+
+/* Sections
+   ========================================================================== */
+.content {
+  counter-reset: section;
+}
+
+.section {
+  padding-top: 32px;
+  counter-increment: section;
+}
+
+.section + .section {
+  margin-top: 40px;
+  border-top: 1px solid var(--color-line);
+}
+
+.section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px;
+  font: 400 30px/1.15 var(--font-serif);
+  letter-spacing: -.01em;
+}
+
+.section__title::before {
+  content: counter(section, decimal-leading-zero);
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+}
+
+.section__summary {
+  max-width: var(--measure);
+  margin: 0 0 20px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.section h3,
+.subhead {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section p {
+  max-width: var(--measure);
+  margin: 0 0 10px;
+}
+
+.block + .block {
+  margin-top: 24px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.columns > * {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.columns p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.list > li {
+  margin: 3px 0;
+  padding-left: 2px;
+}
+
+.list > li::marker {
+  color: var(--color-faint);
+}
+
+.list--check,
+.list--keep {
+  padding-left: 0;
+  list-style: none;
+}
+
+.list--check > li,
+.list--keep > li {
+  position: relative;
+  padding: 7px 0 7px 26px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.list--check > li:last-child,
+.list--keep > li:last-child {
+  border-bottom: 0;
+}
+
+.list--check > li::before,
+.list--keep > li::before {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font: 600 10px/1 var(--font-sans);
+}
+
+.list--check > li::before {
+  content: '✓';
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+.list--keep > li::before {
+  content: '=';
+  background: var(--color-wash);
+  color: var(--color-muted);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+.note {
+  max-width: var(--measure);
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.note a {
+  color: var(--color-accent);
+}
+
+/* Diagrams
+   ========================================================================== */
+.review {
+  position: relative;
+}
+
+.viewbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.view-tabs,
+.zoom-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.zoom-tabs {
+  gap: 14px;
+}
+
+.control-name {
+  display: none;
+}
+
+.view-tabs label,
+.zoom-tabs label {
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.view-tabs label {
+  font-weight: 500;
+}
+
+.zoom-tabs label {
+  font: 11px/44px var(--font-mono);
+}
+
+.view-tabs label:hover,
+.zoom-tabs label:hover {
+  color: var(--color-ink);
+}
+
+.figures {
+  --scale: 1;
+}
+
+#zoom-125:checked ~ .figures {
+  --scale: 1.25;
+}
+
+#zoom-150:checked ~ .figures {
+  --scale: 1.5;
+}
+
+#zoom-fit:checked ~ .figures .map {
+  width: 100%;
+  min-width: 0;
+}
+
+.panel {
+  display: none;
+  margin: 0;
+}
+
+.figure-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0 2px;
+}
+
+.figure-head h3 {
+  margin: 0;
+}
+
+.figure-head span {
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.figure-description {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.canvas {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+
+.canvas.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.map {
+  display: block;
+  width: calc(var(--board-width) * var(--scale));
+  min-width: calc(var(--board-width) * var(--scale));
+  height: auto;
+}
+
+.node-shape {
+  fill: #fff;
+  stroke: var(--color-ink);
+  stroke-width: 1.1;
+}
+
+.start .node-shape,
+.result .node-shape {
+  fill: #eef0f3;
+  stroke: var(--color-muted);
+}
+
+.focal .node-shape {
+  fill: var(--color-accent-soft);
+  stroke: var(--color-accent);
+  stroke-width: 1.3;
+}
+
+.node.inferred .node-shape,
+.node.unknown .node-shape,
+.connector.inferred,
+.connector.unknown {
+  stroke-dasharray: 5 4;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 1.3;
+}
+
+.map marker path {
+  fill: var(--color-faint);
+}
+
+.node-title {
+  font: 600 18px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.node-note {
+  font: 13px var(--font-sans);
+  fill: var(--color-muted);
+}
+
+.node-item {
+  font: 15px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.arrow-label rect {
+  fill: var(--color-wash);
+}
+
+.edge-label {
+  font: 10px var(--font-mono);
+  letter-spacing: 1px;
+  fill: var(--color-muted);
+}
+
+figcaption {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  padding: 10px 0 4px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border: 1px solid var(--color-muted);
+  background: #fff;
+}
+
+.legend .legend-start {
+  border-radius: 8px;
+  background: #eef0f3;
+}
+
+.legend .legend-action {
+  border-radius: 2px;
+}
+
+.legend .legend-decision {
+  width: 11px;
+  height: 11px;
+  margin: 0 4px;
+  transform: rotate(45deg);
+}
+
+.legend .legend-focus {
+  border-color: var(--color-accent);
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+}
+
+/* Tables
+   ========================================================================== */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+caption {
+  padding: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: left;
+}
+
+th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--color-line-strong);
+  font: 500 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  vertical-align: bottom;
+}
+
+td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+}
+
+td:last-child,
+th:last-child {
+  padding-right: 0;
+}
+
+.compare th[scope='row'] {
+  width: 32%;
+  font: 500 14px/1.5 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+  vertical-align: top;
+}
+
+.compare td:nth-child(2) {
+  color: var(--color-muted);
+}
+
+.compare .after {
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.tag--changed {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.tag--recommended {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+/* Work order
+   ========================================================================== */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps > li + li::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--color-faint);
+}
+
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.steps a:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+.steps .key {
+  font: 500 12px var(--font-mono);
+}
+
+/* Tickets
+   ========================================================================== */
+.tickets {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.ticket {
+  --stub: 124px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--stub) minmax(0, 1fr);
+  max-width: 880px;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(31 35 48 / 4%);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ticket:hover {
+  border-color: #d3d6dc;
+  box-shadow: 0 2px 8px rgb(31 35 48 / 6%);
+}
+
+.ticket:target {
+  border-color: var(--color-accent);
+}
+
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--stub) - 7px);
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.ticket::before {
+  top: -8px;
+  clip-path: inset(8px 0 0 0);
+}
+
+.ticket::after {
+  bottom: -8px;
+  clip-path: inset(0 0 8px 0);
+}
+
+.ticket__stub {
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 16px;
+  border-right: 1.5px dashed #d3d6dc;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--color-wash);
+  font: 10.5px/1.4 var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__key {
+  display: block;
+  margin-top: 4px;
+  font: 500 24px/1 var(--font-mono);
+  letter-spacing: -.02em;
+  text-transform: none;
+  color: var(--color-ink);
+}
+
+.ticket__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: #fff;
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.ticket__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.ticket__status--in-progress,
+.ticket__status--blocked {
+  border-color: var(--color-accent-line);
+  color: var(--color-accent);
+}
+
+.ticket__status--in-progress::before {
+  border-right-color: transparent;
+}
+
+.ticket__status--blocked::before {
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.ticket__status--done {
+  border-color: var(--color-ok-line);
+  color: var(--color-ok);
+}
+
+.ticket__status--done::before {
+  background: currentColor;
+}
+
+.ticket__main {
+  padding: 16px 20px 0;
+}
+
+.ticket__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ticket__main p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.ticket__facts {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.ticket__facts dt {
+  font: 10.5px/2 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__facts dd {
+  margin: 0;
+}
+
+.ticket__facts .list > li {
+  margin: 0 0 2px;
+}
+
+.ticket-ref {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-wash);
+  font: 500 12px/1.6 var(--font-mono);
+  text-decoration: none;
+}
+
+.ticket-ref:hover {
+  border-color: var(--color-accent);
+}
+
+/* Checks
+   ========================================================================== */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 880px;
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.progress__bar {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+  height: 6px;
+}
+
+.progress__bar span {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.progress__bar .is-verified {
+  background: var(--color-ok);
+}
+
+.progress__bar .is-failed {
+  background: var(--color-accent);
+}
+
+.checks {
+  max-width: 880px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+
+.check__key {
+  grid-row: 1 / span 2;
+  font: 11px/1.9 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.check__expect {
+  margin: 0;
+  font-weight: 500;
+}
+
+.check__how {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.check .state {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.state::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.state--verified {
+  color: var(--color-ok);
+}
+
+.state--verified::before,
+.state--failed::before {
+  background: currentColor;
+}
+
+.state--failed,
+.state--partial {
+  color: var(--color-accent);
+}
+
+/* Risks and open questions
+   ========================================================================== */
+.risks {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risks > li {
+  position: relative;
+  padding: 8px 0 8px 22px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.risks > li:last-child {
+  border-bottom: 0;
+}
+
+.risks > li::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.questions {
+  max-width: 880px;
+  margin: 28px 0 0;
+  padding: 18px 20px 6px;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.questions__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.questions__head h3 {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.questions__head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.question-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.question {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.question__title {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.question__key {
+  font: 500 12px/1.9 var(--font-mono);
+  color: var(--color-accent);
+}
+
+.options {
+  margin: 0;
+  padding: 0 0 0 30px;
+  list-style: none;
+  counter-reset: option;
+}
+
+.options > li {
+  position: relative;
+  padding: 4px 0 4px 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+  counter-increment: option;
+}
+
+.options > li::before {
+  content: counter(option, lower-alpha);
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  font: 500 10px/1 var(--font-mono);
+}
+
+.options > .is-recommended {
+  color: var(--color-ink);
+}
+
+.options > .is-recommended::before {
+  border-color: var(--color-ok);
+  background: var(--color-ok);
+  color: #fff;
+}
+
+/* Technical details (appendix)
+   ========================================================================== */
+details {
+  padding: 12px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--color-faint);
+  border-bottom: 1.5px solid var(--color-faint);
+  transform: rotate(-45deg);
+  transition: transform .15s;
+}
+
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+details.appendix {
+  margin-top: 48px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+details.appendix > summary {
+  font: 400 24px/1.2 var(--font-serif);
+}
+
+.appendix-body {
+  padding-top: 14px;
+  font-size: 14px;
+}
+
+.appendix-body section {
+  margin-bottom: 28px;
+}
+
+.appendix-body h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.appendix-body > p.muted {
+  max-width: var(--measure);
+  font-size: 13px;
+}
+
+.appendix .table-scroll table {
+  min-width: 820px;
+  font-size: 12px;
+}
+
+.appendix ol {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.appendix ol li {
+  margin: 8px 0;
+}
+
+.appendix blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--color-line);
+  color: var(--color-muted);
+}
+
+.appendix .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  margin: 24px 0;
+}
+
+.appendix .plain {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appendix .plain li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.evidence {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.evidence p,
+.appendix code {
+  font: 12px/1.7 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* Footer
+   ========================================================================== */
+.report-footer {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+  font: 11px/1.7 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+/* Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .facts__item:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 4) {
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+@media (max-width: 960px) {
+  :root {
+    --sticky-offset: 64px;
+  }
+
+  .page {
+    padding: 0 24px 40px;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc {
+    z-index: 5;
+    max-height: none;
+    margin: 0 -24px;
+    padding: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toc__title,
+  .toc__flag,
+  .toc__extra {
+    display: none;
+  }
+
+  .toc__list {
+    display: flex;
+    gap: 20px;
+    padding: 0 24px;
+    white-space: nowrap;
+  }
+
+  .toc__link {
+    display: block;
+    padding: 14px 0 12px; /* 48px touch target */
+    border-bottom: 2px solid transparent;
+  }
+
+  .toc__link::before {
+    margin-right: 6px;
+  }
+
+  .toc__link[aria-current='true'] {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 0 16px 32px;
+  }
+
+  .toc {
+    margin: 0 -16px;
+  }
+
+  .toc__list {
+    padding: 0 16px;
+  }
+
+  .report-title {
+    font-size: 32px;
+  }
+
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facts__item,
+  .facts__item + .facts__item {
+    padding: 12px 12px 12px 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 3) {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .section__title {
+    font-size: 25px;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .figure-head,
+  .viewbar {
+    display: block;
+  }
+
+  .zoom-tabs {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .compare {
+    min-width: 560px;
+  }
+
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    display: none;
+  }
+
+  .ticket__stub {
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1.5px dashed #d3d6dc;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .ticket__key {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .ticket__status {
+    margin-left: auto;
+  }
+
+  .ticket__main {
+    padding: 14px 16px 0;
+  }
+
+  .ticket__facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 10px 16px 14px;
+  }
+
+  .ticket__facts dd {
+    margin-bottom: 8px;
+  }
+
+  .check {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .check .state {
+    grid-column: 2;
+    grid-row: auto;
+    margin-top: 6px;
+  }
+
+  .questions {
+    padding: 16px 16px 4px;
+  }
+
+  .options {
+    padding-left: 0;
+  }
+
+  .appendix .two-col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc,
+  .skip-link,
+  .viewbar,
+  .hint {
+    display: none !important;
+  }
+
+  .panel {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  .canvas {
+    overflow: visible;
+  }
+
+  .map {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ticket,
+  .check,
+  .question,
+  .facts {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* Overrides for paragraphs inside components
+   ========================================================================== */
+.section .check__expect,
+.section .question__title {
+  margin: 0;
+}
+
+.section .question__title {
+  margin-bottom: 8px;
+}
+
+.section .check__how {
+  margin: 2px 0 0;
+}
+
+.compare th[scope='row'],
+.compare td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.compare small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.section h3 + .risks,
+.section h3 + .steps {
+  margin-top: 6px;
+}
+
+.section .risks + .questions,
+.section p + h3,
+.section .section__summary + h3 {
+  margin-top: 24px;
+}
+
+.section .ticket__stub {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .steps {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .steps > li + li::before {
+    display: none;
+  }
+}
+
+/* Diagram view and zoom state (generated per report)
+   ========================================================================== */
+#view-after:checked ~ .figures #panel-after {
+  display: block;
+}
+
+#view-after:checked ~ .viewbar label[for='view-after'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-after:focus-visible ~ .viewbar label[for='view-after'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-today:checked ~ .figures #panel-today {
+  display: block;
+}
+
+#view-today:checked ~ .viewbar label[for='view-today'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-today:focus-visible ~ .viewbar label[for='view-today'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-order:checked ~ .figures #panel-order {
+  display: block;
+}
+
+#view-order:checked ~ .viewbar label[for='view-order'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-order:focus-visible ~ .viewbar label[for='view-order'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-100:checked ~ .viewbar label[for='zoom-100'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-100:focus-visible ~ .viewbar label[for='zoom-100'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-125:checked ~ .viewbar label[for='zoom-125'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-125:focus-visible ~ .viewbar label[for='zoom-125'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-150:checked ~ .viewbar label[for='zoom-150'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-150:focus-visible ~ .viewbar label[for='zoom-150'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-fit:checked ~ .viewbar label[for='zoom-fit'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-fit:focus-visible ~ .viewbar label[for='zoom-fit'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Older token names used by ui-review.css, mapped onto report-style.css tokens. */
+:root {
+  --paper: var(--color-bg);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --rule: var(--color-line);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-soft);
+  --sans: var(--font-sans);
+  --serif: var(--font-serif);
+  --mono: var(--font-mono);
+}
+
+#view-proposed:checked~.figures #panel-proposed{display:block}
+#view-proposed:checked~.viewbar label[for="view-proposed"]{border-color:var(--accent);color:var(--ink)}
+#view-proposed:focus-visible~.viewbar label[for="view-proposed"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-current:checked~.figures #panel-current{display:block}
+#view-current:checked~.viewbar label[for="view-current"]{border-color:var(--accent);color:var(--ink)}
+#view-current:focus-visible~.viewbar label[for="view-current"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-100:checked~.viewbar label[for="zoom-100"]{border-color:var(--ink);color:var(--ink)}
+#zoom-100:focus-visible~.viewbar label[for="zoom-100"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-125:checked~.viewbar label[for="zoom-125"]{border-color:var(--ink);color:var(--ink)}
+#zoom-125:focus-visible~.viewbar label[for="zoom-125"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-150:checked~.viewbar label[for="zoom-150"]{border-color:var(--ink);color:var(--ink)}
+#zoom-150:focus-visible~.viewbar label[for="zoom-150"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-fit:checked~.viewbar label[for="zoom-fit"]{border-color:var(--ink);color:var(--ink)}
+#zoom-fit:focus-visible~.viewbar label[for="zoom-fit"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
+<div class="page"><header class="masthead"><strong>workflow-axa (D:/workflow-axa, main worktree)</strong><span>Delivery r1</span></header>
+<main id="report"><header class="report-header"><h1 class="report-title">Audit fixes: approvals, recovery, verification and less repeated work</h1>
+<p class="report-lead">You want the defects from the audit fixed so that workflow-axa takes fewer unauthorized actions, recovers more clearly and repeats less work. The fixes change package files only and keep the four phases, both gates and the report design.</p>
+<p class="status status--draft"><span class="status__tag">Delivered</span><span>Delivered: partial. Some work or checks are still open. The sections below name them. Behavior agreed (r1).</span></p>
+<dl class="facts" aria-label="At a glance"><div class="facts__item"><dt>Revision</dt><dd>r1</dd></div><div class="facts__item"><dt>Tickets</dt><dd>9</dd></div><div class="facts__item"><dt>Acceptance</dt><dd>9 of 11 verified</dd></div><div class="facts__item"><dt>Open questions</dt><dd>None</dd></div><div class="facts__item"><dt>As of</dt><dd>2026-11-04</dd></div></dl></header>
+<div class="layout"><nav class="toc" aria-label="Contents"><p class="toc__title">Contents</p><ol class="toc__list"><li><a class="toc__link" href="#agreed">What was agreed</a></li><li><a class="toc__link" href="#how-it-works">How it works</a></li><li><a class="toc__link" href="#what-changes">What changes</a></li><li><a class="toc__link" href="#the-work">The work</a></li><li><a class="toc__link" href="#checks">How it was checked</a></li><li><a class="toc__link" href="#risks">Risks and open questions</a></li></ol><a class="toc__extra" href="#technical-details">Technical details</a></nav><div class="content" id="task-report"><section class="section" aria-labelledby="agreed"><h2 class="section__title" id="agreed">What was agreed</h2><p class="section__summary">You agreed to the behavior and approved the plan, revision r1, on 2026-11-03 with the answers D1 to D5.</p><div class="columns"><div><h3>What was asked</h3><p>Fix the defects that the owner&#x27;s audit found in workflow-axa 2.8.0-rc.1. The goal is fewer unauthorized actions, clearer recovery and less repeated work. The goal is not more instructions or a larger test count.</p><p>This is a separate task. It fixes defects in the package that the task 2026-11-02-modular-engineering-workflow built.</p></div><div><h3>Agreed behavior</h3><p>Edits and git writes get permission only from the current task&#x27;s approval, with the user&#x27;s real words. The gate sees more tools and more shell writes.</p><p>Record writes become safe against interruption and a second writer. A stop ends implementation, and each unfinished state has one route. Baselines compare test IDs and stop being reused when their inputs change.</p><p>Report wording advice keeps the meaning and runs before the file is written. A small change uses fewer agents. The tests pass on other machines. One generated summary replaces the contradicting counts, and a release package comes from an include list.</p><p>Not included: application repositories, global settings, permission changes and automatic commits.</p><p>Your answers D1 to D5 are part of it. Approval needs the Approval line plus your real words. Small changes use the small route. The project gets an MIT license and a release tool now. T9 uses at most 8 live Claude runs plus useful Codex runs.</p></div></div><div class="columns"><div><h3>Decisions made</h3><p>You answered Q1 to Q5 on 2026-11-03.</p><p>D1 (Q1): &quot;Line + your real words&quot;. Code edits and git writes need the current task&#x27;s Approval line, and the user&#x27;s words that it quotes must appear in a real user message.</p><p>D2 (Q2): &quot;1 builder + 1 review&quot;. The small route in T6 applies, with the escalation rule.</p><p>D3 (Q3): &quot;MIT.&quot; T8 adds an MIT LICENSE at the root.</p><p>D4 (Q4): &quot;Build the release tool now.&quot; T8 adds tools/build_release.py.</p><p>D5 (Q5): &quot;Allow up to 8 Claude runs plus Codex runs where useful, but avoid unnecessary paid runs.&quot; T9 stays within that limit.</p></div><div><h3>What stays the same</h3><ul class="list--keep"><li>Only workflow-axa package files change: hooks, scripts, skills, docs and tests.</li><li>No application repository changes, no global settings or permission changes and no automatic commits.</li><li>The four phases, grilling, grounded planning, both gates, task reuse, history, shared rules and artifact protections stay.</li><li>Pinned specialist methods, the D14 UI rule and the approved report design stay.</li><li>No package code changes before you agree to the behavior and approve the plan.</li></ul></div></div></section><section class="section" aria-labelledby="how-it-works"><h2 class="section__title" id="how-it-works">How it works</h2><p class="flow-context">Flow reviewed for r1. The "Today" view shows the code before the change. The proposed view is what was built. The checks below show what was verified.</p><section class="review" aria-label="Flow diagrams"><input class="sr-radio" type="radio" name="diagram-view" id="view-proposed" aria-label="After the change" aria-controls="panel-proposed" checked><input class="sr-radio" type="radio" name="diagram-view" id="view-current" aria-label="Today" aria-controls="panel-current" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-100" aria-label="100% diagram size" checked><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-125" aria-label="125% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-150" aria-label="150% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-fit" aria-label="Fit diagram size" ><div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name"><span class="control-name" id="view-tabs-name">Show</span><label for="view-proposed">After the change</label><label for="view-current">Today</label></div><div class="zoom-tabs labelled" role="group" aria-labelledby="zoom-tabs-name"><span class="control-name" id="zoom-tabs-name">Zoom</span><label for="zoom-100">100%</label><label for="zoom-125">125%</label><label for="zoom-150">150%</label><label for="zoom-fit">Fit</label></div></div><div class="figures"><figure class="panel" id="panel-proposed"><div class="figure-head"><h3>After: the current task&#x27;s approval and the user&#x27;s real words allow the edit</h3><span>As built. The results are below.</span></div><p class="figure-description">How an edit or git write gets permission after T1. Arrows show the order of the checks. If a check fails, the edit is blocked. Not built yet.</p><p class="hint">Scroll sideways to explore. <a href="#node-8-proposed-P1">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="After the change diagram, scroll to explore" data-start-id="node-8-proposed-P1" style="--board-width:1520px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1520" height="480" viewBox="0 0 1520 480" role="img" aria-labelledby="proposed-title proposed-desc"><title id="proposed-title">After: the current task&#x27;s approval and the user&#x27;s real words allow the edit</title><desc id="proposed-desc">How an edit or git write gets permission after T1. Arrows show the order of the checks. If a check fails, the edit is blocked. Not built yet.</desc><defs><marker id="arrow-proposed" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="P1" data-to="P2" data-points="[[272, 200], [352, 200]]" d="M 272 200 L 352 200" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P2" data-to="P3" data-points="[[464, 264], [464, 336]]" d="M 464 264 L 464 336" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P2" data-to="P4" data-points="[[576, 200], [656, 200]]" d="M 576 200 L 656 200" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P4" data-to="P5" data-points="[[912, 200], [992, 200]]" d="M 912 200 L 992 200" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P5" data-to="P6" data-points="[[1248, 200], [1328, 200]]" d="M 1248 200 L 1328 200" marker-end="url(#arrow-proposed)"/><g class="arrow-label"><rect x="473.5" y="293" width="93" height="22"/><text class="edge-label" text-anchor="middle" x="520" y="308">PLAN PHASES</text></g><g class="arrow-label"><rect x="583.5" y="157" width="65" height="22"/><text class="edge-label" text-anchor="middle" x="616" y="172">EXECUTE</text></g><g id="node-8-proposed-P1" class="node start observed " data-id="P1" data-box="48,152,224,96"><title>/workflow loaded. observed / unchanged. </title><rect class="node-shape" x="48" y="152" width="224" height="96" rx="20"/><text class="node-title" x="160" y="196" text-anchor="middle">/workflow loaded</text><text class="node-note" x="160" y="220" text-anchor="middle">Edit or git write</text></g><g id="node-8-proposed-P2" class="node decision proposed " data-id="P2" data-box="352,136,224,128"><title>Which phase?. proposed / modified. </title><polygon class="node-shape" points="464,136 576,200 464,264 352,200"/><text class="node-title" x="464" y="206" text-anchor="middle">Which phase?</text></g><g id="node-8-proposed-P3" class="node result proposed " data-id="P3" data-box="336,336,256,96"><title>Records only. proposed / added. </title><rect class="node-shape" x="336" y="336" width="256" height="96" rx="20"/><text class="node-title" x="464" y="380" text-anchor="middle">Records only</text><text class="node-note" x="464" y="404" text-anchor="middle">PLAN, TODO, report</text></g><g id="node-8-proposed-P4" class="node action proposed " data-id="P4" data-box="656,152,256,96"><title>Approval line. proposed / added. </title><rect class="node-shape" x="656" y="152" width="256" height="96" rx="6"/><text class="node-title" x="784" y="196" text-anchor="middle">Approval line</text><text class="node-note" x="784" y="220" text-anchor="middle">Current task and revision</text></g><g id="node-8-proposed-P5" class="node action proposed " data-id="P5" data-box="992,152,256,96"><title>Quoted user words. proposed / added. </title><rect class="node-shape" x="992" y="152" width="256" height="96" rx="6"/><text class="node-title" x="1120" y="196" text-anchor="middle">Quoted user words</text><text class="node-note" x="1120" y="220" text-anchor="middle">Found in a real user message</text></g><g id="node-8-proposed-P6" class="node result proposed " data-id="P6" data-box="1328,152,176,96"><title>Edit allowed. proposed / modified. </title><rect class="node-shape" x="1328" y="152" width="176" height="96" rx="20"/><text class="node-title" x="1416" y="196" text-anchor="middle">Edit allowed</text><text class="node-note" x="1416" y="220" text-anchor="middle">Code and git writes</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span><span><i class="legend-decision" aria-hidden="true"></i>Decision</span></div><span class="muted">Dashed outlines show a guess or an unknown. Details and evidence are below. The proposed flow is what was built. Its checks are below.</span></figcaption></figure><figure class="panel" id="panel-current"><div class="figure-head"><h3>Today: any phase name in the session allows the edit</h3><span>As the code works today</span></div><p class="figure-description">How an edit or git write gets permission today. Arrows show the order of the checks. Reproduced with probe scripts at 0b4e4b4.</p><p class="hint">Scroll sideways to explore. <a href="#node-7-current-N1">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Today diagram, scroll to explore" data-start-id="node-7-current-N1" style="--board-width:1280px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="current-title current-desc"><title id="current-title">Today: any phase name in the session allows the edit</title><desc id="current-desc">How an edit or git write gets permission today. Arrows show the order of the checks. Reproduced with probe scripts at 0b4e4b4.</desc><defs><marker id="arrow-current" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="N1" data-to="N2" data-points="[[336, 200], [496, 200]]" d="M 336 200 L 496 200" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N2" data-to="N3" data-points="[[784, 200], [944, 200]]" d="M 784 200 L 944 200" marker-end="url(#arrow-current)"/><g class="arrow-label"><rect x="369.5" y="157" width="93" height="22"/><text class="edge-label" text-anchor="middle" x="416" y="172">EDIT OR GIT</text></g><g class="arrow-label"><rect x="821" y="157" width="86" height="22"/><text class="edge-label" text-anchor="middle" x="864" y="172">NAME FOUND</text></g><g id="node-7-current-N1" class="node start observed " data-id="N1" data-box="48,152,288,96"><title>/workflow loaded. observed / unchanged. </title><rect class="node-shape" x="48" y="152" width="288" height="96" rx="20"/><text class="node-title" x="192" y="196" text-anchor="middle">/workflow loaded</text><text class="node-note" x="192" y="220" text-anchor="middle">Router typed or loaded</text></g><g id="node-7-current-N2" class="node action observed " data-id="N2" data-box="496,152,288,96"><title>Scan the session. observed / unchanged. </title><rect class="node-shape" x="496" y="152" width="288" height="96" rx="6"/><text class="node-title" x="640" y="196" text-anchor="middle">Scan the session</text><text class="node-note" x="640" y="220" text-anchor="middle">Any phase name, any task</text></g><g id="node-7-current-N3" class="node result observed " data-id="N3" data-box="944,152,288,96"><title>Edit allowed. observed / unchanged. </title><rect class="node-shape" x="944" y="152" width="288" height="96" rx="20"/><text class="node-title" x="1088" y="196" text-anchor="middle">Edit allowed</text><text class="node-note" x="1088" y="220" text-anchor="middle">Clarify counts as execute</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-action" aria-hidden="true"></i>Action</span></div><span class="muted">Dashed outlines show a guess or an unknown. Details and evidence are below. The proposed flow is what was built. Its checks are below.</span></figcaption></figure></div></section></section><section class="section" aria-labelledby="what-changes"><h2 class="section__title" id="what-changes">What changes</h2><p class="section__summary">Side by side, before and after the change.</p><div class="table-scroll"><table class="compare"><thead><tr><th scope="col">Situation</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody><tr><th scope="row">Permission for an edit</th><td>Any phase name anywhere in the session allows code edits and git writes. Clarify counts the same as execute.</td><td class="after">The current task&#x27;s Approval line must approve the current revision, and its quoted user words must appear in a real user message. Clarify and specify allow records and the report only. </td></tr><tr><th scope="row">Lightweight edits</th><td>The bare phrase &quot;lightweight edit&quot; in any assistant text grants the exemption, even when negated.</td><td class="after">A recorded line that names the files grants it. Negated or quoted wording grants nothing. </td></tr><tr><th scope="row">What the gate sees</th><td>PowerShell, MCP write tools and many shell writes pass. A whole read of a phase SKILL.md does not count as loading it.</td><td class="after">The gate runs for PowerShell and MCP write tools and catches common shell writes. A whole read counts as loading the phase. </td></tr><tr><th scope="row">Record writes</th><td>record.py writes in place. An interrupted or concurrent write can empty a record or lose a change.</td><td class="after">A temp file replaces the record. A change made since the read is refused. </td></tr><tr><th scope="row">When the user says stop</th><td>Stop routes to deliver, which can send the agent back into building.</td><td class="after">Stop goes to the partial record. Paused, blocked and cancelled each have one route. </td></tr><tr><th scope="row">Baselines</th><td>Failures are compared by count, and a baseline has no command, commit, diff or environment.</td><td class="after">Failures are compared by test ID and first error line. A baseline is reused only while its inputs match. </td></tr><tr><th scope="row">Report wording and re-render</th><td>The advice removes uncertainty words, runs after the file is written and allows overwriting an approved report.</td><td class="after">The advice keeps the meaning and runs first for every report kind. A shown or approved report is never replaced. </td></tr><tr><th scope="row">Agents for a small change</th><td>Every ticket gets a fresh worker and a fresh reviewer, and every repair gets a re-review.</td><td class="after">One builder and one independent review, with an escalation rule. No second review of an unchanged diff. </td></tr><tr><th scope="row">Tests on other machines</th><td>11 tests fail in a path with spaces, and 2 fail under WSL.</td><td class="after">Tests build paths from the checkout root and pass in both places. </td></tr><tr><th scope="row">Verification docs and release</th><td>The docs disagree on counts and versions. No release tool exists.</td><td class="after">One generated verification summary, a release package from an include list and an MIT LICENSE. </td></tr></tbody></table></div></section><section class="section" aria-labelledby="the-work"><h2 class="section__title" id="the-work">The work</h2><div class="block"><h3>What was delivered</h3><p>Asked and agreed: fix the audit defects E1 to E23 in the package files, as A1 to A14 describe. Built: all nine tickets. Fixes from the live loop and from the whole-feature review were added, each with a test.</p><p>Changed files: the hooks (phase_gate.py, phase_reads.py, plain_reply.py, hooks.json), record.py and the new compare_failures.py. Also the renderer, task_report.py, the phase and router skills and the docs. New files: LICENSE, tools/build_release.py, tools/verification_summary.py and four test modules. The sibling task 2026-11-03-ui-evidence-engine also has record changes in the same tree.</p><p>Checks (V9): 757 tests ran OK on Windows, in a path with spaces and under WSL. validate.py passed again at delivery. It prints NOT RUN for host validation and live evaluations.</p><p>Reviews: T1, T2 and one review of T3, T4 and T6 had fresh reviewers. A fresh whole-feature review found 3 hard and 11 soft issues. All were fixed or recorded.</p><p>Gaps: A9 is partial, because the baseline input comparison is an instruction without a test. Codex ran read-only checks only. PLAN has no Outcome yet. Agent choices D7 to D10 wait for your review.</p></div><div class="block"><h3>Approach</h3><p>Nine tickets, ordered by impact. First come T1 approvals, T2 records and T3 stop and recovery. Then come T4 baselines, T5 reports and wording, T6 proportional agents, T7 portability, T8 docs and release and T9 live acceptance.</p><p>The main session builds each ticket. Only package files change: hooks, scripts, skills, docs and tests.</p></div><div class="block"><h3>Order of the work</h3><p>T1, T2, T5 and T7 depend on no other ticket. T3 follows T2, because it uses the records that T2 writes. T4 and T6 follow T3.</p><p>T8 follows T1 to T7, because it documents their final state. T9 follows T1 to T6 and stays within the D5 limit.</p><ol class="steps"><li><a href="#spec-T1"><span class="key">T1</span> Approval-bound gate</a></li><li><a href="#spec-T2"><span class="key">T2</span> Safe record writes</a></li><li><a href="#spec-T3"><span class="key">T3</span> Stop and recovery routes</a></li><li><a href="#spec-T4"><span class="key">T4</span> Baselines by identity</a></li><li><a href="#spec-T5"><span class="key">T5</span> Reports and wording</a></li><li><a href="#spec-T6"><span class="key">T6</span> Proportional agents</a></li><li><a href="#spec-T7"><span class="key">T7</span> Portability</a></li><li><a href="#spec-T8"><span class="key">T8</span> Docs and release</a></li><li><a href="#spec-T9"><span class="key">T9</span> Live acceptance</a></li><li><a href="#checks"><span class="key">Checks</span> How it was checked</a></li></ol></div><div class="tickets"><article class="ticket" id="spec-T1" aria-labelledby="spec-T1-title"><p class="ticket__stub">Ticket <span class="ticket__key">T1</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T1-title">Approval-bound gate</h3><p>Permission comes from the current task&#x27;s PLAN.md Approval line for the current revision, in the worktree of the edited file. The user&#x27;s words that the line quotes must appear in a real user message. Clarify and specify allow records and the report only. A whole read of a phase SKILL.md counts as loading it. A lightweight edit needs a recorded line that names files.</p><p>The hooks.json matcher adds the PowerShell tool and MCP write tools. More shell write patterns are caught, and paths are resolved. Explicit edit tools fail closed when the transcript cannot be read. A short section says what is enforced.</p><p>T1 also settles E7. A hook log in a fixture run shows which transcript a subagent&#x27;s hook call receives. Then T1 gates subagents or documents the gap.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Each E1-E7 bypass is blocked, and each legitimate route still works. One fresh reviewer reviews the ticket.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Hook regression tests in the package suite. Each test fails before the fix. For E7, a hook log in a fixture run shows which transcript a subagent&#x27;s hook call receives.</li><li>Hook tests for each tool and each write pattern. Read the new section.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V1 and V9: hook tests pass in the final suite. The whole-feature review found 2 hard issues in the gate, which were fixed with tests.</small></dd></dl></article><article class="ticket" id="spec-T2" aria-labelledby="spec-T2-title"><p class="ticket__stub">Ticket <span class="ticket__key">T2</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T2-title">Safe record writes</h3><p>record.py writes to a temp file in the same folder, copies the file mode and replaces the record. It refuses the write when the file changed since it was read, with a hash check under a lock file. new creates the file exclusively. tick matches the exact ID and never ticks a cancelled line. A BOM and mixed line endings are kept.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>An interrupted or concurrent write never empties a record or loses a change. One fresh reviewer reviews the ticket.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>record.py tests for an interrupted write, two writers, a BOM, mixed endings and T1 against T1.2.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V2: 14 record safety tests pass. One fresh review found no hard findings. Symlink and POSIX file-mode cases did not run on this Windows host.</small></dd></dl></article><article class="ticket" id="spec-T3" aria-labelledby="spec-T3-title"><p class="ticket__stub">Ticket <span class="ticket__key">T3</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T3-title">Stop and recovery routes</h3><p>Add the stopped, paused and cancelled states. Stop goes to the partial record in deliver without a review loop. Blocked is not done. A failed review stops after two tries with a recorded reason. The lightweight path skips the whole-feature check. The handoff lists changed files, verified work, remaining work and the next safe action.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Each state has one route, and a stop never returns to building. One fresh reviewer reviews the ticket.</p></dd><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T2">T2</a> Safe record writes</dd><dt>How it is checked</dt><dd><ul class="list"><li>Routing guard tests for each state.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V3: stop, pause and cancel routing tests pass. D10 (by: agent) keeps skills/resume-task/SKILL.md unchanged, because the router and TASK-FOLDER hold the route back.</small></dd></dl></article><article class="ticket" id="spec-T4" aria-labelledby="spec-T4-title"><p class="ticket__stub">Ticket <span class="ticket__key">T4</span><span class="ticket__status ticket__status--in-progress">Built, not checked</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T4-title">Baselines by identity</h3><p>The baseline records failing test IDs with their first error line, plus the command, the commit, a diff hash and the environment. A new compare_failures.py compares two runs. The baseline is reused only while all inputs match. The required checks run again after the last repair.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>A new failure is reported even when the count stays the same. A changed input invalidates the baseline.</p></dd><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T3">T3</a> Stop and recovery routes</dd><dt>How it is checked</dt><dd><ul class="list"><li>compare_failures.py tests for both cases.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Implemented, not yet checked: V3: compare_failures.py reports 5 existing to 4 plus 1 new as NEW. The baseline input comparison is an instruction only, with no unit test.</small></dd></dl></article><article class="ticket" id="spec-T5" aria-labelledby="spec-T5-title"><p class="ticket__stub">Ticket <span class="ticket__key">T5</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T5-title">Reports and wording</h3><p>Uncertainty, permission and proposal words become advice that keeps the meaning. Quoted and code text is exempt. The check runs before the file is written, for every report kind. --open does not run while problems remain. --replace-unpresented refuses a file that the task records name, shown or approved, and a file with approved state. The docs agree with the renderer.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>The five audit sentences keep their meaning. A shown or approved report cannot be replaced. Repeated wording fixes keep one file.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Renderer and helper tests on the five sentences and on the refused replace.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V4 and V9: report and helper tests pass. The whole-feature review covered this ticket.</small></dd></dl></article><article class="ticket" id="spec-T6" aria-labelledby="spec-T6-title"><p class="ticket__stub">Ticket <span class="ticket__key">T6</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T6-title">Proportional agents</h3><p>Add the small route and its escalation rule. Parallel workers run only for independent tickets with separate files. A repair to records or wording needs no re-review. The last ticket&#x27;s review counts as the whole-feature review when nothing changed after it. Reconciliation reuses the reviewer on the small route.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>A one-ticket change uses fewer agent calls than r22-short, and no unchanged diff is reviewed twice.</p></dd><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T3">T3</a> Stop and recovery routes</dd><dt>How it is checked</dt><dd><ul class="list"><li>Guard tests on the instruction wording. A replay of the r22-short case counts its agent calls.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V3 and V8: guard tests pass. One-ticket live tasks used 1 subagent call each, against 4 for r22-short.</small></dd></dl></article><article class="ticket" id="spec-T7" aria-labelledby="spec-T7-title"><p class="ticket__stub">Ticket <span class="ticket__key">T7</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T7-title">Portability</h3><p>Tests build paths from the checkout root. Activation tests use a temporary library without spaces, plus one test that expects the refusal. The doctor reports when python is missing.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>The suite passes in a path with spaces and under WSL.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Run the suite in a path with spaces and under WSL.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V5 and V9: the full suite passed in a path with spaces (757 ran, 13 skipped) and under WSL (757 ran, 16 skipped).</small></dd></dl></article><article class="ticket" id="spec-T8" aria-labelledby="spec-T8-title"><p class="ticket__stub">Ticket <span class="ticket__key">T8</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T8-title">Docs and release</h3><p>Add a generated Current verification section with the commit, the environment, the commands and the results. validate.py rejects skill or version counts in prose that differ from plugin.json. Add tools/build_release.py with an explicit include list. Add an MIT LICENSE at the root (D3).</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>The docs give one set of counts, and the release package lists no excluded path.</p></dd><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T1">T1</a> Approval-bound gate <a class="ticket-ref" href="#spec-T2">T2</a> Safe record writes <a class="ticket-ref" href="#spec-T3">T3</a> Stop and recovery routes <a class="ticket-ref" href="#spec-T4">T4</a> Baselines by identity <a class="ticket-ref" href="#spec-T5">T5</a> Reports and wording <a class="ticket-ref" href="#spec-T6">T6</a> Proportional agents <a class="ticket-ref" href="#spec-T7">T7</a> Portability</dd><dt>How it is checked</dt><dd><ul class="list"><li>A validate.py test with a count mismatch. Read the generated section.</li><li>A build_release.py test that lists the package contents.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V6 and V9: release and docs tests pass. VALIDATION.md was regenerated, and the release zip was rebuilt with 184 files.</small></dd></dl></article><article class="ticket" id="spec-T9" aria-labelledby="spec-T9-title"><p class="ticket__stub">Ticket <span class="ticket__key">T9</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T9-title">Live acceptance</h3><p>Run headless Claude sessions on fixtures for each bypass and each legitimate route, and Codex runs where they are useful. D5 allows at most 8 Claude runs and no unnecessary paid runs.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>The live results are reported apart from the static and helper tests, and unavailable hosts are named.</p></dd><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T1">T1</a> Approval-bound gate <a class="ticket-ref" href="#spec-T2">T2</a> Safe record writes <a class="ticket-ref" href="#spec-T3">T3</a> Stop and recovery routes <a class="ticket-ref" href="#spec-T4">T4</a> Baselines by identity <a class="ticket-ref" href="#spec-T5">T5</a> Reports and wording <a class="ticket-ref" href="#spec-T6">T6</a> Proportional agents</dd><dt>How it is checked</dt><dd><ul class="list"><li>Headless Claude runs on fixtures, plus Codex runs where available.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: V7 and D11: eight live rounds in four repositories plus 1 Codex read-only run. D11 records the owner goal that widened the D5 limit.</small></dd></dl></article></div></section><section class="section" aria-labelledby="checks"><h2 class="section__title" id="checks">How it was checked</h2><p>Each confirmed defect gets a regression test that fails before the fix. The full package suite runs once per ticket and once at the end.</p><p>T1, T2 and T3 each get one fresh reviewer. The other tickets get one combined review at the end. Live runs: at most 8 Claude runs plus Codex runs where useful (D5), and no run is repeated without a reason.</p><div class="progress"><span>9 of 11 verified</span><span class="progress__bar" aria-hidden="true"><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-open"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-open"></span></span></div><ol class="checks"><li class="check" id="a-AC1"><span class="check__key">AC1</span><p class="check__expect">Every E1-E7 bypass case is blocked. Every legitimate route still works: an approved current task, a recorded lightweight line, a whole read of a phase SKILL.md and a resumed valid approval.</p><p class="check__how">Checked by: Hook regression tests in the package suite. Each test fails before the fix. For E7, a hook log in a fixture run shows which transcript a subagent&#x27;s hook call receives.</p><p class="check__how">Hook tests block E1 to E6 and allow the legitimate routes. E7 was measured live. The whole-feature review fixes (&quot;no report&quot; approvals) have tests. D7 and D8 are agent choices. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C3">Approval gate tests (V1)</a> (Passed), <a href="#check-C13">Fresh whole-feature review (V9)</a> (Passed)</p><span class="state state--verified" id="result-AC1" data-result="verified">Verified</span></li><li class="check" id="a-AC2"><span class="check__key">AC2</span><p class="check__expect">The gate runs for the PowerShell tool and MCP write tools and blocks the listed shell writes. Explicit edit tools fail closed when the transcript cannot be read. A short section says what is enforced and what is not.</p><p class="check__how">Checked by: Hook tests for each tool and each write pattern. Read the new section.</p><p class="check__how">Hook tests cover the PowerShell and MCP matcher and the listed shell writes. SETUP.md has the section on what is enforced. No live run of the PowerShell tool is recorded. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C3">Approval gate tests (V1)</a> (Passed)</p><span class="state state--verified" id="result-AC2" data-result="verified">Verified</span></li><li class="check" id="a-AC3"><span class="check__key">AC3</span><p class="check__expect">An interrupted write leaves the old record. A second writer is refused. A BOM and mixed line endings are kept. tick T1 does not tick T1.2 or a cancelled line.</p><p class="check__how">Checked by: record.py tests for an interrupted write, two writers, a BOM, mixed endings and T1 against T1.2.</p><p class="check__how">14 record safety tests pass: interrupted write, second writer BLOCKED, BOM, mixed endings and exact tick. Symlink and POSIX mode cases did not run. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C4">Record safety tests (V2)</a> (Passed)</p><span class="state state--verified" id="result-AC3" data-result="verified">Verified</span></li><li class="check" id="a-AC4"><span class="check__key">AC4</span><p class="check__expect">Stop goes to the partial delivery record without a review loop. Paused, blocked, cancelled and partial each route once. A failed review stops after two tries with a recorded reason. The handoff names changed files, verified work, remaining work and the next safe action.</p><p class="check__how">Checked by: Routing guard tests for each state.</p><p class="check__how">Routing tests for stop, pause and cancel pass, and the handoff has Changed files and Not tested lines. The live loop showed stop then continue. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C5">Stop, baseline and small-route tests (V3)</a> (Passed)</p><span class="state state--verified" id="result-AC4" data-result="verified">Verified</span></li><li class="check" id="a-AC5"><span class="check__key">AC5</span><p class="check__expect">Five existing failures that become four existing plus one new are reported as one new failure. A changed command, commit, diff or environment invalidates the baseline.</p><p class="check__how">Checked by: compare_failures.py tests for both cases.</p><p class="check__how">The 5 to 4 plus 1 case is reported as NEW (A8 verified). The baseline input comparison and the rerun after the last repair are instructions with wording tests only (A9 partial). Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C5">Stop, baseline and small-route tests (V3)</a> (Passed)</p><span class="state state--partial" id="result-AC5" data-result="partial">Partly verified</span></li><li class="check" id="a-AC6"><span class="check__key">AC6</span><p class="check__expect">The five audit sentences keep their meaning after the advice. Quoted and code text is exempt. A re-render that replaces a file named in the task records, or a file with approved state, is refused. Repeated wording fixes keep one file.</p><p class="check__how">Checked by: Renderer and helper tests on the five sentences and on the refused replace.</p><p class="check__how">Tests show uncertainty words as advice, quoted text exempt, the check before writing and a refused replace for named or approved reports. One open minor from round 8. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C6">Report and wording tests (V4)</a> (Passed)</p><span class="state state--verified" id="result-AC6" data-result="verified">Verified</span></li><li class="check" id="a-AC7"><span class="check__key">AC7</span><p class="check__expect">A small change uses one builder and one independent review. It leaves the small route when it turns risky. A record or wording repair needs no re-review.</p><p class="check__how">Checked by: Guard tests on the instruction wording. A replay of the r22-short case counts its agent calls.</p><p class="check__how">Guard tests on the small route and the escalation rule pass. V8: one-ticket live tasks used 1 subagent call, against 4 before. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C5">Stop, baseline and small-route tests (V3)</a> (Passed), <a href="#check-C14">Agent calls per small task (V8)</a> (Passed)</p><span class="state state--verified" id="result-AC7" data-result="verified">Verified</span></li><li class="check" id="a-AC8"><span class="check__key">AC8</span><p class="check__expect">The package suite passes in a checkout path with spaces and under WSL.</p><p class="check__how">Checked by: Run the suite in a path with spaces and under WSL.</p><p class="check__how">V9: the full suite passed in a path with spaces (757 ran, 13 skipped) and under WSL (757 ran, 16 skipped, Pillow missing). Evidence: <a href="#check-C7">Portability runs (V5)</a> (Passed)</p><span class="state state--verified" id="result-AC8" data-result="verified">Verified</span></li><li class="check" id="a-AC9"><span class="check__key">AC9</span><p class="check__expect">A generated Current verification section names the commit, the environment, the commands and the results. validate.py fails when a skill or version count in prose differs from plugin.json.</p><p class="check__how">Checked by: A validate.py test with a count mismatch. Read the generated section.</p><p class="check__how">validate.py rejects count mismatches in tests. VALIDATION.md has a regenerated section that names the commit, the environment, the commands and the results. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C2">Package validator, rerun at delivery</a> (Passed), <a href="#check-C8">Docs and release tests (V6)</a> (Passed)</p><span class="state state--verified" id="result-AC9" data-result="verified">Verified</span></li><li class="check" id="a-AC10"><span class="check__key">AC10</span><p class="check__expect">The release package holds only paths from the include list, with no Git internals, caches, secrets or evaluation output.</p><p class="check__how">Checked by: A build_release.py test that lists the package contents.</p><p class="check__how">tests/test_release.py lists the package contents. V9 rebuilt the release zip with 184 files. Evidence: <a href="#check-C1">Package suite, final run (V9)</a> (Passed), <a href="#check-C8">Docs and release tests (V6)</a> (Passed)</p><span class="state state--verified" id="result-AC10" data-result="verified">Verified</span></li><li class="check" id="a-AC11"><span class="check__key">AC11</span><p class="check__expect">Live runs, within the D5 limit, show each bypass blocked and each legitimate route allowed. Their results are reported apart from the static and helper tests, and unavailable hosts are named.</p><p class="check__how">Checked by: Headless Claude runs on fixtures, plus Codex runs where available.</p><p class="check__how">Eight live rounds, reported apart from the unit tests. D11 records the authority for the extra runs. Codex ran one read-only check only. Evidence: <a href="#check-C9">Live worktree loop (V7)</a> (Limited)</p><span class="state state--partial" id="result-AC11" data-result="partial">Partly verified</span></li></ol><h3>Checks and reviews</h3><ol class="checks"><li class="check" id="check-C1"><span class="check__key">C1</span><p class="check__expect">Package suite, final run (V9) <span class="muted">(test)</span></p><p class="check__how">Expected: All tests pass.</p><p class="check__how">Observed: Windows: 757 ran, OK, 13 skipped (host limits).</p><p class="check__how">Limits: Not rerun by the reconciler. FINDINGS V9 records the run on the final state.</p><p class="check__how">Command: <code>python -X utf8 -m unittest discover -s tests -q</code></p><span class="state state--verified">Passed</span></li><li class="check" id="check-C2"><span class="check__key">C2</span><p class="check__expect">Package validator, rerun at delivery <span class="muted">(inspection)</span></p><p class="check__how">Expected: validate.py passes.</p><p class="check__how">Observed: PASS: package structure, manifest consistency, minimal metadata, twenty-one local skills, relative links, core budget (700 workflow words).</p><p class="check__how">Limits: It prints NOT RUN for Claude and Codex host validation and live behavioral evaluations.</p><p class="check__how">Command: <code>python -X utf8 -I tools/validate.py</code></p><span class="state state--verified">Passed</span></li><li class="check" id="check-C3"><span class="check__key">C3</span><p class="check__expect">Approval gate tests (V1) <span class="muted">(test)</span></p><p class="check__how">Expected: Each bypass is denied and each legitimate route is allowed.</p><p class="check__how">Observed: tests/test_phase_gate_hook.py passes inside C1.</p><p class="check__how">Limits: Red seen per rule, test-first or by mutation, as V1 records.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C4"><span class="check__key">C4</span><p class="check__expect">Record safety tests (V2) <span class="muted">(test)</span></p><p class="check__how">Expected: No lost or emptied record.</p><p class="check__how">Observed: tests/test_record_safety.py, 14 cases, passes inside C1.</p><p class="check__how">Limits: Symlink and POSIX file-mode cases did not run on Windows.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C5"><span class="check__key">C5</span><p class="check__expect">Stop, baseline and small-route tests (V3) <span class="muted">(test)</span></p><p class="check__how">Expected: Each state routes once, and 5 to 4 plus 1 is NEW.</p><p class="check__how">Observed: tests/test_stop_and_baseline.py and the guard tests pass inside C1.</p><p class="check__how">Limits: The baseline input comparison has no unit test.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C6"><span class="check__key">C6</span><p class="check__expect">Report and wording tests (V4) <span class="muted">(test)</span></p><p class="check__how">Expected: Wording advice keeps the meaning, and approved reports are not replaced.</p><p class="check__how">Observed: tests/test_reports.py and tests/test_task_report.py pass inside C1.</p><p class="check__how">Limits: None beyond the suite limits.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C7"><span class="check__key">C7</span><p class="check__expect">Portability runs (V5) <span class="muted">(test)</span></p><p class="check__how">Expected: The whole suite passes in a path with spaces and under WSL.</p><p class="check__how">Observed: Path with spaces: 757 ran, OK, 13 skipped. WSL python3 3.12.3: 757 ran, OK, 16 skipped.</p><p class="check__how">Limits: The WSL run skipped 3 more tests, because Pillow is not installed there. Not rerun by the reconciler.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C8"><span class="check__key">C8</span><p class="check__expect">Docs and release tests (V6) <span class="muted">(test)</span></p><p class="check__how">Expected: Counts agree, and the package lists no excluded path.</p><p class="check__how">Observed: tests/test_release.py and tests/test_docs_consistency.py pass inside C1.</p><p class="check__how">Limits: No release package was built at delivery.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C9"><span class="check__key">C9</span><p class="check__expect">Live worktree loop (V7) <span class="muted">(test)</span></p><p class="check__how">Expected: Each bypass is blocked and each legitimate route works on real hosts.</p><p class="check__how">Observed: Eight rounds in four repositories. Round 8 found no approval violation and no new serious defect.</p><p class="check__how">Limits: Codex ran one read-only check only. D11 widened the D5 limit. Not rerun at delivery.</p><span class="state state--partial">Limited</span></li><li class="check" id="check-C10"><span class="check__key">C10</span><p class="check__expect">Fresh review of T1 <span class="muted">(review)</span></p><p class="check__how">Expected: Standards and Spec findings closed.</p><p class="check__how">Observed: 2 hard findings, fixed and rechecked.</p><p class="check__how">Limits: Later changes were covered by the whole-feature review (C13).</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C11"><span class="check__key">C11</span><p class="check__expect">Fresh review of T2 <span class="muted">(review)</span></p><p class="check__how">Expected: Standards and Spec findings closed.</p><p class="check__how">Observed: No hard findings. 4 soft findings fixed.</p><p class="check__how">Limits: None recorded.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C12"><span class="check__key">C12</span><p class="check__expect">Fresh review of T3, T4 and T6 <span class="muted">(review)</span></p><p class="check__how">Expected: Standards and Spec findings closed.</p><p class="check__how">Observed: 2 hard findings (no route back from a stop, lost &quot;reconcile again&quot;), fixed.</p><p class="check__how">Limits: Later changes were covered by the whole-feature review (C13).</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C13"><span class="check__key">C13</span><p class="check__expect">Fresh whole-feature review (V9) <span class="muted">(review)</span></p><p class="check__how">Expected: Standards and Spec findings closed on the final files.</p><p class="check__how">Observed: 3 hard and 11 soft issues. All were fixed with tests or recorded (D11).</p><p class="check__how">Limits: The fixes were checked by tests and the final runs, not by a second review.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-C14"><span class="check__key">C14</span><p class="check__expect">Agent calls per small task (V8) <span class="muted">(inspection)</span></p><p class="check__how">Expected: A one-ticket task uses one builder and one reviewer.</p><p class="check__how">Observed: Two one-ticket live tasks used 1 subagent call each, against 4 for r22-short.</p><p class="check__how">Limits: Session costs include rules setup, so they are not a clean cost comparison.</p><span class="state state--verified">Passed</span></li></ol></section><section class="section" aria-labelledby="risks"><h2 class="section__title" id="risks">Risks and open questions</h2><h3>Risks and limits</h3><ul class="risks"><li>The hook blocks the explicit edit tools that it sees. It cannot see every shell write or edits outside Claude Code. It cannot prove that a record is true beyond a match of the user&#x27;s words in the transcript. Codex gets no hooks. SETUP.md says so.</li><li>E7 is settled: a subagent&#x27;s hook call receives the parent&#x27;s transcript, so the gate judges subagent edits by the parent&#x27;s task (V-E7).</li><li>A host with only python3 starts no hook (E15). The doctor now reports a missing python (T7).</li><li>Open minor from round 8: a record that names a draft before the owner saw it blocks --replace-unpresented, so a second report file appears. It is a proposal for the follow-up review.</li></ul><h3 id="open-questions">Open questions</h3><p>None recorded.</p></section><details class="appendix" id="technical-details"><summary>Technical details: sources, evidence and traceability</summary><div class="appendix-body"><p class="muted">This page comes from the task records: the plan, the to-do list, the findings and the decisions. It does not approve anything, it does not show who approved, and it does not prove that a check ran. There is no approve button. Waived or unverified work is not a passed check.</p><section><h2>Behavior agreement record</h2><p>Status: <strong>approved</strong> · r1</p><p>Recorded response:</p><blockquote>Yes to both</blockquote><small>Source: <a href="#s-S4">S4</a>, DECISIONS.md ## Approval (owner, 2026-11-03), D6; PLAN.md ## Current checkpoint, Agreement and Approval</small></section><section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2><p class="checkpoint-asof">As recorded: 2026-11-04 · <a href="#s-S1">S1</a> , Current checkpoint</p><dl class="checkpoint-axes"><div><dt>Approval</dt><dd><strong>Approved · r1</strong><p>The owner approved the agreement and plan r1 on 2026-11-03: &quot;Yes to both&quot;.</p></dd></div><div><dt>Implementation</dt><dd><strong>Implemented</strong><p>All nine tickets were built in the package files. The fixes from the live loop and from the whole-feature review were added with tests.</p></dd></div><div><dt>Verification / acceptance</dt><dd><strong>Limited</strong><p>V9: the full suite passed on Windows, in a path with spaces and under WSL. validate.py passed again at delivery. A9 and the live acceptance AC11 are only partly checked.</p></dd></div></dl><p class="next-action"><strong>Next safe action</strong> The owner session writes the PLAN Outcome and updates the checkpoint. Then the owner accepts the delivery as partial or sends A9 back to workflow-execute.</p><p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. Approval, completed code and acceptance are different states.</p></section><section><h2>Requirements</h2><ul class="plain"><li id="r-R1"><strong>R1.</strong> After /workflow, application code edits and git writes are allowed only when the current task&#x27;s Approval line approves the current revision. The user&#x27;s words that the line quotes must appear in a real user message. Loading clarify or specify allows only task records and the report.<small>Source: PLAN.md Goal and acceptance, A1.</small></li><li id="r-R2"><strong>R2.</strong> Negated or quoted &quot;lightweight&quot; wording grants nothing. A lightweight edit needs a recorded line that names its files.<small>Source: PLAN.md Goal and acceptance, A2.</small></li><li id="r-R3"><strong>R3.</strong> Another task&#x27;s approval does not authorize the current task. A valid approval survives resumption. A changed scope does not inherit it.<small>Source: PLAN.md Goal and acceptance, A3.</small></li><li id="r-R4"><strong>R4.</strong> Reading a phase SKILL.md whole counts as loading that phase, as the router documents.<small>Source: PLAN.md Goal and acceptance, A4.</small></li><li id="r-R5"><strong>R5.</strong> The gate also runs for the PowerShell tool and MCP write tools. It catches common shell writes: redirection, tee, cp, mv, Set-Content, git apply, git checkout and git reset. The docs say plainly that command-text filtering is advice, not a security boundary.<small>Source: PLAN.md Goal and acceptance, A5.</small></li><li id="r-R6"><strong>R6.</strong> An interrupted record write leaves the old file intact. A concurrent change is refused, never silently lost.<small>Source: PLAN.md Goal and acceptance, A6.</small></li><li id="r-R7"><strong>R7.</strong> &quot;Stop&quot; ends implementation: no review loop and no return to execute. Paused, blocked, cancelled and partial each have one clear route. The handoff names what changed, what was verified, what remains and the next safe action.<small>Source: PLAN.md Goal and acceptance, A7.</small></li><li id="r-R8"><strong>R8.</strong> A failure counts as existing only when the same test fails the same way. Five existing failures that become four existing plus one new are reported as one new failure.<small>Source: PLAN.md Goal and acceptance, A8.</small></li><li id="r-R9"><strong>R9.</strong> A baseline is reused only while its command, commit, diff and environment still match. The required checks run again after the last repair.<small>Source: PLAN.md Goal and acceptance, A9.</small></li><li id="r-R10"><strong>R10.</strong> A small change uses one builder and one independent review. A small change is one ticket with named files and no interface, data, dependency or security change. It leaves that route when it turns risky. An unchanged diff gets no second review.<small>Source: PLAN.md Goal and acceptance, A10.</small></li><li id="r-R11"><strong>R11.</strong> Words that carry uncertainty, permission or a proposal keep their meaning. The wording check runs before the report is written, never blocks a valid report and covers every report kind. An approved or presented report is never overwritten. A report counts as presented once the task records name it.<small>Source: PLAN.md Goal and acceptance, A11.</small></li><li id="r-R12"><strong>R12.</strong> The test suite passes in a path with spaces and under POSIX.<small>Source: PLAN.md Goal and acceptance, A12.</small></li><li id="r-R13"><strong>R13.</strong> One current verification summary exists. It is tied to a commit and an environment and is generated where practical. The other documents point to it.<small>Source: PLAN.md Goal and acceptance, A13.</small></li><li id="r-R14"><strong>R14.</strong> A release package is built from an explicit include list, without Git internals, caches, secrets or evaluation output.<small>Source: PLAN.md Goal and acceptance, A14.</small></li></ul></section><section><h2>Tickets: traceability</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody><tr id="t-T1"><td><strong>T1</strong></td><td><strong>Approval-bound gate</strong><small>requested: Edits and git writes get permission from the current task&#x27;s recorded approval, not from any phase name.<br>Areas: hooks/phase_gate.py, hooks/hooks.json, skills/workflow/SKILL.md (router note)</small><small class="task-outcome">Verified: V1 and V9: hook tests pass in the final suite. The whole-feature review found 2 hard issues in the gate, which were fixed with tests.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a> <a href="#r-R5">R5</a><br><a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a> <a href="#e-E4">E4</a> <a href="#e-E5">E5</a> <a href="#e-E6">E6</a> <a href="#e-E7">E7</a> <a href="#e-E8">E8</a><br><a href="#a-AC1">AC1</a> <a href="#a-AC2">AC2</a></td><td>—</td></tr><tr id="t-T2"><td><strong>T2</strong></td><td><strong>Safe record writes</strong><small>requested: An interrupted or concurrent write no longer empties a record or loses a change.<br>Areas: skills/workflow/scripts/record.py</small><small class="task-outcome">Verified: V2: 14 record safety tests pass. One fresh review found no hard findings. Symlink and POSIX file-mode cases did not run on this Windows host.</small></td><td><a href="#r-R6">R6</a><br><a href="#e-E20">E20</a><br><a href="#a-AC3">AC3</a></td><td>—</td></tr><tr id="t-T3"><td><strong>T3</strong></td><td><strong>Stop and recovery routes</strong><small>requested: A stop ends implementation, and each unfinished state has one route and a clear handoff.<br>Areas: skills/workflow/TASK-FOLDER.md, skills/workflow/SKILL.md (router table), skills/workflow-execute/SKILL.md, skills/workflow-deliver/SKILL.md, skills/resume-task/SKILL.md, handoff message</small><small class="task-outcome">Verified: V3: stop, pause and cancel routing tests pass. D10 (by: agent) keeps skills/resume-task/SKILL.md unchanged, because the router and TASK-FOLDER hold the route back.</small></td><td><a href="#r-R7">R7</a><br><a href="#e-E21">E21</a><br><a href="#a-AC4">AC4</a></td><td><a href="#t-T2">T2</a></td></tr><tr id="t-T4"><td><strong>T4</strong></td><td><strong>Baselines by identity</strong><small>requested: A new failure is not hidden by a matching count, and a stale baseline is not reused.<br>Areas: skills/workflow-execute/SKILL.md, skills/workflow-deliver/SKILL.md, skills/workflow/TASK-FOLDER.md, compare_failures.py (new)</small><small class="task-outcome">Implemented, not yet checked: V3: compare_failures.py reports 5 existing to 4 plus 1 new as NEW. The baseline input comparison is an instruction only, with no unit test.</small></td><td><a href="#r-R8">R8</a> <a href="#r-R9">R9</a><br><a href="#e-E11">E11</a> <a href="#e-E12">E12</a> <a href="#e-E13">E13</a><br><a href="#a-AC5">AC5</a></td><td><a href="#t-T3">T3</a></td></tr><tr id="t-T5"><td><strong>T5</strong></td><td><strong>Reports and wording</strong><small>requested: The wording advice keeps the meaning, runs before the file is written and never overwrites an approved report.<br>Areas: skills/codebase-map/scripts/render_report.py, skills/codebase-map/scripts/task_report.py, skills/simple-english/SKILL.md (adaptation), skills/workflow/WRITING.md, skills/workflow/TASK-FOLDER.md, renderer help text</small><small class="task-outcome">Verified: V4 and V9: report and helper tests pass. The whole-feature review covered this ticket.</small></td><td><a href="#r-R11">R11</a><br><a href="#e-E16">E16</a> <a href="#e-E17">E17</a> <a href="#e-E18">E18</a> <a href="#e-E19">E19</a><br><a href="#a-AC6">AC6</a></td><td>—</td></tr><tr id="t-T6"><td><strong>T6</strong></td><td><strong>Proportional agents</strong><small>requested: A small change uses fewer agents and no repeated review of an unchanged diff.<br>Areas: skills/workflow-execute/SKILL.md, skills/workflow-deliver/SKILL.md, hooks/phase_reads.py</small><small class="task-outcome">Verified: V3 and V8: guard tests pass. One-ticket live tasks used 1 subagent call each, against 4 for r22-short.</small></td><td><a href="#r-R10">R10</a><br><a href="#e-E9">E9</a> <a href="#e-E10">E10</a><br><a href="#a-AC7">AC7</a></td><td><a href="#t-T3">T3</a></td></tr><tr id="t-T7"><td><strong>T7</strong></td><td><strong>Portability</strong><small>requested: The suite passes in a path with spaces and under POSIX, and a missing python is reported.<br>Areas: tests/, activate_rules.py tests, skills/workflow-doctor/SKILL.md (note)</small><small class="task-outcome">Verified: V5 and V9: the full suite passed in a path with spaces (757 ran, 13 skipped) and under WSL (757 ran, 16 skipped).</small></td><td><a href="#r-R12">R12</a><br><a href="#e-E14">E14</a> <a href="#e-E15">E15</a><br><a href="#a-AC8">AC8</a></td><td>—</td></tr><tr id="t-T8"><td><strong>T8</strong></td><td><strong>Docs and release</strong><small>requested: One generated verification summary replaces contradicting counts, and a release package has an explicit include list.<br>Areas: VALIDATION.md, README.md, CHANGELOG.md, UPGRADE.md, VENDORED-SKILLS.md, tools/validate.py, tools/build_release.py (new)</small><small class="task-outcome">Verified: V6 and V9: release and docs tests pass. VALIDATION.md was regenerated, and the release zip was rebuilt with 184 files.</small></td><td><a href="#r-R13">R13</a> <a href="#r-R14">R14</a><br><a href="#e-E22">E22</a> <a href="#e-E23">E23</a><br><a href="#a-AC9">AC9</a> <a href="#a-AC10">AC10</a></td><td><a href="#t-T1">T1</a> <a href="#t-T2">T2</a> <a href="#t-T3">T3</a> <a href="#t-T4">T4</a> <a href="#t-T5">T5</a> <a href="#t-T6">T6</a> <a href="#t-T7">T7</a></td></tr><tr id="t-T9"><td><strong>T9</strong></td><td><strong>Live acceptance</strong><small>requested: Real host runs show whether the gate blocks each bypass and allows each legitimate route.<br>Areas: Headless Claude runs on fixtures, Codex runs where available</small><small class="task-outcome">Verified: V7 and D11: eight live rounds in four repositories plus 1 Codex read-only run. D11 records the owner goal that widened the D5 limit.</small></td><td><a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a> <a href="#r-R5">R5</a> <a href="#r-R6">R6</a> <a href="#r-R7">R7</a> <a href="#r-R10">R10</a><br><a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a> <a href="#e-E4">E4</a> <a href="#e-E5">E5</a> <a href="#e-E6">E6</a> <a href="#e-E9">E9</a> <a href="#e-E10">E10</a> <a href="#e-E20">E20</a> <a href="#e-E21">E21</a><br><a href="#a-AC11">AC11</a></td><td><a href="#t-T1">T1</a> <a href="#t-T2">T2</a> <a href="#t-T3">T3</a> <a href="#t-T4">T4</a> <a href="#t-T5">T5</a> <a href="#t-T6">T6</a></td></tr></tbody></table></div></section><section><h2>What changes: traceability</h2><div class="table-scroll"><table><thead><tr><th>Situation</th><th>Requirements</th><th>Evidence</th><th>Tickets</th></tr></thead><tbody><tr><td>Permission for an edit</td><td><a href="#r-R1">R1</a> <a href="#r-R3">R3</a></td><td><a href="#e-E1">E1</a> <a href="#e-E3">E3</a> <a href="#e-E8">E8</a></td><td><a href="#t-T1">T1</a></td></tr><tr><td>Lightweight edits</td><td><a href="#r-R2">R2</a></td><td><a href="#e-E2">E2</a></td><td><a href="#t-T1">T1</a></td></tr><tr><td>What the gate sees</td><td><a href="#r-R4">R4</a> <a href="#r-R5">R5</a></td><td><a href="#e-E4">E4</a> <a href="#e-E5">E5</a> <a href="#e-E6">E6</a></td><td><a href="#t-T1">T1</a></td></tr><tr><td>Record writes</td><td><a href="#r-R6">R6</a></td><td><a href="#e-E20">E20</a></td><td><a href="#t-T2">T2</a></td></tr><tr><td>When the user says stop</td><td><a href="#r-R7">R7</a></td><td><a href="#e-E21">E21</a></td><td><a href="#t-T3">T3</a></td></tr><tr><td>Baselines</td><td><a href="#r-R8">R8</a> <a href="#r-R9">R9</a></td><td><a href="#e-E11">E11</a> <a href="#e-E12">E12</a> <a href="#e-E13">E13</a></td><td><a href="#t-T4">T4</a></td></tr><tr><td>Report wording and re-render</td><td><a href="#r-R11">R11</a></td><td><a href="#e-E16">E16</a> <a href="#e-E17">E17</a> <a href="#e-E18">E18</a> <a href="#e-E19">E19</a></td><td><a href="#t-T5">T5</a></td></tr><tr><td>Agents for a small change</td><td><a href="#r-R10">R10</a></td><td><a href="#e-E9">E9</a> <a href="#e-E10">E10</a></td><td><a href="#t-T6">T6</a></td></tr><tr><td>Tests on other machines</td><td><a href="#r-R12">R12</a></td><td><a href="#e-E14">E14</a> <a href="#e-E15">E15</a></td><td><a href="#t-T7">T7</a></td></tr><tr><td>Verification docs and release</td><td><a href="#r-R13">R13</a> <a href="#r-R14">R14</a></td><td><a href="#e-E22">E22</a> <a href="#e-E23">E23</a></td><td><a href="#t-T8">T8</a></td></tr></tbody></table></div></section><section><h2>Acceptance: traceability</h2><ul class="plain"><li><strong>AC1</strong>: requirements <a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a></li><li><strong>AC2</strong>: requirements <a href="#r-R5">R5</a></li><li><strong>AC3</strong>: requirements <a href="#r-R6">R6</a></li><li><strong>AC4</strong>: requirements <a href="#r-R7">R7</a></li><li><strong>AC5</strong>: requirements <a href="#r-R8">R8</a> <a href="#r-R9">R9</a></li><li><strong>AC6</strong>: requirements <a href="#r-R11">R11</a></li><li><strong>AC7</strong>: requirements <a href="#r-R10">R10</a></li><li><strong>AC8</strong>: requirements <a href="#r-R12">R12</a></li><li><strong>AC9</strong>: requirements <a href="#r-R13">R13</a></li><li><strong>AC10</strong>: requirements <a href="#r-R14">R14</a></li><li><strong>AC11</strong>: requirements <a href="#r-R1">R1</a> <a href="#r-R2">R2</a> <a href="#r-R3">R3</a> <a href="#r-R4">R4</a> <a href="#r-R5">R5</a> <a href="#r-R6">R6</a> <a href="#r-R7">R7</a> <a href="#r-R10">R10</a></li></ul></section><section><h2>Where each part comes from</h2><ul class="plain"><li>Section “Request” <small>Source: <a href="#s-S1">S1</a>, PLAN.md ## Goal and acceptance; ## Current checkpoint, Task identity</small></li><li>Section “What will change” <small>Source: <a href="#s-S1">S1</a>, PLAN.md ## Agreement; ## Goal and acceptance A1-A14; ## Approach and scope</small></li><li>Section “How it will be built” <small>Source: <a href="#s-S1">S1</a>, PLAN.md ## Approach and scope</small></li><li>Section “Order of work” <small>Source: <a href="#s-S2">S2</a>, TODO.md T1-T9, Depends on</small></li><li>Section “Decisions” <small>Source: <a href="#s-S4">S4</a>, DECISIONS.md ## Answers (owner, 2026-11-03), D1-D5</small></li><li>Section “Risks and assumptions” <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V-E7, V7 Round 8; PLAN.md ## Approach and scope, Enforcement honesty</small></li><li>Section “How it will be checked” <small>Source: <a href="#s-S1">S1</a>, PLAN.md ## Approach and scope, Budgets</small></li><li>Section “Delivery” <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9; DECISIONS.md D7-D11; TODO.md T1-T9</small></li><li>Ticket T1 <small>Source: <a href="#s-S2">S2</a>, TODO.md T1</small></li><li>Ticket T2 <small>Source: <a href="#s-S2">S2</a>, TODO.md T2</small></li><li>Ticket T3 <small>Source: <a href="#s-S2">S2</a>, TODO.md T3</small></li><li>Ticket T4 <small>Source: <a href="#s-S2">S2</a>, TODO.md T4</small></li><li>Ticket T5 <small>Source: <a href="#s-S2">S2</a>, TODO.md T5</small></li><li>Ticket T6 <small>Source: <a href="#s-S2">S2</a>, TODO.md T6</small></li><li>Ticket T7 <small>Source: <a href="#s-S2">S2</a>, TODO.md T7</small></li><li>Ticket T8 <small>Source: <a href="#s-S2">S2</a>, TODO.md T8</small></li><li>Ticket T9 <small>Source: <a href="#s-S2">S2</a>, TODO.md T9</small></li><li>Check C1 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V9</small></li><li>Check C2 <small>Source: <a href="#s-S1">S1</a>, Delivery rerun 2026-11-04, after the review fixes</small></li><li>Check C3 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1</small></li><li>Check C4 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V2</small></li><li>Check C5 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V3</small></li><li>Check C6 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V4</small></li><li>Check C7 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V9</small></li><li>Check C8 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V6</small></li><li>Check C9 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V7; DECISIONS.md D11</small></li><li>Check C10 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1</small></li><li>Check C11 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V2</small></li><li>Check C12 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V3</small></li><li>Check C13 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V9</small></li><li>Check C14 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V8</small></li><li>Result for AC1 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC2 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC3 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md ## Verification (2026-11-03/04)</small></li><li>Result for AC4 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md ## Verification (2026-11-03/04)</small></li><li>Result for AC5 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md ## Verification (2026-11-03/04)</small></li><li>Result for AC6 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md ## Verification (2026-11-03/04)</small></li><li>Result for AC7 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC8 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC9 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC10 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li><li>Result for AC11 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md V1-V9</small></li></ul></section><section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · runtime: After /workflow, loading workflow-clarify alone allows an Edit of application code and git push. session_state turns any phase name in the transcript into one yes or no, and clarify counts the same as execute.</strong><p>FINDINGS E1; phase_gate.py:49-73, :71</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository. Also rechecked by hand.</small></article><article id="e-E2" class="evidence"><strong>E2 · runtime: Chat text &quot;This is NOT a lightweight edit&quot; grants the lightweight exemption, because LIGHTWEIGHT matches the bare phrase in any assistant text.</strong><p>FINDINGS E2; phase_gate.py:45, :68-69</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository. Also rechecked by hand.</small></article><article id="e-E3" class="evidence"><strong>E3 · runtime: A phase loaded for task A satisfies the check for a new task B later in the same session.</strong><p>FINDINGS E3</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository.</small></article><article id="e-E4" class="evidence"><strong>E4 · runtime: The gate misses many shell writes, for example redirection, tee, cp, mv, Set-Content, git apply, git checkout -- file and git reset --hard. A records path anywhere in a command exempts the whole command, and the cd target is judged instead of the written file.</strong><p>FINDINGS E4; phase_gate.py:85, :87</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository.</small></article><article id="e-E5" class="evidence"><strong>E5 · runtime: A whole read of a phase SKILL.md does not count as loading the phase, so edits stay blocked. The router documents that read as its fallback.</strong><p>FINDINGS E5; workflow/SKILL.md:36</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository.</small></article><article id="e-E6" class="evidence"><strong>E6 · static: The PowerShell tool and MCP write tools are outside the hooks.json matcher, so the gate never runs for them.</strong><p>FINDINGS E6; hooks/hooks.json PreToolUse matcher</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Read from hooks.json. The matcher is Edit|Write|MultiEdit|NotebookEdit|Bash.</small></article><article id="e-E7" class="evidence"><strong>E7 · static: It is unknown which transcript a subagent&#x27;s hook call receives. If it is the subagent&#x27;s own transcript, it has no /workflow line and is not gated.</strong><p>FINDINGS E7</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Unknown. Not reproduced.</small></article><article id="e-E8" class="evidence"><strong>E8 · static: The agent can write the PLAN.md Approval line itself, because task records are writable before approval. The real user answer is a user message in the transcript, which the hook can read.</strong><p>FINDINGS E8</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: A limit, not a reproduced defect.</small></article><article id="e-E9" class="evidence"><strong>E9 · static: workflow-execute and phase_reads.py require a fresh worker for every ticket, a fresh reviewer, and a re-review of every repair, record-only repairs included. workflow-deliver requires a fresh reconciler.</strong><p>FINDINGS E9; workflow-execute/SKILL.md:29, :32, :33; phase_reads.py:58-59; workflow-deliver:14</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S7">S7</a><br>Limits: Read from the instructions.</small></article><article id="e-E10" class="evidence"><strong>E10 · runtime: Measured runs: one-ticket rename r22-short used 4 agents, $9.25 and 84 turns. r22-long used 11 agents, $16.35 and 133 turns. Its T2 review and its whole-feature review started 9 seconds apart on the same unchanged diff.</strong><p>FINDINGS E10</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Costs are running totals from the headless summaries of this session.</small></article><article id="e-E11" class="evidence"><strong>E11 · static: The baseline records failure counts only. Five existing failures that become four existing plus one new pass as unchanged. The rules library already says to compare actual tests, not totals.</strong><p>FINDINGS E11; workflow-execute/SKILL.md:28; rule-maker/rules/operations.md:17</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S7">S7</a><br>Limits: Read from the instructions.</small></article><article id="e-E12" class="evidence"><strong>E12 · static: A baseline records no command, commit, diff state or environment, so a resumed session can reuse a stale one.</strong><p>FINDINGS E12; TASK-FOLDER.md:55</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Read from the instructions.</small></article><article id="e-E13" class="evidence"><strong>E13 · static: No rule says that the required checks run again after the last repair, and task_report.py cannot detect a stale check itself.</strong><p>FINDINGS E13; workflow-execute step 8</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S7">S7</a><br>Limits: Read from the instructions and the helper.</small></article><article id="e-E14" class="evidence"><strong>E14 · runtime: In a checkout path with spaces, 11 tests fail because activate_rules.py refuses such paths. Under WSL, 2 tests fail because a test reads the live D:/workflow-axa checkout.</strong><p>FINDINGS E14; activate_rules.py:57-58; test_truncated_read_hook.py:15, 49-57</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: The 11 Windows skips are real host limits. The POSIX run executed them and they passed.</small></article><article id="e-E15" class="evidence"><strong>E15 · static: hooks.json runs python. On a host with only python3, no hook starts, so the gate enforces nothing.</strong><p>FINDINGS E15; hooks/hooks.json</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: A risk. Not reproduced on such a host.</small></article><article id="e-E16" class="evidence"><strong>E16 · static: simple-english bans should, would, may, might and could, and task_report.py flags them. WRITING.md requires must, may and must not to be kept. Following the advice can turn an unproven cause into a false certainty.</strong><p>FINDINGS E16; simple-english/SKILL.md:20; task_report.py:170; workflow/WRITING.md:37</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Read from the skills and the helper.</small></article><article id="e-E17" class="evidence"><strong>E17 · static: render_report.py writes the HTML first and runs the wording check after. --open opens the file even with problems. Review reports without a task_report block get no wording check.</strong><p>FINDINGS E17; render_report.py:944, :948</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S8">S8</a><br>Limits: Read from the renderer.</small></article><article id="e-E18" class="evidence"><strong>E18 · static: --replace-unpresented checks only that the renderer made the file, so it would overwrite an approved report. Three documents still say that every re-render needs a new file.</strong><p>FINDINGS E18; simple-english/SKILL.md:91; TASK-FOLDER.md:97</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S8">S8</a><br>Limits: Read from the renderer and the docs.</small></article><article id="e-E19" class="evidence"><strong>E19 · runtime: Measured: the mulcol task made plan-r1, -v2 and -v3 within two minutes, and all three were opened.</strong><p>FINDINGS E19</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: This happened before --replace-unpresented existed.</small></article><article id="e-E20" class="evidence"><strong>E20 · runtime: record.py writes in place. A kill during the write leaves an empty or cut-off record. Two writers at once lose one write. tick T1 can tick T1.2 and turns a cancelled line into a ticked one.</strong><p>FINDINGS E20; record.py save() :33, new :62</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S6">S6</a><br>Limits: Reproduced with probe scripts at 0b4e4b4. The probes and logs are in the session scratchpad, outside the repository.</small></article><article id="e-E21" class="evidence"><strong>E21 · static: A user&#x27;s &quot;stop&quot; routes to deliver. Deliver requires the whole-feature review or hands back to execute, and execute repeats while a ticket is ready. No stopped, paused or cancelled state exists.</strong><p>FINDINGS E21; workflow/SKILL.md:32; workflow-deliver:12; workflow-execute/SKILL.md:25</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S7">S7</a><br>Limits: Read from the instructions.</small></article><article id="e-E22" class="evidence"><strong>E22 · static: The docs contradict each other on the skill count (20 or 21), the rules version (1.6.0 or 1.8.0), the test count and the browser and host checks. VALIDATION names no source commit.</strong><p>FINDINGS E22</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Read from README, CHANGELOG, VALIDATION, UPGRADE and VENDORED-SKILLS.</small></article><article id="e-E23" class="evidence"><strong>E23 · static: No release or ZIP tool exists, although VALIDATION describes one. No inclusion policy and no root LICENSE exist. No secret-like files were found.</strong><p>FINDINGS E23; VALIDATION:135, :184</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Read from the repository files.</small></article></section><details><summary>Today: steps and links</summary><ol><li><strong>N1: /workflow loaded</strong>. Router typed or loaded (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2: Scan the session</strong>. Any phase name, any task (observed, unchanged)  Evidence <a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E3">E3</a>; tasks —.</li><li><strong>N3: Edit allowed</strong>. Clarify counts as execute (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N1 → N2</strong>: edit or git (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N3</strong>: name found (observed, unchanged)  Evidence <a href="#e-E1">E1</a> <a href="#e-E3">E3</a>; tasks —.</li></ol></details><details><summary>After the change: steps and links</summary><ol><li><strong>P1: /workflow loaded</strong>. Edit or git write (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>P2: Which phase?</strong>.  (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P3: Records only</strong>. PLAN, TODO, report (proposed, added)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P4: Approval line</strong>. Current task and revision (proposed, added)  Evidence <a href="#e-E3">E3</a> <a href="#e-E8">E8</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P5: Quoted user words</strong>. Found in a real user message (proposed, added)  Evidence <a href="#e-E8">E8</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P6: Edit allowed</strong>. Code and git writes (proposed, modified)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P1 → P2</strong>: continues (proposed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>P2 → P3</strong>: plan phases (proposed, added)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P2 → P4</strong>: execute (proposed, added)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P4 → P5</strong>: continues (proposed, added)  Evidence <a href="#e-E8">E8</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>P5 → P6</strong>: continues (proposed, added)  Evidence <a href="#e-E8">E8</a>; tasks <a href="#t-T1">T1</a>.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>workflow-axa (D:/workflow-axa, main worktree) · main at 9e8338e. The task changes are staged or unstaged and not committed.</p>
+<p>On 2026-11-04 a fresh reconciler read PLAN, TODO, FINDINGS and DECISIONS again after the whole-feature review and its fixes. The test results come from FINDINGS V9. The reconciler ran validate.py once more and did not build the work.</p><p>Generated 2026-11-04T00:37:51.213208+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-S1"><td>S1</td><td><code>docs/plans/2026-11-03-audit-hardening/PLAN.md</code></td><td>plan</td><td><code>919f29a1a784a108…</code></td></tr><tr id="s-S2"><td>S2</td><td><code>docs/plans/2026-11-03-audit-hardening/TODO.md</code></td><td>todo</td><td><code>eb626fcd6547998a…</code></td></tr><tr id="s-S3"><td>S3</td><td><code>docs/plans/2026-11-03-audit-hardening/FINDINGS.md</code></td><td>findings</td><td><code>9843c8f2d61772cb…</code></td></tr><tr id="s-S4"><td>S4</td><td><code>docs/plans/2026-11-03-audit-hardening/DECISIONS.md</code></td><td>decisions</td><td><code>993edd46833c80ca…</code></td></tr><tr id="s-S5"><td>S5</td><td><code>hooks/phase_gate.py</code></td><td>code</td><td><code>9670c1b755368ea5…</code></td></tr><tr id="s-S6"><td>S6</td><td><code>skills/workflow/scripts/record.py</code></td><td>code</td><td><code>a88fdd25bd0e8b6a…</code></td></tr><tr id="s-S7"><td>S7</td><td><code>skills/workflow-execute/SKILL.md</code></td><td>code</td><td><code>3e1499c465242694…</code></td></tr><tr id="s-S8"><td>S8</td><td><code>skills/codebase-map/scripts/render_report.py</code></td><td>code</td><td><code>c60de402db72c8e4…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>docs/plans/2026-11-03-audit-hardening/reviews/delivery-r2.json</code></td><td>projection</td><td><code>2145f6ee76126f33…</code></td></tr></tbody></table></div></details>
+</div></details></div></div></main><footer class="report-footer"><p>Local HTML and SVG. No external files, uploads or approval actions. A saved snapshot: progress belongs in the task records.</p></footer></div>
+<script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.8.0-rc.1", "layout_version": 2, "style": "workflow-editorial-v1", "revision": "r1", "report_kind": "task-overview", "generated_utc": "2026-11-04T00:37:51.213208+00:00", "sources": [{"id": "S1", "role": "plan", "path": "docs/plans/2026-11-03-audit-hardening/PLAN.md", "sha256": "919f29a1a784a108365e6690cbebbd85795d28415baeabb8e55ea8a27011c755"}, {"id": "S2", "role": "todo", "path": "docs/plans/2026-11-03-audit-hardening/TODO.md", "sha256": "eb626fcd6547998a3dffd210bb70dd07f8d064c7c32d06992a18191ad4a22fa1"}, {"id": "S3", "role": "findings", "path": "docs/plans/2026-11-03-audit-hardening/FINDINGS.md", "sha256": "9843c8f2d61772cb4e03e2ac6b5a92320f154029ebf44863523ebaa5c9f89c99"}, {"id": "S4", "role": "decisions", "path": "docs/plans/2026-11-03-audit-hardening/DECISIONS.md", "sha256": "993edd46833c80caeb0de42f24e3e597fe9433b65c7a429cfe78848322dcd4e7"}, {"id": "S5", "role": "code", "path": "hooks/phase_gate.py", "sha256": "9670c1b755368ea5fa2dd0422ff32e2d43626f73f0552b70bc9cd328e70c871e"}, {"id": "S6", "role": "code", "path": "skills/workflow/scripts/record.py", "sha256": "a88fdd25bd0e8b6a58f495d303cb99f7c683c67dbaa93515842d8cf4b8085e08"}, {"id": "S7", "role": "code", "path": "skills/workflow-execute/SKILL.md", "sha256": "3e1499c465242694a2fd04fab1ce343f92783db75923ffe9b33c00d453d55fa8"}, {"id": "S8", "role": "code", "path": "skills/codebase-map/scripts/render_report.py", "sha256": "c60de402db72c8e4712d5f434bca00e9b0a2d5ca4cef4288d358c86583e1a422"}, {"id": "report-input", "role": "projection", "path": "docs/plans/2026-11-03-audit-hardening/reviews/delivery-r2.json", "sha256": "2145f6ee76126f333e32a45c8004c94c3153c6f34502954e63219f7e1f4447b1"}]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+
+
+// Highlight the contents entry for the section being read.
+(function () {
+  const links = [...document.querySelectorAll('.toc__link')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (!targets.length) return;
+  function update() {
+    const line = Math.min(window.innerHeight * 0.3, 240);
+    let current = targets[0];
+    for (const t of targets) { if (t.getBoundingClientRect().top - line <= 0) current = t; }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = targets[targets.length - 1];
+    for (const a of links) {
+      const on = a.getAttribute('href') === '#' + current.id;
+      a.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && a.closest('.toc').scrollWidth > a.closest('.toc').clientWidth) {
+        const nav = a.closest('.toc');
+        const r = a.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        if (r.left < n.left || r.right > n.right) nav.scrollLeft += r.left - n.left - 24;
+      }
+    }
+  }
+  let queued = false;
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } }, {passive:true});
+  window.addEventListener('resize', update);
+  update();
+})();
+
+// Start diagrams on "Fit" when the whole board fits at a readable size.
+(function () {
+  const canvas = document.querySelector('.panel .canvas');
+  const fit = document.getElementById('zoom-fit');
+  if (!canvas || !fit || location.hash) return;
+  const visible = [...document.querySelectorAll('.canvas')].find(c => c.clientWidth);
+  if (!visible) return;
+  const board = parseFloat(getComputedStyle(visible).getPropertyValue('--board-width')) || 0;
+  if (board && visible.clientWidth < board && visible.clientWidth / board >= 0.6) {
+    fit.checked = true;
+    fit.dispatchEvent(new Event('change'));
+  }
+})();
+</script></body></html>

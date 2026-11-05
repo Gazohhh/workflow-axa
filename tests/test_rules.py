@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,24 @@ def load(name,path):
     return module
 r=load('rules_readiness_test',ROOT/'skills/rule-maker/scripts/readiness.py')
 a=load('rules_activation_test',ROOT/'skills/rule-maker/scripts/activate_rules.py')
+
+def space_free_tempdir(cleanup):
+    """A temp folder whose path activate_rules accepts: it refuses library paths with spaces by design.
+    The checkout or TMP may contain spaces, so tests copy what they activate into this folder.
+    `cleanup` is addCleanup or addClassCleanup."""
+    bases=[tempfile.gettempdir()]+([os.environ.get('TMPDIR'),'/tmp'] if os.name!='nt' else [])
+    for base in filter(None,bases):
+        try:a.block('claude',Path(base).resolve())
+        except ValueError:continue
+        if Path(base).is_dir():
+            path=Path(tempfile.mkdtemp(dir=base));cleanup(shutil.rmtree,path,ignore_errors=True);return path
+    raise unittest.SkipTest('No temp folder without spaces exists; activation refuses library paths with spaces.')
+
+def space_free_skills(cleanup):
+    """A copy of the package skills in a space-free temp folder (its rules library sits at rule-maker/rules)."""
+    skills=space_free_tempdir(cleanup)/'skills'
+    shutil.copytree(ROOT/'skills',skills,ignore=shutil.ignore_patterns('__pycache__'))
+    return skills
 
 class RuleGateTests(unittest.TestCase):
     def setUp(self):
@@ -171,10 +190,15 @@ class RuleGateTests(unittest.TestCase):
         self.assertEqual(out.returncode,2);self.assertEqual(json.loads(out.stdout)['state'],'NEEDS_SETUP')
 
 class RulesActivationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # The checkout and TMP may contain spaces; activation refuses such library paths, so use space-free copies.
+        skills=space_free_skills(cls.addClassCleanup)
+        cls.a=load('rules_activation_copy',skills/'rule-maker/scripts/activate_rules.py');cls.library=cls.a.LIBRARY
     def setUp(self):
-        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.home=Path(self.tmp.name)
+        self.home=space_free_tempdir(self.addCleanup)
         self.claude=self.home/'.claude';self.codex=self.home/'.codex'
-    def plan(self):return a.build_plan(self.home,self.claude,self.codex,'both')
+    def plan(self):return self.a.build_plan(self.home,self.claude,self.codex,'both',self.library)
     def test_preview_does_not_write(self):
         self.assertEqual(len(self.plan()),2);self.assertFalse(self.claude.exists());self.assertFalse(self.codex.exists())
     def test_apply_is_idempotent_and_does_not_copy_rules(self):
@@ -193,10 +217,10 @@ class RulesActivationTests(unittest.TestCase):
         # Round 8: a rules audit read UPDATE as "out of date" when only the checked copy differed.
         import contextlib,io
         self.claude.mkdir();other=self.home/'installed/rules'
-        (self.claude/'CLAUDE.md').write_text(a.block('claude',other))
+        (self.claude/'CLAUDE.md').write_text(self.a.block('claude',other))
         out=io.StringIO()
         with contextlib.redirect_stdout(out):
-            a.main(['--check','--host','claude','--home',str(self.home),'--claude-dir',str(self.claude)])
+            self.a.main(['--check','--host','claude','--home',str(self.home),'--claude-dir',str(self.claude)])
         self.assertIn('UPDATE',out.getvalue());self.assertIn('not this copy',out.getvalue())
     def test_empty_override_untouched(self):
         self.codex.mkdir();p=self.codex/'AGENTS.override.md';p.write_text(' \n')
@@ -212,7 +236,7 @@ class RulesActivationTests(unittest.TestCase):
         # Same physical target is rejected by the underlying safe-file checks when linked.
         with self.assertRaises(ValueError):a.build_plan(self.home,Path('relative'),self.codex,'both')
     def test_library_modified_before_activation_is_rejected(self):
-        shared=self.home/'rules';shutil.copytree(a.LIBRARY,shared);(shared/'CORE.md').write_text('changed')
+        shared=self.home/'rules';shutil.copytree(self.library,shared);(shared/'CORE.md').write_text('changed')
         with self.assertRaisesRegex(ValueError,'Mixed/modified'):
             a.build_plan(self.home,self.claude,self.codex,'both',shared)
     def test_config_changed_after_preview_is_rejected(self):
@@ -220,11 +244,17 @@ class RulesActivationTests(unittest.TestCase):
         with self.assertRaises(ValueError):a.load_file_helpers().apply_plan(changes)
         self.assertEqual((self.claude/'CLAUDE.md').read_text(),'concurrent edit')
     def test_import_syntax_is_host_specific(self):
-        claude=a.block('claude',a.LIBRARY);codex=a.block('codex',a.LIBRARY)
-        self.assertIn('@'+a.LIBRARY.as_posix()+'/START.md',claude)
+        claude=a.block('claude',self.library);codex=a.block('codex',self.library)
+        self.assertIn('@'+self.library.as_posix()+'/START.md',claude)
         self.assertIn('not automatic Markdown imports',codex)
     def test_ambiguous_import_path_is_rejected(self):
         with self.assertRaises(ValueError):a.block('claude',Path('/tmp/name with spaces/rules'))
+    def test_real_library_path_with_spaces_is_refused(self):
+        # Intended refusal (activate_rules.block): a path with spaces would make a misleading @import line.
+        spaced=self.home/'copy with spaces/rules';shutil.copytree(self.library,spaced)
+        with self.assertRaisesRegex(ValueError,'without spaces'):
+            self.a.build_plan(self.home,self.claude,self.codex,'both',spaced)
+        self.assertFalse(self.claude.exists());self.assertFalse(self.codex.exists())
 
 class ReadinessContractTests(unittest.TestCase):
     def test_live_scenario_matrix_is_authored_not_claimed_run(self):
@@ -252,4 +282,4 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertNotIn('diagram-design',c['skills'])
         self.assertIn('grilling',c['skills'])
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.8.0')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.8.2')

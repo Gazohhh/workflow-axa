@@ -4,6 +4,10 @@ This is a **live-host protocol**, not a passing evaluation. `cases.json` contain
 
 The format is local to this package; it is not claimed to be native Claude plugin-eval or skill-creator JSON. The shipped result file explicitly says NOT_RUN. Do not convert package test passes into model scores.
 
+## Current candidate handoff
+
+For 2.8.0-rc.3 use the root CLAUDE-TEST-PROMPT.txt and RC3-CASES.md first. The owner reported that the older baseline was overwritten: test the exact candidate alone unless a separate trusted baseline is available and comparison is approved. Never search for or fabricate a mandatory unavailable version. No paid runs, repeats or extra batch are authorised by this document. One approved batch, one read-only retro, then stop. Older version-comparison material below describes optional/historical testing, not an instruction to launch it.
+
 ## Prepare a fair old/new comparison
 
 Use trusted copies of the baseline and the candidate in separate fresh sessions. For 2.8.0-rc.1 the baseline is the pinned pre-refactor revision `9daf507` (2.7.0-rc.7); these cases were first written to compare 2.5.0 with 2.6.0. Keep the exact host build, Claude/Codex model, reasoning settings, permissions and Matt skill revisions the same. Record resolved qualified skill identifiers and load/invocation evidence; do not infer success from a menu. Agree any account-use budget before paid runs.

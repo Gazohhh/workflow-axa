@@ -31,3 +31,15 @@ Measured live runs cost between about $1 and $17 each in this session's headless
 - D3 (Q3): "MIT."
 - D4 (Q4): "Build the release tool now."
 - D5 (Q5): "Allow up to 8 Claude runs plus Codex runs where useful, but avoid unnecessary paid runs."
+
+## Approval (owner, 2026-11-03)
+- D6: agreement and plan r1: "Yes to both".
+
+## Choices made during T1 (by: agent, 2026-11-03; the owner can reverse them)
+- D7: an answer the owner picks in an AskUserQuestion dialog counts as the owner's words for the approval check. The owner's "Yes to both" exists only in that form. Question text the agent wrote, tool output, subagent hand-backs and task notifications never count.
+- D8: one current task per session: the last task folder the session wrote records in, or the one the owner named.
+- D9: a `Lightweight edit:` line never allows git writes; an approval line without a revision number (`rN`) is refused, so older tasks reach new code through clarify.
+
+- D10 (by: agent, 2026-11-04): T3 named resume-task/SKILL.md, but it stays unchanged: its 500-word budget is full, and the route back from a stopped or paused task now lives in the router table and TASK-FOLDER "Stop, pause and cancel", which resume-task already reads. The owner can reverse this.
+
+- D11 (owner, 2026-11-03): the owner's later goal "do not stop untill everything works with tests on all the 4 repo's do not commit push and keep looping all of them untill best results and each round do a retro check" widened D5's "up to 8 Claude runs" for the live loop. Actual: 32 headless Claude turns over 8 rounds (4 repositories) plus 1 Codex read-only run, and the earlier 24 v-rounds were part of the version-line task. The same goal also ended local commits: nothing after 9e8338e is committed.

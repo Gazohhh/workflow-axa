@@ -1,8 +1,8 @@
 # Vendored skills
 
-Eight skills in this package are copies of Matt Pocock's skills: `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro`. They are separate skills like the others (plugin names `workflow-axa:<name>`). The workflow phases load them from their sibling folders, so an upstream change, a removed skill or a same-named skill installed elsewhere can't change the workflow. Each `SKILL.md` keeps the upstream text and ends with a **workflow-axa adaptation** section that overrides it where they conflict; supporting files are unchanged upstream copies.
+Nine skills in this package are vendored copies: eight of Matt Pocock's skills (`grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro`) and `simple-english` (see [Simple English](#simple-english) below). They are separate skills like the others (plugin names `workflow-axa:<name>`). The workflow phases load them from their sibling folders, so an upstream change, a removed skill or a same-named skill installed elsewhere can't change the workflow. Each `SKILL.md` keeps the upstream text and ends with a **workflow-axa adaptation** section that overrides it where they conflict; supporting files are unchanged upstream copies.
 
-Source: [mattpocock/skills](https://github.com/mattpocock/skills) at commit `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`, MIT license; each skill folder carries its own `LICENSE` copy. Keep it with the files.
+Source of the eight Matt Pocock skills: [mattpocock/skills](https://github.com/mattpocock/skills) at commit `4ae2317ddb22b046e26455e4f9c9b3aaaf62212d`, MIT license; each skill folder carries its own `LICENSE` copy. Keep it with the files.
 
 | Skill | Upstream file | SHA-256 (first 16) of the upstream file | SHA-256 (first 16) of the unchanged upstream text inside our SKILL.md |
 |---|---|---|---|

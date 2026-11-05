@@ -6,22 +6,31 @@ usage: python -X utf8 -I open_items.py <tasks-root> [--json]
                                                               (read this instead of every record file)
 <tasks-root> is the folder holding task folders (usually docs/plans). Read-only.
 
-Per task it reports the checkpoint phase line and, from TODO.md checkboxes:
-open items, in-progress items, ticked items with no evidence pointer (unbacked) and blocked items.
+Per task it reports the checkpoint phase line and, from TODO.md checkboxes or labelled ticket blocks:
+open items, in-progress items, ticked items with no evidence pointer (unbacked), blocked items and
+statuses it cannot read (unclear: an unlisted state or conflicting Status lines; neither open nor verified),
+and overview-table rows that disagree with the tickets (the tickets' Status lines are the source; the table
+is a summary that is reported, never used to decide a state).
 Evidence pointer: a V-ID, or in older records `proof:`, `evidence:`, `verified:` or a FINDINGS reference.
 An unbacked tick is reported, not trusted: the workflow treats it as unverified.
 """
 from __future__ import annotations
 
 import json
+import importlib.util
 import pathlib
 import re
 import sys
 
-BOX = re.compile(r'^\s*[-*]\s+\[(?P<mark>[ xX~!-])\]\s+(?P<text>.+)$')
-EVIDENCE = re.compile(r'\bV\d+\b|\b(proof|evidence|verified)\s*:|FINDINGS', re.I)
-BLOCKED = re.compile(r'\bblocked\b', re.I)
+_spec = importlib.util.spec_from_file_location('workflow_ticket_records', pathlib.Path(__file__).with_name('ticket_records.py'))
+tickets = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(tickets)
+
 PHASE = re.compile(r'^-\s*(Updated\s*/\s*phase|Phase)\s*:\s*(?P<v>.+)$', re.I | re.M)
+LABELS = (('overview', 'OVERVIEW TABLE DISAGREES WITH THE TICKETS (tickets are the source; correct the table)'),
+          ('unclear', 'STATUS NOT RECOGNISED, RECONCILE (not counted as open or verified)'), ('blocked', 'BLOCKED'),
+          ('unbacked', 'TICKED, NO EVIDENCE OR INCOMPLETE VERIFICATION'), ('in_progress', 'IN PROGRESS'),
+          ('open', 'OPEN'), ('paused', 'PAUSED'), ('closed', 'CLOSED WITHOUT TEST PASS'))
 NEXT = re.compile(r'^-\s*(Last result\s*/\s*)?next safe action\s*:\s*(?P<v>.+)$', re.I | re.M)
 
 
@@ -29,23 +38,18 @@ def scan(task: pathlib.Path) -> dict | None:
     todo = task / 'TODO.md'
     if not todo.is_file():
         return None
-    row = {'task': task.name, 'open': [], 'in_progress': [], 'unbacked': [], 'blocked': [], 'done': 0}
-    for line in todo.read_text(encoding='utf-8', errors='replace').splitlines():
-        m = BOX.match(line)
-        if not m:
-            continue
-        mark, text = m['mark'], m['text'].strip()
-        short = text[:140]
-        if BLOCKED.search(text) and mark.lower() != 'x':
-            row['blocked'].append(short)
-        elif mark == ' ':
-            row['open'].append(short)
-        elif mark in '~-!':
-            row['in_progress'].append(short)
-        elif EVIDENCE.search(text):
+    row = {'task': task.name, 'open': [], 'in_progress': [], 'unbacked': [], 'blocked': [],
+           'paused': [], 'closed': [], 'unclear': [], 'overview': [], 'done': 0}
+    lines = todo.read_text(encoding='utf-8', errors='replace').splitlines()
+    parsed = tickets.parse(lines)
+    row['overview'] = [problem.message for problem in tickets.overview(lines, parsed)[1]]
+    for item in parsed:
+        if item.category == 'done':
             row['done'] += 1
+        elif item.category == 'unclear':
+            row['unclear'].append(f'{item.display} ({item.unclear})')
         else:
-            row['unbacked'].append(short)
+            row[item.category].append(item.display)
     plan = task / 'PLAN.md'
     text = plan.read_text(encoding='utf-8', errors='replace') if plan.is_file() else ''
     row['phase'] = (PHASE.search(text)['v'].strip() if PHASE.search(text) else 'unknown')[:160]
@@ -86,8 +90,8 @@ def task_view(task: pathlib.Path) -> int:
         print(f'\n## Latest {outcomes[-1]}\n{section(text, outcomes[-1])[:1500]}')
     row = scan(task)
     if row:
-        print(f"\n## Tickets: {row['done']} done with evidence")
-        for key, label in (('blocked', 'BLOCKED'), ('unbacked', 'TICKED, NO EVIDENCE'), ('in_progress', 'IN PROGRESS'), ('open', 'OPEN')):
+        print(f"\n## Tickets: {row['done']} recorded verified with evidence (not re-run)")
+        for key, label in LABELS:
             for item in row[key]:
                 print(f'- {label}: {item}')
     problems = record_problems(task)
@@ -111,13 +115,13 @@ def main(argv: list[str]) -> int:
     if '--json' in argv:
         print(json.dumps(rows, indent=1))
         return 0
-    pending = [r for r in rows if r['open'] or r['in_progress'] or r['unbacked'] or r['blocked']]
+    pending = [r for r in rows if r['open'] or r['in_progress'] or r['unbacked'] or r['blocked'] or r['paused'] or r['unclear'] or r['overview']]
     print(f'{len(rows)} tasks with TODO.md; {len(pending)} with open, unbacked or blocked items.')
     for r in pending:
         print(f"\n## {r['task']}\n   phase: {r['phase']}")
         if r['next']:
             print(f"   next: {r['next']}")
-        for key, label in (('blocked', 'BLOCKED'), ('unbacked', 'TICKED, NO EVIDENCE'), ('in_progress', 'IN PROGRESS'), ('open', 'OPEN')):
+        for key, label in LABELS:
             for item in r[key]:
                 print(f'   {label}: {item}')
     return 0

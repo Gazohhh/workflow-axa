@@ -1,11 +1,11 @@
 ---
 name: workflow
-description: "Use for new or existing repository features, fixes, refactors, research, plans, audits and task resumption, including ordinary prompts. Find the right task, check rules, then route to the phase skill its records require: clarify and agree behavior, specify and approve the plan, execute tickets, deliver evidence. Explain-only requests remain read-only."
+description: "Use for repository features, fixes, refactors, research, plans, audits and task resumption, including ordinary prompts. Find the task, check rules, route to the phase skill its records require: clarify, specify, execute or deliver. Explain-only stays read-only."
 ---
 
 # Workflow
 
-Route one task to its next phase. **Once the task is found, your next action is invoking the phase skill §3 picks; never ask the user questions or approvals from this file.** Write for someone new to the project ([WRITING.md](WRITING.md)).
+Route the task. **Invoke the phase skill §3 selects; ask only a blocking readiness question here; behavior questions and approvals belong to the phase.** Write for someone new to the project ([WRITING.md](WRITING.md)).
 
 ## 1. Check rules readiness
 
@@ -23,17 +23,19 @@ Also: `codebase-map`, `task-status`, `resume-task`.
 
 ## 3. Route
 
-Read the checkpoint's `Agreement` and `Approval` lines (`legacy`: [RULES.md](RULES.md)). Take the first matching row:
+Read the checkpoint's `Agreement` and `Approval` lines. Legacy single-gate approval covers only its recorded scope, not a new request. Take the first matching row:
 
-| Task state | Next skill |
-|---|---|
-| New substantive goal, material scope change, no agreement for this revision, or a new request on an approved or delivered task (clarify decides: in-scope repair or new revision) | `workflow-clarify` |
-| Agreement recorded; tickets or HTML plan not approved | `workflow-specify` |
-| Execution handed off or stopped, or every ticket in a terminal state ([TASK-FOLDER.md](TASK-FOLDER.md)); delivery not recorded | `workflow-deliver` |
-| Implementation approved and a ticket is ready | `workflow-execute` |
-| Delivery recorded | Report it |
+| Task state | Next skill | Permission |
+|---|---|---|
+| Owner stops, pauses or cancels | `workflow-deliver` partial route | Handoff only; no new implementation or review loop |
+| New goal, changed scope, no agreement, or new request on existing work | `workflow-clarify` | Investigate and agree behavior; no application edits |
+| Agreed; tickets or HTML plan unapproved | `workflow-specify` | Prepare records/report; stop for approval |
+| Stopped work handed off, or all tickets terminal; no delivery yet | `workflow-deliver` | Reconcile and report; no fixes |
+| Approved ready ticket, or explicit continuation after Resume recheck | `workflow-execute` | Only the approved scope; publication is separate |
+| Delivery recorded | Report it | No new work |
 
-Invoke that skill now with the skill tool (plugin installs name it `workflow-axa:<name>`), or read its SKILL.md in full. The table holds no procedure: never run a phase from it. A missing phase skill blocks that phase; say so.
+
+Invoke that skill now with the skill tool (plugin installs name it `workflow-axa:<name>`), or read its SKILL.md in full. The table routes; it does not replace a phase. A missing phase skill blocks that phase; say so.
 
 **Lightweight edit**: an exact, low-risk change that alters no behavior a user or caller can notice, and no architecture, interface, dependency or security. A visible behavior change, however small and fully specified, is not lightweight: it takes the two gates, or both at once when nothing is open. Edit at the owner, verify, review as [AUDIT.md](AUDIT.md) selects (the bundled code-review for code), then run `workflow-deliver` in its short form. 
 
@@ -49,9 +51,9 @@ Answering grilling questions is not agreement, and a generic "go" is not approva
 ## Always
 
 - Questions: `grilling`. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md), never installed automatically ([SETUP.md](SETUP.md)). Reviews: [AUDIT.md](AUDIT.md). Output: [ARTIFACTS.md](ARTIFACTS.md).
-- New helpers pass AUDIT.md's necessity check; unclear terms go to `domain-modeling`; consequential documents get WRITING.md's cold-reader check.
+- Use AUDIT.md for the necessity check, `domain-modeling` for unclear terms, and WRITING.md for the cold-reader check.
 - Never stage, commit, push, branch, reset, deploy or publish unasked.
-- Workers get the same output folder, write scope, rules and UI authority. Code changes go through `workflow-execute`. Read package files whole, never through `head` or `sed -n`.
+- Pass workers the output folder, write scope, rules and UI authority. Read applicable instructions whole; do not load unrelated references.
 - Don't end a turn while your own work runs unless the host will wake you. End every turn with one state line: **Running** (what, when you'll report), **Waiting on you** (the question) or **Done**.
-- When the user must pass status to another session, person or tracker, write that message from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md) "Handoff message").
+- Write requested handoffs from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md)).
 - When needed: PDF-DELIVERABLE.md, OPTIONAL-HELPERS.md.

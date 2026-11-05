@@ -121,9 +121,9 @@ class TaskReportTests(unittest.TestCase):
         extended(self.data)
         self.assertEqual(helper.prose_issues(self.data), [])
         section = self.data["task_report"]["sections"][0]
-        section["text"] = "It should work; it isn't hard. " + " ".join(["One short sentence."] * 7)
+        section["text"] = "We ensure it works; it isn't hard. " + " ".join(["One short sentence."] * 7)
         problems = [problem for path, problem in helper.prose_issues(self.data) if path == f'task_report.sections[{section["id"]}].text']
-        for expected in ("semicolon", "words to replace: should", "contraction", "paragraph of"):
+        for expected in ("semicolon", "words to replace: ensure", "contraction", "paragraph of"):
             self.assertTrue(any(expected in problem for problem in problems), (expected, problems))
 
     def test_expected_red_check_is_shown_as_such_and_allows_complete(self):
@@ -411,6 +411,84 @@ class ScreenChangeTests(unittest.TestCase):
         self.data["task_report"].pop("screen_change")
         with self.assertRaisesRegex(ValueError, "screen_change is required"):
             self.render()  # a combined-gates plan is a draft and still declares it
+
+
+class WordingTests(unittest.TestCase):
+    """Audit E16-E18: the wording check keeps meaning, skips quoted text and covers every report kind."""
+    setUp = TaskReportTests.setUp
+
+    def helper(self):
+        spec = importlib.util.spec_from_file_location("task_report_wording", ROOT / "skills/codebase-map/scripts/task_report.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_uncertainty_permission_and_proposal_words_keep_their_meaning(self):
+        # Audit E16: replacing these words turned "it could be the cache" into a false certainty.
+        helper = self.helper()
+        extended(self.data)
+        audit = {"could": "The cause is not proven. It could be the cache.",
+                 "might": "The phone check might fail on Android 12 because we have no device.",
+                 "may": "You may keep the old reports. Workers must not rewrite them.",
+                 "would": "The fix would change the score text only if the score is negative.",
+                 "should": "We propose that the list should show the newest report first."}
+        sections = self.data["task_report"]["sections"]
+        for row, sentence in zip(sections, audit.values()):
+            row["text"] = sentence
+        self.assertEqual(helper.prose_issues(self.data), [])
+        notes = dict(helper.prose_notes(self.data))
+        for row, word in zip(sections, audit):
+            note = notes[f'task_report.sections[{row["id"]}].text']
+            self.assertIn(word, note)
+            self.assertIn("keep", note)
+            self.assertIn("never just delete", note)
+
+    def test_quoted_and_code_text_is_exempt_from_wording_checks(self):
+        helper = self.helper()
+        extended(self.data)
+        sections = self.data["task_report"]["sections"]
+        sections[0]["text"] = 'The owner said "it should feel instant" in the agreed answer.'
+        sections[1]["text"] = "The owner wrote “keep it fast; keep it small” in the answer."
+        sections[2]["text"] = "Run `python -X utf8 -I tools/validate.py; echo done` once."
+        self.assertEqual(helper.prose_issues(self.data), [])
+        self.assertEqual(helper.prose_notes(self.data), [])
+
+    def test_review_only_report_gets_wording_advice(self):
+        # Audit E17: reports without task_report got no wording check at all.
+        helper = self.helper()
+        self.assertNotIn("task_report", self.data)
+        self.data["understanding"] = "The list changes; the old order isn't kept."
+        problems = [problem for path, problem in helper.prose_issues(self.data) if path == "understanding"]
+        self.assertTrue(any("semicolon" in p for p in problems), problems)
+        self.assertTrue(any("contraction" in p for p in problems), problems)
+
+    def test_approved_task_report_is_refused_for_replacement(self):
+        extended(self.data)
+        self.data["state"] = "approved"
+        self.data["approval"] = {"revision": "P1", "record": "PLAN Approval", "response": "Synthetic test response"}
+        self.path.write_text(json.dumps(self.data), encoding="utf-8")
+        output = self.root / "plan-approved.html"
+        output.write_text(renderer.render(self.data, self.root, self.path), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "approved"):
+            renderer.unpresented(output, self.root, self.data)
+
+    def test_wording_docs_agree_on_uncertainty_words_and_replacing_drafts(self):
+        adaptation = (ROOT / "skills/simple-english/SKILL.md").read_text(encoding="utf-8").split("## workflow-axa adaptation", 1)[1]
+        writing = (ROOT / "skills/workflow/WRITING.md").read_text(encoding="utf-8")
+        self.assertIn("uncertainty, permission or a proposal", adaptation)
+        self.assertIn("never just delete", adaptation)
+        self.assertIn("must, may, must not", writing.lower())
+        self.assertIn("uncertainty, permission or a proposal", writing)
+        self.assertIsNone(helper_contraction(writing), "WRITING.md uses a contraction")
+        for path in ("skills/simple-english/SKILL.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
+            text = (ROOT / path).read_text(encoding="utf-8")
+            self.assertIn("--replace-unpresented", text, path)
+            self.assertNotIn("then render a new file", text, path)
+
+
+def helper_contraction(text):
+    import re
+    return re.search(r"\b(?:do|does|did|is|are|was|were|ca|wo|have|has|should|would|could|must)n['’]t\b|\b\w+['’](?:ve|re|ll|m)\b", text, re.I)
 
 
 if __name__ == "__main__":

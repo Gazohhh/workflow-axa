@@ -1,8 +1,6 @@
-"""Stop hook: in a session that used a workflow-axa skill, ask once for a rewrite when the last reply breaks
-the simple-english reply rules (contractions, em-dashes, semicolons).
+"""Stop hook: one correction for missing required evidence/reads, never a punctuation-only retry.
 
-Retros found contractions in chat even after the wording rules said not to. The hook reads the transcript the
-host passes, never blocks twice in a row (stop_hook_active), and exits 0 on any problem with its own input.
+Style guidance remains in WRITING/simple-english. This hook does not prove comprehension or completed review.
 """
 from __future__ import annotations
 
@@ -69,6 +67,8 @@ def unread_files(path: Path) -> dict[str, list[str]]:
     loaded: set[str] = set()
     inputs: list[str] = []
     visible = False
+    tdd = False
+    code = False
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             entry = json.loads(line)
@@ -92,13 +92,30 @@ def unread_files(path: Path) -> dict[str, list[str]]:
                 skill = str((block.get("input") or {}).get("skill", "")).split(":")[-1]
                 if skill in reads:
                     loaded.add(skill)
-            if "ui_review" in data or "screen_change" in data:
+            if block.get("name") == "Read":
+                # E5: the router's fallback, "or read its SKILL.md in full", loads the phase too.
+                read = whole_reads(block)
+                if read and not (block.get("input") or {}).get("offset"):
+                    loaded.update(name for name in reads if read.endswith(f"/{name}/SKILL.md"))
+            # Detect explicit task metadata, not the mere presence of "screen_change": "not-needed".
+            plain = json.dumps(block.get("input", {})).replace('\\"', '"')
+            if re.search(r'"screen_change"\s*:\s*"visible"|"ui_review"\s*:\s*\{', plain):
                 visible = True
+            if re.search(r'"tdd"\s*:\s*(?:true|"yes")|\bTDD:\s*yes\b', plain, re.I):
+                tdd = True
+            target = str((block.get("input") or {}).get("file_path", "")).replace("\\", "/")
+            if block.get("name") in ("Edit", "Write", "MultiEdit", "NotebookEdit") and target \
+                    and not re.search(r'(?:^|/)(?:docs/plans|\.artifacts)/', target) \
+                    and Path(target).suffix not in ('.md', '.txt', '.html', '.json'):
+                code = True
             inputs.append(whole_reads(block))
     missing = {}
     opened = "\n".join(inputs)
     for phase in loaded:
-        needed = [rel for rel in reads[phase] if visible or rel not in ui_files]
+        needed = [rel for rel in reads[phase]
+                  if (visible or rel not in ui_files)
+                  and (tdd or rel != 'tdd/SKILL.md')
+                  and (code or rel != 'code-review/SKILL.md')]
         gone = [rel for rel in needed if rel not in opened]
         if gone:
             missing[phase] = gone
@@ -129,6 +146,58 @@ def unsaid_behind(path: Path) -> str | None:
     return pending
 
 
+EDIT_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
+RECORD_PATH = re.compile(r"(?:^|/)(?:docs/plans|\.artifacts)/", re.I)
+DONE = re.compile(r"\*\*Done\b|^Done\.?$", re.M)
+REVIEW = re.compile(r"\breview", re.I)  # review, reviewer, code-review; not preview
+
+
+def review_ran(block: dict) -> bool:
+    """An Agent call whose description or subagent_type names a review, or a load or whole read of code-review.
+    The prompt text does not count: a builder's prompt often says "then ask for a review"."""
+    data = block.get("input") or {}
+    if block.get("name") == "Agent":
+        return bool(REVIEW.search(f"{data.get('description', '')} {data.get('subagent_type', '')}"))
+    if block.get("name") == "Skill":
+        return str(data.get("skill", "")).split(":")[-1] == "code-review"
+    if block.get("name") == "Read" and not data.get("offset"):
+        return whole_reads(block).endswith("/code-review/SKILL.md")
+    return False
+
+
+def unreviewed_code(path: Path, reply: str, cwd: str = "") -> list[str]:
+    """Code files changed after the last review and with no delivery, when the reply ends as Done.
+
+    Loop w2/w3 (Altinstar): a comment-only change was edited, closed and called done with no review and no
+    deliver short form, although the router requires both even for a lightweight edit."""
+    if not DONE.search(reply):
+        return []
+    root = cwd.replace("\\", "/").rstrip("/").lower()
+    changed: list[str] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        content = (entry.get("message") or {}).get("content")
+        if entry.get("type") != "assistant" or not isinstance(content, list):
+            continue
+        for block in content:
+            if not isinstance(block, dict) or block.get("type") != "tool_use":
+                continue
+            data = block.get("input") or {}
+            if block.get("name") in EDIT_TOOLS:
+                target = str(data.get("file_path") or data.get("notebook_path") or "").replace("\\", "/")
+                inside = not root or target.lower().startswith(root + "/")  # loop w5: scratchpad helpers outside
+                if target and inside and not RECORD_PATH.search(target) and target not in changed:
+                    changed.append(target)
+            elif review_ran(block):
+                changed = []  # a review ran after these edits
+            elif block.get("name") == "Skill" and str(data.get("skill", "")).endswith("workflow-deliver"):
+                changed = []
+    return changed
+
+
 def problems(reply: str) -> list[str]:
     prose = CODE.sub("", reply)  # code, paths and quoted identifiers are exempt
     found = []
@@ -147,8 +216,20 @@ def main() -> int:
         event = json.load(sys.stdin)
     except ValueError:
         return 0
-    if event.get("stop_hook_active"):
-        return 0  # one rewrite at most; never loop
+    if not isinstance(event, dict) or event.get("stop_hook_active"):
+        return 0  # one substantive correction at most; never loop
+    # A direct stop must not cause another round of reading, reviewing or implementation.
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('phase_gate_stop', Path(__file__).with_name('phase_gate.py'))
+        gate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gate)
+        state = gate.scan(Path(event.get('transcript_path', '')), str(event.get('cwd') or ''))
+        task = state['tasks'][-1][0] if state['tasks'] else '*'
+        if task in state.get('paused_tasks', {}) or '*' in state.get('paused_tasks', {}):
+            return 0
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
     try:
         reply, used = last_reply_and_usage(Path(event.get("transcript_path", "")))
     except OSError:
@@ -162,7 +243,17 @@ def main() -> int:
         behind = unsaid_behind(Path(event.get("transcript_path", ""))) if used else None
     except OSError:
         behind = None
+    try:
+        unreviewed = unreviewed_code(Path(event.get("transcript_path", "")), reply, str(event.get("cwd") or "")) if used else []
+    except OSError:
+        unreviewed = []
     reasons = []
+    if unreviewed:
+        reasons.append(f"workflow-axa: you changed {len(unreviewed)} file(s) ({', '.join(unreviewed[:3])}) but no "
+                       "review ran after the last change and no delivery was recorded, yet you report Done. Run the "
+                       "independent review the router and workflow-execute require (one fresh reviewer; a lightweight "
+                       "edit gets one review too), then workflow-deliver (its short form for a lightweight edit). If "
+                       "the owner stopped the task, record it as stopped and partial instead of Done.")
     if behind:
         reasons.append(f"workflow-axa: rules_stamp.py said this project's rules were checked against {behind}, which is "
                        "older than the installed rules, and you have not told the owner. Add its SAY sentence (the "
@@ -172,7 +263,7 @@ def main() -> int:
         reasons.append("workflow-axa: these required files were not opened in this context: " + listing +
                        ". Read them now (whole), check your work and records against them, correct anything they change, "
                        "and name only files you actually opened.")
-    if found:
+    if found and reasons:
         reasons.append("workflow-axa simple-english: your last message has " + " and ".join(found) + ". Send it again "
                        "with full forms (\"do not\", \"I am\"), two sentences instead of a semicolon or dash, and the same "
                        "facts. Code, paths and quoted text stay as they are.")

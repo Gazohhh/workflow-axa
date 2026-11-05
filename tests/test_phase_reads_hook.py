@@ -28,17 +28,22 @@ class PhaseReadsHookTests(unittest.TestCase):
                 self.assertEqual(code, 0)
                 note = json.loads(out)["hookSpecificOutput"]["additionalContext"]
                 self.assertIn(expected, note)
-                files = note.split("live there): ")[1].split(". The ui-design")[0].split("; ")
+                self.assertIn("Read once", note)
+                self.assertIn("Only when applicable", note)
+                import re
+                files = re.findall(re.escape(str(ROOT / "skills")) + r"[/\\][^;\n]+?\.md", note)
+                self.assertTrue(files, note)
                 for path in files:
-                    self.assertTrue(Path(path).is_file(), path)
-        self.assertIn("class_rules.py", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-clarify"}})[1])
-        # Round 9: a bold-heading copy was still recommended, without the exact question.
-        self.assertIn("recommend none", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-clarify"}})[1])
-        # Round 10: deliver fixed a check after reconciliation and did not reconcile again.
-        self.assertIn("reconciliation again in a fresh subagent", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-deliver"}})[1])
-        self.assertIn("never offer or recommend skipping it", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-specify"}})[1])
-        self.assertIn("-narrow.png", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-deliver"}})[1])  # tiny desktop captures
-        self.assertIn("--match", fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-execute"}})[1])  # round 15
+                    self.assertTrue(Path(path.strip()).is_file(), path)
+        note = json.loads(fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-execute"}})[1])["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("phase skill.md owns", note.lower())
+        self.assertIn("small route", note.lower())
+        # Specific UI, question and capture procedures have one authoritative home,
+        # rather than being duplicated into every phase-loading hook.
+        clarify = (ROOT / "skills/workflow-clarify/SKILL.md").read_text(encoding="utf-8")
+        specify = (ROOT / "skills/workflow-specify/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("grilling", clarify)
+        self.assertIn("report", specify)
 
     def test_router_load_points_to_the_phase_skill(self):
         note = json.loads(fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-axa:workflow"}})[1])

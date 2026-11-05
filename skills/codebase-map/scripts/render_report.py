@@ -25,7 +25,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.8.0-rc.1'
+RENDERER_VERSION = '2.8.0-rc.3'
 
 
 def ui_module():
@@ -214,6 +214,15 @@ def validate(data: dict, root: Path) -> dict[str, dict]:
             raise ValueError(f'{field} must be an array')
         for item in data[field]:
             text(item, field)
+    if 'write_paths' in data:  # the files an approved plan may change; the phase gate enforces them after approval
+        paths = data['write_paths']
+        if not isinstance(paths, list) or not paths:
+            raise ValueError('write_paths must be a non-empty array of repository-relative paths')
+        for path in paths:
+            text(path, 'write_paths', 300)
+            if path.startswith(('/', '~')) or re.match(r'^[A-Za-z]:', path) or '\\' in path or '..' in path.split('/') \
+                    or any(c in path for c in '*?[]'):
+                raise ValueError(f'write_paths entries must be plain repository-relative files or folders ending in / (got {path!r})')
 
     sources = indexed(data.get('sources'), 'sources', empty=False)
     for row in sources.values():
@@ -748,7 +757,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
         records.extend(ui_module().kit_records(data['ui_review'], root, sources))
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
     manifest = {'schema_version': 1, 'tool_version': RENDERER_VERSION, 'layout_version': 2, 'style': 'workflow-editorial-v1',
-                'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records}
+                'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records,
+                **({'write_paths': data['write_paths']} if 'write_paths' in data else {})}
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     ordered = sorted(data['graphs'], key=lambda graph: graph['id'] != data['default_view'])
     views = ordered + ([{'id': 'ui-preview', 'tab': 'UI screens'}] if 'ui_review' in data else [])
@@ -784,7 +794,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     if overview:
         status = 'SAVED TASK OVERVIEW. Read the dated checkpoint. This is not a new request for approval'
     req = ''.join(f'<li id="r-{esc(r["id"])}"><strong>{esc(r["id"])}.</strong> {esc(r["text"])}<small>Source: {esc(r["origin"])}</small></li>' for r in data['requirements'])
-    bounds = ''.join(f'<li>{esc(b)}</li>' for b in data['boundaries']) or '<li>No additional boundaries recorded.</li>'
+    written = [f'Only these files may change: {", ".join(data["write_paths"])}.'] if data.get('write_paths') else []
+    bounds = ''.join(f'<li>{esc(b)}</li>' for b in written + data['boundaries']) or '<li>No additional boundaries recorded.</li>'
     task_rows = ''.join(f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td><strong>{esc(t["title"])}</strong>'
                         f'<small>{esc(t["kind"])}: {esc(t["reason"])}<br>Areas: {esc(", ".join(t["areas"]))}</small>{task_outcome_html(t)}</td>'
                         f'<td>{links(t["requirements"], "r")}<br>{links(t["evidence"], "e")}<br>{links(t["acceptance"], "a")}</td>'
@@ -903,14 +914,40 @@ def check_report(path: Path, root: Path) -> list[str]:
     return changes
 
 
+def unpresented(path: Path, root: Path, data: dict) -> None:
+    """Refuse to replace a report that is not an unpresented draft this renderer made (audit E18)."""
+    try:
+        check_report(path, root)
+        content = path.read_text(encoding='utf-8')
+    except (ValueError, OSError) as exc:
+        raise ValueError(f'--replace-unpresented replaces only a report this renderer made ({exc})') from exc
+    # The manifest carries no state (older reports must stay byte-identical), so read the approved markers that
+    # only an approved state renders: the earlier layout's status class, the task layout's plan approval record and tag.
+    if any(marker in content for marker in ('<p class="status approved">', '<h2>Plan approval record</h2>',
+                                            '<span class="status__tag">Approved</span>')):
+        raise ValueError(f'--replace-unpresented refuses {path.name}: the existing report is approved. Render a new file.')
+    # The task records name a report once it was shown or approved.
+    for source in (data.get('sources') or []):
+        try:
+            named = path.name in safe_source(root, source['path']).read_text(encoding='utf-8', errors='replace')
+        except (ValueError, OSError, KeyError, TypeError):
+            continue
+        if named:
+            raise ValueError(f'--replace-unpresented refuses {path.name}: the supplied source {source["path"]} names it, '
+                             'so it counts as shown. Render a new file.')
+
+
 def main() -> int:
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True,help='Repository/source root; read-only.')
     parser.add_argument('--input',type=Path,help='JSON projection inside root.')
-    parser.add_argument('--output',type=Path,help='New HTML file; existing files are never overwritten.')
+    parser.add_argument('--output',type=Path,help='HTML file to create. An existing file is never overwritten, '
+                        'except an unpresented draft with --replace-unpresented.')
     parser.add_argument('--replace-unpresented',action='store_true',
-                        help='Replace an existing report this renderer made, only when it has not been shown to the user yet.')
-    parser.add_argument('--open',action='store_true',help='Request default-browser opening; not proof of display.')
+                        help='Replace an existing report this renderer made. Refused when the report is approved or '
+                        'a supplied source file names it (the task records name a report once it was shown).')
+    parser.add_argument('--open',action='store_true',help='Request default-browser opening; not proof of display. '
+                        'Skipped while wording problems remain.')
     parser.add_argument('--check',type=Path,help='Check an existing HTML against its supplied sources; no writes.')
     args=parser.parse_args()
     try:
@@ -932,25 +969,28 @@ def main() -> int:
         result=render(load_json(args.input),root,args.input)
         if len(result.encode('utf-8')) > MAX_BYTES:
             raise ValueError('Rendered report exceeds 8 MiB; reduce captures or split the view')
+        # Wording advice is computed before the write (audit E17). It never blocks a valid report.
+        data = load_json(args.input)
+        issues = task_module().prose_issues(data)
+        notes = task_module().prose_notes(data)
         # Exclusive creation protects earlier reviewed revisions and unrelated files. A draft not yet shown to the
         # user may be replaced on request, but only a file this renderer made (round v5: -v2/-v3 copies).
         replacing = args.replace_unpresented and args.output.exists()
         if replacing:
-            try:
-                check_report(args.output, root)
-            except (ValueError, OSError) as exc:
-                raise ValueError(f'--replace-unpresented replaces only a report this renderer made ({exc})') from exc
+            unpresented(args.output, root, data)
         with args.output.open('w' if replacing else 'x',encoding='utf-8',newline='\n') as out:
             out.write(result)
         print(f'{"REPLACED" if replacing else "RENDERED"}: {args.output.resolve()}')
         print('Artifact creation does not approve or start implementation.')
-        data = load_json(args.input)
-        issues = task_module().prose_issues(data) if 'task_report' in data else []
         for path, problem in issues:  # simple-english advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
             print(f'PLAIN ENGLISH: {path}: {problem}')
+        for path, note in notes:
+            print(f'PLAIN ENGLISH NOTE: {path}: {note}')
         if issues:
-            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill, then render into the same file with --replace-unpresented if the user has not seen it yet.')
-        if args.open:
+            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill, then render into the same file with --replace-unpresented.')
+        if args.open and issues:
+            print('NOT OPENED: wording problems remain. Opening would show the report to the user. Fix them first, then render again with --open.')
+        elif args.open:
             try:
                 accepted=webbrowser.open(args.output.resolve().as_uri(),new=2)
                 print('OPEN REQUEST ACCEPTED; display not verified.' if accepted else 'OPEN REQUEST NOT ACCEPTED; use the file path manually.')

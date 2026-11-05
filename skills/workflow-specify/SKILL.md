@@ -1,13 +1,13 @@
 ---
 name: workflow-specify
-description: "Turn an agreed workflow behavior into a detailed specification: vertical tickets with dependencies, scoped ownership, acceptance and test seams, then the HTML plan report for gate-two implementation approval. Use after gate-one agreement or when approved tickets need a scoped revision."
+description: "Turn agreed behaviour into scoped tickets, dependencies, checks and the HTML plan for implementation approval. Use after agreement or for a scoped revision."
 ---
 
 # Workflow specify
 
 Turn the agreement into tickets another agent could build, and get the plan approved. No application code or tests.
 
-Read shared policies from `../workflow/` from this SKILL.md (missing: stop and say so; never another skills root's copy). Its "Always" list applies here too.
+Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never substitute another installed copy.
 
 **Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or clarify sent a small settled change here to ask both gates at once (`workflow/VISUAL-REVIEW.md`); otherwise go to `workflow-clarify`; no open choice blocks the plan; application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask design.md rule 4's question; never offer new CSS. Refresh evidence for files changed since the agreement.
 
@@ -19,15 +19,15 @@ Put each behavior in the code that already owns it. Read `../codebase-design/SKI
 
 A **ticket** delivers one visible slice of a journey through every layer it needs, so it can be tested and reviewed alone. A ticket with no behavior of its own is a labelled prerequisite that names what it enables.
 
-Write each in TODO (`workflow/TASK-FOLDER.md` format, through `workflow/scripts/record.py`) with:
+Write TODO in the `workflow/TASK-FOLDER.md` format (overview table, labelled tickets) via `record.py`. Supports, Depends on and Rules go under References; the rest under Technical details:
 
 - **Supports**: R-IDs and A-IDs.
 - **Scope**: files or areas it may change, and those it must not.
 - **Depends on**: tickets that must be verified first.
-- **Acceptance**: what someone can observe, failures included.
+- **What should work**: what someone can observe, failures included.
 - **Test seam**: the public interface the test uses, what it catches, what it misses and how that gap is covered.
 - **TDD**: yes, or no with the reason (docs, configuration, no testable seam).
-- **Verify**: the exact check and its output folder (`workflow/ARTIFACTS.md`); steps only a person can do (device, account, visual sign-off) marked `needs human: what, when`, asked for together.
+- **How to verify**: the exact check and its output folder (`workflow/ARTIFACTS.md`); steps only a person can do (device, account, visual sign-off) marked `Human check: what, when` (or `needs human`), asked for together.
 - **Docs and cleanup**: docs to update, code it replaces and removes.
 - **Rules**: the project rules (each AGENTS.md or CLAUDE.md on the ticket's path) the change must follow. A neighbour's pattern a rule forbids is no precedent: ask with gate two.
 

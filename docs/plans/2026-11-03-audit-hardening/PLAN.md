@@ -1,16 +1,16 @@
 # Audit fixes: approvals, recovery, verification and less repeated work
 
 ## Current checkpoint
-- Status: questions answered (DECISIONS D1-D5); waiting for agreement and plan approval
+- Status: delivered as complete 2026-11-04 (see Outcome; reviews/delivery-r3.html); waiting for owner acceptance
 - Owner: this Claude Code session (workflow-axa-ff); ownership: active
-- Updated: 2026-11-03
-- Repository / branch / worktree: D:\workflow-axa, main, main worktree. Local commits up to 0b4e4b4 are not pushed.
+- Updated: 2026-11-04
+- Repository / branch / worktree: D:\workflow-axa, main, main worktree. Commits up to 9e8338e are local; everything after is uncommitted (owner, 2026-11-03).
 - Task identity: new, separate task. Source: the owner's ChatGPT audit prompt (2026-11-03). Related: `2026-11-02-modular-engineering-workflow` (the package build); this task fixes defects found in it. Sibling: `2026-11-03-ui-evidence-engine`.
 - Rules readiness: READY. The repository's own CLAUDE.md, the package tests and the shared rules 1.8.0 cover it (`rules_stamp.py`: NONE, the package has no project line).
-- Agreement: proposed revision r1, not agreed. Q1-Q5 answered as D1-D5.
-- Approval: proposed revision r1, not approved. Report: `reviews/plan-r1.html`.
-- Current understanding / evidence: FINDINGS.md E1-E23. Reproduced: E1-E6, E11-E14, E16-E18, E20-E23. Measured: E10, E19. Unknown: E7. Limit or risk: E8, E15.
-- Next safe action: the owner says yes to the agreement and the plan, or asks for changes. No package code changes before that.
+- Agreement: revision r1 agreed by the owner 2026-11-03: "Yes to both".
+- Approval: revision r1 approved by the owner 2026-11-03: "Yes to both" (report `reviews/plan-r1.html`, all tickets, the exclusions in Approach and Boundaries).
+- Current understanding / evidence: FINDINGS.md E1-E23. Reproduced: E1-E6, E11-E14, E16-E18, E20-E23. Measured: E10, E19. E7 settled by V-E7. Limit or risk: E8, E15.
+- Next safe action: the owner accepts the delivery and reviews D7-D10; then the follow-up simplification review, proposal only.
 
 ## Goal and acceptance
 Fewer unauthorised actions, clearer recovery and less repeated work. Not more instructions or a bigger test count.
@@ -31,15 +31,28 @@ Fewer unauthorised actions, clearer recovery and less repeated work. Not more in
 - A14: A release package is built from an explicit include list, without Git internals, caches, secrets or evaluation output.
 
 ## Agreement
-Proposed revision r1, not agreed. It covers acceptance A1-A14 above and the approach below, with the owner's answers D1-D5: approval needs the Approval line plus the user's real words (A1), the small route (A10), an MIT licence and a release tool now (A14), and at most 8 live Claude runs plus useful Codex runs (T9).
+Revision r1, agreed by the owner 2026-11-03: "Yes to both". It covers acceptance A1-A14 above and the approach below, with the owner's answers D1-D5: approval needs the Approval line plus the user's real words (A1), the small route (A10), an MIT licence and a release tool now (A14), and at most 8 live Claude runs plus useful Codex runs (T9).
 
 ## Approach and scope
 - Package files only: hooks, scripts, skills and docs of workflow-axa, plus tests. No application repository changes. No global settings or permission changes. No automatic commits.
 - Keep: the four phases, grilling, grounded planning, both gates, task reuse, history, shared rules, artifact protections, pinned specialist methods, the D14 UI rule and the approved report design.
 - Each confirmed defect gets a regression test that fails before the fix.
 - Order by impact: T1 approvals, T2 records, T3 stop and recovery, then T4 baselines, T5 reports and wording, T6 proportional agents, T7 portability, T8 docs and release, T9 live acceptance.
-- Budgets: the main session builds each ticket (small route). T1, T2 and T3 each get one fresh reviewer; the others get one combined review at the end. Full package suite once per ticket and once at the end. Live runs: at most 8 Claude runs plus Codex runs where useful (D5), none repeated without a reason.
+- Budgets: this nine-ticket task is not a small route; the main session and parallel workers build tickets with separate files. T1, T2 and T3 each get one fresh reviewer; the others get one combined review at the end. Full package suite once per ticket and once at the end. Live runs: at most 8 Claude runs plus Codex runs where useful (D5), none repeated without a reason.
 - Enforcement honesty: the hook can block explicit edit tools it sees. It cannot see every shell write, edits outside Claude Code, or prove that a record is truthful beyond matching the user's words in the transcript. Codex gets no hooks. The docs will say so.
 
 ## Approval
-Not yet given.
+Revision r1, `reviews/plan-r1.html`, approved by the owner 2026-11-03 together with the agreement: "Yes to both".
+
+
+## Outcome
+
+Delivered as complete on 2026-11-04 (fresh reconciliation, `reviews/delivery-r3.html`; `delivery-r2.html` is the earlier partial snapshot, kept as history).
+
+- Asked: fix the ChatGPT audit's findings (approvals, recovery, verification, less repeated work, writing, records, docs and release). Agreed and approved: r1, "Yes to both" (2026-11-03), with D1-D5; D11 widened the live-run limit.
+- Built: all nine tickets T1-T9 (FINDINGS V1-V11), plus the live-loop fixes (install guard, unreviewed-code check, report location, consent wording) and a baseline-input checker (`scripts/baseline_state.py`).
+- Verified: all 14 acceptance items A1-A14 and AC11. Final runs on the final state: Windows, a checkout path with spaces and WSL, 763 tests OK each; validate PASS. Live: 8 rounds in Hooqd, Mulcol-app2, PletrixV2 and Altinstar; a PowerShell-tool write denied before approval; a write-enabled Codex run that changed nothing. Reviews: fresh reviews for T1, T2, T3/T4/T6, the whole feature (V9) and the baseline helper (V11); the fixes from V9 and V11 were checked by tests and the final runs, not by a second review.
+- Not run on this host: symlink and POSIX file-mode cases. Codex results show model behaviour, not enforcement (Codex has no hooks).
+- Decisions made for the owner (by: agent): D7-D10, to review.
+- Not committed or pushed (owner, 2026-11-03). Release zip: `.artifacts/release/workflow-axa-2.8.0-rc.1.zip` (SHA-256 e2f4d7ce…). Gate cache: `%TEMP%\workflow-axa-gate` (pruned after 14 days).
+- Next safe action: the owner accepts the delivery and reviews D7-D10; then the follow-up simplification review (proposal only, waiting for approval).

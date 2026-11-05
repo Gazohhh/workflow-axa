@@ -43,4 +43,4 @@ Return report/source paths, mode, revision, local design/renderer version, check
 
 ## Output lifetime
 
-Follow the active workflow's ARTIFACTS.md or its installed global policy. Keep requested HTML/JSON at the explicit review destination (project convention, otherwise existing task folder); do not create a new task to store a map. Approved/presented reviews and visual baselines are protected, not test scratch. Reuse permitted unpresented drafts; don't regenerate unchanged reviews on resume. Browser-check captures use the existing task output parent, with only necessary proof retained. No extra cleanup report.
+Follow the active workflow's ARTIFACTS.md or its installed global policy. Keep requested HTML/JSON at the explicit review destination (project convention, otherwise existing task folder); do not create a new task to store a map. Approved/presented reviews and visual baselines are protected, not test scratch. Re-render unseen drafts with `--replace-unpresented`; don't regenerate unchanged reviews on resume. Browser-check captures use the existing task output parent, with only necessary proof retained. No extra cleanup report.

@@ -52,8 +52,11 @@ class InstallationAuditTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    with self.assertRaises(ValueError):check.inspect([Path(d)/'missing'])
  def test_check_global_missing_never_writes(self):
+  # activate_rules refuses a rule library whose path has spaces (by design), so run a space-free copy.
+  from test_rules import space_free_skills
+  skills=space_free_skills(self.addCleanup)
   with tempfile.TemporaryDirectory() as d:
-   result=subprocess.run([sys.executable,str(ROOT/'skills/rule-maker/scripts/audit_installation.py'),'--check-global','--home',d,'--claude-dir',d+'/claude','--codex-home',d+'/codex'],capture_output=True,text=True)
+   result=subprocess.run([sys.executable,str(skills/'rule-maker/scripts/audit_installation.py'),'--check-global','--home',d,'--claude-dir',d+'/claude','--codex-home',d+'/codex'],capture_output=True,text=True)
    self.assertEqual(result.returncode,1,result.stdout+result.stderr)
    self.assertEqual(list(Path(d).iterdir()),[])
    self.assertEqual(json.loads(result.stdout)['host_loading'],'NOT_VERIFIED')

@@ -144,6 +144,12 @@ class CheckoutPolicyTests(unittest.TestCase):
 
 
 class HomeResolutionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # activate_rules refuses a rule library whose path has spaces (by design); the checkout may have them.
+        from test_rules import space_free_skills
+        cls.activation = load('activate_copy_under_test', space_free_skills(cls.addClassCleanup) / 'rule-maker/scripts/activate_rules.py')
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -171,7 +177,7 @@ class HomeResolutionTests(unittest.TestCase):
         self.assertIn('~', self.expanded)
 
     def test_activation_tilde_root_without_home_fails_with_controlled_error(self):
-        code, _ = self.call(activation.main, '--check', '--host', 'claude', '--claude-dir', '~/claude')
+        code, _ = self.call(self.activation.main, '--check', '--host', 'claude', '--claude-dir', '~/claude')
         self.assertEqual(code, 2)
         self.assertIn('~', self.expanded)
 
@@ -195,21 +201,21 @@ class HomeResolutionTests(unittest.TestCase):
                 self.assertIn('~', self.expanded)
 
     def test_activation_with_explicit_roots_never_expands_a_home(self):
-        self.call(activation.main, '--check', '--claude-dir', str(self.dir / 'claude'),
+        self.call(self.activation.main, '--check', '--claude-dir', str(self.dir / 'claude'),
                   '--codex-home', str(self.dir / 'codex'))
         self.assertNotIn('~', self.expanded)
 
     def test_activation_with_explicit_roots_does_not_need_home(self):
-        code, err = self.call(activation.main, '--check', '--claude-dir', str(self.dir / 'claude'),
+        code, err = self.call(self.activation.main, '--check', '--claude-dir', str(self.dir / 'claude'),
                               '--codex-home', str(self.dir / 'codex'))
         self.assertNotEqual(code, 2, err)
 
     def test_activation_single_host_needs_only_that_root(self):
-        code, err = self.call(activation.main, '--check', '--host', 'claude', '--claude-dir', str(self.dir / 'claude'))
+        code, err = self.call(self.activation.main, '--check', '--host', 'claude', '--claude-dir', str(self.dir / 'claude'))
         self.assertNotEqual(code, 2, err)
 
     def test_activation_needing_a_default_root_fails_with_controlled_error(self):
-        code, err = self.call(activation.main, '--check', '--host', 'codex')
+        code, err = self.call(self.activation.main, '--check', '--host', 'codex')
         self.assertEqual(code, 2)
         self.assertIn('pass --home', err)
 

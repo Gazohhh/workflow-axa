@@ -36,7 +36,7 @@ class OpenItemsTests(unittest.TestCase):
                   "## Current checkpoint\n- Updated / phase: 2026-11-01, implementing\n- Last result / next safe action: run T4 check\n")
         out = run(self.root).stdout
         self.assertIn("OPEN: T1", out)
-        self.assertIn("TICKED, NO EVIDENCE: T3", out)
+        self.assertIn("TICKED, NO EVIDENCE OR INCOMPLETE VERIFICATION: T3", out)
         self.assertIn("IN PROGRESS: T4", out)
         self.assertIn("BLOCKED: T5", out)
         self.assertNotIn("T2", out)
@@ -70,6 +70,19 @@ class OpenItemsTests(unittest.TestCase):
         result = subprocess.run([sys.executable, "-I", str(SCRIPT), "--task", self.root / "t"],
                                 capture_output=True, env=env)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_overview_table_disagreement_is_listed_even_when_every_ticket_is_done(self):
+        todo = ("| Ticket | What needs to happen | Status | Dependencies |\n|---|---|---|---|\n"
+                "| T1 | Build it | In progress | none |\n\n### T1 — Build it\nStatus: verified\n"
+                "Verification: passed\n\nReferences:\n- Depends on: none\n- Evidence: FINDINGS V1\n")
+        self.task("t", todo)
+        out = run(self.root).stdout
+        self.assertIn("1 tasks with TODO.md; 1 with open", out)
+        self.assertIn('OVERVIEW TABLE DISAGREES WITH THE TICKETS (tickets are the source; correct the table): '
+                      'overview row T1 at line 3 says Status "In progress" but the ticket says "verified"', out)
+        view = run("--task", self.root / "t").stdout
+        self.assertIn("## Tickets: 1 recorded verified with evidence", view)
+        self.assertIn("- OVERVIEW TABLE DISAGREES", view)
 
     def test_folders_without_todo_are_ignored_and_bad_root_blocks(self):
         (self.root / "notes").mkdir()

@@ -23,3 +23,7 @@ Keep the existing report shell. Inspect screen lists E1 Save action → Buttons/
 ## Ordinary request and resumption
 
 The global core routes UI work to this same skill without /workflow. Confirm live loading in the actual host; installation alone is insufficient. Pass selections and the no-HTML/CSS boundary to subagents. On a same-task resume reuse valid decisions, refresh affected sources and do not restart the interview unnecessarily.
+
+## Blanket approval is not a missing-style answer
+
+The agent asks the mimic question for a status message. It must not recommend a plain `<span>`. A reply "yes to all recommendations" leaves this element blocked: ask which existing element to mimic or request clarification of the user's intended answer. "Use plain unstyled HTML for this status message" is a direct element-specific instruction, not a precedent for other controls. Ordinary approval of an already-settled implementation plan still works normally.

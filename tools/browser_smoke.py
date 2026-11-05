@@ -70,7 +70,8 @@ def main() -> int:
                 assert page.locator('.panel:visible').get_attribute('id') == 'panel-proposed'
                 assert page.locator('.map').count() == 3
                 assert page.locator('form, button[type=submit], input[type=submit]').count() == 0
-                assert 'implementation not authorized' in page.locator('.status').inner_text()
+                assert page.locator('.status.awaiting-approval').count() == 1
+                assert 'WAITING FOR YOUR APPROVAL' in page.locator('.status').inner_text()
                 checks.append('Feature flow is default; pending approval is visible and no approval controls exist')
                 assert page.evaluate('document.querySelector("#technical-details").open === false')
                 assert page.get_by_role('heading', name='What will not change').is_visible()

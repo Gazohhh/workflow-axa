@@ -27,7 +27,7 @@ def text_of(content):
 
 def digest(path):
     s = dict(user=[], skills=[], tools=collections.Counter(), asks=0, ask_qs=[], errors=0, compactions=0,
-             first=None, last=None, assistant_turns=0, denied=0)
+             first=None, last=None, assistant_turns=0, denied=0, hook_denied=0)
     for line in open(path, encoding='utf8', errors='replace'):
         try:
             rec = json.loads(line)
@@ -48,7 +48,10 @@ def digest(path):
                 for c in content:
                     if isinstance(c, dict) and c.get('type') == 'tool_result' and c.get('is_error'):
                         s['errors'] += 1
-                        if 'denied' in json.dumps(c.get('content'))[:300].lower():
+                        head = json.dumps(c.get('content'))[:300].lower()
+                        if 'hook error' in head or 'blocked by hook' in head:
+                            s['hook_denied'] += 1  # P1-P3 digest: gate denials were counted as plain errors
+                        elif 'denied' in head:
                             s['denied'] += 1
                 continue
             t = text_of(content).strip()
@@ -87,7 +90,7 @@ def main():
         for p, s in rows:
             top = ', '.join(f'{k}:{v}' for k, v in s['tools'].most_common(8))
             f.write(f"## {p.stem}  ({(s['first'] or '')[:16]} → {(s['last'] or '')[:16]}, {p.stat().st_size // 1024} KB)\n")
-            f.write(f"- human messages: {len(s['user'])}; assistant turns: {s['assistant_turns']}; compactions: {s['compactions']}; tool errors: {s['errors']} (denied {s['denied']})\n")
+            f.write(f"- human messages: {len(s['user'])}; assistant turns: {s['assistant_turns']}; compactions: {s['compactions']}; tool errors: {s['errors']} (denied {s['denied']}); hook denials: {s['hook_denied']}\n")
             f.write(f"- skills: {s['skills']}\n- AskUserQuestion calls: {s['asks']}\n- tools: {top}\n")
             for q in s['ask_qs'][:12]:
                 f.write(f'  - Q: {q}\n')

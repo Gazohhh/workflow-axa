@@ -153,7 +153,7 @@ def main() -> int:
             assert restored.locator('.warning').count()>=2
             checks.append('Additive R2 sample preserves original heading, draft warnings and proposed default view')
             restored.locator('label[for="view-ui-preview"]').click()
-            assert 'outside this report' in restored.locator('.ui-notice').inner_text()
+            assert 'outside the scope of this report' in restored.locator('.ui-notice').inner_text()
             assert 'pending' in restored.locator('.ui-authority').inner_text()
             checks.append('UI illustration is explicitly outside the historical rules-task scope and remains unapproved')
             # Native controls still work with scripts disabled.
@@ -179,6 +179,8 @@ def main() -> int:
                 temp=Path(tmp);(temp/'proof.md').write_text('Synthetic capture rendering test only.')
                 (temp/'capture.png').write_bytes(tiny_png())
                 captured=copy.deepcopy(data)
+                # Synthetic fixture permission: a captured proposed state cannot claim no preview was run.
+                captured['ui_review']['preview']['status']='authorised'
                 captured['sources']=[{**s,'path':'proof.md'} for s in captured['sources']]
                 captured['sources'].append({'id':'CAPTURE','role':'ui-capture','path':'capture.png'})
                 for screen in captured['ui_review']['screens']:

@@ -68,7 +68,71 @@ REQUIRED = (
 REQUIRED += tuple(f"skills/{name}/{file}" for name in REGISTERED_NAMES for file in ("SKILL.md", "agents/openai.yaml"))
 REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "tools/vendor_specialists.py", "tests/test_vendored_specialists.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py")
 REQUIRED += ("skills/codebase-map/assets/report-style.css", "skills/codebase-map/assets/report-style-compat.css", "skills/codebase-map/assets/report-extra.js", "tests/test_simple_english.py", "skills/simple-english/LICENSE")
+REQUIRED += ("skills/workflow/scripts/ticket_records.py", "skills/workflow/examples/readable-todo.md", "RC3-CASES.md", "tests/test_rc3_reliability.py")
 REQUIRED += ("skills/codebase-map/TASK-REPORT.md", "skills/codebase-map/scripts/task_report.py", "skills/codebase-map/assets/task-report.css", "tests/test_task_report.py")
+
+
+_UNITS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+NUMBER_WORDS = {word: i + 1 for i, word in enumerate(_UNITS)}
+NUMBER_WORDS.update({w: i + 10 for i, w in enumerate(("ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+                                                      "sixteen", "seventeen", "eighteen", "nineteen"))})
+for _tens, _base in (("twenty", 20), ("thirty", 30)):
+    NUMBER_WORDS[_tens] = _base
+    NUMBER_WORDS.update({f"{_tens}-{unit}": _base + i + 1 for i, unit in enumerate(_UNITS)})
+_COUNT = "(\\d+|" + "|".join(sorted(NUMBER_WORDS, key=len, reverse=True)) + ")"
+# A total: "21 skills", "twenty-one registered skills", "all twenty complete skill folders".
+TOTAL_RE = re.compile(rf"\b{_COUNT}\s+(?:(?:registered|complete|installable|local|bundled|separate)\s+)*"
+                      r"(?:skills|skill folders)\b", re.I)  # a bare "N folders" is not a skill count
+VENDORED_RE = re.compile(rf"\b{_COUNT}\s+vendored\b", re.I)
+_VERSION = r"(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]*[0-9A-Za-z])?)"
+PACKAGE_RE = re.compile(r"\bworkflow[ -]axa\s*(?:—|–|-|:)?\s*v?" + _VERSION, re.I)
+RULES_RE = re.compile(r"\b(?:rules|library)\b(?:\s+library)?\s*\(?\s*" + _VERSION, re.I)
+SECTION_VERSION_RE = re.compile(r"\b(?:\d+\.\d+\.\d+(?:-rc\.\d+)?|rc\.\d+)\b")
+
+
+def _current_sections(text: str, version: str) -> str:
+    """Drop `##` sections whose heading names only an older release; they are history."""
+    kept = []
+    for part in re.split(r"(?m)^(?=## )", text):
+        heading = part.split("\n", 1)[0]
+        if heading.startswith("## ") and SECTION_VERSION_RE.search(heading) and version not in heading:
+            continue
+        kept.append(part)
+    return "".join(kept)
+
+
+def doc_fact_errors(root: Path, version: str, rules_version: str, skills: int, vendored: int) -> list[str]:
+    """Hand-kept counts and versions in the user-facing docs must match the manifests."""
+    errors: list[str] = []
+    validation = (root / "VALIDATION.md").read_text(encoding="utf-8")
+    current = re.search(r"\A# [^\n]*\n\n(## Current verification\n.*?)(?=\n## History)", validation, re.S)
+    if not current:
+        errors.append("VALIDATION.md must open with '## Current verification' followed by a '## History' heading.")
+    scoped = {
+        "README.md": (root / "README.md").read_text(encoding="utf-8"),
+        "CHANGELOG.md": _current_sections((root / "CHANGELOG.md").read_text(encoding="utf-8"), version),
+        "UPGRADE.md": _current_sections((root / "UPGRADE.md").read_text(encoding="utf-8"), version),
+        "VENDORED-SKILLS.md": (root / "VENDORED-SKILLS.md").read_text(encoding="utf-8"),
+        "VALIDATION.md": current[1] if current else "",
+    }
+    for name, text in scoped.items():
+        text = re.sub(r"^```.*?^```[^\n]*$", "", text, flags=re.M | re.S)
+        expected = vendored if name == "VENDORED-SKILLS.md" else skills
+        for match in TOTAL_RE.finditer(text):
+            count = int(match[1]) if match[1].isdigit() else NUMBER_WORDS[match[1].lower()]
+            if count != expected:
+                errors.append(f"{name} states {count} skills ('{match[0]}'); the package has {expected}.")
+        for match in VENDORED_RE.finditer(text):
+            count = int(match[1]) if match[1].isdigit() else NUMBER_WORDS[match[1].lower()]
+            if count != vendored:
+                errors.append(f"{name} states {count} vendored skills ('{match[0]}'); the package has {vendored}.")
+        for match in PACKAGE_RE.finditer(text):
+            if match[1] != version:
+                errors.append(f"{name} states package {match[1]} ('{match[0]}'); plugin.json says {version}.")
+        for match in RULES_RE.finditer(text):
+            if match[1] != rules_version:
+                errors.append(f"{name} states rules {match[1]} ('{match[0]}'); version.json says {rules_version}.")
+    return errors
 
 
 def validate_package(root: Path) -> list[str]:
@@ -188,6 +252,16 @@ def validate_package(root: Path) -> list[str]:
                 errors.append(f"Broken/outside relative link in {path.relative_to(root)}: {target}")
             elif any(path.is_relative_to(sr) and not resolved.is_relative_to(sr) for sr in skill_roots):
                 errors.append(f"Skill reference escapes the separately installable skill folder: {target}")
+
+    try:
+        rules_version = json.loads((root / "skills/rule-maker/rules/version.json").read_text(encoding="utf-8")).get(
+            "rules_version", "")
+        # Each vendored skill folder carries its upstream LICENSE (VENDORED-SKILLS.md); our own folders do not.
+        vendored = sum((root / f"skills/{name}/LICENSE").is_file() for name in REGISTERED_NAMES)
+        errors += doc_fact_errors(root, str(plugin.get("version", "")), str(rules_version),
+                                  len(REGISTERED_NAMES), vendored)
+    except (OSError, ValueError, AttributeError) as exc:
+        errors.append(f"Documentation facts error: {exc}")
     return errors
 
 

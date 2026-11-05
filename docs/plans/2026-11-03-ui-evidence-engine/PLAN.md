@@ -1,16 +1,16 @@
 # UI evidence and preview engine for plan reports
 
 ## Current checkpoint
-- Status: questions answered (DECISIONS D1-D5); waiting for agreement and plan approval
+- Status: approved; implementation queued after 2026-11-03-audit-hardening (both change the report renderer)
 - Owner: this Claude Code session (workflow-axa-ff); ownership: active
 - Updated: 2026-11-03
 - Repository / branch / worktree: D:\workflow-axa, main, main worktree
 - Task identity: new, separate task. Source: the owner's request of 2026-11-03. Related: `2026-11-02-modular-engineering-workflow` (built the current screen flow and D14) and `2026-11-03-audit-hardening` (report wording and replace rules, T5).
 - Rules readiness: READY (repository CLAUDE.md, package tests, shared rules 1.8.0).
-- Agreement: proposed revision r1, not agreed. U1-U4 answered as D1-D5.
-- Approval: proposed revision r1, not approved. Report: `reviews/plan-r1.html`.
+- Agreement: revision r1 agreed by the owner 2026-11-03: "Yes to both".
+- Approval: revision r1 approved by the owner 2026-11-03: "Yes to both" (report `reviews/plan-r1.html`, all tickets, the exclusions in Approach and Boundaries).
 - Current understanding / evidence: FINDINGS.md E1-E19.
-- Next safe action: the owner says yes to the agreement and the plan, or asks for changes. Nothing is built before that, and no application repository changes in this task.
+- Next safe action: start U-T1 after the audit fixes are delivered.
 
 ## Goal in plain words
 Today a plan report shows the current screen as a screenshot when that is safe, and the proposed screen as a labelled sketch. The goal is to show real screens and real components wherever that can be done safely, link every element to its real source and approval status, and refuse visual approval when an accurate picture is not possible.
@@ -51,4 +51,4 @@ Proposed revision r1, not agreed. It covers the requirements above, the architec
 - No production contact during capture. No installs except Playwright when a capture needs it (D2). No pixel blurring is promised; screens with personal data are not captured.
 
 ## Approval
-Not yet given.
+Revision r1, `reviews/plan-r1.html`, approved by the owner 2026-11-03 together with the agreement: "Yes to both".

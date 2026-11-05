@@ -39,12 +39,14 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 # <Task>
 
 ## Current checkpoint
-- Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, closed>
+- Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, paused, stopped, cancelled, closed>
 - Agreement (gate one): <agreed/waived/legacy/not required — lightweight/pending; revision and record>
-- Approval (gate two): <approved/waived/legacy/not approved; revision, report and record>
+- Approval (gate two): <approved/waived/legacy/not approved; revision rN, the report file or the user's recorded "no report", and the user's exact words in quotes (the whole answer, including restrictions, from a real message after the named plan was shown)>
+- Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; it never allows git writes
 - Implementation: <not started/in progress/implemented/partial>
 - Verification / owner acceptance: <not run/passed/limited/blocked; evidence and what is outstanding>
 - Blockers: <ticket IDs, open questions, interrupted work>
+- Changed files: <paths this task changed so far, or none>
 - Next safe action: <last result and the specific next step>
 
 ## Working context
@@ -53,6 +55,7 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 
 ## Goal and acceptance
 ## Baseline before this change
+<Per check: exact command, working directory, commit plus diff hash, environment (OS, runtime and tool versions), and each failing test's name with its first error line. Reuse it only while all of these still match (`scripts/baseline_state.py record` when it runs, `check` before reuse); otherwise run it again.>
 ## Approach and scope
 ## Agreement
 <Gate one: behavior, journeys, scope, exclusions, acceptance, assumptions; the user's answer and date.>
@@ -67,14 +70,56 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 
 Before touching shared files, record `git status` and enough diff to tell existing edits from yours.
 
-IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, check result V. Every ticket supports a requirement or a demonstrated prerequisite and is small enough for another agent to finish.
+IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, check result V. Keep existing IDs. When an older TODO restarts T1 under each revision, address it as `D4/T1` or `D3/T1`; never guess which T1 a short reference means. New cross-revision references use that qualified identity. Do not renumber old records.
+
+The HTML renderer uses safe local IDs without `/`. Keep a qualified source ID such as `D4/T8` in the report task title; use a unique projection alias such as `D4-T8` in JSON references. This does not rename the source ticket. See codebase-map REPORT.md; check aliases for collisions rather than blindly replacing punctuation.
+
+**Current open work first.** Give each nontrivial ticket an action title and labelled sections, not a paragraph of semicolons inside a checkbox. The ticket explains the next action; test history and old attempts live in FINDINGS, reasons in DECISIONS. Completed or superseded history stays clearly labelled behind the current work. No file per ticket.
+
+A TODO of labelled tickets starts with an overview table: Ticket, What needs to happen, Status, Dependencies. The table is a summary for readers, not a second status system: each ticket's single `Status:` line is the source. `open_items.py` reports every row whose Status or Dependencies differ from the ticket, a row naming a missing, repeated or ambiguous ticket, and a ticket with no row; correct the table from the ticket, never the reverse. In a file that repeats an ID, the table uses the qualified ID (`D4/T3`). `record.py tick` sets the ticket and its row to Verified together and refuses while the row disagrees.
 
 ```markdown
-- [ ] T1 — <work>; supports R1, A1; depends on: none; verify: <check>.
-- [x] T2 — <work>; verified: FINDINGS V2.
+## Overview
+
+| Ticket | What needs to happen | Status | Dependencies |
+|---|---|---|---|
+| R1/T1 | Remember the selected setting after restart | Not started | none |
+
+## Tickets
+
+### R1/T1 — Remember the selected setting after restart
+Status: Not started
+
+What needs to happen: <one or two plain sentences: the change and why>
+
+What should work:
+- A fresh application instance restores the saved value.
+- An invalid saved value follows the agreed failure behaviour.
+
+Technical details:
+- <files it may change and must not change; test seam and what it misses; TDD: yes, or no and why>
+
+How to verify:
+- <exact command, where it runs, expected result>
+- Human check: <what a person checks, when>
+
+Verification: not run
+
+References:
+- Supports: R1, A1
+- Depends on: none
+- Evidence: none
 ```
 
-`workflow-specify` adds scope, test seam and TDD choice per ticket (a table is fine). Ticket states: not started, ready, in progress, implemented — verification pending, review findings open, verified, blocked, superseded, removed, not applicable. **Terminal** states are verified, blocked, superseded, removed and not applicable; the last three need the decision that caused them, never test evidence. A checked box needs a V-ID; without one it counts as unverified. Removed, superseded or waived is never a passed test.
+`Status:` holds one listed state, once. `How to verify` lists planned checks only, never results. The result goes on the one `Verification:` line (`not run`, `passed`, `failed: <what>`, `blocked: <why>`) and its pointer on `Evidence:`; the run details go to FINDINGS. A `Human check:` (or `needs human`) under How to verify keeps the ticket unverified until an `Owner acceptance:` line records the person's result (who, date, V-ID). Add `Decision:`, `Blocker:` or `Paused:` lines when they apply; omit a section with nothing to say, and state each fact once.
+
+A small exact task can remain `- [ ] T1 — <action>; verify: <check>`. Do not force Epic, Story, priority, owner or empty template sections onto every edit; add metadata only when it changes coordination. Scope, acceptance, dependencies and evidence must still be clear. Sample: [readable-todo.md](examples/readable-todo.md). A layout tidy changes layout, not state: keep a checkbox line as it is, or convert it only to a listed state that records the same fact, and keep contradictions visible. Run `open_items.py --task` before and after; any changed ticket state means the tidy changed content.
+
+Ticket states remain: not started, ready, in progress, implemented — verification pending, review findings open, verified, blocked, paused, cancelled, superseded, removed, not applicable. **Ready is not implementation permission.** `verified` requires all current acceptance checks after the last relevant repair, including required device/human checks. Implementation, verification and owner acceptance are different facts. A missing device or failed environment blocks verification; it does not prove an implementation defect. A task-caused failure returns that work to repair.
+
+Verified is a passed terminal outcome. Cancelled, superseded, removed and not applicable are closed **without** a test pass and need the decision that caused them. Blocked/paused are waiting states, not terminal success; execution may deliver partial when nothing authorised is runnable. When the owner stops or pauses work, unfinished tickets become `Status: paused` with the reason on its own line (`Paused: owner stop, <date>: "<words>"`); keep their Verification as it was. Never call a waived or owner-removed check passed. A checked box plus some V-ID is insufficient while required verification remains missing. Flag contradictions instead of selecting the most convenient sentence.
+
+`record.py tick` supports labelled blocks and legacy checkboxes, refuses ambiguous IDs and explicit outstanding verification, and preserves endings/history. Update the actual verification result first; then tick with its evidence. It is a record editor, not a test runner or proof of acceptance. `open_items.py` reads both formats, flags explicit incomplete results and reports an unlisted or conflicting Status as not recognised (neither open nor verified); it does not certify natural-language completeness or evidence freshness.
 
 A V entry records the command, folder, versions, result, which state of the files it ran on (commit plus local diff), and what it didn't cover (`UNTESTED — <scope and reason>`). Reading a file is not a passed test. An agent saying "done" is a claim until you check its results.
 
@@ -82,11 +127,20 @@ Specialist use: record the resolved skill, where it came from and whether it was
 
 ## Checkpoint as you go
 
-Before each unit of work, save what it is, the files it will touch and its check. After it, save what changed, the result and the next step. This is the recovery mechanism; an end-of-session summary is only a bonus. Use `scripts/record.py` (new, append, replace-section, set-line, tick with evidence, batch for several exact edits) instead of ad-hoc edit scripts or `node -e`/`sed` replaces that fail silently; it keeps each file's line endings. Write any script or JSON with the file-write tool, never a shell heredoc: heredocs mangle backslashes. At session start, read `scripts/open_items.py --task <folder>` instead of every record file; it also flags broken encoding and mixed line endings. Test output goes to `.artifacts/<task-folder>/` even when that folder is not git-ignored (say so in the plan; never change `.gitignore` or use a session scratchpad). A script or file that a recorded check names is evidence: keep it until the owner accepts. Only the task owner writes records; subagents return evidence. Parallel workers need non-overlapping files.
+Before each unit of work, save what it is, the files it will touch and its check. After it, save what changed, the result and the next step. This is the recovery mechanism; an end-of-session summary is only a bonus. Use `scripts/record.py` (new, append, replace-section, set-line, tick with evidence, batch for several exact edits) instead of ad-hoc edit scripts or `node -e`/`sed` replaces that fail silently; it keeps each file's line endings. Prefer the file-write tool for scripts/JSON; a shell writer needs correct quoting, encoding and an authorised target. At session start, use `scripts/open_items.py --task <folder>` as an index, then read the relevant checkpoint, authority and evidence; it also flags broken encoding and mixed line endings. Test output and scratch follow ARTIFACTS.md and stricter project rules. If the intended output location is public or not ignored where privacy is required, resolve that before writing. Keep cited evidence until its recorded retention condition is met. Only the task owner writes records; subagents return evidence. Parallel workers need non-overlapping files.
+
+## Stop, pause and cancel
+
+- **The owner says stop or pause**: start nothing new. Signal workers to stop at the next safe interruption point; do not start another unit; its half-written files stay as they are, listed under Changed files as unverified (never reset or discard them). Set the phase to stopped or paused and in-progress tickets to paused. Then `workflow-deliver` records a partial delivery: changed files, what was verified, what remains and the next safe action. That route has no review loop and never goes back to `workflow-execute` on its own. The phase stays stopped or paused, not closed, so when the owner asks to continue, the router sends the task to `workflow-execute` under its existing approval, after the Resume recheck below.
+- **The owner cancels**: the same, with the phase and open tickets cancelled. Nothing is reverted unless the owner asks.
+- **Blocked**: a ticket waiting on a decision, authority or infrastructure. Other tickets continue. When it unblocks within the approved scope, `workflow-execute` resumes it; a scope change goes to `workflow-clarify`.
+- **A reviewer fails twice** (crashes, cannot be started, returns nothing usable): mark the ticket blocked with the reason. Never self-approve while subagents exist.
+- **An interrupted worker**: compare its changed files with the ticket scope before trusting anything; uncertain changes stay unverified.
+- **A lightweight edit**: deliver's short form, without the whole-feature review.
 
 ## Resume
 
-Run `resume-task`; it owns the procedure. These records are what it reads.
+Run `resume-task`; it owns the procedure. These records are what it reads. After a resume, a check or review still counts only for files and rules unchanged since it ran (its V entry's state, and `rule-maker/scripts/rules_stamp.py` for the rules).
 
 ## Revisions
 
@@ -94,18 +148,19 @@ Run `resume-task`; it owns the procedure. These records are what it reads.
 |---|---|
 | Material change to behavior, approach, risk or protected scope | New proposed revision showing the delta; reopen gate one, then gate two, for the affected parts only |
 | Progress, blocker, rerun, account or agent switch | Update the checkpoint and items. No new plan revision, folder or report |
-| Correction to an unpresented draft | Reuse the draft; never bypass the renderer's no-overwrite guard |
+| Correction to an unpresented draft | Re-render into the same file with `--replace-unpresented`. The renderer refuses once the task records name the file or the report is approved; then render a new file |
 | Superseding an agreement | Keep its scope and reason; point to what replaced which part |
 
 An earlier revision that skipped a step is not a precedent: each new revision follows the current rules. Keep existing IDs (C3, P1-r1, review-r5) exactly and phase names separate from revision IDs; don't renumber. Keep one short revision log (in DECISIONS, or PLAN for small tasks): revision, report, change, why, outcome.
 
 ## Forward-only adoption
 
-New structure applies forward. On a resumed old task, update only the checkpoint, directly contradictory current wording and needed links; mark old text historical instead of rewriting its meaning. Do not bulk rewrite closed tasks, migrate old JSON, renumber IDs or reconstruct missing reviews. If an original review is missing, record that and use the remaining approval and decision records; its absence proves neither approval nor refusal. Escalate only authority you can't establish. Presented and approved HTML/JSON files are immutable snapshots.
+New structure applies forward. On a resumed old task, update only the checkpoint, directly affected current tickets, contradictory current wording and needed links; mark old text historical instead of rewriting its meaning. Do not bulk rewrite closed tasks, migrate old JSON, renumber IDs or reconstruct missing reviews. If an original review is missing, record that and use the remaining approval and decision records; its absence proves neither approval nor refusal. Escalate only authority you can't establish. Presented and approved HTML/JSON files are immutable snapshots.
 
 ## Also record
 
 - **Rules**: one readiness note in the checkpoint (RULES.md); an exception records the user's words, scope and expiry. No separate status file.
+- **Owner acceptance**: set the checkpoint's verification line and add one dated line to `## Outcome` that quotes the owner's words, so the closing record no longer says acceptance is pending. Delivery reports stay unchanged as history.
 - **UI**: one checkpoint entry: area and mode, approving source, allowed components, preview, exceptions, design acceptance and release state (ui-design).
 - **Test output**: follow [ARTIFACTS.md](ARTIFACTS.md); reuse the recorded output folder (default `.artifacts/<task-folder-name>/`); record retained proof and the cleanup condition in the checkpoint. No manifests or cleanup logs.
 - **Privacy**: never copy credentials, tokens, personal data or production records into records, prompts or screenshots. Redact first.

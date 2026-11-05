@@ -22,3 +22,6 @@ Approval status now lives in a Markdown table (Cheflabels DESIGN.md). Options: (
 - D3 (U3): "Keep Cheflabels' design kit separate from task-specific reviews. Reuse actual approved components and capture real screenshots." The Cheflabels kit page stays its own thing; a task review reuses its approved components and real captures. Any Cheflabels app change still goes through its own task.
 - D4 (U4): "Only explicitly approved components are approved; everything else remains candidate/unverified."
 - D5 (general): "Keep the solution framework-agnostic (Angular, React, Vue, etc.). Never invent application UI when real components or screenshots are available."
+
+## Approval (owner, 2026-11-03)
+- D6: agreement and plan r1: "Yes to both".

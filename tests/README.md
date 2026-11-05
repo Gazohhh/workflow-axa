@@ -25,7 +25,7 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 
 ## Run the current skill and candidate fairly
 
-For 2.8.0-rc.1 use the pinned pre-refactor revision `9daf507` (2.7.0-rc.7) as the comparison baseline, not the original first workflow. rc.8 changed only Windows verification tooling, so it does not change the behavior being compared. Keep the baseline package unchanged. Load only one workflow version per fresh host session. Do not mix a global installation, a repository skill and a session plugin unintentionally.
+For this candidate, use the supplied **post-hardening 2.8.0-rc.1 archive** as the baseline; its identity is in CANDIDATE-REVIEW.md. Do not use the much older pre-refactor revision `9daf507` from earlier evaluations. Follow CLAUDE-TEST-PROMPT.txt: preserve both sources, agree the live budget before any model runs, and return one read-only retro before proposing changes. Load only one version per fresh session; do not mix a global copy, repository skill and session plugin.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
 constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
@@ -58,14 +58,14 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.1; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.2; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
 
 The stdlib suite also tests report modes, requirement/evidence/task references, pending-decision and approval-state validation, escaped labels, source drift, paths, CLI behavior and overwrite refusal. These assertions do **not** prove semantic correspondence to code or authentic approval.
 
-Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install all twenty local skills of the version under test (eight before 2.8.0) plus the approved relevant Matt specialists. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
+Before live tests merge the reviewed project routing block into the disposable project's applicable host instructions. Install the complete registered skill set of the version under test; the manifest is authoritative. Bundled specialists stay with the package; do not install duplicates. Do not install an external diagram skill for these tests. Add the plain-prompt cases at the end of SCENARIOS.md; do not prepend a skill command to those prompts. Inspect actual skill-load and code-read traces. Test inspection-only and conceptual negative cases separately.
 
 An optional browser smoke runner uses already installed Python Playwright and a supplied Chromium executable:
 

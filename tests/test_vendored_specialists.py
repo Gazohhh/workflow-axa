@@ -78,7 +78,20 @@ class VendoredSkillTests(unittest.TestCase):
         self.assertNotIn("task-notification", text)
         self.assertIn("skills: ['workflow']", text)
         self.assertIn("Q: Remember it?", text)
-        self.assertIn("tool errors: 1 (denied 1)", text)
+        self.assertIn("tool errors: 1 (denied 1); hook denials: 0", text)
+
+    def test_session_digest_counts_hook_denials(self):
+        # P1-P3 digest: seven phase-gate denials showed as "denied 0".
+        with tempfile.TemporaryDirectory() as tmp:
+            logs = Path(tmp) / "logs"
+            logs.mkdir()
+            block = {"type": "tool_result", "is_error": True,
+                     "content": "PreToolUse:Edit hook error: workflow-axa: editing src/a.py needs implementation approval"}
+            (logs / "s1.jsonl").write_text(json.dumps({"type": "user", "message": {"content": [block]}}), encoding="utf-8")
+            out = Path(tmp) / "digest.md"
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+                           check=True, capture_output=True)
+            self.assertIn("tool errors: 1 (denied 0); hook denials: 1", out.read_text(encoding="utf-8"))
 
     def test_session_digest_hides_secrets_and_counts_typed_commands(self):
         # Hooqd retro: a pasted server password reached the digest, and a typed /workflow showed as "skills: []".
@@ -86,7 +99,7 @@ class VendoredSkillTests(unittest.TestCase):
             logs = Path(tmp) / "logs"
             logs.mkdir()
             typed = ("<command-message>workflow</command-message>\n<command-name>/workflow</command-name>\n"
-                     "<command-args>bug, ssh credentials sqoore Q7xgHCaDPouCfP9rcyZ, token: abc123</command-args>")
+                     "<command-args>bug, ssh credentials sqoore EXAMPLEnotArealSecret9, token: abc123</command-args>")
             lines = [{"type": "user", "timestamp": "2026-11-03T14:11:00Z", "message": {"content": typed}},
                      {"type": "user", "timestamp": "2026-11-03T14:12:00Z", "message": {"content": "password=hunter2 please"}}]
             (logs / "s1.jsonl").write_text("\n".join(json.dumps(l) for l in lines), encoding="utf-8")
@@ -94,7 +107,7 @@ class VendoredSkillTests(unittest.TestCase):
             subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
                            check=True, capture_output=True)
             text = out.read_text(encoding="utf-8")
-        for secret in ("Q7xgHCaDPouCfP9rcyZ", "abc123", "hunter2"):
+        for secret in ("EXAMPLEnotArealSecret9", "abc123", "hunter2"):
             self.assertNotIn(secret, text)
         self.assertIn("<redacted>", text)
         self.assertIn("skills: ['/workflow']", text)

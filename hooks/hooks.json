@@ -1,9 +1,9 @@
 {
-  "description": "Blocks code edits and git commit/push/merge after /workflow until a phase skill has run. Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons.",
+  "description": "After /workflow, blocks code edits, shell writes into project files, MCP write tools and git writes until the current task's PLAN.md Approval line approves a revision and quotes words from a real user message (task records stay writable; see skills/workflow/SETUP.md, What the hooks enforce), and blocks package installs and npx-style downloads unless the user's latest words allow installing. Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons.",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell|mcp__.*([Cc]reate|[Ww]rite|[Ee]dit|[Dd]elete|[Aa]pply|[Uu]pdate|[Ii]mport|[Ee]xecute|[Mm]anage).*",
         "hooks": [
           {
             "type": "command",
@@ -33,6 +33,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Read|Edit|Write|MultiEdit|AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_gate.py\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -41,6 +51,11 @@
           {
             "type": "command",
             "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_reads.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_gate.py\"",
             "timeout": 5
           }
         ]

@@ -9,6 +9,8 @@ Inspect without changing the environment. Check package/version, host profile/re
 
 Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Validators cannot prove the later claims. Do not install, enable, delete, overwrite or repair anything automatically.
 
+Check that `python` starts on the host: hooks.json runs `python`, so a host with only `python3` starts no hook and nothing is enforced. Report that as WARNING with the evidence.
+
 ## Global artifact policy
 
 Use workflow/scripts/global_policy.py --check with the actual profile paths. Respect CLAUDE_CONFIG_DIR/CODEX_HOME and active Codex overrides. Missing/changed markers, stale policy, newer deployments, duplicates or linked configuration need review; never repair them automatically. Test an ordinary request without /workflow in the real host to establish loading; remote environments need their own setup. Pass project protections to workers. Policy version 2.5.0 can legitimately differ from the package version; compare bytes, not version equality.

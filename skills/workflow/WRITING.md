@@ -24,7 +24,7 @@ Define an unfamiliar term once; otherwise use everyday words. Use one name per c
 
 ## Cut
 
-Delete filler, repeated headings, empty template sections, invented certainty and second copies of a decision. Don't create a file just to look thorough. When you say something is slop, show it: the repeated paragraph or unsupported claim, and why removing it loses nothing.
+Delete filler, repeated headings, empty template sections, invented certainty and second copies of a decision. Do not create a file just to look thorough. When you say something is slop, show it: the repeated paragraph or unsupported claim, and why removing it loses nothing.
 
 ## Keep the meaning
 
@@ -39,7 +39,9 @@ Simpler words must keep the rule. Before rewording a requirement, finding or tec
 | Exception | What is excluded? | Omitting the lightweight-edit route |
 | Evidence | How strong is the support? | A file read presented as a passed test |
 
-If plain words can't carry a part, keep the precise wording and explain it. Shorter is never the goal on its own.
+If plain words cannot carry a part, keep the precise wording and explain it. Shorter is never the goal on its own.
+
+Words that carry uncertainty, permission or a proposal (may, might, could, should, would) are part of the meaning. "The cause could be the cache" is not "The cause is the cache". Keep them, rewrite only empty hedging, and never just delete one.
 
 Write chat messages and reports with `../simple-english/SKILL.md` (Plain mode and its workflow-axa adaptation).
 

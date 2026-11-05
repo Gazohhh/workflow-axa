@@ -167,20 +167,27 @@ def validate(data, sources, api):
 
 
 
-PLAIN_WORDS = re.compile(r"\b(should|would|may|might|could|ensure|leverage|utilize|robust|seamless(?:ly)?|comprehensive|crucial|simply)\b", re.I)
+PLAIN_WORDS = re.compile(r"\b(ensure|leverage|utilize|robust|seamless(?:ly)?|comprehensive|crucial|simply)\b", re.I)
+# Audit E16: these words carry uncertainty, permission or a proposal. Replacing or deleting them can turn
+# "it could be the cache" into a false certainty, so they get a note that keeps the meaning, not a problem.
+MEANING_WORDS = re.compile(r"\b(should|would|may|might|could)\b", re.I)
+MEANING_NOTE = ("keep each word that states uncertainty, permission or a proposal. Rewrite only empty hedging, "
+                "and never just delete the word")
 CONTRACTION = re.compile(r"\b\w+['’](?:t|ve|re|ll|d|m)\b", re.I)
+# Quoted user words and code keep their exact wording, including punctuation such as semicolons.
+QUOTED = re.compile(r'"[^"\n]*"|“[^”\n]*”|`[^`\n]*`')
 
 
-def prose_issues(data):
-    """Simple English checks on the report's prose fields: (JSON path, problem). Advice, not a validation error."""
-    report = data.get("task_report")
-    if not report:
-        return []
-    fields = [("understanding", data.get("understanding", "")), ("task_report.agreement.summary", report["agreement"]["summary"])]
-    fields += [(f'task_report.sections[{row["id"]}].text', row["text"]) for row in report["sections"]]
-    fields += [(f'task_report.tickets[{row["task"]}].{key}', row[key]) for row in report["tickets"] for key in ("specification", "expected")]
-    fields += [(f'task_report.checks[{row["id"]}].{key}', row[key]) for row in report["checks"] for key in ("expected", "actual", "limits")]
-    fields += [(f'task_report.acceptance_results[{row["acceptance"]}].note', row["note"]) for row in report["acceptance_results"]]
+def prose_fields(data):
+    """(JSON path, text) for the prose a reader sees, in every report kind."""
+    report = data.get("task_report") if isinstance(data.get("task_report"), dict) else {}
+    fields = [("understanding", data.get("understanding", ""))]
+    if report:
+        fields.append(("task_report.agreement.summary", (report.get("agreement") or {}).get("summary", "")))
+    fields += [(f'task_report.sections[{row["id"]}].text', row["text"]) for row in report.get("sections", [])]
+    fields += [(f'task_report.tickets[{row["task"]}].{key}', row[key]) for row in report.get("tickets", []) for key in ("specification", "expected")]
+    fields += [(f'task_report.checks[{row["id"]}].{key}', row[key]) for row in report.get("checks", []) for key in ("expected", "actual", "limits")]
+    fields += [(f'task_report.acceptance_results[{row["acceptance"]}].note', row["note"]) for row in report.get("acceptance_results", [])]
     # Round 15: other text the page shows kept semicolons.
     fields += [(f'boundaries[{i}]', text) for i, text in enumerate(data.get("boundaries", []))]
     fields += [(f'open_decisions[{i}]', text) for i, text in enumerate(data.get("open_decisions", []))]
@@ -197,10 +204,23 @@ def prose_issues(data):
     ui = data.get("ui_review") or {}
     fields += [(f'ui_review.{key}', ui.get(key, "")) for key in ("summary", "limit")]
     fields += [(f'ui_review.screens[{s.get("id")}].description', s.get("description", "")) for s in ui.get("screens", [])]
+    return [(path, QUOTED.sub("quote", text)) for path, text in fields if isinstance(text, str) and not text.startswith("FILL: ")]
+
+
+def prose_notes(data):
+    """Advisory notes for words that may carry meaning: (JSON path, note). Never a problem to fix."""
+    notes = []
+    for path, text in prose_fields(data):
+        words = sorted({m.group(0).lower() for m in MEANING_WORDS.finditer(text)})
+        if words:
+            notes.append((path, f'{", ".join(words)}: {MEANING_NOTE}'))
+    return notes
+
+
+def prose_issues(data):
+    """Simple English checks on the report's prose fields: (JSON path, problem). Advice, not a validation error."""
     issues = []
-    for path, text in fields:
-        if not isinstance(text, str) or text.startswith("FILL: "):
-            continue
+    for path, text in prose_fields(data):
         found = []
         if ";" in text:
             found.append("semicolon (write two sentences)")

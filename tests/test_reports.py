@@ -41,6 +41,21 @@ class ReportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'match saved input'):
             report.render(self.data,self.root,self.input)
 
+    def test_write_paths_are_shown_and_recorded_in_the_manifest(self):
+        # The phase gate bounds file writes after approval by these paths (pilot hardening, 2026-11-05).
+        self.data['write_paths'] = ['src/scoreboard.py', 'docs/']
+        content = self.render()
+        self.assertIn('Only these files may change: src/scoreboard.py, docs/.', content)
+        manifest = json.loads(content.split('id="report-manifest">', 1)[1].split('</script>', 1)[0])
+        self.assertEqual(manifest['write_paths'], ['src/scoreboard.py', 'docs/'])
+        for bad in ([], 'src/', ['../x.py'], ['/etc/x'], ['C:/x.py'], ['src\\x.py'], ['src/*.py']):
+            with self.subTest(bad=bad):
+                self.data['write_paths'] = bad
+                with self.assertRaisesRegex(ValueError, 'write_paths'):
+                    self.render()
+        del self.data['write_paths']
+        self.assertNotIn('write_paths', self.render().split('id="report-manifest">', 1)[1].split('</script>', 1)[0])
+
     def test_full_example_validates_and_renders(self):
         content = self.render()
         self.assertIn('WAITING FOR YOUR APPROVAL',content)
@@ -265,6 +280,60 @@ class ReportTests(unittest.TestCase):
         self.assertTrue(self.output.exists())
         self.assertTrue(opener.call_args[0][0].startswith('file:'))
         self.assertTrue(any('NOT ACCEPTED' in str(c) for c in messages.call_args_list))
+
+    def run_main(self, *args, opener=True):
+        argv=['render','--root',str(self.root),'--input',str(self.input),'--output',str(self.output),*map(str,args)]
+        with patch.object(sys,'argv',argv), patch.object(report.webbrowser,'open',return_value=opener) as browser, \
+                patch('builtins.print') as messages:
+            code=report.main()
+        return code, browser, '\n'.join(' '.join(map(str,c.args)) for c in messages.call_args_list)
+
+    def test_wording_problems_never_block_a_valid_report_but_skip_open(self):
+        # Audit E17: --open showed a report with wording problems, which made it presented and forced a new name.
+        self.data['understanding']='The list changes; the old order isn\'t kept.'
+        self.input.write_text(json.dumps(self.data),encoding='utf-8')
+        code, browser, out = self.run_main('--open')
+        self.assertEqual(code,0)
+        self.assertTrue(self.output.exists())
+        browser.assert_not_called()
+        self.assertIn('PLAIN ENGLISH: understanding: semicolon',out)
+        self.assertIn('NOT OPENED',out)
+
+    def test_repeated_wording_fixes_keep_one_file(self):
+        self.data['understanding']='The list changes; the old order isn\'t kept.'
+        self.input.write_text(json.dumps(self.data),encoding='utf-8')
+        self.assertEqual(self.run_main()[0],0)
+        self.data['understanding']='The list changes. The old order is not kept.'
+        self.input.write_text(json.dumps(self.data),encoding='utf-8')
+        code, browser, out = self.run_main('--replace-unpresented','--open')
+        self.assertEqual(code,0,out)
+        self.assertIn('REPLACED',out)
+        self.assertNotIn('PLAIN ENGLISH',out)
+        browser.assert_called_once()
+        self.assertEqual([p.name for p in self.output.parent.glob('*.html')],[self.output.name])
+        self.assertIn('The old order is not kept.',self.output.read_text(encoding='utf-8'))
+
+    def test_replace_refuses_a_report_the_task_records_name(self):
+        # Audit E18: the flag checked only that the renderer made the file.
+        self.assertEqual(self.cli('--input',self.input,'--output',self.output).returncode,0)
+        before=self.output.read_bytes()
+        plan=self.root/self.data['sources'][0]['path']
+        plan.write_text(plan.read_text(encoding='utf-8')+f'\nReport shown to the owner: {self.output.name}\n',encoding='utf-8')
+        refused=self.cli('--input',self.input,'--output',self.output,'--replace-unpresented')
+        self.assertEqual(refused.returncode,2)
+        self.assertIn(self.output.name,refused.stderr)
+        self.assertEqual(self.output.read_bytes(),before)
+
+    def test_replace_refuses_an_approved_report(self):
+        self.data['state']='approved'
+        self.data['approval']={'revision':self.data['revision'],'record':'PLAN Approval','response':'Synthetic test response'}
+        self.input.write_text(json.dumps(self.data),encoding='utf-8')
+        self.assertEqual(self.cli('--input',self.input,'--output',self.output).returncode,0)
+        before=self.output.read_bytes()
+        refused=self.cli('--input',self.input,'--output',self.output,'--replace-unpresented')
+        self.assertEqual(refused.returncode,2)
+        self.assertIn('approved',refused.stderr)
+        self.assertEqual(self.output.read_bytes(),before)
 
     def test_portable_skill_copy_includes_every_renderer_dependency(self):
         copy_path=Path(self.temp.name)/'standalone-map'
