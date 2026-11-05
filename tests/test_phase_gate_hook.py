@@ -81,7 +81,7 @@ def tearDownModule():
 
 
 def run_hook(event, process_cwd=None) -> dict | None:
-    result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK)], input=json.dumps(event),
+    result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK), '--hook-protocol=1'], input=json.dumps(event),
                             capture_output=True, text=True, encoding="utf-8", cwd=process_cwd,
                             env={**os.environ, "WORKFLOW_AXA_GATE_CACHE": CACHE.name})
     assert result.returncode == 0, result.stderr
@@ -655,7 +655,7 @@ class ApprovalGateTests(unittest.TestCase):
         target = {"file_path": str(other / "src" / "a.ts")}
         self.assertEqual(self.decision(rows, "Edit", target), "deny")  # that worktree has no such task
         self.task(TASK, APPROVED, root=other)
-        self.assertIsNone(self.decision(rows, "Edit", target))
+        self.assertEqual(self.decision(rows, "Edit", target), "deny")  # copying records never transfers consent
         unrelated = self.base / "elsewhere"
         (unrelated / ".git").mkdir(parents=True)
         self.assertIsNone(self.decision(rows[:1], "Edit", {"file_path": str(unrelated / "x.ts")}))  # not this project

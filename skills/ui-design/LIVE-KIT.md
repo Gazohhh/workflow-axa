@@ -35,6 +35,24 @@ It returns current story IDs/labels, local source existence/fingerprints and pre
 
 Use the project's existing dev/build verification process to generate/validate its catalogue. The workflow does **not** automatically wire this adapter into an unseen repository or claim an auto-refresh service is running. Avoid a new snapshot for every rerun; use existing tool output paths and the artifact policy.
 
+## Manual designer edits: detect drift without rewriting DESIGN.md
+
+The next UI workflow checks **Git changes**, not conversation memory and not every page:
+
+```bash
+python -X utf8 skills/ui-design/scripts/design_drift.py --root /path/to/project
+```
+
+After a real, owner-reviewed initial design reconciliation, the designated existing policy file may contain **one** baseline pointer:
+
+```markdown
+<!-- workflow-axa-design-baseline: <reviewed full Git commit SHA> -->
+```
+
+The tool compares that commit with the **current checkout**, including committed, staged, unstaged and untracked UI files. It reports changed paths and whether shared/global CSS changed (then examine dependent consumers). It never edits files, approves a style or infers intent. Don't update the marker on every CSS change: move it only as part of an explicit review that covered the changes. Worktrees/teammates use the Git SHA from the checked-out project, not a per-machine cache. If the baseline is absent, unavailable, or the repository isn't accessible, output **baseline-unknown** and do an initial targeted inspection. A filename-level change list is not a CSS dependency graph; investigate selector/component effects and actual runtime as needed.
+
+Routine changes to existing token values or styles should appear directly in the project's **real components/kit** without transcribing those values into DESIGN.md. Keep only approval, intended use, Figma references and exceptions in that document. A new component/variant is discovered as a candidate and requires a human decision before becoming approved; the kit example may need one-time registration.
+
 ## Change and deletion handling
 
 - Same component, changed internals: current preview updates through existing tooling; targeted review establishes whether appearance/contract changed. A hash change is not automatically design rejection or renewed approval.

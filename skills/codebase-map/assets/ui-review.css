@@ -37,3 +37,20 @@
 .ui-screen-node { position:static; width:100%!important; height:auto!important; } .ui-routes,.ui-inspect { display:none; } .ui-authority { break-inside:avoid; } }
 
 .ui-capture-detail { display:block; max-width:100%; height:auto; margin:20px 0; }
+
+/* Optional source-backed snippets: preview-only padding never touches app CSS. */
+.ui-quick-gallery { margin:24px 0; border-top:1px solid var(--rule); padding-top:20px; }
+.ui-quick-gallery > .hint { max-width:70ch; }
+.ui-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:20px; }
+.ui-quick-card { min-width:0; border:1px solid var(--rule); border-radius:10px; padding:16px; }
+.ui-quick-card:has(details[open]) { grid-column:1/-1; }
+.ui-quick-card h3 { margin:0 0 6px; font-size:16px; }
+.ui-quick-card > p { margin:6px 0 12px; font-size:13px; }
+.ui-quick-card iframe { display:block; width:100%; border:0; background:white; }
+.ui-quick-small { border:1px solid var(--rule); border-radius:6px; overflow:hidden; }
+.ui-quick-small iframe { height:220px; pointer-events:none; }
+.ui-quick-card details { margin:12px 0; }
+.ui-quick-card details summary { cursor:pointer; font-size:13px; }
+.ui-quick-full { margin:12px 0; border:1px solid var(--rule); border-radius:6px; }
+.ui-quick-full iframe { height:min(75vh,850px); min-height:420px; }
+@media print { .ui-quick-small { display:none; } .ui-quick-full iframe { height:520px; } }

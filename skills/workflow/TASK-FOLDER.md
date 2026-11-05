@@ -138,6 +138,16 @@ Before each unit of work, save what it is, the files it will touch and its check
 - **An interrupted worker**: compare its changed files with the ticket scope before trusting anything; uncertain changes stay unverified.
 - **A lightweight edit**: deliver's short form, without the whole-feature review.
 
+## Approval waits and host goals
+
+Present the current report and approval question once, save `awaiting approval`, then end the assistant turn. A report remaining open, elapsed time, hook feedback or an automatic goal continuation is not a new owner response. Keep writes gated. Resume on the real answer: rejection stops the proposal; requested changes produce a new revision; approval applies only to the shown task, workspace and report bytes.
+
+Before using a host goal, bound its current authorised phase with an observable result and check. For planning, completion is the reviewable report and one approval request. For implementation, name the approved tickets and verification. Do not use unbounded conditions such as "maximum FPS". Explicitly deferred work stays unverified with its reason; it is not a runnable completion requirement for the current phase. Genuine blockers, waiting for input and an owner's stop each end autonomous work without claiming the whole task passed. Preserve other authorised, independent work.
+
+Claude Code `/goal` is an independent Stop evaluator. If stale goal feedback restarts an approval wait, diagnose it once and hand control back; do not repeat "still waiting", call sleep in a loop, forge a user response or weaken approval checks. The owner can interrupt the loop, inspect `/goal`, and use `/goal clear` in that affected session. Confirm the host reports it cleared; a restart alone may restore the active goal. Clearing that host loop does not approve implementation or mark deferred work complete. Do not silently clear or rewrite a user's goal in another host.
+
+The workflow Stop hook returns without feedback for `Waiting on you` and for a direct owner stop. It cannot cancel another hook's retry decision. Test actual host idleness separately from synthetic hook output. Source: [Claude Code goal documentation](https://code.claude.com/docs/en/goal).
+
 ## Resume
 
 Run `resume-task`; it owns the procedure. These records are what it reads. After a resume, a check or review still counts only for files and rules unchanged since it ran (its V entry's state, and `rule-maker/scripts/rules_stamp.py` for the rules).

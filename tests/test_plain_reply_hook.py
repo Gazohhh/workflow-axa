@@ -76,11 +76,13 @@ class PlainReplyHookTests(unittest.TestCase):
                  "input": {"skill": "workflow-axa:workflow-clarify"}}]}}]
         done = {"type": "assistant", "message": {"content": [{"type": "text", "text": "Questions are ready."}]}}
         g = "/d/workflow-axa/skills/grilling/SKILL.md"
-        for command in (f"wc -c {g}", f"ls {g}", f"cat {g} | head -40", f"grep -n gate {g}"):
+        # A successful combined command cannot prove that a conditional cat ran.
+        for command in (f"wc -c {g}", f"ls {g}", f"cat {g} | head -40", f"grep -n gate {g}",
+                        f"cd /d/x && cat {g}; echo ---"):
             with self.subTest(command=command):
                 path.write_text("\n".join(json.dumps(r) for r in base + [bash(command), done]), encoding="utf-8")
                 self.assertIn("grilling/SKILL.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
-        for command in (f"cat {g}", f"cd /d/x && cat {g}; echo ---"):
+        for command in (f"cat {g}", f"cd /d/x; cat {g}; echo ---"):
             with self.subTest(command=command):
                 path.write_text("\n".join(json.dumps(r) for r in base + [bash(command), done]), encoding="utf-8")
                 self.assertEqual(fire({"transcript_path": str(path)}), (0, ""))

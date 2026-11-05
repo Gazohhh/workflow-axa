@@ -10,6 +10,22 @@ Capture the current screen as an authorised PNG when it can be opened safely (a 
 
 When a real capture cannot be taken safely, use the structured **schematic** (layout sketch) built only from the reused elements; every UI-visible change needs one of the two. The report labels it “Sketch · not a screenshot”. It is not a styled prototype or proof of the kit's look. Legacy approved-kit work without real captures stays blocked; other authorised work can continue.
 
+## Fast source-backed styled previews (optional)
+
+When the owner wants to **see the real existing styling** without authoring a prototype, add `ui_review.quick_previews` to the **same schema-2 projection**. The report renders a compact gallery plus **expandable full-size frames**; larger/multiple changes do not need to fit in the flowchart's little screen cards. This is a separate visual reference underneath the screen flow, not another implementation or approval gate.
+
+Each item is exactly:
+
+```json
+{"id":"save-card","title":"Existing save card","html_source":"UI_HTML","selector":".save-card","css_sources":["UI_CSS"],"note":"Current component style; future wiring described in T2."}
+```
+
+Declare `UI_HTML` and `UI_CSS` in the report's existing `sources`. `html_source` must be an **existing local .html example/template**. `selector` supports `#id`, `.class`, `tag.class` or `tag#id` and selects the complete subtree, including its wrapper when that wrapper is selected. `css_sources` are **existing compiled `.css` files**, not SCSS source files or invented styles. Choose only the needed CSS; no installation, new page, app runtime or screenshots are required. A report-only 20px body padding improves legibility; it never alters application styles.
+
+The renderer sanitises source markup into inert elements (removes event handlers, links, media and executable tags), isolates the real CSS in a sandboxed `srcdoc` iframe with no network/script/form permission, fingerprints all supplied sources and keeps historical reports immutable. These are **static HTML/CSS samples**: Angular/Ionic/React components needing framework execution, runtime state, compiled SCSS, generated classes, external fonts/images or layout depending on absent ancestors can look incomplete. Label those limits; use a genuine captured screenshot or the project's existing preview when fidelity matters. The optional gallery does **not** prove that the proposed page exists or that its design is approved. Never invent markup or add a second style source to force a preview. If the required sources are unavailable, skip this gallery and retain the existing schematic/capture plus references; don't block the whole planning task merely for a sample.
+
+Use up to six small examples; group by component or interaction rather than adding full page copies. The small frame shows context; "Expand full-size sample" provides a scrollable larger view. The screen flow and source/decision mapping remain unchanged. Report page sizes stay bounded by the existing 8 MiB check.
+
 ## Projection
 
 See the complete [report example](examples/ui-review/review-r2.json) and [example notes](examples/ui-review/README.md). Keep existing schema-2 fields. The optional `ui_review` contains:
@@ -19,8 +35,9 @@ See the complete [report example](examples/ui-review/review-r2.json) and [exampl
 - `authority`: `status` confirmed/unconfirmed, source ID, locator, summary identifying task selection.
 - `preview`: proposed/authorised status, source ID, locator, summary and destination/access boundary.
 - `acceptance`: pending/accepted and summary; accepted also needs an actual supplied source and locator. Structure checking never authenticates consent. Release readiness is not inferred.
+- `quick_previews` (optional): source-backed static HTML/CSS fragments, as described above. Not the complete proposed page.
 - `screens`: up to six with `id`, title, description, current/proposed state, x/y/width/height, `sources`, requirement/evidence/task IDs and decision IDs. They are source-backed projections, not independent specifications.
-- `representation`: `capture` plus `capture` source ID (role `ui-capture`, local static PNG), or `schematic` plus structured `content` entries. Schematic entries allow only heading/text/checkbox/input/button/message, plain label, optional value/boolean flags and decision ID. No raw HTML, arbitrary styles, event handlers, CSS classes, URLs or scripts. Native-looking drawings are explicitly approximate, not actual browser controls.
+- `representation`: `capture` plus `capture` source ID (role `ui-capture`, local static PNG), or `schematic` plus structured `content` entries. Schematic entries allow only heading/text/checkbox/input/button/message, plain label, optional value/boolean flags and decision ID. No raw HTML, arbitrary styles, event handlers, CSS classes, URLs or scripts in schematic controls; only the optional source-backed quick-preview extractor can show existing classes. Native-looking drawings are explicitly approximate, not actual browser controls.
 - Captured screens can add `markers` with a mapped decision ID and `position: [xFraction, yFraction]` on the original image (0–1). Their full-size details preserve the uncropped source.
 - `transitions`: from/to IDs, short action/outcome label, explicit orthogonal points and label position. Reuse the existing validated connector conventions. Screen boundaries must not be crossed.
 - `decisions`: ID/title/question, two to four options, screen IDs, status open/selected/deferred. Selected choices require selection and source/locator/summary. Deferred choices state the reason and remain pending; they do not permit styling.

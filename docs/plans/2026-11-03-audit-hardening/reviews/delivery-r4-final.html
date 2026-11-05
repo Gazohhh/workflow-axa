@@ -1,0 +1,1906 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XNlPRks2SEO+bwidW9ZDDuJ16oIYgRQx1Ek6rAbWP0g='; style-src 'unsafe-inline'; img-src 'none'; frame-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Session recovery candidate delivered with explicit live-test limits</title><style>/* ==========================================================================
+   Review report — editorial, white, lean
+   ========================================================================== */
+
+/* Tokens
+   ========================================================================== */
+:root {
+  --color-bg: #fff;
+  --color-ink: #1f2330;
+  --color-muted: #545d6e;   /* 6.6:1 on white */
+  --color-faint: #6b7280;   /* 4.8:1 on white, minimum for small text */
+  --color-line: #e4e6ea;
+  --color-line-strong: #1f2330;
+  --color-wash: #f7f8f9;
+  --color-accent: #b5401c;  /* 5.4:1 on white */
+  --color-accent-soft: #fbf1ec;
+  --color-accent-line: #efd2c6;
+  --color-ok: #2b6535;
+  --color-ok-soft: #e8f2ea;
+  --color-ok-line: #cfe0d2;
+
+  --font-sans: 'Geist', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, monospace;
+
+  --measure: 70ch;
+  --radius: 6px;
+  --toc-width: 200px;
+  --gap: 48px;
+  --sticky-offset: 20px;
+
+  color-scheme: light;
+}
+
+/* Base
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sticky-offset);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font: 15px/1.6 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-line);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+code,
+.code {
+  font: 12.5px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.muted,
+small {
+  color: var(--color-muted);
+}
+
+.visually-hidden,
+.sr-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  padding: 10px 14px;
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: #fff;
+}
+
+/* Page frame
+   ========================================================================== */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px 48px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 0 12px;
+  border-bottom: 1px solid var(--color-line);
+  font: 11px/1.5 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-faint);
+}
+
+.masthead strong {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* Report header
+   ========================================================================== */
+.report-header {
+  padding: 28px 0 32px;
+}
+
+.report-title {
+  max-width: 26ch;
+  margin: 0 0 10px;
+  font: 400 clamp(32px, 3.6vw, 46px)/1.08 var(--font-serif);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.report-lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent);
+  font-size: 14px;
+}
+
+.status--approved {
+  border-left-color: var(--color-ok);
+}
+
+.status__tag {
+  flex: none;
+  font: 500 11px/1.6 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-accent);
+}
+
+.status--approved .status__tag {
+  color: var(--color-ok);
+}
+
+/* At-a-glance facts */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 28px 0 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.facts__item {
+  min-width: 0;
+  padding: 14px 18px 14px 0;
+}
+
+.facts__item + .facts__item {
+  padding-left: 18px;
+  border-left: 1px solid var(--color-line);
+}
+
+.facts dt {
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.facts dd a {
+  text-decoration: none;
+}
+
+.facts__value--attention {
+  color: var(--color-accent);
+}
+
+/* Layout: sticky contents beside the report
+   ========================================================================== */
+.layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 28px 0;
+}
+
+.toc__title {
+  margin: 0 0 8px;
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  font-size: 13px;
+}
+
+.toc__list > li {
+  counter-increment: toc;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  padding: 5px 0;
+  color: var(--color-muted);
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.toc__link::before {
+  content: counter(toc, decimal-leading-zero);
+  font: 11px/1.75 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.toc__link:hover {
+  color: var(--color-ink);
+}
+
+.toc__link[aria-current='true'] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.toc__link[aria-current='true']::before {
+  color: var(--color-accent);
+}
+
+.toc__flag {
+  display: block;
+  grid-column: 2;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.toc__extra {
+  display: block;
+  margin-top: 14px;
+  padding: 5px 0 5px 20px;
+  font-size: 13px;
+  color: var(--color-faint);
+}
+
+/* Sections
+   ========================================================================== */
+.content {
+  counter-reset: section;
+}
+
+.section {
+  padding-top: 32px;
+  counter-increment: section;
+}
+
+.section + .section {
+  margin-top: 40px;
+  border-top: 1px solid var(--color-line);
+}
+
+.section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px;
+  font: 400 30px/1.15 var(--font-serif);
+  letter-spacing: -.01em;
+}
+
+.section__title::before {
+  content: counter(section, decimal-leading-zero);
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+}
+
+.section__summary {
+  max-width: var(--measure);
+  margin: 0 0 20px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.section h3,
+.subhead {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section p {
+  max-width: var(--measure);
+  margin: 0 0 10px;
+}
+
+.block + .block {
+  margin-top: 24px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.columns > * {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.columns p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.list > li {
+  margin: 3px 0;
+  padding-left: 2px;
+}
+
+.list > li::marker {
+  color: var(--color-faint);
+}
+
+.list--check,
+.list--keep {
+  padding-left: 0;
+  list-style: none;
+}
+
+.list--check > li,
+.list--keep > li {
+  position: relative;
+  padding: 7px 0 7px 26px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.list--check > li:last-child,
+.list--keep > li:last-child {
+  border-bottom: 0;
+}
+
+.list--check > li::before,
+.list--keep > li::before {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font: 600 10px/1 var(--font-sans);
+}
+
+.list--check > li::before {
+  content: '✓';
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+.list--keep > li::before {
+  content: '=';
+  background: var(--color-wash);
+  color: var(--color-muted);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+.note {
+  max-width: var(--measure);
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.note a {
+  color: var(--color-accent);
+}
+
+/* Diagrams
+   ========================================================================== */
+.review {
+  position: relative;
+}
+
+.viewbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.view-tabs,
+.zoom-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.zoom-tabs {
+  gap: 14px;
+}
+
+.control-name {
+  display: none;
+}
+
+.view-tabs label,
+.zoom-tabs label {
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.view-tabs label {
+  font-weight: 500;
+}
+
+.zoom-tabs label {
+  font: 11px/44px var(--font-mono);
+}
+
+.view-tabs label:hover,
+.zoom-tabs label:hover {
+  color: var(--color-ink);
+}
+
+.figures {
+  --scale: 1;
+}
+
+#zoom-125:checked ~ .figures {
+  --scale: 1.25;
+}
+
+#zoom-150:checked ~ .figures {
+  --scale: 1.5;
+}
+
+#zoom-fit:checked ~ .figures .map {
+  width: 100%;
+  min-width: 0;
+}
+
+.panel {
+  display: none;
+  margin: 0;
+}
+
+.figure-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0 2px;
+}
+
+.figure-head h3 {
+  margin: 0;
+}
+
+.figure-head span {
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.figure-description {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.canvas {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+
+.canvas.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.map {
+  display: block;
+  width: calc(var(--board-width) * var(--scale));
+  min-width: calc(var(--board-width) * var(--scale));
+  height: auto;
+}
+
+.node-shape {
+  fill: #fff;
+  stroke: var(--color-ink);
+  stroke-width: 1.1;
+}
+
+.start .node-shape,
+.result .node-shape {
+  fill: #eef0f3;
+  stroke: var(--color-muted);
+}
+
+.focal .node-shape {
+  fill: var(--color-accent-soft);
+  stroke: var(--color-accent);
+  stroke-width: 1.3;
+}
+
+.node.inferred .node-shape,
+.node.unknown .node-shape,
+.connector.inferred,
+.connector.unknown {
+  stroke-dasharray: 5 4;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 1.3;
+}
+
+.map marker path {
+  fill: var(--color-faint);
+}
+
+.node-title {
+  font: 600 18px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.node-note {
+  font: 13px var(--font-sans);
+  fill: var(--color-muted);
+}
+
+.node-item {
+  font: 15px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.arrow-label rect {
+  fill: var(--color-wash);
+}
+
+.edge-label {
+  font: 10px var(--font-mono);
+  letter-spacing: 1px;
+  fill: var(--color-muted);
+}
+
+figcaption {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  padding: 10px 0 4px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border: 1px solid var(--color-muted);
+  background: #fff;
+}
+
+.legend .legend-start {
+  border-radius: 8px;
+  background: #eef0f3;
+}
+
+.legend .legend-action {
+  border-radius: 2px;
+}
+
+.legend .legend-decision {
+  width: 11px;
+  height: 11px;
+  margin: 0 4px;
+  transform: rotate(45deg);
+}
+
+.legend .legend-focus {
+  border-color: var(--color-accent);
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+}
+
+/* Tables
+   ========================================================================== */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+caption {
+  padding: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: left;
+}
+
+th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--color-line-strong);
+  font: 500 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  vertical-align: bottom;
+}
+
+td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+}
+
+td:last-child,
+th:last-child {
+  padding-right: 0;
+}
+
+.compare th[scope='row'] {
+  width: 32%;
+  font: 500 14px/1.5 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+  vertical-align: top;
+}
+
+.compare td:nth-child(2) {
+  color: var(--color-muted);
+}
+
+.compare .after {
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.tag--changed {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.tag--recommended {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+/* Work order
+   ========================================================================== */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps > li + li::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--color-faint);
+}
+
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.steps a:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+.steps .key {
+  font: 500 12px var(--font-mono);
+}
+
+/* Tickets
+   ========================================================================== */
+.tickets {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.ticket {
+  --stub: 124px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--stub) minmax(0, 1fr);
+  max-width: 880px;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(31 35 48 / 4%);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ticket:hover {
+  border-color: #d3d6dc;
+  box-shadow: 0 2px 8px rgb(31 35 48 / 6%);
+}
+
+.ticket:target {
+  border-color: var(--color-accent);
+}
+
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--stub) - 7px);
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.ticket::before {
+  top: -8px;
+  clip-path: inset(8px 0 0 0);
+}
+
+.ticket::after {
+  bottom: -8px;
+  clip-path: inset(0 0 8px 0);
+}
+
+.ticket__stub {
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 16px;
+  border-right: 1.5px dashed #d3d6dc;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--color-wash);
+  font: 10.5px/1.4 var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__key {
+  display: block;
+  margin-top: 4px;
+  font: 500 24px/1 var(--font-mono);
+  letter-spacing: -.02em;
+  text-transform: none;
+  color: var(--color-ink);
+}
+
+.ticket__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: #fff;
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.ticket__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.ticket__status--in-progress,
+.ticket__status--blocked {
+  border-color: var(--color-accent-line);
+  color: var(--color-accent);
+}
+
+.ticket__status--in-progress::before {
+  border-right-color: transparent;
+}
+
+.ticket__status--blocked::before {
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.ticket__status--done {
+  border-color: var(--color-ok-line);
+  color: var(--color-ok);
+}
+
+.ticket__status--done::before {
+  background: currentColor;
+}
+
+.ticket__main {
+  padding: 16px 20px 0;
+}
+
+.ticket__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ticket__main p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.ticket__facts {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.ticket__facts dt {
+  font: 10.5px/2 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__facts dd {
+  margin: 0;
+}
+
+.ticket__facts .list > li {
+  margin: 0 0 2px;
+}
+
+.ticket-ref {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-wash);
+  font: 500 12px/1.6 var(--font-mono);
+  text-decoration: none;
+}
+
+.ticket-ref:hover {
+  border-color: var(--color-accent);
+}
+
+/* Checks
+   ========================================================================== */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 880px;
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.progress__bar {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+  height: 6px;
+}
+
+.progress__bar span {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.progress__bar .is-verified {
+  background: var(--color-ok);
+}
+
+.progress__bar .is-failed {
+  background: var(--color-accent);
+}
+
+.checks {
+  max-width: 880px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+
+.check__key {
+  grid-row: 1 / span 2;
+  font: 11px/1.9 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.check__expect {
+  margin: 0;
+  font-weight: 500;
+}
+
+.check__how {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.check .state {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.state::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.state--verified {
+  color: var(--color-ok);
+}
+
+.state--verified::before,
+.state--failed::before {
+  background: currentColor;
+}
+
+.state--failed,
+.state--partial {
+  color: var(--color-accent);
+}
+
+/* Risks and open questions
+   ========================================================================== */
+.risks {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risks > li {
+  position: relative;
+  padding: 8px 0 8px 22px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.risks > li:last-child {
+  border-bottom: 0;
+}
+
+.risks > li::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.questions {
+  max-width: 880px;
+  margin: 28px 0 0;
+  padding: 18px 20px 6px;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.questions__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.questions__head h3 {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.questions__head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.question-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.question {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.question__title {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.question__key {
+  font: 500 12px/1.9 var(--font-mono);
+  color: var(--color-accent);
+}
+
+.options {
+  margin: 0;
+  padding: 0 0 0 30px;
+  list-style: none;
+  counter-reset: option;
+}
+
+.options > li {
+  position: relative;
+  padding: 4px 0 4px 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+  counter-increment: option;
+}
+
+.options > li::before {
+  content: counter(option, lower-alpha);
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  font: 500 10px/1 var(--font-mono);
+}
+
+.options > .is-recommended {
+  color: var(--color-ink);
+}
+
+.options > .is-recommended::before {
+  border-color: var(--color-ok);
+  background: var(--color-ok);
+  color: #fff;
+}
+
+/* Technical details (appendix)
+   ========================================================================== */
+details {
+  padding: 12px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--color-faint);
+  border-bottom: 1.5px solid var(--color-faint);
+  transform: rotate(-45deg);
+  transition: transform .15s;
+}
+
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+details.appendix {
+  margin-top: 48px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+details.appendix > summary {
+  font: 400 24px/1.2 var(--font-serif);
+}
+
+.appendix-body {
+  padding-top: 14px;
+  font-size: 14px;
+}
+
+.appendix-body section {
+  margin-bottom: 28px;
+}
+
+.appendix-body h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.appendix-body > p.muted {
+  max-width: var(--measure);
+  font-size: 13px;
+}
+
+.appendix .table-scroll table {
+  min-width: 820px;
+  font-size: 12px;
+}
+
+.appendix ol {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.appendix ol li {
+  margin: 8px 0;
+}
+
+.appendix blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--color-line);
+  color: var(--color-muted);
+}
+
+.appendix .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  margin: 24px 0;
+}
+
+.appendix .plain {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appendix .plain li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.evidence {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.evidence p,
+.appendix code {
+  font: 12px/1.7 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* Footer
+   ========================================================================== */
+.report-footer {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+  font: 11px/1.7 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+/* Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .facts__item:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 4) {
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+@media (max-width: 960px) {
+  :root {
+    --sticky-offset: 64px;
+  }
+
+  .page {
+    padding: 0 24px 40px;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc {
+    z-index: 5;
+    max-height: none;
+    margin: 0 -24px;
+    padding: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toc__title,
+  .toc__flag,
+  .toc__extra {
+    display: none;
+  }
+
+  .toc__list {
+    display: flex;
+    gap: 20px;
+    padding: 0 24px;
+    white-space: nowrap;
+  }
+
+  .toc__link {
+    display: block;
+    padding: 14px 0 12px; /* 48px touch target */
+    border-bottom: 2px solid transparent;
+  }
+
+  .toc__link::before {
+    margin-right: 6px;
+  }
+
+  .toc__link[aria-current='true'] {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 0 16px 32px;
+  }
+
+  .toc {
+    margin: 0 -16px;
+  }
+
+  .toc__list {
+    padding: 0 16px;
+  }
+
+  .report-title {
+    font-size: 32px;
+  }
+
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facts__item,
+  .facts__item + .facts__item {
+    padding: 12px 12px 12px 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 3) {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .section__title {
+    font-size: 25px;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .figure-head,
+  .viewbar {
+    display: block;
+  }
+
+  .zoom-tabs {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .compare {
+    min-width: 560px;
+  }
+
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    display: none;
+  }
+
+  .ticket__stub {
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1.5px dashed #d3d6dc;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .ticket__key {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .ticket__status {
+    margin-left: auto;
+  }
+
+  .ticket__main {
+    padding: 14px 16px 0;
+  }
+
+  .ticket__facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 10px 16px 14px;
+  }
+
+  .ticket__facts dd {
+    margin-bottom: 8px;
+  }
+
+  .check {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .check .state {
+    grid-column: 2;
+    grid-row: auto;
+    margin-top: 6px;
+  }
+
+  .questions {
+    padding: 16px 16px 4px;
+  }
+
+  .options {
+    padding-left: 0;
+  }
+
+  .appendix .two-col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc,
+  .skip-link,
+  .viewbar,
+  .hint {
+    display: none !important;
+  }
+
+  .panel {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  .canvas {
+    overflow: visible;
+  }
+
+  .map {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ticket,
+  .check,
+  .question,
+  .facts {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* Overrides for paragraphs inside components
+   ========================================================================== */
+.section .check__expect,
+.section .question__title {
+  margin: 0;
+}
+
+.section .question__title {
+  margin-bottom: 8px;
+}
+
+.section .check__how {
+  margin: 2px 0 0;
+}
+
+.compare th[scope='row'],
+.compare td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.compare small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.section h3 + .risks,
+.section h3 + .steps {
+  margin-top: 6px;
+}
+
+.section .risks + .questions,
+.section p + h3,
+.section .section__summary + h3 {
+  margin-top: 24px;
+}
+
+.section .ticket__stub {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .steps {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .steps > li + li::before {
+    display: none;
+  }
+}
+
+/* Diagram view and zoom state (generated per report)
+   ========================================================================== */
+#view-after:checked ~ .figures #panel-after {
+  display: block;
+}
+
+#view-after:checked ~ .viewbar label[for='view-after'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-after:focus-visible ~ .viewbar label[for='view-after'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-today:checked ~ .figures #panel-today {
+  display: block;
+}
+
+#view-today:checked ~ .viewbar label[for='view-today'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-today:focus-visible ~ .viewbar label[for='view-today'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-order:checked ~ .figures #panel-order {
+  display: block;
+}
+
+#view-order:checked ~ .viewbar label[for='view-order'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-order:focus-visible ~ .viewbar label[for='view-order'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-100:checked ~ .viewbar label[for='zoom-100'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-100:focus-visible ~ .viewbar label[for='zoom-100'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-125:checked ~ .viewbar label[for='zoom-125'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-125:focus-visible ~ .viewbar label[for='zoom-125'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-150:checked ~ .viewbar label[for='zoom-150'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-150:focus-visible ~ .viewbar label[for='zoom-150'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-fit:checked ~ .viewbar label[for='zoom-fit'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-fit:focus-visible ~ .viewbar label[for='zoom-fit'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Older token names used by ui-review.css, mapped onto report-style.css tokens. */
+:root {
+  --paper: var(--color-bg);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --rule: var(--color-line);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-soft);
+  --sans: var(--font-sans);
+  --serif: var(--font-serif);
+  --mono: var(--font-mono);
+}
+
+#view-gate:checked~.figures #panel-gate{display:block}
+#view-gate:checked~.viewbar label[for="view-gate"]{border-color:var(--accent);color:var(--ink)}
+#view-gate:focus-visible~.viewbar label[for="view-gate"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-100:checked~.viewbar label[for="zoom-100"]{border-color:var(--ink);color:var(--ink)}
+#zoom-100:focus-visible~.viewbar label[for="zoom-100"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-125:checked~.viewbar label[for="zoom-125"]{border-color:var(--ink);color:var(--ink)}
+#zoom-125:focus-visible~.viewbar label[for="zoom-125"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-150:checked~.viewbar label[for="zoom-150"]{border-color:var(--ink);color:var(--ink)}
+#zoom-150:focus-visible~.viewbar label[for="zoom-150"]{outline:2px solid var(--accent);outline-offset:4px}
+#zoom-fit:checked~.viewbar label[for="zoom-fit"]{border-color:var(--ink);color:var(--ink)}
+#zoom-fit:focus-visible~.viewbar label[for="zoom-fit"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
+<div class="page"><header class="masthead"><strong>workflow-axa 2.8.0-rc.4 isolated candidate</strong><span>Delivery r4</span></header>
+<main id="report"><header class="report-header"><h1 class="report-title">Session recovery candidate delivered with explicit live-test limits</h1>
+<p class="report-lead">The isolated fixes are implemented and local checks pass. Positive live write and restart remain unverified. Cheflabels is accepted and transferred.</p>
+<p class="status status--inspection"><span class="status__tag">Delivered</span><span>Delivered: partial. Some work or checks are still open. The sections below name them. Behavior agreed (r4).</span></p>
+<dl class="facts" aria-label="At a glance"><div class="facts__item"><dt>Revision</dt><dd>r4</dd></div><div class="facts__item"><dt>Tickets</dt><dd>6</dd></div><div class="facts__item"><dt>Acceptance</dt><dd>6 of 6 verified</dd></div><div class="facts__item"><dt>Open questions</dt><dd>None</dd></div><div class="facts__item"><dt>As of</dt><dd>2026-11-05, final code freeze and local suite</dd></div></dl></header>
+<div class="layout"><nav class="toc" aria-label="Contents"><p class="toc__title">Contents</p><ol class="toc__list"><li><a class="toc__link" href="#agreed">What was agreed</a></li><li><a class="toc__link" href="#how-it-works">How it works</a></li><li><a class="toc__link" href="#what-changes">What changes</a></li><li><a class="toc__link" href="#the-work">The work</a></li><li><a class="toc__link" href="#checks">How it was checked</a></li><li><a class="toc__link" href="#risks">Risks and open questions</a></li></ol><a class="toc__extra" href="#technical-details">Technical details</a></nav><div class="content" id="task-report"><section class="section" aria-labelledby="agreed"><h2 class="section__title" id="agreed">What was agreed</h2><p class="section__summary">The owner directly authorized the audited isolated fixes. This records task authority, not approval of an r4 HTML plan.</p><div class="columns"><div><h3>What was asked</h3><p>Fix the audited approval, recovery and waiting defects in an isolated candidate.</p></div><div><h3>Agreed behavior</h3><p>Direct instruction &quot;fix all of it&quot; authorized candidate work. Installation remained outside scope. Historical r1 approval remains intact.</p></div></div><div class="columns"><div><h3>Decisions made</h3><p>The original checkout and existing UI-lite changes remain intact. Earlier reports are protected. Historical D7-D10 are not newly accepted.</p></div><div><h3>What stays the same</h3><ul class="list--keep"><li>No live plugin installation or global configuration changes.</li><li>Cheflabels transfer and worktree removal used separate owner approval and are complete.</li><li>Existing report styling and UI-lite source changes remain preserved.</li></ul></div></div></section><section class="section" aria-labelledby="how-it-works"><h2 class="section__title" id="how-it-works">How it works</h2><p class="flow-context">Current flow as inspected for this saved snapshot; not a live repository map.</p><section class="review" aria-label="Flow diagrams"><input class="sr-radio" type="radio" name="diagram-view" id="view-gate" aria-label="Today" aria-controls="panel-gate" checked><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-100" aria-label="100% diagram size" checked><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-125" aria-label="125% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-150" aria-label="150% diagram size" ><input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-fit" aria-label="Fit diagram size" ><div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name"><span class="control-name" id="view-tabs-name">Show</span><label for="view-gate">Today</label></div><div class="zoom-tabs labelled" role="group" aria-labelledby="zoom-tabs-name"><span class="control-name" id="zoom-tabs-name">Zoom</span><label for="zoom-100">100%</label><label for="zoom-125">125%</label><label for="zoom-150">150%</label><label for="zoom-fit">Fit</label></div></div><div class="figures"><figure class="panel" id="panel-gate"><div class="figure-head"><h3>Recognized writes require matching evidence</h3><span>As the code works today</span></div><p class="figure-description">Arrows show the simplified candidate gate. Valid evidence includes protocol, consent, report bytes, workspace and scope. This is static behavior, not universal enforcement.</p><p class="hint">Scroll sideways to explore. <a href="#node-4-gate-start">Go to start</a>. Fit is an optional overview.</p><div class="canvas" tabindex="0" role="region" aria-label="Candidate gate diagram, scroll to explore" data-start-id="node-4-gate-start" style="--board-width:1200px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="gate-title gate-desc"><title id="gate-title">Recognized writes require matching evidence</title><desc id="gate-desc">Arrows show the simplified candidate gate. Valid evidence includes protocol, consent, report bytes, workspace and scope. This is static behavior, not universal enforcement.</desc><defs><marker id="arrow-gate" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="start" data-to="check" data-points="[[600, 104], [600, 168]]" d="M 600 104 L 600 168" marker-end="url(#arrow-gate)"/><path class="connector observed" data-from="check" data-to="deny" data-points="[[448, 248], [216, 248], [216, 400]]" d="M 448 248 L 224 248 Q 216 248 216 256 L 216 400" marker-end="url(#arrow-gate)"/><path class="connector observed" data-from="check" data-to="allow" data-points="[[752, 248], [984, 248], [984, 400]]" d="M 752 248 L 976 248 Q 984 248 984 256 L 984 400" marker-end="url(#arrow-gate)"/><g class="arrow-label"><rect x="309" y="217" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="324" y="232">NO</text></g><g class="arrow-label"><rect x="845.5" y="217" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="864" y="232">YES</text></g><g id="node-4-gate-start" class="node start observed " data-id="start" data-box="448,40,304,64"><title>Recognized write. observed / unchanged. </title><rect class="node-shape" x="448" y="40" width="304" height="64" rx="20"/><text class="node-title" x="600" y="78" text-anchor="middle">Recognized write</text></g><g id="node-4-gate-check" class="node decision observed " data-id="check" data-box="448,168,304,160"><title>Evidence
+valid?. observed / unchanged. </title><polygon class="node-shape" points="600,168 752,248 600,328 448,248"/><text class="node-title" x="600" y="242" text-anchor="middle">Evidence</text><text class="node-title" x="600" y="266" text-anchor="middle">valid?</text></g><g id="node-4-gate-deny" class="node result observed " data-id="deny" data-box="64,400,304,72"><title>Deny and explain. observed / unchanged. </title><rect class="node-shape" x="64" y="400" width="304" height="72" rx="20"/><text class="node-title" x="216" y="442" text-anchor="middle">Deny and explain</text></g><g id="node-4-gate-allow" class="node result observed " data-id="allow" data-box="832,400,304,72"><title>Continue scoped write. observed / unchanged. </title><rect class="node-shape" x="832" y="400" width="304" height="72" rx="20"/><text class="node-title" x="984" y="442" text-anchor="middle">Continue scoped write</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-start" aria-hidden="true"></i>Start / result</span><span><i class="legend-decision" aria-hidden="true"></i>Decision</span></div><span class="muted">Dashed outlines show a guess or an unknown. Details and evidence are below. The proposed flow is what was built. Its checks are below.</span></figcaption></figure></div></section></section><section class="section" aria-labelledby="what-changes"><h2 class="section__title" id="what-changes">What changes</h2><p class="section__summary">Side by side, before and after the change.</p><div class="table-scroll"><table class="compare"><thead><tr><th scope="col">Situation</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody><tr><th scope="row">Requirement identifiers</th><td>R7 was interpreted as revision 7.</td><td class="after">Only supported revision notation changes revision identity. </td></tr><tr><th scope="row">Workspace and report links</th><td>Workspace identity was lost.</td><td class="after">Exact destination governs consent. </td></tr><tr><th scope="row">Reads and waits</th><td>Read evidence was overstated.</td><td class="after">Require completed reads. Keep waits quiet. </td></tr></tbody></table></div></section><section class="section" aria-labelledby="the-work"><h2 class="section__title" id="the-work">The work</h2><div class="block"><h3>What was delivered</h3><p>The implemented source candidate and ranked defect matrix are delivered. Cheflabels is accepted, transferred and its disposable worktree removed. Parent archive validation remains the packaging step.</p></div><div class="block"><h3>Approach</h3><p>Revision parsing, registration compatibility, workspace consent, completed-question presentation, read evidence and quiet waits are implemented. Candidate URI/link regressions were repaired before final checks.</p></div><div class="block"><h3>Order of the work</h3><ol class="steps"><li><a href="#spec-F1"><span class="key">F1</span> Separate requirements from revisions</a></li><li><a href="#spec-F2"><span class="key">F2</span> Diagnose incompatible registrations</a></li><li><a href="#spec-F3"><span class="key">F3</span> Preserve approval identity</a></li><li><a href="#spec-F4"><span class="key">F4</span> Trust completed reads and quiet waits</a></li><li><a href="#spec-F5"><span class="key">F5</span> Document bounded recovery</a></li><li><a href="#spec-F6"><span class="key">F6</span> Deliver the tested candidate</a></li><li><a href="#checks"><span class="key">Checks</span> How it was checked</a></li></ol></div><div class="tickets"><article class="ticket" id="spec-F1" aria-labelledby="spec-F1-title"><p class="ticket__stub">Ticket <span class="ticket__key">F1</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F1-title">Separate requirements from revisions</h3><p>Requirement IDs do not invalidate legitimate revision approval.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></dd></dl></article><article class="ticket" id="spec-F2" aria-labelledby="spec-F2-title"><p class="ticket__stub">Ticket <span class="ticket__key">F2</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F2-title">Diagnose incompatible registrations</h3><p>Unknown registrations fail closed with recovery guidance.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</small></dd></dl></article><article class="ticket" id="spec-F3" aria-labelledby="spec-F3-title"><p class="ticket__stub">Ticket <span class="ticket__key">F3</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F3-title">Preserve approval identity</h3><p>Consent follows the exact report, workspace and owner answer.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</small></dd></dl></article><article class="ticket" id="spec-F4" aria-labelledby="spec-F4-title"><p class="ticket__stub">Ticket <span class="ticket__key">F4</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F4-title">Trust completed reads and quiet waits</h3><p>Partial reads stay untrusted and approval waits emit no correction.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></dd></dl></article><article class="ticket" id="spec-F5" aria-labelledby="spec-F5-title"><p class="ticket__stub">Ticket <span class="ticket__key">F5</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F5-title">Document bounded recovery</h3><p>Host goals, safe installation and evidence limits remain explicit.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></dd></dl></article><article class="ticket" id="spec-F6" aria-labelledby="spec-F6-title"><p class="ticket__stub">Ticket <span class="ticket__key">F6</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-F6-title">Deliver the tested candidate</h3><p>Regressions, independent reviews and the ranked matrix accompany the source.</p></div><dl class="ticket__facts"><dt>Expected result</dt><dd><p>Verified by local public-hook regressions and independent review.</p></dd><dt>Depends on</dt><dd>Nothing. It can start first.</dd><dt>How it is checked</dt><dd><ul class="list"><li>Final regression suite, independent review and the applicable live/offline evidence.</li></ul></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></dd></dl></article></div></section><section class="section" aria-labelledby="checks"><h2 class="section__title" id="checks">How it was checked</h2><p>The final suite passed 886 tests with 14 skips in 171.116 seconds. Validator and independent reviews passed. Offline replay passed both recovery cases.</p><div class="progress"><span>6 of 6 verified</span><span class="progress__bar" aria-hidden="true"><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span><span class="is-verified"></span></span></div><ol class="checks"><li class="check" id="a-A1"><span class="check__key">A1</span><p class="check__expect">Requirement IDs do not invalidate legitimate revision approval.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation and local checks passed. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V2">Package validator</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed)</p><span class="state state--verified" id="result-A1" data-result="verified">Verified</span></li><li class="check" id="a-A2"><span class="check__key">A2</span><p class="check__expect">Unknown registrations fail closed with recovery guidance.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation verified at the local test boundary. Live positive write/restart is recorded separately as unverified. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed), <a href="#check-V6">Offline host-derived replay</a> (Passed)</p><span class="state state--verified" id="result-A2" data-result="verified">Verified</span></li><li class="check" id="a-A3"><span class="check__key">A3</span><p class="check__expect">Consent follows the exact report, workspace and owner answer.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation verified at the local test boundary. Live positive write/restart is recorded separately as unverified. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed), <a href="#check-V6">Offline host-derived replay</a> (Passed)</p><span class="state state--verified" id="result-A3" data-result="verified">Verified</span></li><li class="check" id="a-A4"><span class="check__key">A4</span><p class="check__expect">Partial reads stay untrusted and approval waits emit no correction.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation and local checks passed. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V2">Package validator</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed)</p><span class="state state--verified" id="result-A4" data-result="verified">Verified</span></li><li class="check" id="a-A5"><span class="check__key">A5</span><p class="check__expect">Host goals, safe installation and evidence limits remain explicit.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation and local checks passed. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V2">Package validator</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed)</p><span class="state state--verified" id="result-A5" data-result="verified">Verified</span></li><li class="check" id="a-A6"><span class="check__key">A6</span><p class="check__expect">Regressions, independent reviews and the ranked matrix accompany the source.</p><p class="check__how">Checked by: Final regression suite, independent review and the applicable live/offline evidence.</p><p class="check__how">Implementation and local checks passed. Evidence: <a href="#check-V1">Final regression suite</a> (Passed), <a href="#check-V2">Package validator</a> (Passed), <a href="#check-V3">Independent Standards review</a> (Passed), <a href="#check-V4">Independent Spec review</a> (Passed)</p><span class="state state--verified" id="result-A6" data-result="verified">Verified</span></li></ol><h3>Checks and reviews</h3><ol class="checks"><li class="check" id="check-V1"><span class="check__key">V1</span><p class="check__expect">Final regression suite <span class="muted">(test)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: 886 tests, zero failures/errors, 14 skips, 171.116 seconds, exit 0.</p><p class="check__how">Limits: Fourteen native/environment cases remain unverified.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-V2"><span class="check__key">V2</span><p class="check__expect">Package validator <span class="muted">(test)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: PASS with 699 core words after final code freeze.</p><p class="check__how">Limits: Metadata check, not behavior or live enforcement.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-V3"><span class="check__key">V3</span><p class="check__expect">Independent Standards review <span class="muted">(review)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: Final STATE_VERSION 14 repair passed re-review.</p><p class="check__how">Limits: Static review of the final code and regression cases.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-V4"><span class="check__key">V4</span><p class="check__expect">Independent Spec review <span class="muted">(review)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: All reported parser and approval findings repaired and re-reviewed.</p><p class="check__how">Limits: No universal command or natural-language guarantee.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-V5"><span class="check__key">V5</span><p class="check__expect">Four bounded live processes <span class="muted">(test)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: Waiting/rejection and read-only reconciliation observed. Reported total USD 0.171788.</p><p class="check__how">Limits: Positive write/restart unverified. CLI list-price counters are not invoice metering.</p><span class="state state--partial">Limited</span></li><li class="check" id="check-V6"><span class="check__key">V6</span><p class="check__expect">Offline host-derived replay <span class="muted">(test)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: Corrected-record approval and same-workspace sibling recovery allowed.</p><p class="check__how">Limits: Owner-reply fingerprint regenerated offline. Original transcript and source stayed unchanged.</p><span class="state state--verified">Passed</span></li><li class="check" id="check-V7"><span class="check__key">V7</span><p class="check__expect">Cheflabels accepted delivery <span class="muted">(inspection)</span></p><p class="check__how">Expected: Evidence supports the named behavior within its stated limits.</p><p class="check__how">Observed: Original PLAN confirms accepted transfer, zero runtime errors and removed disposable worktree.</p><p class="check__how">Limits: Separate task. Native devices and remote translations were outside its browser check.</p><span class="state state--verified">Passed</span></li></ol></section><section class="section" aria-labelledby="risks"><h2 class="section__title" id="risks">Risks and open questions</h2><h3>Risks and limits</h3><ul class="risks"><li>Positive model-driven write and write-after-restart remain unverified. Fourteen cases were skipped. No fresh POSIX suite ran. Offline regenerated hook output does not establish live behavior.</li></ul><h3 id="open-questions">Open questions</h3><p>None recorded.</p></section><details class="appendix" id="technical-details"><summary>Technical details: sources, evidence and traceability</summary><div class="appendix-body"><p class="muted">This page comes from the task records: the plan, the to-do list, the findings and the decisions. It does not approve anything, it does not show who approved, and it does not prove that a check ran. There is no approve button. Waived or unverified work is not a passed check.</p><section><h2>Behavior agreement record</h2><p>Status: <strong>approved</strong> · r4</p><p>Recorded response:</p><blockquote>fix all of it</blockquote><small>Source: <a href="#s-S10">S10</a>, D-r4-1 and Final authority reconciliation</small></section><section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2><p class="checkpoint-asof">As recorded: 2026-11-05, final code freeze and local suite · <a href="#s-S7">S7</a> , Current checkpoint and Outcome</p><dl class="checkpoint-axes"><div><dt>Approval</dt><dd><strong>Unknown</strong><p>Direct owner instruction &quot;fix all of it&quot; authorized isolated fixes. No r4 HTML approval or installation authority is claimed.</p></dd></div><div><dt>Implementation</dt><dd><strong>Implemented</strong><p>F1-F6 implementation is verified locally. Cheflabels is accepted and transferred.</p></dd></div><div><dt>Verification / acceptance</dt><dd><strong>Limited</strong><p>886 tests passed with 14 skips. Positive live write/restart remains unverified.</p></dd></div></dl><p class="next-action"><strong>Next safe action</strong> Package and validate the source candidate. Keep live-test limits explicit. No installation is requested.</p><p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. Approval, completed code and acceptance are different states.</p></section><section><h2>Requirements</h2><ul class="plain"><li id="r-R1"><strong>R1.</strong> Requirement IDs do not invalidate legitimate revision approval.<small>Source: PLAN follow-up r4 and TODO F1.</small></li><li id="r-R2"><strong>R2.</strong> Unknown registrations fail closed with recovery guidance.<small>Source: PLAN follow-up r4 and TODO F2.</small></li><li id="r-R3"><strong>R3.</strong> Consent follows the exact report, workspace and owner answer.<small>Source: PLAN follow-up r4 and TODO F3.</small></li><li id="r-R4"><strong>R4.</strong> Partial reads stay untrusted and approval waits emit no correction.<small>Source: PLAN follow-up r4 and TODO F4.</small></li><li id="r-R5"><strong>R5.</strong> Host goals, safe installation and evidence limits remain explicit.<small>Source: PLAN follow-up r4 and TODO F5.</small></li><li id="r-R6"><strong>R6.</strong> Regressions, independent reviews and the ranked matrix accompany the source.<small>Source: PLAN follow-up r4 and TODO F6.</small></li></ul></section><section><h2>Tickets: traceability</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Work and affected areas</th><th>Traceability</th><th>Depends on</th></tr></thead><tbody><tr id="t-F1"><td><strong>F1</strong></td><td><strong>Separate requirements from revisions</strong><small>requested: Requirement IDs do not invalidate legitimate revision approval.<br>Areas: hooks/ and tests/</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></td><td><a href="#r-R1">R1</a><br><a href="#e-E1">E1</a> <a href="#e-E3">E3</a><br><a href="#a-A1">A1</a></td><td>—</td></tr><tr id="t-F2"><td><strong>F2</strong></td><td><strong>Diagnose incompatible registrations</strong><small>requested: Unknown registrations fail closed with recovery guidance.<br>Areas: hooks/ and tests/</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</small></td><td><a href="#r-R2">R2</a><br><a href="#e-E1">E1</a> <a href="#e-E4">E4</a> <a href="#e-E5">E5</a><br><a href="#a-A2">A2</a></td><td>—</td></tr><tr id="t-F3"><td><strong>F3</strong></td><td><strong>Preserve approval identity</strong><small>requested: Consent follows the exact report, workspace and owner answer.<br>Areas: hooks/ and tests/</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review. Offline host-derived recovery also passed. Positive live write/restart remains unverified.</small></td><td><a href="#r-R3">R3</a><br><a href="#e-E1">E1</a> <a href="#e-E4">E4</a> <a href="#e-E5">E5</a><br><a href="#a-A3">A3</a></td><td>—</td></tr><tr id="t-F4"><td><strong>F4</strong></td><td><strong>Trust completed reads and quiet waits</strong><small>requested: Partial reads stay untrusted and approval waits emit no correction.<br>Areas: hooks/ and tests/</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></td><td><a href="#r-R4">R4</a><br><a href="#e-E2">E2</a> <a href="#e-E3">E3</a><br><a href="#a-A4">A4</a></td><td>—</td></tr><tr id="t-F5"><td><strong>F5</strong></td><td><strong>Document bounded recovery</strong><small>requested: Host goals, safe installation and evidence limits remain explicit.<br>Areas: skills/ and delivery records</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></td><td><a href="#r-R5">R5</a><br><a href="#e-E2">E2</a> <a href="#e-E4">E4</a><br><a href="#a-A5">A5</a></td><td>—</td></tr><tr id="t-F6"><td><strong>F6</strong></td><td><strong>Deliver the tested candidate</strong><small>requested: Regressions, independent reviews and the ranked matrix accompany the source.<br>Areas: skills/ and delivery records</small><small class="task-outcome">Verified: Verified by local public-hook regressions and independent review.</small></td><td><a href="#r-R6">R6</a><br><a href="#e-E3">E3</a> <a href="#e-E5">E5</a><br><a href="#a-A6">A6</a></td><td>—</td></tr></tbody></table></div></section><section><h2>What changes: traceability</h2><div class="table-scroll"><table><thead><tr><th>Situation</th><th>Requirements</th><th>Evidence</th><th>Tickets</th></tr></thead><tbody><tr><td>Requirement identifiers</td><td><a href="#r-R1">R1</a></td><td><a href="#e-E1">E1</a></td><td><a href="#t-F1">F1</a></td></tr><tr><td>Workspace and report links</td><td><a href="#r-R3">R3</a></td><td><a href="#e-E1">E1</a> <a href="#e-E5">E5</a></td><td><a href="#t-F3">F3</a></td></tr><tr><td>Reads and waits</td><td><a href="#r-R4">R4</a></td><td><a href="#e-E2">E2</a></td><td><a href="#t-F4">F4</a></td></tr></tbody></table></div></section><section><h2>Acceptance: traceability</h2><ul class="plain"><li><strong>A1</strong>: requirements <a href="#r-R1">R1</a></li><li><strong>A2</strong>: requirements <a href="#r-R2">R2</a></li><li><strong>A3</strong>: requirements <a href="#r-R3">R3</a></li><li><strong>A4</strong>: requirements <a href="#r-R4">R4</a></li><li><strong>A5</strong>: requirements <a href="#r-R5">R5</a></li><li><strong>A6</strong>: requirements <a href="#r-R6">R6</a></li></ul></section><section><h2>Where each part comes from</h2><ul class="plain"><li>Section “Requested outcome” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Agreed scope” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Implemented behavior” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Preserved decisions” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Final evidence” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Verification limits” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Section “Delivered result” <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F1 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F2 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F3 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F4 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F5 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Ticket F6 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Check V1 <small>Source: <a href="#s-S6">S6</a>, Final unittest summary</small></li><li>Check V2 <small>Source: <a href="#s-S11">S11</a>, Current verification</small></li><li>Check V3 <small>Source: <a href="#s-S9">S9</a>, V-r4-review-final</small></li><li>Check V4 <small>Source: <a href="#s-S9">S9</a>, V-r4-review-final</small></li><li>Check V5 <small>Source: <a href="#s-S9">S9</a>, V-r4-live-budget and V-r4-live-gap</small></li><li>Check V6 <small>Source: <a href="#s-S12">S12</a>, Allowed flags and kind</small></li><li>Check V7 <small>Source: <a href="#s-S9">S9</a>, V-r4-E2</small></li><li>Result for A1 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Result for A2 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Result for A3 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Result for A4 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Result for A5 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li><li>Result for A6 <small>Source: <a href="#s-S9">S9</a>, Final follow-up reconciliation, 2026-11-05</small></li></ul></section><section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · static: The candidate checks matching report evidence, workspace identity and explicit withdrawals before recognized gated writes.</strong><p>report_check, consent_at, fingerprints and SessionRecoveryTests</p><small>Sources: <a href="#s-S2">S2</a> <a href="#s-S4">S4</a><br>Limits: Static inspection and synthetic fixtures do not prove every live-host path.</small></article><article id="e-E2" class="evidence"><strong>E2 · static: Whole-read results and waiting replies follow the repaired Stop-hook paths.</strong><p>whole_reads, complete_result and main</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Command matching is conservative and does not interpret every shell.</small></article><article id="e-E3" class="evidence"><strong>E3 · runtime: The final local suite reports 886 tests with 14 skips and no failures.</strong><p>Final unittest summary, 171.116 seconds</p><small>Sources: <a href="#s-S6">S6</a><br>Limits: Synthetic package tests. Skipped cases remain unverified.</small></article><article id="e-E4" class="evidence"><strong>E4 · runtime: Four live processes showed waiting/rejection and read-only reconciliation. Positive write/restart remains unverified.</strong><p>V-r4-live-budget and V-r4-live-gap</p><small>Sources: <a href="#s-S9">S9</a><br>Limits: Host permissions and malformed approval wording prevented positive live write acceptance.</small></article><article id="e-E5" class="evidence"><strong>E5 · runtime: Corrected-record approval and same-workspace sibling recovery passed offline replay.</strong><p>Both allowed flags are true.</p><small>Sources: <a href="#s-S12">S12</a><br>Limits: Owner-reply fingerprint output was regenerated. This is not a live model restart.</small></article></section><details><summary>Candidate gate: steps and links</summary><ol><li><strong>start: Recognized write</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>check: Evidence
+valid?</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>deny: Deny and explain</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>allow: Continue scoped write</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>start → check</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>check → deny</strong>: No (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li><li><strong>check → allow</strong>: Yes (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks <a href="#t-F3">F3</a>.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>workflow-axa 2.8.0-rc.4 isolated candidate · D:/wfaxa-pilot/workflow-fixes, source snapshot without Git metadata</p>
+<p>Final STATE_VERSION 14 code, 886-test log, independent reviews and explicitly offline host-derived replay, reconciled on 2026-11-05.</p><p>Generated 2026-11-05T14:28:57.806875+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-S1"><td>S1</td><td><code>CANDIDATE-REVIEW.md</code></td><td>findings</td><td><code>e54ad20208dd2351…</code></td></tr><tr id="s-S2"><td>S2</td><td><code>hooks/phase_gate.py</code></td><td>code</td><td><code>7af607b0adf74bdb…</code></td></tr><tr id="s-S3"><td>S3</td><td><code>hooks/plain_reply.py</code></td><td>code</td><td><code>8f0abe122372f015…</code></td></tr><tr id="s-S4"><td>S4</td><td><code>tests/test_session_recovery.py</code></td><td>tests</td><td><code>0d4032fe66b18992…</code></td></tr><tr id="s-S5"><td>S5</td><td><code>tests/test_read_evidence.py</code></td><td>tests</td><td><code>0e3e467c58ff16d1…</code></td></tr><tr id="s-S6"><td>S6</td><td><code>.artifacts/2026-11-03-audit-hardening/full-suite-final.txt</code></td><td>verification</td><td><code>0b6ac0b24665d256…</code></td></tr><tr id="s-S7"><td>S7</td><td><code>docs/plans/2026-11-03-audit-hardening/PLAN.md</code></td><td>plan</td><td><code>27114c374edb6fe4…</code></td></tr><tr id="s-S8"><td>S8</td><td><code>docs/plans/2026-11-03-audit-hardening/TODO.md</code></td><td>todo</td><td><code>fd64659c59fcf0bd…</code></td></tr><tr id="s-S9"><td>S9</td><td><code>docs/plans/2026-11-03-audit-hardening/FINDINGS.md</code></td><td>findings</td><td><code>7cbf00d171afd5fe…</code></td></tr><tr id="s-S10"><td>S10</td><td><code>docs/plans/2026-11-03-audit-hardening/DECISIONS.md</code></td><td>decisions</td><td><code>59b5d21dc55a1b35…</code></td></tr><tr id="s-S11"><td>S11</td><td><code>VALIDATION.md</code></td><td>verification</td><td><code>57a97263b0fef8ca…</code></td></tr><tr id="s-S12"><td>S12</td><td><code>.artifacts/2026-11-03-audit-hardening/live-rc4-write/real-transcript-replay-final.json</code></td><td>verification</td><td><code>e690043547f8b1d7…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>docs/plans/2026-11-03-audit-hardening/reviews/delivery-r4-final.json</code></td><td>projection</td><td><code>f2ec771d98e7ddf3…</code></td></tr></tbody></table></div></details>
+</div></details></div></div></main><footer class="report-footer"><p>Local HTML and SVG. No external files, uploads or approval actions. A saved snapshot: progress belongs in the task records.</p></footer></div>
+<script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.8.0-rc.4", "layout_version": 2, "style": "workflow-editorial-v1", "revision": "r4", "report_kind": "task-overview", "generated_utc": "2026-11-05T14:28:57.806875+00:00", "sources": [{"id": "S1", "role": "findings", "path": "CANDIDATE-REVIEW.md", "sha256": "e54ad20208dd235139d380072bc5dfbecc6086d0559365930c9bc48dc3bd7cd4"}, {"id": "S2", "role": "code", "path": "hooks/phase_gate.py", "sha256": "7af607b0adf74bdb6f2b378703b0680685e8035ebe0cb2213ca0a05e5e10a34f"}, {"id": "S3", "role": "code", "path": "hooks/plain_reply.py", "sha256": "8f0abe122372f015cb8ae081b1b71861a7361ac0d378976dc5acd76315840a6a"}, {"id": "S4", "role": "tests", "path": "tests/test_session_recovery.py", "sha256": "0d4032fe66b18992a1a671fe006b2a1d1f9782469b55c8f8a15a991be6983f74"}, {"id": "S5", "role": "tests", "path": "tests/test_read_evidence.py", "sha256": "0e3e467c58ff16d116d7e0a1d4d91955e2c1b8a680bd86e09f8ce6606d329b3d"}, {"id": "S6", "role": "verification", "path": ".artifacts/2026-11-03-audit-hardening/full-suite-final.txt", "sha256": "0b6ac0b24665d256cf0a1b66a1a7815b201634f66935fa042e6b93bbbd17d888"}, {"id": "S7", "role": "plan", "path": "docs/plans/2026-11-03-audit-hardening/PLAN.md", "sha256": "27114c374edb6fe483fda5c951e4d174f3dc54356bac0124bbbad0015170b3b2"}, {"id": "S8", "role": "todo", "path": "docs/plans/2026-11-03-audit-hardening/TODO.md", "sha256": "fd64659c59fcf0bd820b8ec777aef43ad1420d0f9e78dda2b8afbe181f19ebf6"}, {"id": "S9", "role": "findings", "path": "docs/plans/2026-11-03-audit-hardening/FINDINGS.md", "sha256": "7cbf00d171afd5fe56dc2daeba7b1defc0a694b0e5381f82030558d054b48db8"}, {"id": "S10", "role": "decisions", "path": "docs/plans/2026-11-03-audit-hardening/DECISIONS.md", "sha256": "59b5d21dc55a1b35d52a024a065882207dad8ae1cc54947865d53a0a1cc9d41c"}, {"id": "S11", "role": "verification", "path": "VALIDATION.md", "sha256": "57a97263b0fef8ca1bd3e8a29ea08a9245a667e283317ed9a7c6f2ff87cc42c3"}, {"id": "S12", "role": "verification", "path": ".artifacts/2026-11-03-audit-hardening/live-rc4-write/real-transcript-replay-final.json", "sha256": "e690043547f8b1d79ac28623cd088958393fd537f6488eca5949a38ecfbc242f"}, {"id": "report-input", "role": "projection", "path": "docs/plans/2026-11-03-audit-hardening/reviews/delivery-r4-final.json", "sha256": "f2ec771d98e7ddf384da16b91dc89f80dc095ac76745b07a2a0a4b13b7c8dc4e"}]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+
+
+// Highlight the contents entry for the section being read.
+(function () {
+  const links = [...document.querySelectorAll('.toc__link')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (!targets.length) return;
+  function update() {
+    const line = Math.min(window.innerHeight * 0.3, 240);
+    let current = targets[0];
+    for (const t of targets) { if (t.getBoundingClientRect().top - line <= 0) current = t; }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = targets[targets.length - 1];
+    for (const a of links) {
+      const on = a.getAttribute('href') === '#' + current.id;
+      a.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && a.closest('.toc').scrollWidth > a.closest('.toc').clientWidth) {
+        const nav = a.closest('.toc');
+        const r = a.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        if (r.left < n.left || r.right > n.right) nav.scrollLeft += r.left - n.left - 24;
+      }
+    }
+  }
+  let queued = false;
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } }, {passive:true});
+  window.addEventListener('resize', update);
+  update();
+})();
+
+// Start diagrams on "Fit" when the whole board fits at a readable size.
+(function () {
+  const canvas = document.querySelector('.panel .canvas');
+  const fit = document.getElementById('zoom-fit');
+  if (!canvas || !fit || location.hash) return;
+  const visible = [...document.querySelectorAll('.canvas')].find(c => c.clientWidth);
+  if (!visible) return;
+  const board = parseFloat(getComputedStyle(visible).getPropertyValue('--board-width')) || 0;
+  if (board && visible.clientWidth < board && visible.clientWidth / board >= 0.6) {
+    fit.checked = true;
+    fit.dispatchEvent(new Event('change'));
+  }
+})();
+</script></body></html>

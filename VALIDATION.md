@@ -2,6 +2,25 @@
 
 ## Current verification
 
+Candidate workflow-axa 2.8.0-rc.4, shared rules 1.8.2, 21 registered skills. Isolated source snapshot at D:/wfaxa-pilot/workflow-fixes. No live installation.
+
+| Evidence | Current result and limit |
+|---|---|
+| Source commit | `0d67057a6e15b72436624e48b0698bab00185ab5` plus preserved UI-lite edits. Original tracked diff SHA-256 2f11292dd0d1a64c1b93c1bf9fe0a16305e7c90c5455c3abdfb840f4da3dcd72 remains unchanged. |
+| Final full suite | 886 tests, zero failures/errors, 14 skips, 171.116 seconds, exit 0. [Final log](docs/plans/2026-11-03-audit-hardening/evidence/rc4-full-suite.txt). |
+| Validator | PASS with 699 core words after final code freeze. Parent reruns metadata validation after delivery records. |
+| Focused checks | 22 session-recovery tests passed after URI/link repair. Eight new read-evidence and ten existing Stop-hook tests passed. Final suite includes these cases. |
+| Reviews | Independent Standards and Spec PASS after all reported repairs, including STATE_VERSION 14 parser. |
+| Offline recovery | [Final host-derived replay](docs/plans/2026-11-03-audit-hardening/evidence/rc4-replay-final.json): corrected-record and same-workspace sibling-transcript paths allowed. Reply output regenerated offline. |
+| Live behavior | Waiting was idle for 30 seconds and rejection respected. Read-only resume reconciled prior answers. Host permissions and malformed approval records prevented a positive write/restart result. |
+| Paid scope | Four processes across two approved batches. Reported combined list-price total USD 0.171788. This is not invoice metering. No further paid run. |
+| Separate Cheflabels result | Accepted and transferred to the original branch. Runtime browser checks reported zero errors. Disposable worktree removed. Its separate final report records native/backend limits. |
+| Packaging | Parent creates install/source ZIPs and SHA256SUMS.txt under the task release folder after this reconciliation. Reserved paths are not claimed as built archives. |
+
+Current verification is partial. Fourteen native/environment skips, a fresh POSIX run, and live positive write/write-after-restart remain unverified. The hook is conservative command/transcript matching, not a complete sandbox or language interpreter. The prior 878-test pass predates URI repair. Historical figures below do not establish the current candidate result.
+
+## History — rc.3 verification, not current evidence
+
 This is the current verification summary for **workflow-axa 2.8.0-rc.3**, shared rules **1.8.2**, 21 registered skills. It is a test candidate, not owner acceptance, deployment or a guarantee that a model follows instructions. Prior results below are historical.
 
 | Fact | Value |

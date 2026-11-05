@@ -4,8 +4,10 @@ Style guidance remains in WRITING/simple-english. This hook does not prove compr
 """
 from __future__ import annotations
 
+import ast
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -43,20 +45,127 @@ def phase_reads_table() -> dict:
 
 
 READ_VERB = re.compile(r"^\s*(?:cat|type|get-content|gc|more|less|bat)\b", re.I)
-PARTIAL = re.compile(r"\b(?:head|tail)\b|\bsed\s+-n\b|-totalcount|-tail\b|\bselect-object\s+-first", re.I)
+
+
+def printed_python_reads(source: str) -> list[str]:
+    """Recognise literal whole-file prints, never execute or interpret arbitrary Python."""
+    try:
+        body = ast.parse(source).body
+    except (SyntaxError, ValueError):
+        return []
+    paths = []
+    for statement in body:
+        if isinstance(statement, ast.ImportFrom) and statement.module == 'pathlib' \
+                and all(a.name == 'Path' and not a.asname for a in statement.names):
+            continue
+        if isinstance(statement, ast.Import) and all(a.name == 'pathlib' and not a.asname for a in statement.names):
+            continue
+        if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+            return []
+        call = statement.value
+        if not isinstance(call.func, ast.Name) or call.func.id != 'print' or len(call.args) != 1 or call.keywords:
+            return []
+        read = call.args[0]
+        if not isinstance(read, ast.Call) or not isinstance(read.func, ast.Attribute) or read.args:
+            return []
+        opened = read.func.value
+        if not isinstance(opened, ast.Call) or not opened.args or not isinstance(opened.args[0], ast.Constant) \
+                or not isinstance(opened.args[0].value, str):
+            return []
+        name = ast.unparse(opened.func)
+        if read.func.attr == 'read_text' and name in ('Path', 'pathlib.Path') and len(opened.args) == 1 \
+                and not opened.keywords:
+            options = read.keywords
+        elif read.func.attr == 'read' and name == 'open' and not read.keywords \
+                and (len(opened.args) == 1 or (len(opened.args) == 2 and isinstance(opened.args[1], ast.Constant)
+                                             and opened.args[1].value == 'r')):
+            options = opened.keywords
+        else:
+            return []
+        if any(k.arg not in ('encoding', 'errors') or not isinstance(k.value, ast.Constant) for k in options):
+            return []
+        paths.append(opened.args[0].value)
+    return paths
 
 
 def whole_reads(block: dict) -> str:
-    """The paths a tool call read whole: Read without a line limit, or a cat-like shell segment not cut by head,
-    tail or sed -n (round v2: `wc -c` on a required file counted as reading it)."""
+    """Candidate paths from narrow complete reads. unread_files also checks identified calls' results."""
     data = block.get("input") or {}
     if block.get("name") == "Read":
-        return "" if data.get("limit") else str(data.get("file_path", "")).replace("\\", "/")
+        return "" if data.get("limit") or data.get("offset") else str(data.get("file_path", "")).replace("\\", "/")
     if block.get("name") not in ("Bash", "PowerShell"):
         return ""
-    pipelines = re.split(r"&&|\|\||;|\n", str(data.get("command", "")))
-    read = [p for p in pipelines if READ_VERB.match(p) and not PARTIAL.search(p)]
-    return "\n".join(read).replace("\\", "/")
+    lexer = shlex.shlex(str(data.get('command', '')), posix=True, punctuation_chars=';&|<>\n')
+    lexer.whitespace = ' \t\r'
+    lexer.escape = ''  # Windows paths are literal; this is not a shell interpreter.
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return ''
+    if any(token in ('&&', '||') for token in tokens):
+        return ''  # a successful combined result does not prove a conditional read ran
+    segments, current = [], []
+    for token in tokens + [';']:
+        if token in (';', '&&', '||', '\n'):
+            if current:
+                segments.append(current)
+            current = []
+        else:
+            current.append(token)
+    paths = []
+    for words in segments:
+        if words[0].lower() not in ('python', 'python3', 'py', 'cd', 'set-location', 'echo', 'pwd') \
+                and not READ_VERB.fullmatch(words[0]):
+            return ''  # compound/control commands need a dedicated read with its own result
+        if any(re.fullmatch(r'[|&<>]+', word) for word in words):
+            return ''  # piped, background or redirected output is not a whole displayed file
+        if words[0].lower() in ('python', 'python3', 'py'):
+            args = words[1:]
+            while args and args[0] in ('-I', '-B', '-X'):
+                width = 2 if args[0] == '-X' else 1
+                if width == 2 and (len(args) < 2 or args[1] != 'utf8'):
+                    break
+                args = args[width:]
+            if len(args) == 2 and args[0] == '-c':
+                paths.extend(printed_python_reads(args[1]))
+        elif READ_VERB.fullmatch(words[0]):
+            args, valid, i = [], True, 1
+            while i < len(words):
+                word = words[i]
+                if word.lower() == '-encoding':
+                    i += 2
+                    continue
+                if word.startswith('-'):
+                    if word.lower() not in ('--', '-n', '-raw', '-path', '-literalpath'):
+                        valid = False
+                        break
+                else:
+                    args.append(word)
+                i += 1
+            if valid:
+                paths.extend(args)
+    return '\n'.join(paths).replace('\\', '/')
+
+
+def complete_result(entry: dict, result: dict) -> bool:
+    """Reject explicit tool failures/truncation; content is never treated as owner consent."""
+    details = entry.get('toolUseResult')
+    if result.get('is_error') or entry.get('isSidechain') or entry.get('isMeta'):
+        return False
+    if isinstance(details, dict) and (details.get('exitCode', details.get('exit_code', 0)) != 0
+                                     or details.get('stderr') or details.get('truncated') or details.get('isTruncated')):
+        return False
+    file = details.get('file') if isinstance(details, dict) else None
+    if isinstance(file, dict) and (file.get('startLine', 1) != 1 or
+                                  isinstance(file.get('numLines'), int) and isinstance(file.get('totalLines'), int)
+                                  and file['numLines'] < file['totalLines']):
+        return False
+    content = result.get('content', '')
+    text = content if isinstance(content, str) else '\n'.join(
+        str(b.get('text', '')) for b in content if isinstance(b, dict)) if isinstance(content, list) else ''
+    return bool(result.get('content')) and not re.search(
+        r'^(?:Warning:\s*)?(?:(?:output|content)\s+(?:was\s+)?truncated|truncated output|'
+        r'\[truncated\]|\d+\s+characters truncated)|^<persisted-output>', text, re.I | re.M)
 
 
 def unread_files(path: Path) -> dict[str, list[str]]:
@@ -66,6 +175,7 @@ def unread_files(path: Path) -> dict[str, list[str]]:
     reads, ui_files = phase_reads_table()
     loaded: set[str] = set()
     inputs: list[str] = []
+    pending: dict[str, tuple[str, str]] = {}
     visible = False
     tdd = False
     code = False
@@ -77,11 +187,24 @@ def unread_files(path: Path) -> dict[str, list[str]]:
         content = (entry.get("message") or {}).get("content")
         if entry.get("type") == "system" and entry.get("subtype") == "compact_boundary":
             inputs = []  # the summary does not carry the files' text
+            pending = {}
+        if entry.get('isSidechain'):
+            continue
         if entry.get("type") == "user":
-            text = json.dumps(content)
-            for name in reads:
-                if f"/workflow-axa:{name}" in text or f"/{name}<" in text:
-                    loaded.add(name)
+            for result in content if isinstance(content, list) else []:
+                if not isinstance(result, dict) or result.get('type') != 'tool_result':
+                    continue
+                read, name = pending.pop(result.get('tool_use_id'), ('', ''))
+                if read and complete_result(entry, result):
+                    inputs.append(read)
+                    if name == 'Read':
+                        loaded.update(phase for phase in reads if read.endswith(f'/{phase}/SKILL.md'))
+            if not entry.get('isMeta') and not any(isinstance(b, dict) and b.get('type') == 'tool_result'
+                                                  for b in (content if isinstance(content, list) else [])):
+                text = json.dumps(content)
+                for name in reads:
+                    if f"/workflow-axa:{name}" in text or f"/{name}<" in text:
+                        loaded.add(name)
         if entry.get("type") != "assistant" or not isinstance(content, list):
             continue
         for block in content:
@@ -95,7 +218,7 @@ def unread_files(path: Path) -> dict[str, list[str]]:
             if block.get("name") == "Read":
                 # E5: the router's fallback, "or read its SKILL.md in full", loads the phase too.
                 read = whole_reads(block)
-                if read and not (block.get("input") or {}).get("offset"):
+                if read and not block.get('id'):
                     loaded.update(name for name in reads if read.endswith(f"/{name}/SKILL.md"))
             # Detect explicit task metadata, not the mere presence of "screen_change": "not-needed".
             plain = json.dumps(block.get("input", {})).replace('\\"', '"')
@@ -108,15 +231,19 @@ def unread_files(path: Path) -> dict[str, list[str]]:
                     and not re.search(r'(?:^|/)(?:docs/plans|\.artifacts)/', target) \
                     and Path(target).suffix not in ('.md', '.txt', '.html', '.json'):
                 code = True
-            inputs.append(whole_reads(block))
+            read = whole_reads(block)
+            if block.get('id'):
+                pending[block['id']] = (read, block.get('name', ''))
+            else:
+                inputs.append(read)  # legacy ID-less transcripts: best-effort call evidence only
     missing = {}
-    opened = "\n".join(inputs)
+    opened = '\n'.join(inputs).splitlines()
     for phase in loaded:
         needed = [rel for rel in reads[phase]
                   if (visible or rel not in ui_files)
                   and (tdd or rel != 'tdd/SKILL.md')
                   and (code or rel != 'code-review/SKILL.md')]
-        gone = [rel for rel in needed if rel not in opened]
+        gone = [rel for rel in needed if not any(name == rel or name.endswith('/' + rel) for name in opened)]
         if gone:
             missing[phase] = gone
     return missing
@@ -234,6 +361,12 @@ def main() -> int:
         reply, used = last_reply_and_usage(Path(event.get("transcript_path", "")))
     except OSError:
         return 0
+    # The host supplies conversational output even when its transcript representation differs.
+    # This input only controls stopping; it never becomes approval or persistent presentation evidence.
+    if isinstance(event.get('last_assistant_message'), str):
+        reply = event['last_assistant_message']
+    if re.search(r'^\s*(?:\*\*)?Waiting on you\b', reply, re.M | re.I):
+        return 0  # no correction/review/read loop while the owner is deciding; write gates stay active
     found = problems(reply) if used else []
     try:
         unread = unread_files(Path(event.get("transcript_path", ""))) if used else {}

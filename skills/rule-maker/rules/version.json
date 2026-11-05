@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "rules_version": "1.8.2",
-  "package_version": "2.8.0-rc.3",
+  "package_version": "2.8.0-rc.4",
   "entrypoint": "START.md",
   "files": [
     "CHANGES.md",
@@ -47,7 +47,7 @@
     "capacitor.md": "b8905050e5bc724f785efca48db9158c0e4d289240444a981dedd644ef4d300c",
     "compatibility.md": "bd363aad894d6ae3e9d1bef94be4765c3afc9da583129a6a5396cd8c26419ad8",
     "data-contracts.md": "83e68b82099783a4fa945c8cb2d1ac3765fa2cd15caa9b9903b99cffeb0d3bbc",
-    "design.md": "d0945d0855b924c09c91b39004927032934966b811d43ef61c0cfb42ba99c2a5",
+    "design.md": "d5c38364b3b6821c58ecbc14406524d91fc21f5e0b4b2065b1a1424ec0a011f9",
     "ionic.md": "369a0da8bf5ce496332a93c5a3508bcb4adebd0fa88157309f483b161ca0c254",
     "laravel.md": "46e6840187aec46a676376266a68ddd06792bb636d1044208bdb2a97bf329009",
     "lifetimes.md": "52db0cf9a77b1a37ee3ab5a876345922c2e1723bad0053346bea458252f885ff",

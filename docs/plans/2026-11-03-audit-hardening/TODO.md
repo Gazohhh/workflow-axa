@@ -11,3 +11,15 @@ Revision r1, approved by the owner 2026-11-03 ("Yes to both").
 - [x] T7 — verified: FINDINGS V5; Portability (tests, `activate_rules.py` tests, doctor note): tests build paths from the checkout root; activation tests use a temp library without spaces plus one test that expects the refusal; doctor reports when `python` is missing. Supports A12. Check: the suite in a path with spaces and under WSL. Depends on nothing.
 - [x] T8 — verified: FINDINGS V6; Docs and release (VALIDATION, README, CHANGELOG, UPGRADE, VENDORED-SKILLS, `tools/`): a generated "Current verification" section (commit, environment, commands, results); validate.py rejects skill or version counts in prose that differ from plugin.json; `tools/build_release.py` with an explicit include list; an MIT `LICENSE` at the root (D3). Supports A13, A14. Tests: a count mismatch fails; the package lists no excluded paths. Depends on T1-T7 (documents their final state).
 - [x] T9 — verified: FINDINGS V7; Live acceptance, as Q5 allows; supports A1-A7 and A10; depends on T1-T6: headless Claude runs on fixtures for each bypass and each legitimate route, and Codex runs where available. Results are reported apart from static and helper tests, with unavailable hosts named.
+
+## Follow-up r4 work
+
+- [x] F1: Reproduce and fix revision parsing, retaining denial for real newer revisions. Verified: FINDINGS V-r4-final and V-r4-review-final.
+- [x] F2: Diagnose incompatible registrations and preserve fail-closed recovery. Verified: FINDINGS V-r4-final, V-r4-review-final and V-r4-replay-final. Local public-hook tests and offline replay establish the implementation.
+- [x] F3: Bind approval to exact workspace/report identity and trusted host evidence. Verified: FINDINGS V-r4-final, V-r4-review-final and V-r4-replay-final. Local public-hook tests and offline replay establish the implementation.
+- [x] F4: Prevent workflow Stop corrections during approval waits and reject incomplete read evidence. Verified: FINDINGS V-r4-read, V-r4-final and V-r4-review-final.
+- [x] F5: Document bounded goals, recovery and safe installation guidance with explicit host limits. Verified: FINDINGS V-r4-final and V-r4-review-final.
+- [x] F6: Run focused regressions, final suite and independent reviews, and deliver the ranked defect matrix/source candidate. Verified: FINDINGS V-r4-final, V-r4-review-final and V-r4-delivery. Archive/checksum creation is the separate parent handoff step.
+- [x] F7: After explicit r5 approval, implement/test Cheflabels in its disposable worktree. After final approval, transfer verified files only and then remove the worktree. No commits/pushes/merges/rebases.; verified: FINDINGS V-r4-E2; final report in original checkout, owner accepted and transfer/removal verified
+
+All F1-F6 implementation tickets are verified at the local public-hook/test boundary. Live positive write and write-after-restart remain unverified observations, not open implementation work or a requirement for more paid runs.

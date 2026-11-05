@@ -13,6 +13,10 @@ The shared UI policy for ordinary requests, /workflow and delegated work (owner 
    - **Plain only on instruction.** Only when the user explicitly instructs plain unstyled HTML for the named element, or explicitly confirms no similar element exists in answer to that element's mimic question, may it be added as plain HTML with no classes and no styling. "Yes to all recommendations", "go ahead", silence, generic plan approval or the agent's own failed search do not establish this exception. Ask a focused clarification when the reply is ambiguous; do not relabel it plain-by-instruction. Record their words as the whole user answer with the actual question and named element; workers receive those limits. Stricter project rules still apply.
 5. **Verify before finishing.** Check the final diff: no new CSS properties anywhere, and every class/ID used already exists in the project's source files. Name the file that defines each reused class.
 
+## Source freshness when designers change UI without AI
+
+Before choosing/reusing a UI pattern, compare current code with the last **reviewed** design baseline using the existing Git checkout (`ui-design/scripts/design_drift.py` when available). Include working-tree changes. Inspect affected components, their wrappers and real compiled styles; broaden checks for shared CSS/tokens. A missing baseline is **unknown**, not a clean result. Changes made outside the workflow do not automatically revoke an unaffected approval, grant new approval or demand a DESIGN.md value-sync. Never maintain a second copy of CSS variables in DESIGN.md. A new/revised component, variant or layout needing approval goes through the existing owner gate; don't silently add it to the kit.
+
 ## Where styles come from
 
 - **Projects with a design kit** (a catalogue, Storybook, DESIGN_KIT.md or similar named in project instructions): search the kit first, then existing code. Read local ui-design/LIVE-KIT.md for code-backed catalogues.
@@ -31,6 +35,6 @@ A filename, folder, screenshot or framework name alone does not prove which elem
 
 Record each reused element with its source file in the existing task. Check task-attributable changes, including deletions and visual props, against the rules; static scans help but are not proof. Accessibility stays required: use an existing accessible element or ask; never ship an inaccessible substitute. Keep behaviour, design acceptance and release readiness distinct.
 
-Every UI-visible change shows a **screen diagram** in the HTML plan report (codebase-map UI-FLOW.md): real captures of the current and proposed screens when they can be made safely, otherwise a clearly labelled layout sketch. A missing diagram makes the report a draft.
+Every UI-visible change shows a **screen diagram** in the HTML plan report (codebase-map UI-FLOW.md): real captures of the current and proposed screens when they can be made safely, otherwise a clearly labelled layout sketch. A missing diagram makes the report a draft. For quick appearance references the report may additionally embed only source-backed static HTML/compiled CSS snippets via `ui_review.quick_previews`, sandboxed and clearly not a live proposed page; this is a reporting-only exception, not permission to author application CSS.
 
 The codebase-map report renderer is a narrow exception: it generates its own HTML/SVG shell. That is not permission to style the application or to build application prototypes under a reports path.

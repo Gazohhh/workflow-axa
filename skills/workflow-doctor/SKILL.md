@@ -9,7 +9,7 @@ Inspect without changing the environment. Check package/version, host profile/re
 
 Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Validators cannot prove the later claims. Do not install, enable, delete, overwrite or repair anything automatically.
 
-Check that `python` starts on the host: hooks.json runs `python`, so a host with only `python3` starts no hook and nothing is enforced. Report that as WARNING with the evidence.
+Verify `python` starts; otherwise warn that hooks cannot run. Repeated approval denials: workflow/SETUP.md "Updating sessions safely". Repeated waiting: inspect goal_status and Stop feedback using workflow/TASK-FOLDER.md "Approval waits and host goals".
 
 ## Global artifact policy
 

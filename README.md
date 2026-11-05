@@ -1,6 +1,10 @@
-# Workflow AXA — 2.8.0-rc.3
+# Workflow AXA — 2.8.0-rc.4
 
-## Candidate: readable tickets and bounded permissions
+## Candidate: approval recovery and quiet waiting
+
+This isolated candidate adds registration protocol checks, precise revision parsing, workspace-bound report approval, completed-question presentation evidence and reliable whole-read checks. Approval waits end without workflow Stop feedback. External host goals require the recovery in `skills/workflow/TASK-FOLDER.md`; this package cannot cancel another Stop evaluator. See CANDIDATE-REVIEW.md for the defect matrix and VALIDATION.md for current evidence. It has not been installed into active sessions.
+
+## Earlier candidate: readable tickets and bounded permissions
 
 Full replacement of the available rc.2 source bundle. This candidate addresses the owner's supplied TODO/protocol and reported live-trial gaps without redesigning the workflow. See [candidate review](CANDIDATE-REVIEW.md), [validation](VALIDATION.md), [upgrade](UPGRADE.md), and [six targeted live cases](RC3-CASES.md).
 

@@ -43,3 +43,24 @@ Measured live runs cost between about $1 and $17 each in this session's headless
 - D10 (by: agent, 2026-11-04): T3 named resume-task/SKILL.md, but it stays unchanged: its 500-word budget is full, and the route back from a stopped or paused task now lives in the router table and TASK-FOLDER "Stop, pause and cancel", which resume-task already reads. The owner can reverse this.
 
 - D11 (owner, 2026-11-03): the owner's later goal "do not stop untill everything works with tests on all the 4 repo's do not commit push and keep looping all of them untill best results and each round do a retro check" widened D5's "up to 8 Claude runs" for the live loop. Actual: 32 headless Claude turns over 8 rounds (4 repositories) plus 1 Codex read-only run, and the earlier 24 v-rounds were part of the version-line task. The same goal also ended local commits: nothing after 9e8338e is committed.
+
+## Follow-up r4 decisions
+- D-r4-1 (user): "fix all of it" directs continuation of the original testing/bug-fix/E2 objective. Prior live-installation and final-transfer restrictions remain active.
+- D-r4-2 (agent): use one isolated source snapshot at D:/wfaxa-pilot/workflow-fixes. Do not edit hooks under D:/workflow-axa, which running sessions may load. No Git metadata copied and no Git writes performed.
+- D-r4-3 (agent): preserve raw private logs in place; save concise observations and synthetic fixtures only. Generic code does not absorb Altinstar-specific device/build tooling.
+
+## Follow-up owner approvals, 2026-11-05
+- Owner approved Cheflabels r5 implementation in its disposable worktree, then approved temporary use of the original existing dependencies after compatibility checking. Final transfer approval is separate and remains pending.
+- Owner approved at most two isolated Claude processes, capped at USD 1 each, USD 2 total, no retries or extra model/subagent calls. The first process checked waiting/rejection but its host permissions prevented writing. The second process is restricted to read-only restart reconciliation; no retry of the denied edit. No further paid test process is authorised by this batch.
+
+## Replacement host batch and final transfer approval
+- Owner answered "Approve replacement $2 batch": at most two processes, USD1 each, acceptEdits in synthetic fixture only, no shell/network/subagents or live installation changes.
+- Owner answered "Approve result and final transfer": accepted Cheflabels final screenshot, browser/build/review and D16 scroll fix; authorised only three application/docs files plus task evidence to original feature/offerte-20260907, verify, then remove disposable worktree, no commit/push.
+
+## Final authority reconciliation, 2026-11-05
+
+Direct instruction "fix all of it" authorized isolated follow-up implementation. It did not approve r4 HTML or live installation. Earlier r1 approval and D7-D10 remain historical. Later explicit approvals supersede the earlier pending Cheflabels transfer line. The accepted result was transferred and its disposable worktree removed. Both paid batches ended within their approved caps. No further paid sessions, installation or policy acceptance is requested.
+
+## Publication and Git installation authority, 2026-11-05
+Owner: "Alright put it here in main branch please and push it than install latest version from git not local".
+This authorizes integrating the tested rc.4 candidate (including preserved UI-lite work) into D:/workflow-axa main, committing/pushing to origin, and replacing the local-directory Claude marketplace with Gazohhh/workflow-axa from GitHub. Rules READY: existing project/shared scope and explicit publication/install authority. Baseline main and remote/main both 0d67057a6e15b72436624e48b0698bab00185ab5; pre-existing tracked changes matched the preserved snapshot. Selected non-sensitive test evidence is published under this task's evidence folder so fresh Git installs have valid documentation links. Raw host traces remain private.

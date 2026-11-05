@@ -1,0 +1,859 @@
+{
+  "schema_version": 2,
+  "title": "Session recovery candidate delivered with explicit live-test limits",
+  "revision": "r4",
+  "mode": "current",
+  "state": "inspection",
+  "report_kind": "task-overview",
+  "snapshot": {
+    "repository": "workflow-axa 2.8.0-rc.4 isolated candidate",
+    "branch": "D:/wfaxa-pilot/workflow-fixes, source snapshot without Git metadata",
+    "basis": "Final STATE_VERSION 14 code, 886-test log, independent reviews and explicitly offline host-derived replay, reconciled on 2026-11-05."
+  },
+  "understanding": "The isolated fixes are implemented and local checks pass. Positive live write and restart remain unverified. Cheflabels is accepted and transferred.",
+  "boundaries": [
+    "No live installation or global configuration changes.",
+    "No final transfer or worktree removal.",
+    "No new application UI or report styling."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "CANDIDATE-REVIEW.md",
+      "role": "findings"
+    },
+    {
+      "id": "S2",
+      "path": "hooks/phase_gate.py",
+      "role": "code"
+    },
+    {
+      "id": "S3",
+      "path": "hooks/plain_reply.py",
+      "role": "code"
+    },
+    {
+      "id": "S4",
+      "path": "tests/test_session_recovery.py",
+      "role": "tests"
+    },
+    {
+      "id": "S5",
+      "path": "tests/test_read_evidence.py",
+      "role": "tests"
+    },
+    {
+      "id": "S6",
+      "path": ".artifacts/2026-11-03-audit-hardening/full-suite-final.txt",
+      "role": "verification"
+    },
+    {
+      "id": "S7",
+      "path": "docs/plans/2026-11-03-audit-hardening/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S8",
+      "path": "docs/plans/2026-11-03-audit-hardening/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S9",
+      "path": "docs/plans/2026-11-03-audit-hardening/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S10",
+      "path": "docs/plans/2026-11-03-audit-hardening/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S11",
+      "path": "VALIDATION.md",
+      "role": "verification"
+    },
+    {
+      "id": "S12",
+      "path": ".artifacts/2026-11-03-audit-hardening/live-rc4-write/real-transcript-replay-final.json",
+      "role": "verification"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Requirement IDs do not invalidate legitimate revision approval.",
+      "origin": "PLAN follow-up r4 and TODO F1."
+    },
+    {
+      "id": "R2",
+      "text": "Unknown registrations fail closed with recovery guidance.",
+      "origin": "PLAN follow-up r4 and TODO F2."
+    },
+    {
+      "id": "R3",
+      "text": "Consent follows the exact report, workspace and owner answer.",
+      "origin": "PLAN follow-up r4 and TODO F3."
+    },
+    {
+      "id": "R4",
+      "text": "Partial reads stay untrusted and approval waits emit no correction.",
+      "origin": "PLAN follow-up r4 and TODO F4."
+    },
+    {
+      "id": "R5",
+      "text": "Host goals, safe installation and evidence limits remain explicit.",
+      "origin": "PLAN follow-up r4 and TODO F5."
+    },
+    {
+      "id": "R6",
+      "text": "Regressions, independent reviews and the ranked matrix accompany the source.",
+      "origin": "PLAN follow-up r4 and TODO F6."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "The candidate checks matching report evidence, workspace identity and explicit withdrawals before recognized gated writes.",
+      "kind": "static",
+      "sources": [
+        "S2",
+        "S4"
+      ],
+      "locator": "report_check, consent_at, fingerprints and SessionRecoveryTests",
+      "limits": "Static inspection and synthetic fixtures do not prove every live-host path."
+    },
+    {
+      "id": "E2",
+      "claim": "Whole-read results and waiting replies follow the repaired Stop-hook paths.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "whole_reads, complete_result and main",
+      "limits": "Command matching is conservative and does not interpret every shell."
+    },
+    {
+      "id": "E3",
+      "claim": "The final local suite reports 886 tests with 14 skips and no failures.",
+      "kind": "runtime",
+      "sources": [
+        "S6"
+      ],
+      "locator": "Final unittest summary, 171.116 seconds",
+      "limits": "Synthetic package tests. Skipped cases remain unverified."
+    },
+    {
+      "id": "E4",
+      "claim": "Four live processes showed waiting/rejection and read-only reconciliation. Positive write/restart remains unverified.",
+      "kind": "runtime",
+      "sources": [
+        "S9"
+      ],
+      "locator": "V-r4-live-budget and V-r4-live-gap",
+      "limits": "Host permissions and malformed approval wording prevented positive live write acceptance."
+    },
+    {
+      "id": "E5",
+      "claim": "Corrected-record approval and same-workspace sibling recovery passed offline replay.",
+      "kind": "runtime",
+      "sources": [
+        "S12"
+      ],
+      "locator": "Both allowed flags are true.",
+      "limits": "Owner-reply fingerprint output was regenerated. This is not a live model restart."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "Requirement IDs do not invalidate legitimate revision approval.",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    },
+    {
+      "id": "A2",
+      "text": "Unknown registrations fail closed with recovery guidance.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    },
+    {
+      "id": "A3",
+      "text": "Consent follows the exact report, workspace and owner answer.",
+      "requirements": [
+        "R3"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    },
+    {
+      "id": "A4",
+      "text": "Partial reads stay untrusted and approval waits emit no correction.",
+      "requirements": [
+        "R4"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    },
+    {
+      "id": "A5",
+      "text": "Host goals, safe installation and evidence limits remain explicit.",
+      "requirements": [
+        "R5"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    },
+    {
+      "id": "A6",
+      "text": "Regressions, independent reviews and the ranked matrix accompany the source.",
+      "requirements": [
+        "R6"
+      ],
+      "verification": "Final regression suite, independent review and the applicable live/offline evidence."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "F1",
+      "title": "Separate requirements from revisions",
+      "kind": "requested",
+      "reason": "Requirement IDs do not invalidate legitimate revision approval.",
+      "areas": [
+        "hooks/ and tests/"
+      ],
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1",
+        "E3"
+      ],
+      "acceptance": [
+        "A1"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "Implementation finished. Local tests/review passed."
+    },
+    {
+      "id": "F2",
+      "title": "Diagnose incompatible registrations",
+      "kind": "requested",
+      "reason": "Unknown registrations fail closed with recovery guidance.",
+      "areas": [
+        "hooks/ and tests/"
+      ],
+      "requirements": [
+        "R2"
+      ],
+      "evidence": [
+        "E1",
+        "E4",
+        "E5"
+      ],
+      "acceptance": [
+        "A2"
+      ],
+      "depends_on": [],
+      "outcome": "implemented",
+      "outcome_note": "Implementation finished. Local tests/review passed. Positive live write/restart remains unverified."
+    },
+    {
+      "id": "F3",
+      "title": "Preserve approval identity",
+      "kind": "requested",
+      "reason": "Consent follows the exact report, workspace and owner answer.",
+      "areas": [
+        "hooks/ and tests/"
+      ],
+      "requirements": [
+        "R3"
+      ],
+      "evidence": [
+        "E1",
+        "E4",
+        "E5"
+      ],
+      "acceptance": [
+        "A3"
+      ],
+      "depends_on": [],
+      "outcome": "implemented",
+      "outcome_note": "Implementation finished. Local tests/review passed. Positive live write/restart remains unverified."
+    },
+    {
+      "id": "F4",
+      "title": "Trust completed reads and quiet waits",
+      "kind": "requested",
+      "reason": "Partial reads stay untrusted and approval waits emit no correction.",
+      "areas": [
+        "hooks/ and tests/"
+      ],
+      "requirements": [
+        "R4"
+      ],
+      "evidence": [
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A4"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "Implementation finished. Local tests/review passed."
+    },
+    {
+      "id": "F5",
+      "title": "Document bounded recovery",
+      "kind": "requested",
+      "reason": "Host goals, safe installation and evidence limits remain explicit.",
+      "areas": [
+        "skills/ and delivery records"
+      ],
+      "requirements": [
+        "R5"
+      ],
+      "evidence": [
+        "E2",
+        "E4"
+      ],
+      "acceptance": [
+        "A5"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "Implementation finished. Local tests/review passed."
+    },
+    {
+      "id": "F6",
+      "title": "Deliver the tested candidate",
+      "kind": "requested",
+      "reason": "Regressions, independent reviews and the ranked matrix accompany the source.",
+      "areas": [
+        "skills/ and delivery records"
+      ],
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E3",
+        "E5"
+      ],
+      "acceptance": [
+        "A6"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "Implementation finished. Local tests/review passed."
+    }
+  ],
+  "default_view": "gate",
+  "graphs": [
+    {
+      "id": "gate",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Candidate gate",
+      "title": "Recognized writes require matching evidence",
+      "description": "Arrows show the simplified candidate gate. Valid evidence includes protocol, consent, report bytes, workspace and scope. This is static behavior, not universal enforcement.",
+      "width": 1200,
+      "height": 520,
+      "nodes": [
+        {
+          "id": "start",
+          "label": "Recognized write",
+          "note": "",
+          "shape": "start",
+          "x": 448,
+          "y": 40,
+          "width": 304,
+          "height": 64,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ]
+        },
+        {
+          "id": "check",
+          "label": "Evidence\nvalid?",
+          "note": "",
+          "shape": "decision",
+          "x": 448,
+          "y": 168,
+          "width": 304,
+          "height": 160,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ]
+        },
+        {
+          "id": "deny",
+          "label": "Deny and explain",
+          "note": "",
+          "shape": "result",
+          "x": 64,
+          "y": 400,
+          "width": 304,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ]
+        },
+        {
+          "id": "allow",
+          "label": "Continue scoped write",
+          "note": "",
+          "shape": "result",
+          "x": 832,
+          "y": 400,
+          "width": 304,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "check",
+          "label": "",
+          "points": [
+            [
+              600,
+              104
+            ],
+            [
+              600,
+              168
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ]
+        },
+        {
+          "from": "check",
+          "to": "deny",
+          "label": "No",
+          "points": [
+            [
+              448,
+              248
+            ],
+            [
+              216,
+              248
+            ],
+            [
+              216,
+              400
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ],
+          "label_position": [
+            324,
+            232
+          ]
+        },
+        {
+          "from": "check",
+          "to": "allow",
+          "label": "Yes",
+          "points": [
+            [
+              752,
+              248
+            ],
+            [
+              984,
+              248
+            ],
+            [
+              984,
+              400
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [
+            "F3"
+          ],
+          "label_position": [
+            864,
+            232
+          ]
+        }
+      ]
+    }
+  ],
+  "checkpoint": {
+    "as_of": "2026-11-05, final code freeze and local suite",
+    "source": "S7",
+    "locator": "Current checkpoint and Outcome",
+    "approval": {
+      "status": "unknown",
+      "summary": "Direct owner instruction \"fix all of it\" authorized isolated fixes. No r4 HTML approval or installation authority is claimed."
+    },
+    "implementation": {
+      "status": "implemented",
+      "summary": "F1-F6 implementation is complete. Cheflabels is accepted and transferred."
+    },
+    "verification": {
+      "status": "limited",
+      "summary": "886 tests passed with 14 skips. Positive live write/restart remains unverified."
+    },
+    "next_action": "Package and validate the source candidate. Keep live-test limits explicit. No installation is requested."
+  },
+  "task_report": {
+    "phase": "delivery",
+    "completion": "partial",
+    "agreement": {
+      "status": "approved",
+      "revision": "r4",
+      "response": "fix all of it",
+      "summary": "The owner directly authorized the audited isolated fixes. This records task authority, not approval of an r4 HTML plan.",
+      "source": "S10",
+      "locator": "D-r4-1 and Final authority reconciliation"
+    },
+    "sections": [
+      {
+        "id": "request",
+        "title": "Requested outcome",
+        "text": "Fix the audited approval, recovery and waiting defects in an isolated candidate.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "agreement",
+        "title": "Agreed scope",
+        "text": "Direct instruction \"fix all of it\" authorized candidate work. Installation remained outside scope. Historical r1 approval remains intact.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "specification",
+        "title": "Implemented behavior",
+        "text": "Revision parsing, registration compatibility, workspace consent, completed-question presentation, read evidence and quiet waits are implemented. Candidate URI/link regressions were repaired before final checks.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "decisions",
+        "title": "Preserved decisions",
+        "text": "The original checkout and existing UI-lite changes remain intact. Earlier reports are protected. Historical D7-D10 are not newly accepted.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "testing",
+        "title": "Final evidence",
+        "text": "The final suite passed 886 tests with 14 skips in 171.116 seconds. Validator and independent reviews passed. Offline replay passed both recovery cases.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "risks",
+        "title": "Verification limits",
+        "text": "Positive model-driven write and write-after-restart remain unverified. Fourteen cases were skipped. No fresh POSIX suite ran. Offline regenerated hook output does not establish live behavior.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "id": "delivery",
+        "title": "Delivered result",
+        "text": "The implemented source candidate and ranked defect matrix are delivered. Cheflabels is accepted, transferred and its disposable worktree removed. Parent archive validation remains the packaging step.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      }
+    ],
+    "tickets": [
+      {
+        "task": "F1",
+        "specification": "Requirement IDs do not invalidate legitimate revision approval.",
+        "expected": "Implementation finished. Local tests/review passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "task": "F2",
+        "specification": "Unknown registrations fail closed with recovery guidance.",
+        "expected": "Implementation finished. Local tests/review passed. Positive live write/restart remains unverified.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "task": "F3",
+        "specification": "Consent follows the exact report, workspace and owner answer.",
+        "expected": "Implementation finished. Local tests/review passed. Positive live write/restart remains unverified.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "task": "F4",
+        "specification": "Partial reads stay untrusted and approval waits emit no correction.",
+        "expected": "Implementation finished. Local tests/review passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "task": "F5",
+        "specification": "Host goals, safe installation and evidence limits remain explicit.",
+        "expected": "Implementation finished. Local tests/review passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "task": "F6",
+        "specification": "Regressions, independent reviews and the ranked matrix accompany the source.",
+        "expected": "Implementation finished. Local tests/review passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      }
+    ],
+    "checks": [
+      {
+        "id": "V1",
+        "title": "Final regression suite",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "886 tests, zero failures/errors, 14 skips, 171.116 seconds, exit 0.",
+        "limits": "Fourteen native/environment cases remain unverified.",
+        "source": "S6",
+        "locator": "Final unittest summary"
+      },
+      {
+        "id": "V2",
+        "title": "Package validator",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "PASS with 699 core words after final code freeze.",
+        "limits": "Metadata check, not behavior or live enforcement.",
+        "source": "S11",
+        "locator": "Current verification"
+      },
+      {
+        "id": "V3",
+        "title": "Independent Standards review",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "Final STATE_VERSION 14 repair passed re-review.",
+        "limits": "Static review of the final code and regression cases.",
+        "source": "S9",
+        "locator": "V-r4-review-final"
+      },
+      {
+        "id": "V4",
+        "title": "Independent Spec review",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "All reported parser and approval findings repaired and re-reviewed.",
+        "limits": "No universal command or natural-language guarantee.",
+        "source": "S9",
+        "locator": "V-r4-review-final"
+      },
+      {
+        "id": "V5",
+        "title": "Four bounded live processes",
+        "kind": "test",
+        "status": "limited",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "Waiting/rejection and read-only reconciliation observed. Reported total USD 0.171788.",
+        "limits": "Positive write/restart unverified. CLI list-price counters are not invoice metering.",
+        "source": "S9",
+        "locator": "V-r4-live-budget and V-r4-live-gap"
+      },
+      {
+        "id": "V6",
+        "title": "Offline host-derived replay",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "Corrected-record approval and same-workspace sibling recovery allowed.",
+        "limits": "Owner-reply fingerprint regenerated offline. Original transcript and source stayed unchanged.",
+        "source": "S12",
+        "locator": "Allowed flags and kind"
+      },
+      {
+        "id": "V7",
+        "title": "Cheflabels accepted delivery",
+        "kind": "inspection",
+        "status": "passed",
+        "expected": "Evidence supports the named behavior within its stated limits.",
+        "actual": "Original PLAN confirms accepted transfer, zero runtime errors and removed disposable worktree.",
+        "limits": "Separate task. Native devices and remote translations were outside its browser check.",
+        "source": "S9",
+        "locator": "V-r4-E2"
+      }
+    ],
+    "acceptance_results": [
+      {
+        "acceptance": "A1",
+        "status": "verified",
+        "checks": [
+          "V1",
+          "V2",
+          "V3",
+          "V4"
+        ],
+        "note": "Implementation and local checks passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "acceptance": "A2",
+        "status": "partial",
+        "checks": [
+          "V1",
+          "V3",
+          "V4",
+          "V5",
+          "V6"
+        ],
+        "note": "Implementation and local checks passed. Live positive write/restart remains unverified.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "acceptance": "A3",
+        "status": "partial",
+        "checks": [
+          "V1",
+          "V3",
+          "V4",
+          "V5",
+          "V6"
+        ],
+        "note": "Implementation and local checks passed. Live positive write/restart remains unverified.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "acceptance": "A4",
+        "status": "verified",
+        "checks": [
+          "V1",
+          "V2",
+          "V3",
+          "V4"
+        ],
+        "note": "Implementation and local checks passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "acceptance": "A5",
+        "status": "verified",
+        "checks": [
+          "V1",
+          "V2",
+          "V3",
+          "V4"
+        ],
+        "note": "Implementation and local checks passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      },
+      {
+        "acceptance": "A6",
+        "status": "verified",
+        "checks": [
+          "V1",
+          "V2",
+          "V3",
+          "V4"
+        ],
+        "note": "Implementation and local checks passed.",
+        "source": "S9",
+        "locator": "Final follow-up reconciliation, 2026-11-05"
+      }
+    ]
+  },
+  "comparison": [
+    {
+      "label": "Requirement identifiers",
+      "current": "R7 was interpreted as revision 7.",
+      "proposed": "Only supported revision notation changes revision identity.",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "tasks": [
+        "F1"
+      ]
+    },
+    {
+      "label": "Workspace and report links",
+      "current": "Copied records and candidate URI parsing could lose destination identity.",
+      "proposed": "Consent follows the exact local destination and prior presentation.",
+      "requirements": [
+        "R3"
+      ],
+      "evidence": [
+        "E1",
+        "E5"
+      ],
+      "tasks": [
+        "F3"
+      ]
+    },
+    {
+      "label": "Reads and waits",
+      "current": "Call text could overstate read evidence and correction feedback could continue a wait.",
+      "proposed": "Completed read evidence is required. Waiting produces no workflow Stop feedback.",
+      "requirements": [
+        "R4"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "F4"
+      ]
+    }
+  ]
+}

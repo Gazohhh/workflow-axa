@@ -123,3 +123,7 @@ A source hash change after a checkpoint update does not by itself invalidate unc
 ## Optional UI screen flow (rc.6)
 
 [UI-FLOW.md](UI-FLOW.md) adds `ui_review` to existing schema 2. It renders connected screen/state previews as another tab inside this full report. Existing JSON, style and sections do not need rewriting. No raw app markup or code is executed. Local PNG captures must be listed as sources and are included in freshness checks. Explicit schematics remain visibly approximate. Every rendering uses the same bundled renderer; do not hand-replace the HTML shell with an independent design page.
+
+## Optional fast UI style references
+
+The `ui_review` screen flow may include `quick_previews` selecting **existing HTML elements** and **existing compiled CSS** by supplied source IDs. These render in sandboxed, expandable frames inside the existing HTML report. This is a fast, static style reference—not a replacement for Angular/React runtime, not a styled mockup, and not a way to bypass the implementation gate. See [UI-FLOW.md](UI-FLOW.md). No quick preview is required when code-backed sources are unavailable.

@@ -1,4 +1,12 @@
-# Upgrade to workflow-axa 2.8.0-rc.3
+# Upgrade to workflow-axa 2.8.0-rc.4
+
+## Safe adoption of this candidate
+
+Review the candidate and its tests first. Keep the active directory immutable. Use one complete version in a fresh host session; inspect both directory-plugin arguments and marketplace registration. The observed older cache is incomplete (its hooks are absent), so its version label is insufficient. Do not delete it or change global settings without approval.
+
+The new registration passes --hook-protocol=1. An old registration executing a new script blocks gated writes with restart guidance. After restart, verify PostToolUse and UserPromptSubmit fingerprints, present the report in its actual workspace, and obtain the owner's real reconfirmation. Existing source edits and historical approvals remain intact. See skills/workflow/SETUP.md for the contract and limits.
+
+For the observed spinning session, interrupt it and run /goal clear in that session; verify the host acknowledgement. Resuming alone may restore the stale goal. This stops the external retry loop without approving work or marking deferred checks passed. Future goals must be bounded to an authorised phase and allow a legitimate user-input checkpoint.
 
 ## Test the candidate before adoption
 

@@ -1,3 +1,61 @@
+# Candidate review: workflow-axa 2.8.0-rc.4
+
+## Final result, 2026-11-05
+
+The isolated candidate implementation is complete. Final local checks and independent Standards and Spec reviews pass. Verification remains partial because a positive model-driven write and write-after-restart were not observed. No installation is requested or authorized by this report.
+
+Direct owner instruction "fix all of it" after the audit authorized these isolated fixes. It did not approve an r4 HTML plan. The current [PLAN](docs/plans/2026-11-03-audit-hardening/PLAN.md) records that distinction and preserves the original r1 authority/history. The presented progress-r4 report remains unchanged.
+
+## Ranked defect matrix
+
+High means a wrong approval identity or retained consent can permit a write. Medium means valid work is blocked or evidence is overstated. Severity describes the reproduced risk before repair, not a remaining open defect.
+
+| Severity / origin | Reproduction | Root cause | Fix | Test result and evidence |
+|---|---|---|---|---|
+| High: original audit, workspace approval | Copy an approved task/report to a sibling worktree, then request its write | Consent was keyed by task/report without presentation workspace | Bind presentation and consent to the actual workspace | PASS: [session tests](tests/test_session_recovery.py), final suite. Different-byte target report covered. Live positive write remains unverified. |
+| High: follow-up review, waiver replay | Approve a no-report revision in one workspace, then present it in another | A later workspace value replaced presentation history | Preserve timestamped workspace history and use the presentation before each answer | PASS: [waiver regression](tests/test_session_recovery.py), final suite and Spec re-review. |
+| High: follow-up review, withdrawal | Withdraw approval, then reuse its earlier answer | Same-session consent and sibling fallback did not consistently apply withdrawal | Reject revoked consent for that task until a new real approval | PASS: [withdrawal regressions](tests/test_session_recovery.py). Another task's withdrawal does not revoke this task. |
+| High: candidate regression, link identity | Put a local report path inside nested labels/titles or present repo[other] beside repo[] | Candidate parsing confused label/title text with destinations or rewrote bracket identity | Consume each link atomically. Preserve exact destination identity. Reject unsupported syntax | PASS: nested/title/bracket/suffix regressions and final Standards/Spec re-review. This was found during candidate review, not independently reproduced on original rc.3. |
+| Medium: original audit, revision parsing | Include requirement R7 or D4-R6 in a checkpoint | Case-insensitive revision matching treated requirement IDs as revisions | Parse explicit revisions and lowercase rN notation separately | PASS: requirement identifiers accepted, real newer revisions denied in [session tests](tests/test_session_recovery.py). |
+| Medium: original audit, mixed registration | Run the new gate with an old hook registration and missing fingerprint events | Updated scripts ran beneath cached registrations | Add protocol compatibility denial and precise restart guidance | PASS: unknown/missing protocol cases. Live installation was not changed. |
+| Medium: original audit, question presentation | Deliver the report through a question with a matching successful host answer | Only assistant text counted as presentation | Count the matched completed question. Ignore thinking, failed calls and unrelated answers | PASS: completed-question and negative cases in [session tests](tests/test_session_recovery.py). |
+| Medium: follow-up review, reply fingerprint | Present a sibling-worktree report with different bytes | Reply hashing still read the original checkout | Hash the report in the presented workspace, preserving case | PASS: different-byte sibling test, final suite and review. |
+| Medium: original audit plus review, whole-read evidence | Use partial/failed reads or a skipped conditional cat followed by successful output | Call text and combined success were mistaken for completed whole reads | Match successful results, reject truncation/partial reads and conditional chains | PASS: [eight read-evidence tests](tests/test_read_evidence.py), ten existing Stop-hook tests, final suite. Legacy ID-less evidence remains best effort. |
+| Medium: original audit, waiting loops | End with Waiting on you while host goal feedback asks for another turn | External goal feedback and workflow Stop corrections had separate continuation paths | Emit no workflow Stop feedback while waiting. Document bounded goals and host recovery | PASS: synthetic silence checks. Live trial observed 30 seconds idle. Other hooks remain outside this hook's control. |
+| Medium: candidate regression, file URI | Replay the saved host Markdown file:///D:/ report link | New workspace parser interpreted part of file: as a drive prefix | Decode supported local file URIs before path matching and invalidate old caches | PASS: red host-derived replay followed by corrected-record and sibling-session replay. Regenerated hook output is offline evidence, not live restart proof. |
+
+The final code is [phase_gate.py](hooks/phase_gate.py), [plain_reply.py](hooks/plain_reply.py) and [hook registration](hooks/hooks.json). Recovery guidance lives in [SETUP](skills/workflow/SETUP.md), [TASK-FOLDER](skills/workflow/TASK-FOLDER.md) and workflow-doctor. STATE_VERSION 14 invalidates older parser cache entries.
+
+## Current evidence
+
+The [final suite log](docs/plans/2026-11-03-audit-hardening/evidence/rc4-full-suite.txt) records 886 tests, zero failures/errors, 14 skips, 171.116 seconds and exit 0. Validator PASS with 699 core words followed the final code freeze. Independent Standards and Spec reviews passed after all reported repairs. Twenty-two session-recovery tests passed. Earlier 878-test evidence predates the URI repairs.
+
+The [final offline replay](docs/plans/2026-11-03-audit-hardening/evidence/rc4-replay-final.json) allows corrected-record approval and same-workspace sibling-transcript recovery. It regenerates owner-reply hook output. The original host transcript and source value remain unchanged. The earlier [red replay](docs/plans/2026-11-03-audit-hardening/evidence/rc4-replay-red.json) records the URI failure.
+
+The pre-existing UI-lite snapshot mismatch was independently reproduced in the original checkout. Its expectation now includes frame-src none while retaining full output equality. Existing UI-lite implementation and report styling remain preserved. Original tracked diff SHA-256 remains 2f11292dd0d1a64c1b93c1bf9fe0a16305e7c90c5455c3abdfb840f4da3dcd72.
+
+## Live evidence and limits
+
+Four Claude processes ran across two approved bounded batches. Waiting stayed idle for 30 seconds, rejection kept source unchanged, and a read-only resume reconciled prior answers. Host dontAsk and sensitive plugin-path protections blocked writes in the first fixtures. The outside-plugin fixture wrote malformed approval wording, so the gate correctly denied the requested source edit.
+
+The first batch's cumulative reported list-price total was USD 0.0819966. Replacement processes reported USD 0.041869 and USD 0.0479224. Combined reported total: USD 0.171788. These are CLI counters, not invoice metering. No more paid calls are planned.
+
+Live positive write and live write-after-restart remain unverified. Fourteen native/environment cases were skipped. No fresh POSIX suite ran for these final changes. The hook does not interpret all language or shell code, stop every external host loop, or protect unhooked hosts.
+
+## Separate Cheflabels completion
+
+The owner accepted the repaired runtime result and final transfer. The original project contains the verified application/docs files and task evidence. Runtime checks reported zero page/console errors. The disposable worktree was removed, with no commit or push. Its [final delivery report](D:/Cheflabels-labeler-V2/docs/plans/2026-11-05-kit-confirm-sheet/reviews/delivery-2026-11-05.html) preserves native-device and remote-translation limits.
+
+## Delivery and retention
+
+This delivers the tested source candidate and its evidence. Parent packaging reserves .artifacts/2026-11-03-audit-hardening/release/workflow-axa-2.8.0-rc.4.zip and workflow-axa-2.8.0-rc.4-source.zip. Archive creation, archive validation and SHA256SUMS.txt remain the parent handoff step. Reserved filenames are not a claim that archives already exist.
+
+Keep the small D:/wfaxa-pilot/workflow-host-fixture-rc4 fixture because replay resolves its report and PLAN bytes. It has no build or dependencies. Keep selected regression logs, offline replay and reports under the existing task output parent. Raw live traces/caches stay available for review but remain outside release archives. Private original session logs remain untouched. No unknown output was deleted.
+
+Historical D7-D10 agent decisions remain visible and are not newly accepted by this delivery. No installation, policy acceptance or transfer approval question is attached.
+
+## Previous rc.3 review: historical
+
 # Candidate review — workflow-axa 2.8.0-rc.3
 
 ## Basis and authority

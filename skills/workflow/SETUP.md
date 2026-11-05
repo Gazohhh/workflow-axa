@@ -26,6 +26,16 @@ A fresh ordinary task without a slash command must load the shared core and appl
 
 ## 4. What the hooks enforce
 
+### Updating sessions safely
+
+Keep each running session's plugin directory immutable. Stage a complete candidate at a separate stable location, validate it, then switch the chosen plugin source only after approval and restart the affected host. Do not update scripts underneath cached hook registrations. Inspect enabled directory plugins and marketplace cache registrations; an old cache directory alone does not prove it is loaded. Preserve unknown caches and unrelated settings.
+
+The phase-gate registrations pass `--hook-protocol=1`. Missing or unknown protocol on a gated write produces a compatibility denial and restart guidance. Record/read-only access stays available. This token checks the registration/script contract, not package authenticity; compare the actual roots, versions and bytes as well. Scripts predating this check cannot enforce it retroactively. A fresh host must load one complete version and demonstrate both fingerprint events before a resumed approval is accepted.
+
+Missing report fingerprints are an evidence/registration problem, not proof that the owner refused. Inspect PostToolUse and UserPromptSubmit registrations before asking again. Preserve the original answer; after recovery, present the unchanged report in its actual workspace and record the genuine reconfirmation. Never synthesize fingerprints or copy another worktree's approval. A stale, edited, forged or wrong-workspace report stays blocked.
+
+If assistant text is unavailable in a host transcript, use a report-linked AskUserQuestion and its matching successful host answer. The tool call alone, thinking content, a cancelled question or an unrelated answer grants nothing. Do not inject Stop additionalContext to record presentation: that feedback itself continues the turn. See the [host hook contract](https://code.claude.com/docs/en/hooks).
+
 The Claude phase gate activates after the router or a phase is typed, invoked or read whole. It checks recognised writes in the active project/worktree. It needs the current task's checkpoint, its report and an approval quote matched to the whole real user answer after that named report was presented in assistant text. Loading a phase or writing the report is not presentation. Short exact answers count; prefix quotes that omit conditions do not. A `no report` exception must be in the verified quoted answer, not added by the agent outside it. An unchanged historical approval can be recovered from sibling session transcripts.
 
 | Boundary | Actual implementation and limits |

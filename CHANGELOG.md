@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.8.0-rc.4 — session recovery candidate (2026-11-05)
+
+- Distinguish report revisions from requirement IDs. Bind report/chat approvals and withdrawals to their actual workspace/task.
+- Reject incompatible registration protocols with recovery guidance; preserve fingerprint and real-consent requirements.
+- Accept a report-linked question only after its matching successful host answer; never accept thinking or question existence.
+- Keep workflow Stop silent at approval waits, document bounded host goals and explicit stale-goal recovery.
+- Recognise conservative whole-file shell/Python reads with successful complete tool results; reject conditional, partial and failed reads.
+- Preserve UI-lite work; correct its legacy snapshot expectation for the sole explicit frame-denial CSP addition.
+- Candidate only: no active installation, external project migration or publication. Live-host and E2 acceptance remain distinct.
+
 ## 2.8.0-rc.3 — readable tickets and explicit exceptions (2026-11-04)
 
 - Replace dense TODO example with labelled ticket blocks. Use existing qualified IDs, preserve history and separate implemented, verified, blocked and owner-closed outcomes. `open_items` and `record tick` support both forms; ambiguous IDs and explicit incomplete verification are refused rather than guessed.

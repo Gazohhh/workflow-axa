@@ -34,8 +34,10 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 PHASES = ('workflow-clarify', 'workflow-specify', 'workflow-execute', 'workflow-deliver')
+HOOK_PROTOCOL = '1'
 EDIT_TOOLS = ('Edit', 'Write', 'MultiEdit', 'NotebookEdit')
 SHELLS = ('Bash', 'PowerShell')
 MCP_WRITE = re.compile(r'create|write|edit|delete|apply|update|import|execute|manage', re.I)
@@ -57,7 +59,10 @@ LIGHT_LINE = re.compile(r'^\s*[-*]\s*Lightweight edit:\s*(.+)$', re.M | re.I)
 NEGATIVE = re.compile(r'\b(?:not|never|no)\s+(?:yet\s+)?(?:approved|waived|given)\b|\bunapproved\b|\bproposed\b'
                       r'|\bpending\b|\bawaiting\b|\brevoked\b|\bwithdrawn\b', re.I)
 POSITIVE = re.compile(r'\b(?:approved|waived|legacy)\b', re.I)
-REVISION = re.compile(r'\b(?:revision\s+r?(\d+)|r(\d+))(?![\w-])', re.I)  # not fixture names like r22-short
+# Uppercase R identifiers belong to requirements unless explicitly introduced as a revision.
+# Keep lowercase rN checkpoint notation and numbered plan/review filenames; exclude qualified IDs.
+REVISION = re.compile(r'\b(?i:revision)\s+[rR]?(\d+)(?![\w-])|'
+                      r'(?:(?<![\w/-])r|\b(?:plan|review)-r)(\d+)(?![\w-])')
 NO_REPORT = re.compile(r'\b(?:no\s+(?:plan\s+|html\s+)?report|without\s+(?:the\s+|an?\s+)?(?:html\s+|plan\s+)?report)\b', re.I)  # the user skipped the plan report
 QUOTE = re.compile(r'"([^"\n]+)"|\u201c([^\u201d\n]+)\u201d')
 
@@ -575,9 +580,15 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 8
+STATE_VERSION = 14
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
+REPORT_REFERENCE = re.compile(r'(?:(?:[A-Za-z]:/|/)[^\n`<>"\']*?)?'
+                              r'docs/plans/[A-Za-z0-9][\w.-]*?/(?:reviews/)?[\w.-]+\.html'
+                              r'(?=$|[\s`<>"\'\]),;]|\.(?=\s|$)|[!?](?=\s|$))')
+INLINE_TARGET = re.compile(r'''\s*(?:<([^<>"'\r\n]+)>|([^\s<>"']+))(?:\s+(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\((?:[^()\\]|\\.)*\)))?\s*''')
+URI_REFERENCE = re.compile(r'(?<![\w+.-])(?:[A-Za-z][\w+.-]*://|[A-Za-z][\w+.-]+:)'
+                           r'[^\s`<>"\'()]+')
 # Report fingerprints this hook leaves in the transcript as host-recorded hook context (never agent text): one after a
 # tool call that names a task report (read, written or rendered), and one when the owner answers.
 SHOWN_MARK, REPLY_MARK = 'workflow-axa report fingerprint', 'workflow-axa report at owner reply'
@@ -619,9 +630,9 @@ def clean(text: str) -> str:
 
 def fresh_state() -> dict:
     return {'v': STATE_VERSION, 'offset': 0, 'head': '', 'mark': '', 'n': 0, 'lines': 0, 'parsed': 0,
-            'active': False, 'rules': False, 'tasks': [], 'users': [], 'presented': {}, 'asks': [], 'last_user': -1,
+            'active': False, 'rules': False, 'tasks': [], 'users': [], 'presented': {}, 'asks': {}, 'last_user': -1,
             'last_words': '', 'report_presented': {}, 'chat_presented': {}, 'paused_tasks': {},
-            'shown_at': {}, 'fingerprints': {}, 'replies': {}}  # task -> report -> [n] / [[n, sha256]]
+            'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}}
 
 
 def set_task(state: dict, name: str, n: int):
@@ -652,12 +663,127 @@ def add_words(state: dict, n: int, text: str, kind: str):
     state['last_words'] = (state['last_words'] + ' . ' if state['last_user'] == n else '') + words[:4000]
     state['last_user'] = n
     task = state['tasks'][-1][0] if state['tasks'] else '*'
+    state['user_tasks'][str(n)] = task
     intent = control_intent(words)
     if intent == 'pause':
         state['paused_tasks'][task] = n
     elif intent == 'resume':
         state['paused_tasks'].pop(task, None)
         state['paused_tasks'].pop('*', None)
+
+
+def local_report_target(reference: str) -> str:
+    """Resolve absolute local file URIs; remote/unknown schemes are not local report paths."""
+    reference = reference.strip()
+    if not URI_REFERENCE.match(reference):
+        path = slash(reference).removeprefix('./').split('#', 1)[0]
+        if not (is_absolute(path) or path.startswith('docs/plans/')) or '?' in path:
+            return ''
+    else:
+        try:
+            uri = urlsplit(reference)
+            if uri.scheme.lower() != 'file' or uri.netloc.lower() not in ('', 'localhost') or uri.query:
+                return ''
+            path = slash(unquote(uri.path, errors='strict'))
+        except (ValueError, UnicodeError):
+            return ''
+        if not path.startswith('/') or path.startswith('//'):
+            return ''
+        if re.match(r'^/[A-Za-z]:/', path):
+            path = path[1:]  # file:///C:/... is a Windows drive path, not POSIX /C:/...
+    found = TASK_REVIEW.search(path)
+    if not found or found.end() != len(path) or re.search(r'[\x00-\x1f`<>"\']', path):
+        return ''
+    return path
+
+
+def inline_link_end(text: str, start: int) -> int | None:
+    """Find the end of one whole link payload, treating titles and angle targets as opaque."""
+    i, depth, quote, angle = start, 1, '', False
+    while i < len(text) and depth:
+        char = text[i]
+        if char == '\\' and i + 1 < len(text):
+            i += 2
+            continue
+        if quote:
+            if char == quote:
+                quote = ''
+        elif angle:
+            if char == '>':
+                angle = False
+        elif char in ('"', "'"):
+            quote = char
+        elif char == '<':
+            angle = True
+        elif char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+        i += 1
+    return i if not depth else None
+
+
+def presentation_references(text: str) -> list[str]:
+    """Read paths/URIs atomically; consume balanced labels and opaque destinations without rewriting either."""
+    references, normalized, i = [], slash(text), 0
+    while i < len(text):
+        uri = URI_REFERENCE.match(text, i)
+        if uri:
+            target = local_report_target(uri.group(0))
+            if target:
+                references.append(target)
+            i = uri.end()
+            continue
+        if text[i] == '[':
+            start, depth = i, 1
+            i += 1
+            while i < len(text) and depth:
+                if text[i] == '\\' and i + 1 < len(text) and text[i + 1] in '\\[]':
+                    i += 2
+                    continue
+                depth += (text[i] == '[') - (text[i] == ']')
+                i += 1
+            if depth:
+                break
+            after = i
+            while after < len(text) and text[after].isspace():
+                after += 1
+            if after < len(text) and text[after] == ':':
+                return []  # unsupported reference definitions: never infer their target from a label
+            if after < len(text) and text[after] == '(':
+                end = inline_link_end(text, after + 1)
+                if end is None:
+                    break  # no malformed suffix can leak into bare path parsing
+                target = INLINE_TARGET.fullmatch(text[after + 1:end - 1])
+                if target and not (start and text[start - 1] == '!'):
+                    path = local_report_target(target.group(1) or target.group(2))
+                    if path:
+                        references.append(path)
+                i = end
+            continue
+        reference = REPORT_REFERENCE.match(normalized, i)
+        if reference:
+            references.append(reference.group(0))
+            i = reference.end()
+        else:
+            i += 1
+    return references
+
+
+def present_reports(state: dict, text: str, n: int, cwd: str):
+    """Bind visible report references to the workspace actually named, not the edited target's copy."""
+    for reference in presentation_references(text):
+        found = TASK_REVIEW.search(reference)
+        task, report = found.groups()
+        prefix = reference[:found.start()]
+        root = absolute(prefix, cwd) if prefix else Project(cwd).root
+        reports = state['report_presented'].setdefault(task, {})
+        reports.setdefault(report.lower(), n)
+        state['presented'][task] = max(reports.values())
+        shown = state['shown_at'].setdefault(task, {})
+        shown[report.lower()] = (shown.get(report.lower(), []) + [n])[-50:]
+        roots = state['shown_roots'].setdefault(task, {})
+        roots[report.lower()] = (roots.get(report.lower(), []) + [[n, root]])[-50:]
 
 
 def feed(state: dict, entry: dict, raw: str, cwd: str):
@@ -692,35 +818,47 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                 add_words(state, n, text, 'msg')
             return
         result = entry.get('toolUseResult')
-        if not entry.get('isSidechain') and isinstance(result, dict) and isinstance(result.get('answers'), dict) \
-                and isinstance(content, list) \
-                and any(isinstance(b, dict) and b.get('tool_use_id') in state['asks'] for b in content):
-            for value in result['answers'].values():
-                add_words(state, n, str(value), 'answer')
+        if not entry.get('isSidechain') and not entry.get('isMeta') \
+                and isinstance(result, dict) and isinstance(result.get('answers'), dict) and isinstance(content, list):
+            for block in content:
+                if not isinstance(block, dict) or block.get('type') != 'tool_result' or block.get('is_error'):
+                    continue
+                asked = state['asks'].pop(block.get('tool_use_id'), None)
+                if asked is None:
+                    continue
+                at, origin, questions = asked
+                for question, value in result['answers'].items():
+                    if question in questions:
+                        # A matched host answer establishes that this question was actually delivered.
+                        # The question alone, a cancelled tool or thinking never presents/approves anything.
+                        present_reports(state, question, at, origin)
+                        add_words(state, n, str(value), 'answer')
         return
-    if entry.get('type') != 'assistant' or not isinstance(content, list):
+    if entry.get('type') != 'assistant' or entry.get('isSidechain') or not isinstance(content, list):
         return
     # Only user-visible assistant text presents a plan. Writing its file or loading a
     # phase is not presentation. Repeating a link to the same immutable report is harmless.
     visible = '\n'.join(str(b.get('text', '')) for b in content
                         if isinstance(b, dict) and b.get('type') == 'text')
-    for task, report in TASK_REVIEW.findall(slash(visible)):
-        reports = state['report_presented'].setdefault(task, {})
-        reports.setdefault(report.lower(), n)
-        state['presented'][task] = max(reports.values())
-        shown = state['shown_at'].setdefault(task, {})
-        shown[report.lower()] = (shown.get(report.lower(), []) + [n])[-50:]
+    origin = str(entry.get('cwd') or cwd)
+    present_reports(state, visible, n, origin)
     if re.search(r'\b(?:plan|proposal|implementation scope)\b', visible, re.I):
         for task in TASK_PATH.findall(slash(visible) + '/'):
             for a, b in REVISION.findall(visible):
                 state['chat_presented'].setdefault(task, {}).setdefault(str(int(a or b)), n)
+                roots = state['chat_roots'].setdefault(task, {})
+                revision = str(int(a or b))
+                roots[revision] = (roots.get(revision, []) + [[n, key(Project(origin).root)]])[-50:]
     for block in content:
         if not isinstance(block, dict) or block.get('type') != 'tool_use':
             continue
         name, data = block.get('name'), block.get('input') or {}
         current = state['tasks'][-1][0] if state['tasks'] else None
         if name == 'AskUserQuestion' and block.get('id'):
-            state['asks'] = (state['asks'] + [block['id']])[-200:]
+            questions = [q['question'] for q in data.get('questions', [])
+                         if isinstance(q, dict) and isinstance(q.get('question'), str)]
+            state['asks'][block['id']] = [n, origin, questions]
+            state['asks'] = dict(list(state['asks'].items())[-200:])
         elif name == 'Skill':
             skill = str(data.get('skill', '')).split(':')[-1]
             state['active'] = state['active'] or skill == 'workflow' or skill in PHASES
@@ -748,7 +886,7 @@ def scan(path: Path, cwd: str) -> dict:
     the transcript path, checked by the first and last 4 KB read), so each call parses only the new lines.
     Raises OSError or ValueError when the file cannot be read as a transcript."""
     data = path.read_bytes()
-    cache = CACHE_DIR / (digest(str(path).lower().encode('utf-8')) + '.json')
+    cache = CACHE_DIR / (digest((str(path.resolve()) + '\n' + key(absolute(cwd, ''))).encode('utf-8')) + '.json')
     try:
         state = json.loads(cache.read_text(encoding='utf-8'))
         offset = state['offset']
@@ -825,11 +963,14 @@ def report_file(folder: Path | None, name: str) -> Path | None:
 def report_check(state: dict, task: str, name: str, answer: int, folder: Path | None) -> str:
     """'' when the owner's answer at `answer` covers the exact bytes shown: the fingerprint recorded before the report's
     last presentation before that answer, the same at the answer, and the same now. Otherwise why not."""
-    key = name.lower()
-    shown = [n for n in state.get('shown_at', {}).get(task, {}).get(key, []) if n < answer]
+    report_key = name.lower()
+    shown = [n for n in state.get('shown_at', {}).get(task, {}).get(report_key, []) if n < answer]
     if not shown:
         return f'{name} was not presented before that answer'
-    prints = state.get('fingerprints', {}).get(task, {}).get(key, [])
+    roots = [root for n, root in state.get('shown_roots', {}).get(task, {}).get(report_key, []) if n == shown[-1]]
+    if folder is None or not roots or key(roots[-1]) != key(slash(str(folder.parents[2]))):
+        return f'{name} was presented for a different or unknown workspace; copied task records do not transfer approval'
+    prints = state.get('fingerprints', {}).get(task, {}).get(report_key, [])
     before = [sha for n, sha in prints if n < shown[-1]]
     if not before:
         return f'no fingerprint of {name} was recorded before it was presented (an older session, another host or a report not read or written by a tool)'
@@ -837,7 +978,7 @@ def report_check(state: dict, task: str, name: str, answer: int, folder: Path | 
     if any(other != sha for n, other in prints if shown[-1] < n < answer):
         return f'{name} changed after it was presented'
     after = min((n for n, *_ in state['users'] if n > answer), default=None)
-    replies = [other for n, other in state.get('replies', {}).get(task, {}).get(key, []) if n > answer and (after is None or n < after)]
+    replies = [other for n, other in state.get('replies', {}).get(task, {}).get(report_key, []) if n > answer and (after is None or n < after)]
     if not replies:
         return f'no fingerprint of {name} was recorded with that answer'
     if replies[0] != sha:
@@ -862,7 +1003,15 @@ def consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...] = ()
     for n, words, truncated, _kind in state['users']:
         if n <= start or words != wanted or truncated:
             continue
+        if revoked_after(state, task, n):
+            if why is not None:
+                why.append('a later real user message withdraws it')
+            continue  # a later real withdrawal applies in this session too
         if not reports and NO_REPORT.search(quote):
+            roots = state.get('chat_roots', {}).get(task, {})
+            before = [[root for at, root in roots.get(str(rev), []) if at < n] for rev in revisions]
+            if folder is None or any(not seen or seen[-1] != key(slash(str(folder.parents[2]))) for seen in before):
+                continue
             return n  # the owner skipped the report: a chat-presented revision has no report bytes to compare
         names = reports or tuple(sorted((r for r, at in state.get('shown_at', {}).get(task, {}).items() if any(m < n for m in at)),
                                         key=lambda r: max(m for m in state['shown_at'][task][r] if m < n))[-1:])
@@ -899,6 +1048,12 @@ RESTRICTS = re.compile(r"\b(?:but|except|only|without|nothing in|no changes? (?:
 CONTINUES = re.compile(r'\b(?:continue|resume)\b')
 
 
+def revoked_after(state: dict, task: str, after: int = -1) -> bool:
+    """A withdrawal belongs to the task active/named at that actual user message."""
+    return any(n > after and state.get('user_tasks', {}).get(str(n), '*') in (task, '*')
+               and REVOKED.search(words) for n, words, _t, _k in state.get('users', []))
+
+
 def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: tuple[str, ...] = (),
                     revisions: tuple[int, ...] = (), budget: float = 2.5, folder: Path | None = None,
                     recorded: frozenset = frozenset(), current: dict | None = None,
@@ -906,6 +1061,8 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
     """The same test in sibling transcripts (earlier sessions of this project) that name this task's folder, and why an
     approval found there does not carry over: the report bytes differ from those presented and approved (report_check),
     a later revocation, a later stop without a continuation since, or a later restriction the checkpoint does not record."""
+    if revoked_after(current or {}, task):
+        return False, 'a real user message in the current session withdraws that approval'
     started = time.monotonic()
     try:
         siblings = sorted((p for p in transcript.parent.glob('*.jsonl') if p != transcript),
@@ -927,7 +1084,8 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
         if at is None:
             note = note or (f'in an earlier session, {why[0]}' if why else '')
             continue
-        later = [(n, words) for n, words, _t, _k in state['users'] if n > at]
+        later = [(n, words) for n, words, _t, _k in state['users'] if n > at
+                 and state.get('user_tasks', {}).get(str(n), '*') in (task, '*')]
         for n, words in later:
             if REVOKED.search(words):
                 return False, f'a later message in that session withdraws it ("{words[:120]}")'
@@ -1006,6 +1164,14 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
                 and all(holds(q) for q in said):
             return None
     report = f'docs/plans/{task}/reviews/{reports[0]}' if reports else f'the r{max(revisions)} plan' if revisions else 'the plan'
+    fingerprint_gap = next((note for note in notes if 'no fingerprint of ' in note), None)
+    if fingerprint_gap:
+        return (f'cannot verify report evidence: {fingerprint_gap}. Check the active hook registration before '
+                'requesting approval again: it must run phase_gate.py on PostToolUse and UserPromptSubmit from '
+                'the same plugin root as PreToolUse. If the registration is old, missing or uncertain, restart '
+                'Claude Code with one verified plugin source. Do not keep asking for the same approval in this '
+                f'session. After recovery, read and present {report}, obtain the real answer, and preserve it on '
+                'a separate Reconfirmed (gate two) line. Keep existing approval records and edits intact')
     why = f' ({notes[0]})' if notes else ''
     return (f'quotes "{missing[0]}", but no user message given after this task\'s plan was presented contains those '
             f'words as the whole message or whole selected answer, in this session or an earlier one{why}. Keep all '
@@ -1176,6 +1342,13 @@ def judge(event: dict) -> int:
         return 0
     if not state['active']:
         return 0
+    registered = next((arg.split('=', 1)[1] for arg in sys.argv[1:]
+                       if arg.startswith('--hook-protocol=')), None)
+    if registered != HOOK_PROTOCOL:
+        return deny(f'workflow-axa: incompatible hook registration protocol {registered}; this script requires '
+                    f'{HOOK_PROTOCOL}. Restart Claude Code with one complete verified plugin version. '
+                    'Do not retry approval in this mixed session or disable the gate. Read-only work and '
+                    'task records remain available.')
     task = state['tasks'][-1][0] if state['tasks'] else '*'
     if task in state.get('paused_tasks', {}) or '*' in state.get('paused_tasks', {}):
         return deny("workflow-axa: the user stopped, paused or cancelled this task. Do not start another write. "
@@ -1272,8 +1445,11 @@ def fingerprints(event: dict) -> int:
         if not state['active'] or not state['tasks']:
             return 0
         task = state['tasks'][-1][0]
-        folder = Path(project.root or cwd) / 'docs' / 'plans' / task
         for name in state.get('shown_at', {}).get(task, {}):
+            roots = state.get('shown_roots', {}).get(task, {}).get(name, [])
+            if not roots or not project.contains(roots[-1][1]):
+                continue
+            folder = Path(roots[-1][1]) / 'docs' / 'plans' / task
             path = report_file(folder, name)
             if path:
                 lines.append((REPLY_MARK, f'docs/plans/{task}/{"reviews/" if path.parent.name == "reviews" else ""}{path.name}', path))

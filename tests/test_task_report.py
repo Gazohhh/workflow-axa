@@ -72,7 +72,11 @@ class TaskReportTests(unittest.TestCase):
             return value
         path = self.root / "task-overview.json"
         out = renderer.render(renderer.load_json(path), self.root, path)
-        self.assertEqual(normal(out), normal((self.root / "task-overview.html").read_text(encoding="utf-8")))
+        expected = (self.root / "task-overview.html").read_text(encoding="utf-8")
+        # UI-lite adds an explicit deny for frames when no quick preview is present.
+        # This preserves the old default-src 'none' restriction; keep the rest byte-identical.
+        expected = expected.replace("connect-src 'none';", "frame-src 'none'; connect-src 'none';", 1)
+        self.assertEqual(normal(out), normal(expected))
 
     def test_planning_shows_agreement_separate_from_plan(self):
         extended(self.data)

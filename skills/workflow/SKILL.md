@@ -54,6 +54,6 @@ Answering grilling questions is not agreement, and a generic "go" is not approva
 - Use AUDIT.md for the necessity check, `domain-modeling` for unclear terms, and WRITING.md for the cold-reader check.
 - Never stage, commit, push, branch, reset, deploy or publish unasked.
 - Pass workers the output folder, write scope, rules and UI authority. Read applicable instructions whole; do not load unrelated references.
-- Don't end a turn while your own work runs unless the host will wake you. End every turn with one state line: **Running** (what, when you'll report), **Waiting on you** (the question) or **Done**.
+- Approval waits: present once, end the turn; no polling. Host goals: TASK-FOLDER.md "Approval waits and host goals". End with **Running**, **Waiting on you** or **Done**; do not end running work unless the host will wake you.
 - Write requested handoffs from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md)).
 - When needed: PDF-DELIVERABLE.md, OPTIONAL-HELPERS.md.

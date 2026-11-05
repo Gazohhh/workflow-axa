@@ -1,0 +1,10 @@
+{
+  "kind": "OFFLINE host-derived replay; owner-reply hook output regenerated, not a live model run",
+  "corrected_record_current_session_allowed": true,
+  "new_transcript_same_workspace_recovery_allowed": true,
+  "current_output": null,
+  "recovery_output": null,
+  "regenerated_reply_fingerprint": "workflow-axa report at owner reply: docs/plans/2026-11-05-live-recovery/reviews/plan-r1.html sha256=f9bbedc8d26b4664cd8dc1e1e866dfd279fa492acdd11a415ac5305e273eea3a",
+  "original_host_transcript_unchanged": true,
+  "source_value_unchanged": true
+}

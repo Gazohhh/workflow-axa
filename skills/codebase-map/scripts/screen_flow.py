@@ -1,6 +1,7 @@
 """Optional, inert UI screen flow inside the existing review. No application code execution.
 
-Input is a bounded screen description or a local PNG capture, never HTML, CSS or a URL.
+Input is a bounded screen description or local PNG; optional quick previews extract
+existing inert markup and compiled CSS from supplied project sources.
 The main renderer supplies its validation and geometry functions to avoid a second graph engine.
 """
 from __future__ import annotations
@@ -21,6 +22,13 @@ ELEMENTS = {'heading', 'text', 'checkbox', 'input', 'button', 'message'}
 
 def bindings_module():
     spec = importlib.util.spec_from_file_location('workflow_kit_bindings', Path(__file__).with_name('kit_bindings.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def quick_module():
+    spec = importlib.util.spec_from_file_location('workflow_quick_preview', Path(__file__).with_name('quick_preview.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -85,7 +93,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     if not isinstance(ui, dict):
         raise ValueError('ui_review must be an object')
     allowed = {'title','summary','kind','mode','authority','preview','acceptance','width','height',
-               'screens','transitions','decisions','open_first','limit','kit_binding'}
+               'screens','transitions','decisions','open_first','limit','kit_binding','quick_previews'}
     if set(ui) - allowed:
         raise ValueError('Unknown UI review fields; raw HTML/CSS/URLs are not supported')
     if any(g['id'] == 'ui-preview' for g in data['graphs']):
@@ -113,6 +121,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
         raise ValueError('An illustrative sample cannot claim application design acceptance')
     if ui['mode'] == 'unselected' and ui['authority']['status'] == 'confirmed':
         raise ValueError('An unselected UI mode cannot be confirmed')
+    quick_module().collect(ui, root, sources, api)  # also validates source-backed static previews
     decisions = api.indexed(ui.get('decisions'), 'UI decisions')
     if len(decisions) > 8:
         raise ValueError('Keep at most eight relevant UI decisions in this view')
@@ -389,6 +398,7 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
                    'plain unstyled HTML only when the user explicitly allows it.</p>') if ui['mode'] in {'functionality-only','design-authoring'} else ''
     source_note=f'{e(authority["summary"])} Reference: {api.links([authority["source"]],"s")}, {e(authority["locator"])}.'
     first=ui['screens'][0]['id']
+    gallery=quick_module().render(quick_module().collect(ui, root, sources, api), api)
     return (f'<figure class="panel ui-review" id="panel-ui-preview"><div class="figure-head"><h2>{e(ui["title"])}</h2>'
             '<span>screens · interaction · design</span></div>'
             f'<p class="figure-description">{e(ui["summary"])}</p>{illustration}{legacy_note}'
@@ -403,6 +413,7 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
             f'data-start-id="ui-screen-{e(first)}" style="--board-width:{w}px"><div class="ui-scaled" style="--ui-width:{w}px;--ui-height:{h}px">'
             f'<div class="ui-board">{"".join(routes)}{"".join(cards)}</div></div></div>'
             f'<figcaption>{e(ui["limit"])} Selecting or inspecting a screen does not record approval or change the application.</figcaption>'
+            + gallery
             + ('<section class="ui-decisions"><h2>Design decisions on these screens</h2>'+''.join(decisions)+'</section>' if decisions else '') +
             '<details class="ui-screen-index"><summary>Inspect screens and their sources</summary>'+''.join(details)+'</details>'
             '</figure>')
