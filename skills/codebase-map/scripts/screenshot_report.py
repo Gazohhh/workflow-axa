@@ -76,8 +76,13 @@ def main(argv: list[str]) -> int:
             return 2
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:  # Edge holds files briefly on Windows
         for out, width in targets:
-            result = subprocess.run(command(browser, report.as_uri(), out, width, height or 6000, profile),
-                                    capture_output=True, text=True, timeout=120)
+            try:
+                result = subprocess.run(command(browser, report.as_uri(), out, width, height or 6000, profile),
+                                        capture_output=True, text=True, timeout=120)
+            except subprocess.TimeoutExpired:
+                print(f'FAILED: browser timed out after 120 seconds while capturing {out.name}. '
+                      'Any completed captures are preserved; no retry was started.')
+                return 1
             # On Windows the launcher can return before its child process has written the file.
             for _ in range(60):
                 if result.returncode != 0 or out.is_file():

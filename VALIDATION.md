@@ -2,6 +2,18 @@
 
 ## Current verification
 
+Candidate workflow-axa 2.8.0-rc.6, shared rules 1.8.2, 21 registered skills.
+
+| Evidence | Result and limit |
+|---|---|
+| Source commit | `b32e4b1097f8802448cad90c88817ffefb237cf0` plus the rc.6 reference, timeout and setup-routing repairs. |
+| Focused regressions | Reproduced both helper failures before repair; 42 strict-kit tests and 4 screenshot-helper tests now pass. |
+| Full package suite | 889 tests in 170.364 seconds: PASS, 13 environment/platform skips. Validator and diff checks pass. |
+| Live evaluation | Seven Opus 5.5 processes on five disposable application worktrees, USD 8.7850036 reported usage. Initial audits and Hooqd plan generation completed without application edits; full lifecycle and visual coverage remain incomplete. |
+| Review | Standards and Spec self-review; no independent reviewer or subagents used. |
+
+## History - rc.5 verification
+
 Candidate workflow-axa 2.8.0-rc.5 retains shared rules 1.8.2 and 21 registered skills. This revision clarifies source-backed example creation, actual variant coverage and capture readiness. The approved five-project live evaluation has not started. Prior host evidence below does not certify this revision.
 
 | Evidence | Result and limit |

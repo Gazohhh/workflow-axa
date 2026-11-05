@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0-rc.6 — live evaluation repairs (2026-11-05)
+
+- Preserve real framework identifiers in reused-element references; accept SwatchTile and Form.Group without replacing them with inferred HTML tags. References remain escaped, bounded and tied to source records.
+- Return a clear screenshot failure on browser timeout, preserve earlier captures and start no retry.
+- Route a resumed setup answer to rule-maker before drafting project rules.
+- Add regressions for exact component names, invalid expressions and first/second capture timeouts. Live five-project evaluation remains partial.
+
 ## 2.8.0-rc.5 — source-backed examples (2026-11-05)
 
 - Allow approved minimal framework examples and registration using real components and existing markup patterns; setup alone still grants no implementation authority.

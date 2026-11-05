@@ -1,6 +1,10 @@
-# Workflow AXA — 2.8.0-rc.5
+# Workflow AXA — 2.8.0-rc.6
 
-## Candidate: source-backed design-kit examples
+## Candidate: framework references and setup routing
+
+Live evaluation exposed two helper failures: React component names were rejected as element references, and screenshot timeouts escaped as exceptions. References now preserve source component names as inert text, and a timeout returns a clear failure while preserving completed captures. A setup answer explicitly routes through rule-maker. The five-project evaluation remains in progress; these changes do not grant approval or prove complete visual coverage.
+
+## Earlier candidate: source-backed design-kit examples
 
 Approved kit work can add small framework examples that reuse real components and existing markup patterns. Check variants against their renderers and real callers, and capture settled presentation states. Setup still requires implementation approval. No new styling or preview dependencies are introduced. The five-project Claude Code evaluation is pending; package checks do not establish live behavior.
 

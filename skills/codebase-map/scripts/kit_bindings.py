@@ -124,7 +124,7 @@ def resolve(ui: dict, root: Path, sources: dict) -> dict | None:
 
 
 REUSED_FIELDS = {'id', 'source', 'locator', 'tag', 'classes', 'context', 'changes'}
-TAG = re.compile(r'[a-z][a-z0-9-]{0,40}')
+TAG = re.compile(r'(?:[a-z][a-z0-9-]*|[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*)')
 CLASS = re.compile(r'-?[A-Za-z_][A-Za-z0-9_-]{0,80}')
 ELEMENT_ID = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,15}')
 
@@ -147,8 +147,8 @@ def check_reused(elements, sources: dict) -> None:
             value = element[field]
             if not isinstance(value, str) or not value.strip() or len(value) > 300 or any(c in value for c in '<>{}'):
                 raise ValueError(f'Reused element {field} must be plain text (no markup or styles).')
-        if not isinstance(element['tag'], str) or not TAG.fullmatch(element['tag']):
-            raise ValueError('Reused element tag must be a plain tag name, for example "div" or "ion-chip".')
+        if not isinstance(element['tag'], str) or len(element['tag']) > 41 or not TAG.fullmatch(element['tag']):
+            raise ValueError('Reused element tag must be a plain tag or component name, for example "div", "ion-chip" or "Form.Group".')
         classes = element['classes']
         if not isinstance(classes, list) or len(classes) > 20 or not all(isinstance(c, str) and CLASS.fullmatch(c) for c in classes):
             raise ValueError('Reused element classes must be a list of existing class names (empty when it has none).')

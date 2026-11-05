@@ -69,6 +69,21 @@ class StrictKitTests(unittest.TestCase):
         self.reuse();out=self.render()
         for text in ('Existing elements this screen copies','&lt;div class=&quot;sm-chip info-chip&quot;&gt;','src/kit.stories.ts:3','Screenshot · copied elements listed below','Context: inside div.dashboard-info-line-chip'):
             self.assertIn(text,out)
+    def test_reused_framework_names_are_preserved_as_inert_references(self):
+        for tag in ('SwatchTile', 'Text', 'Form.Group', 'animated.div'):
+            with self.subTest(tag=tag):
+                self.reuse()
+                element=self.screen['elements'][0]
+                element.update(tag=tag,classes=[],context='Existing framework component in its source wrapper')
+                (self.root/'src/kit.stories.ts').write_text(f'export const Example = () => <{tag} />;')
+                out=self.render()
+                self.assertIn(f'&lt;{tag}&gt;',out)
+                self.assertNotIn(f'<{tag}>',out)
+    def test_reused_framework_reference_rejects_expressions_and_markup(self):
+        for tag in ('Form..Group', 'Button()', '<Button>', 'Button onClick=run', 'Button[0]'):
+            with self.subTest(tag=tag):
+                self.reuse();self.screen['elements'][0]['tag']=tag
+                with self.assertRaisesRegex(ValueError,'plain tag'):self.render()
     def test_reused_element_needs_its_context(self):
         # Round-4 retro: the copied pill lost its look because its style came from the parent wrapper.
         self.reuse();self.screen['elements'][0].pop('context')

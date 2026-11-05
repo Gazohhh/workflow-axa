@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import os
+import contextlib
+import importlib.util
+import io
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "skills/codebase-map/scripts/screenshot_report.py"
 FAKE = '''import sys
@@ -63,6 +67,31 @@ class ScreenshotReportTests(unittest.TestCase):
         typo = self.run_tool(self.report, self.dir / "artifacts-typo" / "t", "--browser", self.browser)
         self.assertEqual(typo.returncode, 2)
         self.assertFalse((self.dir / "artifacts-typo").exists())
+
+    def test_browser_timeout_reports_failure_and_preserves_completed_capture(self):
+        spec = importlib.util.spec_from_file_location('screenshot_timeout_case', SCRIPT)
+        tool = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(tool)
+        for timeout_at in (1, 2):
+            with self.subTest(timeout_at=timeout_at):
+                destination = self.dir / f'timeout-{timeout_at}'
+                calls = []
+                def run(command, **kwargs):
+                    calls.append(command)
+                    if len(calls) == timeout_at:
+                        raise subprocess.TimeoutExpired(command, kwargs['timeout'])
+                    target = next(arg.split('=', 1)[1] for arg in command if arg.startswith('--screenshot='))
+                    Path(target).write_bytes(b'completed capture')
+                    return subprocess.CompletedProcess(command, 0, '', '')
+                output = io.StringIO()
+                with mock.patch.object(tool.subprocess, 'run', side_effect=run), contextlib.redirect_stdout(output):
+                    result = tool.main(['screenshot_report.py', str(self.report), str(destination), '--browser', str(self.browser)])
+                self.assertEqual(result, 1)
+                self.assertIn('timed out', output.getvalue())
+                self.assertEqual(len(calls), timeout_at)
+                self.assertFalse((destination / 'review-narrow.png').exists())
+                if timeout_at == 2:
+                    self.assertEqual((destination / 'review-desktop.png').read_bytes(), b'completed capture')
 
 
 if __name__ == "__main__":

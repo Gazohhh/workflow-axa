@@ -5,4 +5,6 @@ Before substantive planning or writing, read `START.md`, `CORE.md` and `READINES
 
 When readiness blocks, **ask only the readiness choice and stop**. Record READY, LIMITED_EXCEPTION, SETUP_ONLY or the other defined state in the existing checkpoint; **name only rule files you actually opened**. Readiness is not implementation approval.
 
+When the user chooses setup, invoke or fully read `../rule-maker/SKILL.md` before drafting project rules. This applies to a later answer in a resumed conversation too; the readiness check is not the setup procedure.
+
 For legacy approvals and phase routing use this skill's [SKILL.md](SKILL.md). Shared/project conflicts use rule-maker's POLICY.md. The full rules audit is rule-maker's AUDIT.md. There is no second readiness checklist here.
