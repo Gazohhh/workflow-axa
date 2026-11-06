@@ -196,6 +196,44 @@ class PlainReplyHookTests(unittest.TestCase):
         path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
         self.assertIn("workflow-clarify: grilling/SKILL.md", json.loads(fire({"transcript_path": str(path)})[1])["reason"])
 
+    def test_report_phase_stop_names_missing_flowchart_guide(self):
+        path = self.dir / 'session.jsonl'
+        for phase in ('workflow-specify', 'workflow-deliver'):
+            rows = [{'type': 'user', 'message': {'role': 'user', 'content': f'/workflow-axa:{phase}'}},
+                    {'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'Waiting for approval.'}]}}]
+            path.write_text('\n'.join(json.dumps(r) for r in rows), encoding='utf-8')
+            reason = json.loads(fire({'transcript_path': str(path)})[1])['reason']
+            self.assertIn('codebase-map/FLOWCHART-DESIGN.md', reason)
+
+    def test_project_required_reads_leave_package_guide_stop_checks_unchanged(self):
+        # R10: project declarations are enforced before phase entry and report operations (phase_gate.py), not here.
+        # The package-guide check keeps its legacy evidence: an ID-less whole read still counts, a failed one does not.
+        (self.dir / '.git').mkdir()
+        (self.dir / 'AGENTS.md').write_text('<!-- workflow-axa:required-read phases=specify,execute,deliver '
+                                            'path="tests/README.md" -->\n', encoding='utf-8')
+        path = self.dir / 'session.jsonl'
+        grilling = 'D:/workflow-axa/skills/grilling/SKILL.md'
+        load = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'name': 'Skill',
+                'input': {'skill': 'workflow-axa:workflow-clarify'}}]}}
+        done = {'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'Questions are ready.'}]}}
+        legacy = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'name': 'Read',
+                  'input': {'file_path': grilling}}]}}
+        failed = [{'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 'g1', 'name': 'Read',
+                   'input': {'file_path': grilling}}]}},
+                  {'type': 'user', 'message': {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': 'g1',
+                   'is_error': True, 'content': 'Permission denied'}]}}]
+        start = [{'type': 'user', 'message': {'role': 'user', 'content': '/workflow-axa:workflow add'}}, load]
+        event = {'transcript_path': str(path), 'cwd': str(self.dir)}
+        path.write_text('\n'.join(json.dumps(r) for r in start + [legacy, done]), encoding='utf-8')
+        self.assertEqual(fire(event), (0, ''))
+        path.write_text('\n'.join(json.dumps(r) for r in start + failed + [done]), encoding='utf-8')
+        reason = json.loads(fire(event)[1])['reason']
+        self.assertIn('workflow-clarify: grilling/SKILL.md', reason)
+        self.assertNotIn('tests/README.md', reason)
+        # A valid JSON line that is not an object is skipped, not a reason to drop the whole check.
+        path.write_text('\n'.join(json.dumps(r) for r in [[1]] + start + failed + ['text', done]), encoding='utf-8')
+        self.assertIn('workflow-clarify: grilling/SKILL.md', json.loads(fire(event)[1])['reason'])
+
     def test_hooks_json_wires_it_on_stop(self):
         data = json.loads((ROOT / "hooks/hooks.json").read_text(encoding="utf-8"))
         self.assertIn("${CLAUDE_PLUGIN_ROOT}/hooks/plain_reply.py", data["hooks"]["Stop"][0]["hooks"][0]["command"])

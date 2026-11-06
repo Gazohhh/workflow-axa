@@ -41,20 +41,27 @@ class SessionRecoveryTests(unittest.TestCase):
         self.assertIn('registration', out['permissionDecisionReason'].lower())
         self.assertNotIn('ask whether it still holds', out['permissionDecisionReason'])
 
-    def test_unknown_registration_protocol_blocks_code_but_not_records(self):
+    def test_unknown_registration_protocol_blocks_code_but_keeps_record_helper_available(self):
         self.task(gate.TASK, gate.APPROVED)
         self.session(self.path, [gate.ROUTER] + self.approval('Yes to both'))
-        for path, denied in ((self.code, True),
-                             (str(self.repo / 'docs/plans' / gate.TASK / 'FINDINGS.md'), False)):
-            event = {'hook_event_name': 'PreToolUse', 'tool_name': 'Edit',
-                     'tool_input': {'file_path': path}, 'cwd': str(self.repo),
-                     'transcript_path': str(self.path)}
+        record = self.repo / 'docs/plans' / gate.TASK / 'FINDINGS.md'
+        helper = gate.ROOT / 'skills/workflow/scripts/record.py'
+        command = f'python -X utf8 -I "{helper.as_posix()}" append "{record.as_posix()}" -'
+        for tool, data, reason in (
+                ('Edit', {'file_path': self.code}, 'protocol'),
+                ('Edit', {'file_path': str(record)}, 'record.py'),
+                ('Bash', {'command': command}, None)):
+            event = {'hook_event_name': 'PreToolUse', 'tool_name': tool,
+                     'tool_input': data, 'cwd': str(self.repo), 'transcript_path': str(self.path)}
             result = subprocess.run([sys.executable, '-I', str(gate.HOOK), '--hook-protocol=999'],
                                     input=json.dumps(event), capture_output=True, text=True)
             self.assertEqual(result.returncode, 0)
-            self.assertEqual(bool(result.stdout.strip()), denied)
-            if denied:
-                self.assertIn('protocol', result.stdout)
+            if reason:
+                output = json.loads(result.stdout)['hookSpecificOutput']
+                self.assertEqual(output['permissionDecision'], 'deny')
+                self.assertIn(reason, output['permissionDecisionReason'])
+            else:
+                self.assertEqual(result.stdout.strip(), '')
 
     def test_old_registration_without_protocol_requires_restart_even_with_copied_evidence(self):
         self.task(gate.TASK, gate.APPROVED)

@@ -37,6 +37,8 @@ as changes to the instructions governing the current session.
 
 ## Verification and evidence
 
+<!-- workflow-axa:required-read phases=specify,execute,deliver path="tests/README.md" -->
+
 - Read package versions from .claude-plugin/plugin.json; distinguish
   candidate files, installed copies and observed session registrations.
 - For fixes, reproduce the failure, run targeted regression checks, then

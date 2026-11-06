@@ -55,7 +55,10 @@ class FollowupApprovalTests(unittest.TestCase):
         rows = self.h.approved_rows() + [fixtures.user('Stop.')]
         self.assertEqual(self.h.decision(rows, 'Edit', {'file_path': self.h.code}), 'deny')
         record = self.h.repo / 'docs/plans' / fixtures.TASK / 'FINDINGS.md'
-        self.assertIsNone(self.h.decision(rows, 'Write', {'file_path': str(record)}))
+        self.assertEqual(self.h.decision(rows, 'Write', {'file_path': str(record)}), 'deny')
+        helper = ROOT / 'skills/workflow/scripts/record.py'
+        command = f'python -X utf8 -I "{helper.as_posix()}" append "{record.as_posix()}" -'
+        self.assertIsNone(self.h.decision(rows, 'Bash', {'command': command}))
 
     def test_resume_reuses_unchanged_approval_without_reapproving(self):
         rows = self.h.approved_rows() + [fixtures.user('Pause this task.'), fixtures.user('Continue this task.')]

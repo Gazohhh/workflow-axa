@@ -5,6 +5,7 @@ Style guidance remains in WRITING/simple-english. This hook does not prove compr
 from __future__ import annotations
 
 import ast
+import functools
 import json
 import re
 import shlex
@@ -22,6 +23,8 @@ def last_reply_and_usage(path: Path) -> tuple[str, bool]:
             entry = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(entry, dict):
+            continue  # a valid JSON line that is not an entry
         message = entry.get("message") or {}
         content = message.get("content")
         if entry.get("type") == "assistant" and isinstance(content, list):
@@ -36,7 +39,8 @@ def last_reply_and_usage(path: Path) -> tuple[str, bool]:
     return reply, used
 
 
-def phase_reads_table() -> dict:
+@functools.lru_cache(maxsize=1)
+def phase_reads_table() -> tuple[dict, set]:
     import importlib.util
     spec = importlib.util.spec_from_file_location('phase_reads', Path(__file__).with_name('phase_reads.py'))
     module = importlib.util.module_from_spec(spec)
@@ -168,13 +172,14 @@ def complete_result(entry: dict, result: dict) -> bool:
         r'\[truncated\]|\d+\s+characters truncated)|^<persisted-output>', text, re.I | re.M)
 
 
-def unread_files(path: Path) -> dict[str, list[str]]:
-    """For each workflow phase loaded in the session, the required files not opened in the current context.
-    A read counts from the last compaction on, also before the phase loaded (round 22: the router's reads were
-    demanded again). UI files count only when the session worked on a visible change (round 17)."""
-    reads, ui_files = phase_reads_table()
+def scan_reads(path: Path) -> dict:
+    """One pass over the transcript: the phases loaded, read evidence and the visible/TDD/code signals.
+    `inputs` is the package-guide evidence, where legacy ID-less calls still count. `complete` holds the paths of
+    calls with an ID whose own result is successful and complete. Both restart at compaction."""
+    reads, _ui = phase_reads_table()
     loaded: set[str] = set()
     inputs: list[str] = []
+    complete: list[str] = []
     pending: dict[str, tuple[str, str]] = {}
     visible = False
     tdd = False
@@ -184,9 +189,12 @@ def unread_files(path: Path) -> dict[str, list[str]]:
             entry = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(entry, dict):
+            continue  # a valid JSON line that is not an entry
         content = (entry.get("message") or {}).get("content")
         if entry.get("type") == "system" and entry.get("subtype") == "compact_boundary":
             inputs = []  # the summary does not carry the files' text
+            complete = []
             pending = {}
         if entry.get('isSidechain'):
             continue
@@ -197,6 +205,7 @@ def unread_files(path: Path) -> dict[str, list[str]]:
                 read, name = pending.pop(result.get('tool_use_id'), ('', ''))
                 if read and complete_result(entry, result):
                     inputs.append(read)
+                    complete.extend(read.splitlines())
                     if name == 'Read':
                         loaded.update(phase for phase in reads if read.endswith(f'/{phase}/SKILL.md'))
             if not entry.get('isMeta') and not any(isinstance(b, dict) and b.get('type') == 'tool_result'
@@ -236,8 +245,18 @@ def unread_files(path: Path) -> dict[str, list[str]]:
                 pending[block['id']] = (read, block.get('name', ''))
             else:
                 inputs.append(read)  # legacy ID-less transcripts: best-effort call evidence only
+    return {'loaded': loaded, 'inputs': inputs, 'complete': complete, 'visible': visible, 'tdd': tdd, 'code': code}
+
+
+def unread_files(path: Path, found: dict | None = None) -> dict[str, list[str]]:
+    """For each workflow phase loaded in the session, the required files not opened in the current context.
+    A read counts from the last compaction on, also before the phase loaded (round 22: the router's reads were
+    demanded again). UI files count only when the session worked on a visible change (round 17)."""
+    reads, ui_files = phase_reads_table()
+    found = found if found is not None else scan_reads(path)
+    loaded, visible, tdd, code = found['loaded'], found['visible'], found['tdd'], found['code']
     missing = {}
-    opened = '\n'.join(inputs).splitlines()
+    opened = '\n'.join(found['inputs']).splitlines()
     for phase in loaded:
         needed = [rel for rel in reads[phase]
                   if (visible or rel not in ui_files)
@@ -257,6 +276,8 @@ def unsaid_behind(path: Path) -> str | None:
             entry = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(entry, dict):
+            continue  # a valid JSON line that is not an entry
         content = (entry.get("message") or {}).get("content")
         if not isinstance(content, list):
             continue
@@ -306,6 +327,8 @@ def unreviewed_code(path: Path, reply: str, cwd: str = "") -> list[str]:
             entry = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(entry, dict):
+            continue  # a valid JSON line that is not an entry
         content = (entry.get("message") or {}).get("content")
         if entry.get("type") != "assistant" or not isinstance(content, list):
             continue

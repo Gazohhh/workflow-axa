@@ -1,9 +1,9 @@
 {
-  "description": "After /workflow, blocks code edits, shell writes into project files, MCP write tools and git writes until the current task's PLAN.md Approval line approves a revision and quotes words from a real user message (task records stay writable; see skills/workflow/SETUP.md, What the hooks enforce), and blocks package installs and npx-style downloads unless the user's latest words allow installing. Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons.",
+  "description": "After /workflow, blocks code edits, shell writes into project files, MCP write tools and git writes until the current task's PLAN.md Approval line approves a revision and quotes words from a real user message (canonical task records use record.py instead of direct Write/Edit/MultiEdit in active workflow sessions; see skills/workflow/SETUP.md, What the hooks enforce), and blocks package installs and npx-style downloads unless the user's latest words allow installing. When the project root AGENTS.md or CLAUDE.md declares required reads, blocks entering workflow-specify, workflow-execute or workflow-deliver, and validating or rendering a report while one is loaded, until each declared file was read whole in the current context. Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons.",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell|mcp__.*([Cc]reate|[Ww]rite|[Ee]dit|[Dd]elete|[Aa]pply|[Uu]pdate|[Ii]mport|[Ee]xecute|[Mm]anage).*",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell|Skill|mcp__.*([Cc]reate|[Ww]rite|[Ee]dit|[Dd]elete|[Aa]pply|[Uu]pdate|[Ii]mport|[Ee]xecute|[Mm]anage).*",
         "hooks": [
           {
             "type": "command",

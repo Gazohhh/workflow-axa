@@ -1298,21 +1298,207 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
 
 # Report guides (round v3), unchanged
 
-REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'simple-english/SKILL.md')
+REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'simple-english/SKILL.md', 'codebase-map/FLOWCHART-DESIGN.md')
 UI_GUIDE = 'codebase-map/UI-FLOW.md'
 
 
-def unread_report_guides(path: Path) -> list[str]:
+def unread_report_guides(path: Path, reads: 'ReadEvidence | None' = None) -> list[str]:
     """Report guides not read whole in this context, when specify or deliver loaded (round v3: in all four
     worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location('plain_reply', Path(__file__).with_name('plain_reply.py'))
-    reply = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(reply)
-    missing = reply.unread_files(path)
+    missing = reply_module().unread_files(path, reads.get() if reads else None)
     wanted = REPORT_GUIDES + (UI_GUIDE,)
     return sorted({rel for phase in ('workflow-specify', 'workflow-deliver') for rel in missing.get(phase, ())
                    if rel in wanted})
+
+
+_REPLY = None
+
+
+def reply_module():
+    """plain_reply.py, loaded once per hook process."""
+    global _REPLY
+    if _REPLY is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('plain_reply', Path(__file__).with_name('plain_reply.py'))
+        _REPLY = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_REPLY)
+    return _REPLY
+
+
+class ReadEvidence:
+    """One plain_reply.scan_reads pass per hook event, shared by the report-guide and declared-read checks.
+    A read error is remembered and raised again to each caller."""
+
+    def __init__(self, transcript: str):
+        self.path, self.result, self.error = Path(transcript), None, None
+
+    def get(self) -> dict:
+        if self.result is None and self.error is None:
+            try:
+                self.result = reply_module().scan_reads(self.path)
+            except (OSError, ValueError) as error:
+                self.error = error
+        if self.error is not None:
+            raise self.error
+        return self.result
+
+
+# Project-declared required reads (R10, P69). Optional `<!-- workflow-axa:required-read phases=specify,execute,deliver
+# path="tests/README.md" -->` lines in the project root's AGENTS.md/CLAUDE.md name files that must be read whole in the
+# current context before those phases start and before a report is validated or rendered while they are loaded.
+
+DECLARED_PHASES = {'specify': 'workflow-specify', 'execute': 'workflow-execute', 'deliver': 'workflow-deliver'}
+ROOT_RULES = ('AGENTS.md', 'CLAUDE.md')
+# A declaration starts its own line (at most three spaces in), so indented code blocks and list-item examples are text.
+DECLARATION_START = re.compile(r'^ {0,3}<!--\s*workflow-axa:required-read', re.M)
+DECLARATION = re.compile(r'<!--\s*workflow-axa:required-read(.*?)-->', re.S)
+DECLARATION_BODY = re.compile(r'\s+phases=([a-z]+(?:,[a-z]+)*)\s+path="([^"\r\n]+)"\s*')
+FENCE = re.compile(r'^\s*(`{3,}|~{3,})')  # at any indentation, including inside list items
+
+
+class DeclarationError(ValueError):
+    """A root rule file that exists cannot be read, or one of its required-read declarations is malformed."""
+
+
+def outside_fences(text: str) -> str:
+    """The text without fenced code blocks and inline code spans, where declarations are only examples."""
+    kept, fence = [], ''
+    for line in text.splitlines():
+        found = FENCE.match(line)
+        if fence:
+            if found and found.group(1)[0] == fence[0] and len(found.group(1)) >= len(fence) \
+                    and not line.strip()[len(found.group(1)):].strip():
+                fence = ''
+            kept.append('')
+            continue
+        if found:
+            fence = found.group(1)
+            kept.append('')
+            continue
+        kept.append(re.sub(r'`[^`\n]*`', '', line))
+    return '\n'.join(kept)
+
+
+def declared_path(raw: str, root: str, source: str) -> str:
+    """A literal project-root-relative path to an existing regular file, or DeclarationError. No globs, URLs,
+    absolute, dot or linked parts."""
+    parts = raw.split('/')
+    if raw != raw.strip() or '\\' in raw or re.search(r'[*?\[\]{}]', raw) or re.match(r'^[A-Za-z][\w+.-]*:', raw) \
+            or raw.startswith(('/', '~')) or any(part in ('', '.', '..') for part in parts):
+        raise DeclarationError(f'{source} declares path="{raw}", which is not a literal project-root-relative path')
+    try:
+        base, target = Path(root).resolve(), Path(root).joinpath(*parts)
+        linked = any(link.is_symlink() or getattr(link, 'is_junction', lambda: False)()
+                     for link in (Path(root).joinpath(*parts[:end]) for end in range(1, len(parts) + 1)))
+        resolved = target.resolve()
+        exists, regular = target.exists(), target.is_file()
+    except (OSError, RuntimeError, ValueError) as error:
+        raise DeclarationError(f'{source} declares path="{raw}", which cannot be checked ({type(error).__name__})')
+    if linked or (resolved != base and base not in resolved.parents):
+        raise DeclarationError(f'{source} declares path="{raw}", which is a link or leaves the project root')
+    if not exists:
+        raise DeclarationError(f'{source} declares path="{raw}", but that declared file does not exist; correct '
+                               'the declaration')
+    if not regular:
+        raise DeclarationError(f'{source} declares path="{raw}", which is not a regular file; correct the declaration')
+    return raw
+
+
+def declared_reads(root: str) -> dict[str, list[str]]:
+    """{phase skill: [root-relative paths]}: the deduplicated union of the root AGENTS.md and CLAUDE.md declarations.
+    Absent files declare nothing. Raises DeclarationError for an unreadable existing file or a malformed declaration."""
+    out: dict[str, list[str]] = {}
+    for name in ROOT_RULES if root else ():
+        file = Path(root) / name
+        if not os.path.lexists(file):
+            continue
+        try:
+            text = outside_fences(file.read_text(encoding='utf-8-sig', errors='replace'))
+        except OSError as error:
+            raise DeclarationError(f'{name} exists at the project root but cannot be read ({type(error).__name__})')
+        for start in DECLARATION_START.finditer(text):
+            whole = DECLARATION.match(text, text.index('<!--', start.start()))
+            body = DECLARATION_BODY.fullmatch(whole.group(1)) if whole else None
+            phases = body.group(1).split(',') if body else []
+            if not body or any(phase not in DECLARED_PHASES for phase in phases):
+                shown = ' '.join((whole.group(0) if whole else text[start.start():start.start() + 120]).split())
+                raise DeclarationError(f'{name} has a malformed required-read declaration ({shown[:160]}); use '
+                                       '<!-- workflow-axa:required-read phases=specify,execute,deliver '
+                                       'path="relative/file.md" --> with phases from specify, execute and deliver')
+            relative_path = declared_path(body.group(2), root, name)
+            for phase in phases:
+                listed = out.setdefault(DECLARED_PHASES[phase], [])
+                if relative_path not in listed:
+                    listed.append(relative_path)
+    return out
+
+
+def read_identity(path: str) -> str:
+    """Exact normalized absolute path; Windows drive paths compare without case."""
+    full = absolute(path, '').rstrip('/')
+    return full.lower() if re.match(r'^[A-Za-z]:', full) else full
+
+
+def report_operation(command: str, powershell: bool) -> bool:
+    """render_report.py asked to validate input or write a report (--validate-input/--output, or their argparse
+    abbreviations). Help and the read-only --check stay outside."""
+    for words, _redirects in segments(lex(split_bodies(command)[0], powershell)):
+        names = [slash(word).rsplit('/', 1)[-1].lower() for word in words]
+        if 'render_report.py' not in names:
+            continue
+        options = [word.split('=', 1)[0] for word in words[names.index('render_report.py') + 1:]]
+        if any(option in ('-h', '--help') for option in options):
+            continue
+        if any(len(option) >= 3 and '--validate-input'.startswith(option) or
+               len(option) >= 4 and '--output'.startswith(option) for option in options):
+            return True
+    return False
+
+
+def required_read_problem(event: dict, reads: ReadEvidence | None = None) -> str | None:
+    """Why an incoming phase Skill call or report operation must wait for declared reads, or None."""
+    tool, data = event.get('tool_name'), event.get('tool_input') or {}
+    incoming = str(data.get('skill', '')).lstrip('/').split(':')[-1] if tool == 'Skill' else ''
+    phase = incoming if incoming in DECLARED_PHASES.values() else ''
+    report = tool in SHELLS and report_operation(str(data.get('command', '')), tool == 'PowerShell')
+    transcript = str(event.get('transcript_path') or '')
+    if not (phase or report) or not transcript:
+        return None  # not a supported boundary, or no transcript: enforcement unavailable (SETUP.md)
+    reads = reads or ReadEvidence(transcript)
+    root = Project(str(event.get('cwd') or '')).root
+    recovery = ('Reading files, skills and rules and the record.py task-record helper stay available; do not edit '
+                'or disable the hook to pass this check.')
+    try:
+        declared = declared_reads(root)
+    except DeclarationError as error:
+        if report:  # only a report operation while a declared phase could be loaded is affected
+            try:
+                if not set(DECLARED_PHASES.values()) & reads.get()['loaded']:
+                    return None
+            except (OSError, ValueError):
+                pass
+        what = phase or 'this report operation'
+        return (f'workflow-axa: {what} cannot check the project\'s required reads: {error}. Fix the declaration in '
+                f'the project root ({root}), then retry. {recovery}')
+    if not declared:
+        return None  # an undeclared project keeps its existing behavior
+    try:
+        evidence = reads.get()
+    except (OSError, ValueError):
+        return (f'workflow-axa: the session transcript ({transcript}) cannot be read, so the files this project '
+                f'declares as required reads cannot be checked before {phase or "this report operation"}. Restore '
+                f'transcript access, then retry. {recovery}')
+    wanted = [phase] if phase else [name for name in DECLARED_PHASES.values() if name in evidence['loaded']]
+    opened = {read_identity(path) for path in evidence['complete'] if is_absolute(path) or path.startswith('~')}
+    missing = list(dict.fromkeys(rel for name in wanted for rel in declared.get(name, ())
+                                 if read_identity(root.rstrip('/') + '/' + rel) not in opened))
+    if not missing:
+        return None
+    before = phase or f'this report operation while {", ".join(n for n in wanted if declared.get(n))} is loaded'
+    return (f'workflow-axa: this project\'s root AGENTS.md/CLAUDE.md requires a complete read in the current context '
+            f'before {before}. Not yet read: {", ".join(missing)} (relative to {root}). Read each file whole with the '
+            'Read tool by that path (no offset or limit), then retry. A failed, partial, truncated, subagent or '
+            f'pre-compaction read does not count. {recovery}')
 
 
 def deny(reason: str) -> int:
@@ -1323,17 +1509,39 @@ def deny(reason: str) -> int:
 
 def judge(event: dict) -> int:
     transcript = str(event.get('transcript_path') or '')
+    reads = ReadEvidence(transcript) if transcript else None
     command = str((event.get('tool_input') or {}).get('command', '')) if event.get('tool_name') in SHELLS else ''
     if 'render_report.py' in command and '--help' not in command and transcript:
         try:
-            unread = unread_report_guides(Path(transcript))
+            unread = unread_report_guides(Path(transcript), reads)
         except (OSError, ValueError, AttributeError):
             unread = []
         if unread:
             return deny("workflow-axa: read these whole before rendering the report, because they set its content and "
                         f"wording: {', '.join(unread)} (under the workflow-axa skills folder). Then render.")
+    problem = required_read_problem(event, reads)
+    if problem:
+        return deny(problem)
     project = Project(str(event.get('cwd') or ''))
-    targets = [t for t in targets_of(event)
+    all_targets = targets_of(event)
+    direct_records = [t for t in all_targets
+                      if event.get('tool_name') in ('Write', 'Edit', 'MultiEdit') and t[0] == 'path'
+                      and project.contains(t[1])
+                      and re.fullmatch(r'docs/plans/[^/]+/(?:PLAN|TODO|FINDINGS|DECISIONS)\.md',
+                                       relative(t[1], project.root_of(t[1])), re.I)]
+    if direct_records and transcript:
+        try:
+            active = scan(Path(transcript), project.cwd)['active']
+        except (OSError, ValueError):
+            return deny('workflow-axa: the supplied session transcript cannot be read. Direct canonical task-record '
+                        'edits remain blocked. Restore transcript access or use the existing record.py helper '
+                        'with normal tool permissions; do not bypass a denied helper command.')
+        if active:
+            return deny(f'workflow-axa: use python -X utf8 -I "{RECORD_TOOL}" for canonical task records. '
+                        'Use new for initial creation in an existing directory, or append, batch, set-line or '
+                        'replace-section for updates. The helper stays available for planning and stopped-task '
+                        'handoff, subject to normal permissions. Do not use Write/Edit/MultiEdit for these records.')
+    targets = [t for t in all_targets
                if t[0] != 'path' or (project.contains(t[1]) and not RECORD.match(relative(t[1], project.root_of(t[1]))))]
     if not targets or not transcript:
         return 0  # nothing gated, or no transcript to judge by (documented in SETUP.md)

@@ -123,9 +123,56 @@ class PhaseGateHookTests(unittest.TestCase):
         edit = {"file_path": project + "/index.html"}
         self.assertEqual(self.fire([ROUTER], "Edit", edit, cwd=project)["permissionDecision"], "deny")
 
+    def test_direct_canonical_record_write_requires_helper(self):
+        target = Path(self.tmp.name) / 'docs/plans/new/PLAN.md'
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b'original\r\n')
+        out = self.fire([ROUTER], 'Write', {'file_path': str(target), 'content': 'replacement'}, cwd=self.tmp.name)
+        self.assertIsNotNone(out)
+        self.assertEqual(out['permissionDecision'], 'deny')
+        self.assertIn('record.py', out['permissionDecisionReason'])
+        self.assertEqual(target.read_bytes(), b'original\r\n')
+
+    def test_direct_record_scope_and_transcript_limits(self):
+        for name in ('PLAN', 'TODO', 'FINDINGS', 'DECISIONS'):
+            for tool_name in ('Write', 'Edit', 'MultiEdit'):
+                for path in (f'D:/Hooqd/docs/plans/task/{name}.md',
+                             f'D:\\Hooqd\\docs\\plans\\task\\{name}.md',
+                             f'/project/docs/plans/task/{name}.md'):
+                    with self.subTest(name=name, tool=tool_name, path=path):
+                        cwd = '/project' if path.startswith('/') else 'D:/Hooqd'
+                        out = self.fire([ROUTER], tool_name, {'file_path': path, 'edits': []}, cwd=cwd)
+                        self.assertEqual(out['permissionDecision'], 'deny')
+        for name in ('notes.md', 'PLAN.md.bak', 'reviews/PLAN.md'):
+            self.assertIsNone(self.fire([ROUTER], 'Write', {'file_path': f'D:/Hooqd/docs/plans/task/{name}'}))
+        target = 'D:/Hooqd/docs/plans/task/PLAN.md'
+        self.assertIsNone(self.fire([say('ordinary session')], 'Write', {'file_path': target}))
+        event = {'tool_name': 'Write', 'tool_input': {'file_path': target}, 'cwd': 'D:/Hooqd'}
+        self.assertIsNone(run_hook(event))
+        for path in (Path(self.tmp.name) / 'missing.jsonl', Path(self.tmp.name)):
+            self.assertEqual(run_hook(dict(event, transcript_path=str(path)))['permissionDecision'], 'deny')
+
+    def test_record_helper_create_update_and_stopped_handoff(self):
+        root = Path(self.tmp.name)
+        folder = root / 'docs/plans/fresh'
+        folder.mkdir(parents=True)
+        record = folder / 'PLAN.md'
+        helper = ROOT / 'skills/workflow/scripts/record.py'
+        for rows, action, text in (([ROUTER], 'new', '# Plan\n'),
+                                   ([ROUTER], 'append', 'Planning update\n'),
+                                   ([ROUTER, user('Stop this task')], 'append', 'Stopped handoff\n')):
+            command = f'python -X utf8 -I "{helper.as_posix()}" {action} "{record.as_posix()}" -'
+            self.assertIsNone(self.fire(rows, 'Bash', {'command': command}, cwd=str(root)))
+            result = subprocess.run([sys.executable, '-X', 'utf8', '-I', str(helper), action, str(record), '-'],
+                                    input=text, capture_output=True, text=True, encoding='utf-8')
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(record.read_text(encoding='utf-8'), '# Plan\n\nPlanning update\n\nStopped handoff\n')
+        out = self.fire([ROUTER, user('Stop this task')], 'Write', {'file_path': str(record)}, cwd=str(root))
+        self.assertIn('record.py', out['permissionDecisionReason'])
+
     def test_allowed_cases(self):
         rows = [ROUTER]
-        for tool_name, data in (("Write", {"file_path": "D:/Hooqd/docs/plans/2026-11-03-upload-timeout/PLAN.md"}),
+        for tool_name, data in (("Write", {"file_path": "D:/Hooqd/docs/plans/2026-11-03-upload-timeout/notes.md"}),
                                 ("Write", {"file_path": "D:/Hooqd/.artifacts/checks/x.log"}),
                                 ("Write", {"file_path": "C:/Users/x/AppData/Local/Temp/scratch/note.md"}),
                                 ("Bash", {"command": "cd C:/Users/x/AppData/Local/Temp/scratch && sed -i 's/a/b/' n.txt"}),
@@ -142,7 +189,7 @@ class PhaseGateHookTests(unittest.TestCase):
         process = Path(self.tmp.name) / "checkout"
         (process / ".git").mkdir(parents=True)
         self.path.write_text(json.dumps(ROUTER), encoding="utf-8")
-        for target in ("D:/Hooqd/docs/plans/2026-11-03-upload-timeout/PLAN.md", "D:/Hooqd/.artifacts/checks/x.log"):
+        for target in ("D:/Hooqd/docs/plans/2026-11-03-upload-timeout/notes.md", "D:/Hooqd/.artifacts/checks/x.log"):
             with self.subTest(target=target):
                 event = {"tool_name": "Write", "tool_input": {"file_path": target}, "transcript_path": str(self.path),
                          "cwd": "D:\\Hooqd"}
@@ -172,13 +219,48 @@ class PhaseGateHookTests(unittest.TestCase):
         self.assertIn("codebase-map/TASK-REPORT.md", denied["permissionDecisionReason"])
         read = lambda rel: {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
                             "input": {"file_path": f"D:/workflow-axa/skills/{rel}"}}]}}
-        rows += [read("simple-english/SKILL.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md")]
+        rows += [read("simple-english/SKILL.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md"),
+                 read("codebase-map/FLOWCHART-DESIGN.md")]
         self.assertIsNone(self.fire(rows, "Bash", render))
         self.assertIsNone(self.fire([say("plain session")], "Bash", render))
         # E5: the router's fallback, reading the phase SKILL.md whole, loads the phase like the skill tool does.
         whole = [ROUTER, read("workflow-specify/SKILL.md")]
         self.assertEqual(self.fire(whole, "Bash", render)["permissionDecision"], "deny")
         self.assertEqual(self.fire(whole, "PowerShell", render)["permissionDecision"], "deny")
+
+    def test_report_requires_flowchart_guide_for_render_and_preflight(self):
+        other_reads = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
+                       for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md')]
+        for phase in ('workflow-specify', 'workflow-deliver'):
+            for flag in ('--output docs/plans/t/reviews/plan.html', '--validate-input'):
+                command = {'command': f'python render_report.py --input p.json {flag}'}
+                rows = [ROUTER, skill(phase)] + other_reads
+                out = self.fire(rows, 'Bash', command)
+                self.assertIsNotNone(out)
+                self.assertIn('FLOWCHART-DESIGN.md', out['permissionDecisionReason'])
+
+    def test_flowchart_guide_read_evidence_and_compaction(self):
+        command = {'command': 'python render_report.py --validate-input --input p.json'}
+        other = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
+                 for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md')]
+        read = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 'guide-read',
+                'name': 'Read', 'input': {'file_path': 'D:/workflow-axa/skills/codebase-map/FLOWCHART-DESIGN.md'}}]}}
+        good = user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'content': 'Complete guide'}])
+        for result in (None, user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'is_error': True,
+                                  'content': 'Permission denied'}]),
+                       user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'content': 'Warning: output truncated'}]),
+                       user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'content': 'Partial guide'}],
+                            toolUseResult={'file': {'startLine': 1, 'numLines': 2, 'totalLines': 40}})):
+            rows = [ROUTER, skill('workflow-specify')] + other + [read] + ([result] if result else [])
+            self.assertIn('FLOWCHART-DESIGN.md', self.fire(rows, 'Bash', command)['permissionDecisionReason'])
+        # A successful whole read before phase loading remains valid in the same context.
+        rows = [ROUTER, read, good, skill('workflow-specify')] + other
+        self.assertIsNone(self.fire(rows, 'Bash', command))
+        rows.insert(3, {'type': 'system', 'subtype': 'compact_boundary', 'content': 'Compacted'})
+        self.assertIn('FLOWCHART-DESIGN.md', self.fire(rows, 'Bash', command)['permissionDecisionReason'])
+        self.assertIsNone(self.fire(rows + [read, good], 'Bash', command))
+        self.assertIsNone(self.fire([say('standalone rendering')], 'Bash', command))
+        self.assertIsNone(run_hook({'tool_name': 'Bash', 'tool_input': command, 'cwd': 'D:/Hooqd'}))
 
     def test_bad_input_is_ignored(self):
         result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(HOOK)], input="nope", capture_output=True, text=True)
@@ -193,10 +275,10 @@ class PhaseGateHookTests(unittest.TestCase):
         for name in ("Edit", "Write", "MultiEdit", "NotebookEdit", "Bash", "PowerShell", "mcp__UnityMCP__create_script",
                      "mcp__UnityMCP__manage_script", "mcp__trello__trelloWriteCard", "mcp__x__apply_text_edits",
                      "mcp__claude_ai_Claude_Docs__update", "mcp__x__delete_file", "mcp__x__import_model",
-                     "mcp__UnityMCP__execute_code"):
+                     "mcp__UnityMCP__execute_code", "Skill"):
             with self.subTest(name=name):
                 self.assertTrue(matcher.fullmatch(name))
-        for name in ("Read", "Glob", "Grep", "Skill", "mcp__trello__trelloReadCard", "mcp__x__get_sha"):
+        for name in ("Read", "Glob", "Grep", "SkillX", "mcp__trello__trelloReadCard", "mcp__x__get_sha"):
             with self.subTest(name=name):
                 self.assertFalse(matcher.fullmatch(name))
 
@@ -292,7 +374,7 @@ class ApprovalGateTests(unittest.TestCase):
         self.task(TASK, "- Approval: not approved; revision r1 proposed")
         rows = [ROUTER, skill("workflow-axa:workflow-clarify"), self.records()]
         plan = self.repo / "docs/plans" / TASK
-        for tool_name, data in (("Write", {"file_path": str(plan / "PLAN.md")}),
+        for tool_name, data in (("Write", {"file_path": str(plan / "notes.md")}),
                                 ("Edit", {"file_path": str(plan / "reviews/plan-r1.json")}),
                                 ("Write", {"file_path": str(self.repo / ".artifacts" / TASK / "run.log")}),
                                 ("Bash", {"command": f"echo x > docs/plans/{TASK}/notes.md"}),
@@ -493,7 +575,7 @@ class ApprovalGateTests(unittest.TestCase):
         for tool_name, data in (("Edit", {"file_path": self.code}),
                                 ("Write", {"file_path": str(self.repo / "docs/guide/x.md")}),
                                 ("Bash", {"command": "echo x > src/a.ts"}),
-                                ("Write", {"file_path": str(folder / "FINDINGS.md")})):  # task records stay writable
+                                ("Write", {"file_path": str(folder / "notes.md")})):  # other task files stay writable
             with self.subTest(data=data):
                 self.assertIsNone(self.fire(rows, tool_name, data))
         for tool_name, data in (("Edit", {"file_path": str(self.repo / "tests/test_a.py")}),
@@ -670,6 +752,7 @@ class ApprovalGateTests(unittest.TestCase):
         other.mkdir()
         (other / ".git").write_text(f"gitdir: {self.repo / '.git' / 'worktrees' / 'wt'}\n", encoding="utf-8")
         rows = [ROUTER] + self.approval("Yes to both")
+        self.assertEqual(self.decision(rows, "Write", {"file_path": str(other / "docs/plans/new/PLAN.md")}), "deny")
         target = {"file_path": str(other / "src" / "a.ts")}
         self.assertEqual(self.decision(rows, "Edit", target), "deny")  # that worktree has no such task
         self.task(TASK, APPROVED, root=other)
@@ -967,11 +1050,238 @@ class ApprovalGateTests(unittest.TestCase):
         self.assertEqual(out["permissionDecision"], "deny")
         self.assertIn("could not be read", out["permissionDecisionReason"])
         event["tool_input"] = {"file_path": str(self.repo / "docs/plans" / TASK / "PLAN.md")}
-        self.assertIsNone(run_hook(event))  # records stay writable
+        self.assertEqual(run_hook(event)["permissionDecision"], "deny")  # direct canonical edits fail closed
         push = dict(event, tool_name="Bash", tool_input={"command": "git push"})
         self.assertEqual(run_hook(push)["permissionDecision"], "deny")  # review: git writes too
         self.assertIsNone(run_hook(dict(event, tool_name="Bash", tool_input={"command": "echo x > src/a.ts"})))
         self.assertIsNone(self.fire([ROUTER], "Edit", {"file_path": self.code}, transcript=False))
+
+
+DECLARE = '<!-- workflow-axa:required-read phases={phases} path="{path}" -->'
+GUIDES = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
+          for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md')]
+
+
+class RequiredReadTests(unittest.TestCase):
+    """R10-R1..R3 (P69): files a project's root AGENTS.md/CLAUDE.md declare must be read completely in the current
+    context before an incoming workflow-specify/-execute/-deliver Skill call or a recognised report operation."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.base = Path(tmp.name)
+        self.repo = self.base / 'repo'
+        (self.repo / '.git').mkdir(parents=True)
+        (self.repo / 'tests').mkdir()
+        self.readme = self.repo / 'tests' / 'README.md'
+        self.readme.write_text('# How to verify\n', encoding='utf-8')
+        self.path = self.base / 'session.jsonl'
+        self.ids = 0
+
+    def rules(self, *lines, name='AGENTS.md'):
+        (self.repo / name).write_text('# Rules\n\n' + '\n'.join(lines) + '\n', encoding='utf-8')
+
+    def declare(self, phases='specify,execute,deliver', path='tests/README.md', name='AGENTS.md'):
+        self.rules(DECLARE.format(phases=phases, path=path), name=name)
+
+    def read(self, path, result=None, entry=None, **data):
+        """A Read call and its host result: a successful complete read unless the result says otherwise."""
+        self.ids += 1
+        call = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': f'r{self.ids}', 'name': 'Read',
+                'input': {'file_path': str(path), **data}}]}}
+        answer = user([{'type': 'tool_result', 'tool_use_id': f'r{self.ids}', 'content': 'file text',
+                        **(result or {})}], **(entry or {}))
+        return [call, answer]
+
+    def fire(self, rows, tool_name='Skill', data=None, transcript=True, cwd=None):
+        self.path.write_text('\n'.join(json.dumps(row) for row in rows), encoding='utf-8')
+        event = {'tool_name': tool_name, 'tool_input': data if data is not None else {'skill': 'workflow-specify'},
+                 'cwd': str(cwd or self.repo)}
+        if transcript:
+            event['transcript_path'] = str(self.path)
+        return run_hook(event)
+
+    def denied(self, *args, **kwargs):
+        out = self.fire(*args, **kwargs)
+        self.assertIsNotNone(out, 'expected a denial')
+        self.assertEqual(out['permissionDecision'], 'deny')
+        return out['permissionDecisionReason']
+
+    def test_a_declared_unread_file_stops_each_supported_phase_and_names_its_recovery(self):
+        self.declare()
+        for name in ('workflow-specify', 'workflow-execute', 'workflow-deliver', 'workflow-axa:workflow-execute'):
+            with self.subTest(skill=name):
+                reason = self.denied([ROUTER], data={'skill': name})
+                self.assertIn('tests/README.md', reason)
+                self.assertIn('Read', reason)
+                self.assertIn('record.py', reason)
+        # A direct incoming phase invocation activates the guard without the router.
+        self.assertIn('tests/README.md', self.denied([say('hello')], data={'skill': 'workflow-axa:workflow-deliver'}))
+
+    def test_a_complete_successful_read_of_the_exact_project_file_allows_the_phase(self):
+        self.declare()
+        self.assertIsNone(self.fire([ROUTER] + self.read(self.readme)))
+        self.assertIsNone(self.fire([ROUTER] + self.read(str(self.readme).replace('/', '\\'))))
+        if re.match(r'^[A-Za-z]:', str(self.readme)):  # Windows drive paths compare without case
+            self.assertIsNone(self.fire([ROUTER] + self.read(str(self.readme).upper())))
+        else:  # POSIX paths are case-sensitive: another spelling is another file
+            self.denied([ROUTER] + self.read(str(self.readme).upper()))
+
+    def test_failed_partial_truncated_sidechain_unanswered_and_compacted_reads_do_not_count(self):
+        self.declare()
+        cases = {
+            'error': self.read(self.readme, {'is_error': True, 'content': 'Permission denied'}),
+            'limit': self.read(self.readme, limit=5),
+            'offset': self.read(self.readme, offset=3),
+            'partial result': self.read(self.readme, entry={'toolUseResult': {'file': {'startLine': 1, 'numLines': 2,
+                                                                                    'totalLines': 40}}}),
+            'truncated': self.read(self.readme, {'content': 'Warning: output truncated'}),
+            'sidechain': self.read(self.readme, entry={'isSidechain': True}),
+            'no result': self.read(self.readme)[:1],
+            'no id': [tool('Read', file_path=str(self.readme))],
+            'compacted': self.read(self.readme) + [{'type': 'system', 'subtype': 'compact_boundary', 'content': 'x'}],
+        }
+        for label, rows in cases.items():
+            with self.subTest(case=label):
+                self.assertIn('tests/README.md', self.denied([ROUTER] + rows))
+        # A read after the compaction counts again.
+        self.assertIsNone(self.fire([ROUTER] + cases['compacted'] + self.read(self.readme)))
+
+    def test_another_file_with_the_same_name_is_not_the_declared_read(self):
+        self.declare()
+        other = self.base / 'other' / 'tests' / 'README.md'
+        other.parent.mkdir(parents=True)
+        other.write_text('x', encoding='utf-8')
+        for path in (other, self.repo / 'README.md', 'tests/README.md', 'D:/workflow-axa/tests/README.md'):
+            with self.subTest(path=path):
+                self.denied([ROUTER] + self.read(path))
+
+    def test_declarations_in_both_root_files_form_one_deduplicated_union(self):
+        (self.repo / 'docs').mkdir()
+        spaced = self.repo / 'docs' / 'read me.md'
+        spaced.write_text('x', encoding='utf-8')
+        self.rules(DECLARE.format(phases='specify', path='tests/README.md'),
+                   DECLARE.format(phases='specify,specify', path='docs/read me.md'))
+        self.rules(DECLARE.format(phases='deliver,specify', path='tests/README.md'), name='CLAUDE.md')
+        reason = self.denied([ROUTER])
+        self.assertEqual(reason.count('tests/README.md'), 1)
+        self.assertIn('docs/read me.md', reason)
+        self.assertNotIn('docs/read me.md', self.denied([ROUTER], data={'skill': 'workflow-deliver'}))
+        self.assertIsNone(self.fire([ROUTER], data={'skill': 'workflow-execute'}))  # not declared for execute
+        self.assertIsNone(self.fire([ROUTER] + self.read(self.readme) + self.read(spaced)))
+        (self.repo / 'AGENTS.md').unlink()
+        self.assertIn('tests/README.md', self.denied([ROUTER]))  # CLAUDE.md alone still declares
+
+    def test_examples_links_and_absent_rule_files_create_no_declaration(self):
+        self.assertIsNone(self.fire([ROUTER]))  # neither root file exists
+        self.rules('```markdown', DECLARE.format(phases='specify', path='tests/README.md'), '```',
+                   '~~~', DECLARE.format(phases='specify', path='missing.md'), '~~~',
+                   'Read [the test guide](tests/README.md) before verification.',
+                   '`' + DECLARE.format(phases='specify', path='inline.md') + '`')
+        self.assertIsNone(self.fire([ROUTER]))
+        nested = self.repo / 'sub'
+        nested.mkdir()
+        (nested / 'AGENTS.md').write_text(DECLARE.format(phases='specify', path='tests/README.md'), encoding='utf-8')
+        self.assertIsNone(self.fire([ROUTER]))  # only the project root declares
+
+    def test_indented_fences_and_indented_code_are_examples(self):
+        example = DECLARE.format(phases='specify', path='missing.md')
+        self.rules('- A list item shows the syntax:', '', '    ```markdown', '    ' + example, '    ```', '',
+                   '1. Another item:', '      ~~~', '      ' + example, '      ~~~', '',
+                   'An indented code block:', '', '    ' + example, '', 'Done.')
+        self.assertIsNone(self.fire([ROUTER]))
+        self.rules('Real one:', '', DECLARE.format(phases='specify', path='tests/README.md'))
+        self.assertIn('tests/README.md', self.denied([ROUTER]))
+
+    def test_declared_targets_must_be_existing_regular_files(self):
+        for path, why in (('tests/missing.md', 'does not exist'), ('tests', 'not a regular file')):
+            with self.subTest(path=path):
+                self.declare(path=path)
+                reason = self.denied([ROUTER] + self.read(self.repo / path))
+                self.assertIn('declaration', reason)
+                self.assertIn(why, reason)
+                self.assertNotIn('Not yet read', reason)
+
+    def test_non_object_transcript_lines_are_skipped_not_fatal(self):
+        self.declare()
+        self.assertIn('tests/README.md', self.denied([[1], ROUTER, 'text', 7]))
+        self.assertIsNone(self.fire([[1], ROUTER] + self.read(self.readme) + [None]))
+
+    def test_malformed_declarations_fail_the_boundary_clearly(self):
+        bad = ['phases=plan path="tests/README.md"', 'phases= path="tests/README.md"',
+               'phases=specify path=tests/README.md', 'path="tests/README.md"', 'phases=specify',
+               'phases=specify,,deliver path="tests/README.md"', 'phases=Specify path="tests/README.md"',
+               'phases=specify path="../outside.md"', 'phases=specify path="tests/../../outside.md"',
+               'phases=specify path="/etc/passwd"', 'phases=specify path="C:/x.md"',
+               'phases=specify path="tests\\README.md"', 'phases=specify path="tests/*.md"',
+               'phases=specify path="https://example.com/a.md"', 'phases=specify path="~/a.md"',
+               'phases=specify path=""', 'phases=specify path="./tests/README.md"']
+        for body in bad:
+            with self.subTest(body=body):
+                self.rules(f'<!-- workflow-axa:required-read {body} -->')
+                reason = self.denied([ROUTER] + self.read(self.readme))
+                self.assertIn('AGENTS.md', reason)
+                self.assertIn('declaration', reason)
+        self.rules('<!-- workflow-axa:required-read phases=plan path="x.md" -->')
+        self.assertIsNone(self.fire([ROUTER], data={'skill': 'workflow-clarify'}))  # other skills unaffected
+
+    def test_a_linked_target_outside_the_root_is_rejected(self):
+        outside = self.base / 'away' / 'outside.md'
+        outside.parent.mkdir()
+        outside.write_text('x', encoding='utf-8')
+        linked = 'tests/linked.md'
+        try:
+            os.symlink(outside, self.repo / linked)
+        except (OSError, NotImplementedError):
+            # Windows without symlink rights: a directory junction (inside this temporary folder) to outside the root.
+            made = os.name == 'nt' and subprocess.run(['cmd', '/c', 'mklink', '/J', str(self.repo / 'joined'),
+                                                       str(self.base / 'away')], capture_output=True).returncode == 0
+            if not made:
+                self.skipTest('symbolic links and junctions are unavailable here')
+            linked = 'joined/outside.md'
+        self.declare(path=linked)
+        self.assertIn('declaration', self.denied([ROUTER] + self.read(self.repo / linked)))
+
+    def test_an_unreadable_root_rule_file_fails_and_unreadable_transcripts_fail(self):
+        (self.repo / 'CLAUDE.md').mkdir()  # exists but cannot be read as a file
+        self.assertIn('CLAUDE.md', self.denied([ROUTER]))
+        (self.repo / 'CLAUDE.md').rmdir()
+        self.declare()
+        event = {'tool_name': 'Skill', 'tool_input': {'skill': 'workflow-specify'}, 'cwd': str(self.repo)}
+        self.assertIsNone(run_hook(event))  # no transcript: enforcement unavailable (SETUP.md)
+        for transcript in (self.base, self.base / 'missing.jsonl'):
+            with self.subTest(transcript=transcript):
+                out = run_hook(dict(event, transcript_path=str(transcript)))
+                self.assertEqual(out['permissionDecision'], 'deny')
+                self.assertIn('transcript', out['permissionDecisionReason'])
+
+    def test_undeclared_projects_other_skills_reads_and_helpers_are_unchanged(self):
+        self.assertIsNone(self.fire([ROUTER]))
+        self.declare()
+        helper = ROOT / 'skills/workflow/scripts/record.py'
+        for tool_name, data in (('Skill', {'skill': 'workflow-clarify'}), ('Skill', {'skill': 'workflow'}),
+                                ('Skill', {'skill': 'rule-maker'}), ('Skill', {'skill': 'workflow-axa:tdd'}),
+                                ('Read', {'file_path': str(self.readme)}),
+                                ('Read', {'file_path': 'D:/workflow-axa/skills/workflow-specify/SKILL.md'}),
+                                ('Bash', {'command': f'python -X utf8 -I "{helper.as_posix()}" append '
+                                                     f'"{(self.repo / "docs/plans/t/PLAN.md").as_posix()}" -'}),
+                                ('Bash', {'command': 'python render_report.py --help'})):
+            with self.subTest(tool=tool_name, data=data):
+                self.assertIsNone(self.fire([ROUTER, skill('workflow-specify')] + GUIDES, tool_name, data))
+
+    def test_report_operations_check_the_loaded_phases(self):
+        self.declare(phases='specify,deliver')
+        for flag in ('--validate-input', '--output docs/plans/t/reviews/plan.html'):
+            command = {'command': f'python -X utf8 -I render_report.py --input p.json {flag}'}
+            with self.subTest(flag=flag):
+                for loaded in ([skill('workflow-specify')], [skill('workflow-axa:workflow-deliver')],
+                               self.read('D:/workflow-axa/skills/workflow-specify/SKILL.md')):
+                    self.assertIn('tests/README.md', self.denied([ROUTER] + loaded + GUIDES, 'Bash', command))
+                    self.assertIn('tests/README.md', self.denied([ROUTER] + loaded + GUIDES, 'PowerShell', command))
+                    self.assertIsNone(self.fire([ROUTER] + loaded + GUIDES + self.read(self.readme), 'Bash', command))
+                # Phases without a declaration, and sessions without a loaded phase, are unchanged.
+                self.assertIsNone(self.fire([ROUTER, skill('workflow-execute')] + GUIDES, 'Bash', command))
+                self.assertIsNone(self.fire([say('standalone rendering')], 'Bash', command))
 
 
 if __name__ == "__main__":

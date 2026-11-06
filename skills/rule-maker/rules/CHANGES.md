@@ -2,6 +2,10 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.3 (2026-11-06)
+
+- READINESS.md documents optional required-read declarations: `<!-- workflow-axa:required-read phases=specify,execute,deliver path="tests/README.md" -->` in the project root AGENTS.md or CLAUDE.md. In Claude workflow sessions the hook waits for a complete current-context read of each declared file before the named phase starts and before report validation or rendering. **Project action:** none required. A project whose root rules say a file must be read before planning, implementation or delivery may add a declaration with the owner's approval. A malformed declaration blocks those boundaries until it is fixed.
+
 ## 1.8.2 (2026-11-04)
 
 - Clarify D14 permission: no agent-recommended plain-HTML fallback and no blanket yes treated as that exception. Preserve legitimate element-specific owner instructions and stricter project rules. **Project action:** no automatic rewrite; reconcile contradictory guidance before the next affected UI unit. Related phase instructions now distinguish explicit paid-evaluation budgets and legacy approval recovery. No new external dependency or automatic deployment.

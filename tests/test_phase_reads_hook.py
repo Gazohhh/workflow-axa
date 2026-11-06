@@ -45,6 +45,12 @@ class PhaseReadsHookTests(unittest.TestCase):
         self.assertIn("grilling", clarify)
         self.assertIn("report", specify)
 
+    def test_report_phases_name_the_flowchart_guide_as_required(self):
+        for phase in ('workflow-specify', 'workflow-deliver'):
+            out = fire({'tool_name': 'Skill', 'tool_input': {'skill': phase}})[1]
+            note = json.loads(out)['hookSpecificOutput']['additionalContext']
+            self.assertIn('FLOWCHART-DESIGN.md', note.split('Only when applicable')[0])
+
     def test_router_load_points_to_the_phase_skill(self):
         note = json.loads(fire({"tool_name": "Skill", "tool_input": {"skill": "workflow-axa:workflow"}})[1])
         self.assertIn("Ask no behavior or design question from the router", note["hookSpecificOutput"]["additionalContext"])

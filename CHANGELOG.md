@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.8.0-rc.13 — record and required-read guards (2026-11-06)
+
+- In active Claude workflow sessions, reject direct Write, Edit and MultiEdit of canonical task records before bytes change. Use `record.py` instead. Inactive sessions and other paths are unchanged.
+- Require a complete read of the flowchart design guide before workflow report validation or rendering.
+- Honor optional required-read declarations in the project root AGENTS.md or CLAUDE.md. Entering specify, execute or deliver, and report validation or rendering, wait until each declared file was read whole in the current context. The PreToolUse matcher now includes Skill. The package AGENTS.md declares tests/README.md.
+- Make superseded review cleanup in VISUAL-REVIEW.md the single report retention rule. Delivery reuses an unchanged delivery snapshot.
+- Shared rules 1.8.3 document required-read declarations in READINESS.md.
+- Native Claude CLI and Codex evaluation is pending. It runs after publication on the installed copy; see VALIDATION.md.
+
 ## 2.8.0-rc.12 — report preflight and release verification (2026-11-06)
 
 - Add read-only `--validate-input` to the existing report renderer. Reuse schema, source, size and wording checks without files, Python helper caches or browser opening. Existing render and protected replacement behavior stays unchanged.
