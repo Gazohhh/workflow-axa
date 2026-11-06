@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.14 — single-command recovery after a shell denial (2026-11-06)
+
+- Workflow RULES.md: a denied shell command refuses only that command. Run each required helper alone, as one command, before reporting that it cannot run. The rc.13 Claude evaluation (P70) and P67 both stopped after one denied compound command although the single helper commands were allowed.
+
 ## 2.8.0-rc.13 — record and required-read guards (2026-11-06)
 
 - In active Claude workflow sessions, reject direct Write, Edit and MultiEdit of canonical task records before bytes change. Use `record.py` instead. Inactive sessions and other paths are unchanged.
