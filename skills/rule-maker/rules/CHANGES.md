@@ -2,6 +2,10 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.5 (2026-11-06)
+
+- CORE.md: after the exact mimic question, list only same-tag existing elements and nothing else (no plain-HTML or add-a-style alternatives). **Project action:** none.
+
 ## 1.8.4 (2026-11-06)
 
 - CORE.md spells out the no-match UI case in the always-loaded rules: stop that element, ask exactly "I couldn't find a matching style for [element]. Is there an existing element I should mimic?", offer at most existing same-tag elements, never new CSS, a new class, another tag's classes or plain HTML as options, small edits included. **Project action:** none.

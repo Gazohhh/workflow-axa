@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.17 — mimic question without alternatives (2026-11-06)
+
+- Shared rules 1.8.5: after the exact question, list only same-tag existing elements, nothing else. On rc.16 a fresh Claude session asked the exact question but still listed plain HTML and "add a style yourself".
+
 ## 2.8.0-rc.16 — exact mimic question in the always-loaded rules (2026-11-06)
 
 - Shared rules 1.8.4: CORE.md now states the exact no-match question and the allowed options. A fresh Claude session asked for a "tiny" badge edit skipped the ui-design skill and offered new CSS and plain HTML as options; Codex asked the exact question.
