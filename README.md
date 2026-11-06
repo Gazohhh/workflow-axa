@@ -1,6 +1,10 @@
-# Workflow AXA — 2.8.0-rc.7
+# Workflow AXA — 2.8.0-rc.8
 
-## Candidate: approval wording and transcript compatibility
+## Candidate: explicit revision naming
+
+Plans now document the existing r1, r2 naming convention. Historical labels can be reconciled with explicit owner authority while preserving the original report and approval words. The hook is unchanged; native Claude recovery passed in the Hooqd evaluation. Broader project acceptance remains partial.
+
+## Earlier candidate: approval wording and transcript compatibility
 
 Implementation approval can coexist with pending visual acceptance. The gate now separates checkpoint status from the quoted answer while preserving provenance, fingerprints and refusal/withdrawal checks. The retro digest accepts modern host records. Local regression tests and a native Claude scoped-write test pass. Broader project evaluation remains partial.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0-rc.8 — revision naming (2026-11-06)
+
+- Document the existing r1, r2 revision convention before plan generation. Preserve historical report bytes and require explicit owner authority when reconciling another label.
+- No hook change. Native Claude recovered the unchanged Hooqd plan after explicit identity reconciliation and began the scoped implementation. Broader project acceptance remains partial.
+
 ## 2.8.0-rc.7 — focused retrospective fixes (2026-11-06)
 
 - Separate approval checkpoint status from the quoted owner answer, so pending visual acceptance does not reject an approved implementation. Preserve report fingerprints, quote provenance and refusal/withdrawal checks.

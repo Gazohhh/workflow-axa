@@ -1,6 +1,10 @@
 # Audit fixes: approvals, recovery, verification and less repeated work
 
-## Publication checkpoint, 2026-11-06
+## Current publication checkpoint, 2026-11-06
+
+Release target 2.8.0-rc.8 adds only reviewed revision-naming guidance and synchronized metadata. Existing owner publication and Git-install authority applies. Validator and diff checks pass; unchanged native hook permits explicitly reconciled r1 approval. Application worktrees stay retained and unmerged. Push and both Git updates are pending.
+
+## Historical rc.7 publication checkpoint, 2026-11-06
 
 The owner approved publication of the two tested retrospective fixes and Git updates for Claude and Codex: "Publish workflow fixes and Git-update both". Release target: 2.8.0-rc.7. Source is the retained D:/wfaxa-pilot/workflow-rollout candidate. Only the approval parser, transcript digest, their regression tests and release records are transferred. Application worktrees remain separate and preserved. Full rollout and architecture coverage remain partial. The earlier checkpoint below is historical.
 

@@ -2,9 +2,11 @@
 
 ## Current verification
 
-Candidate workflow-axa 2.8.0-rc.7, shared rules 1.8.2, 21 registered skills.
+Candidate workflow-axa 2.8.0-rc.8, shared rules 1.8.2, 21 registered skills.
 
-The rc.7 candidate suite ran 892 tests: 879 passed, 13 skipped, zero failures. Native Claude accepted the full conditional approval for a one-file marker only after plan presentation. The updated digest parsed four additional completed native transcripts, including host denial records. This does not establish all framework behavior or owner acceptance.
+This revision adds only revision-naming guidance and release metadata. The package validator passes. Native Opus 5.5 with the unchanged rc.7 hook accepted the explicitly reconciled plan identity and permitted its approved application test edit. This does not prove every approval format or host configuration.
+
+Historical code verification: the rc.7 candidate suite ran 892 tests: 879 passed, 13 skipped, zero failures. Native Claude accepted the full conditional approval for a one-file marker only after plan presentation. The updated digest parsed four additional completed native transcripts, including host denial records. This does not establish all framework behavior or owner acceptance.
 
 The following table preserves earlier verification history.
 
