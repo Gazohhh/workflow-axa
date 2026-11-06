@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.10 — development-only preview access (2026-11-06)
+
+- Require kit and developer previews outside login and account initialization in development. Use local synthetic data without backend access.
+- Exclude preview routes and preview-only imports from production; hidden links and post-import redirects are insufficient. Verify direct URLs and production output.
+- Existing application routes require scoped revisions. This guidance does not itself change applications or prove their build exclusion.
+
 ## 2.8.0-rc.9 — isolated preview verification (2026-11-06)
 
 - Check real provider initialization, shell readiness and served-module freshness in isolated previews. Preserve watcher exclusions and separate fixture failures from application defects.

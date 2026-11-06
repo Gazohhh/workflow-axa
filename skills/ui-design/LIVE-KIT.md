@@ -22,6 +22,14 @@ Rebuilding/reloading the existing catalogue reflects component changes. A new in
 3. `kit-check <catalogue>` checks selected sources/scope. A Markdown catalogue remains valid; do not force conversion. If a JSON profile is used, it is a generated projection or the sole existing catalogue, not another independently maintained truth source.
 4. Check claimed variants against their renderer and real callers, including host wrappers/styles. A declared type or enum is not proof of a working example. Identify absent, inert and context-dependent variants in the plan before approval; preserve distinct existing variants. Record exact selections in the existing task, generate the existing review with captured screens and per-element references, obtain normal approval, then wire only selected supported component APIs.
 
+## Development access and production exclusion
+
+Kit and developer-preview routes (for example /kit, /design-kit and /dev) open without login in development. Keep them outside authentication guards and account initialization; use local synthetic data and the real component providers without starting production services. Do not build a fake login or require customer credentials to inspect a kit.
+
+Use the framework's existing build-mode and route mechanisms to omit preview registration and preview-only imports from production. Hiding a menu item, checking a user role, or redirecting after importing the kit is insufficient. Shared production components remain shared; exclude the preview entry and its sample data. Treat unknown build mode as unavailable. Do not add a dependency or a second design system for this boundary.
+
+Trace route parents, providers, imports and every supported production configuration during audit. Include access/exclusion in the implementation plan and checks: a fresh logged-out development browser opens the kit with backend requests blocked; direct production URLs cannot open it; production output contains no preview entry or synthetic sample data. Builds still require the project's authorization. Missing runtime/build evidence stays unverified. Existing authenticated or production-reachable previews require a scoped route revision, not an authentication workaround.
+
 ## Optional read-only Storybook index adapter
 
 For an already generated local v4/v5 `index.json`:
