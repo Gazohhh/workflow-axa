@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.16 — exact mimic question in the always-loaded rules (2026-11-06)
+
+- Shared rules 1.8.4: CORE.md now states the exact no-match question and the allowed options. A fresh Claude session asked for a "tiny" badge edit skipped the ui-design skill and offered new CSS and plain HTML as options; Codex asked the exact question.
+
 ## 2.8.0-rc.15 — one in-app design kit with a fixed shape (2026-11-06)
 
 - ui-design: the default kit is one development-only page inside the real application (for example `/design-kit`), registered only in development, outside login, using the real layout and styles; one per application or client build, including its overrides and enabled modules. A separate preview server needs a stated reason.

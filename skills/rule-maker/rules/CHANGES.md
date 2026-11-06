@@ -2,6 +2,10 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.4 (2026-11-06)
+
+- CORE.md spells out the no-match UI case in the always-loaded rules: stop that element, ask exactly "I couldn't find a matching style for [element]. Is there an existing element I should mimic?", offer at most existing same-tag elements, never new CSS, a new class, another tag's classes or plain HTML as options, small edits included. **Project action:** none.
+
 ## 1.8.3 (2026-11-06)
 
 - READINESS.md documents optional required-read declarations: `<!-- workflow-axa:required-read phases=specify,execute,deliver path="tests/README.md" -->` in the project root AGENTS.md or CLAUDE.md. In Claude workflow sessions the hook waits for a complete current-context read of each declared file before the named phase starts and before report validation or rendering. **Project action:** none required. A project whose root rules say a file must be read before planning, implementation or delivery may add a declaration with the owner's approval. A malformed declaration blocks those boundaries until it is fixed.

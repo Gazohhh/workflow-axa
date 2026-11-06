@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rules_version": "1.8.3",
-  "package_version": "2.8.0-rc.15",
+  "rules_version": "1.8.4",
+  "package_version": "2.8.0-rc.16",
   "entrypoint": "START.md",
   "files": [
     "CHANGES.md",
@@ -35,8 +35,8 @@
     "vite.md"
   ],
   "sha256": {
-    "CHANGES.md": "d9c08afd595c4ddd36ab47e459551299a8fac74862621e7f560eed7612d717d2",
-    "CORE.md": "0c145572a56b791cc572d3180198a6b4b2fbf911225b72b9509895f01c8c0539",
+    "CHANGES.md": "fe6fbb5094b618a82291283edf613afa73d34798650c981ded0a45090f039c01",
+    "CORE.md": "c9592bd51eb392408f1fe608ae1720d45dabb6922e009063125de18cf38912fb",
     "ENGINEERING.md": "36dd25fa356b2d6d332a5ff3257fbd509edcc070b6f1f5646a6993dbe2a54e28",
     "POLICY.md": "34a4724c8d2d16215ad6d89d3e211308547bd480b1fc1efad1cdcd06547c9b0a",
     "READINESS.md": "a1a6729d23f66c4bf134458d236f60e2970112a59f006d07d0388cff009387c9",
