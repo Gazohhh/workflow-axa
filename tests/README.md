@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.2; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.12; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -124,7 +124,7 @@ The new `test_version_facts.py` exercises real read-only file inspection, scoped
 
 ## UI-design integration
 
-Install all local skills of the version under test (twenty from 2.8.0), then run the [UI acceptance cases](behavioral/UI-DESIGN.md) using [their scenario data](behavioral/ui-design.json). They are NOT RUN until observed in actual hosts. `test_ui_design.py` covers read-only diff parsing, styling and markup cues, malformed/partial inputs, legitimate semantic changes, no-write/no-approval behaviour and local route contracts. These mechanical assertions do not prove a model follows the policy.
+Install all local skills of the version under test (all 21 registered in the package manifest), then run the [UI acceptance cases](behavioral/UI-DESIGN.md) using [their scenario data](behavioral/ui-design.json). They are NOT RUN until observed in actual hosts. `test_ui_design.py` covers read-only diff parsing, styling and markup cues, malformed/partial inputs, legitimate semantic changes, no-write/no-approval behaviour and local route contracts. These mechanical assertions do not prove a model follows the policy.
 
 ## Rules audit and design kit
 

@@ -6,16 +6,19 @@ Design the flow locally using [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md); no sep
 
 ## Run
 
-From the plugin root, use a **new** output filename:
+From the plugin root, validate input before recording the final report filename. Fix schema or wording errors in the same JSON until validation passes. Then record the destination, validate again against the final source records, and render a **new** output filename:
 
 ```powershell
+python -X utf8 skills/codebase-map/scripts/render_report.py --root skills/codebase-map/examples --input skills/codebase-map/examples/review.json --validate-input
 python -X utf8 skills/codebase-map/scripts/render_report.py --root skills/codebase-map/examples --input skills/codebase-map/examples/review.json --output skills/codebase-map/examples/local-preview.html --open
 python -X utf8 skills/codebase-map/scripts/render_report.py --root skills/codebase-map/examples --check skills/codebase-map/examples/local-preview.html
 ```
 
 For real work substitute the actual source root, task JSON and authorized artifact path. Quote paths with spaces. CLI paths resolve from the current directory; source paths inside JSON are root-relative POSIX paths. Input must be inside root; output parents must already exist, output must be .html/.htm, and existing files are never overwritten. Source references outside root, symlink escapes and oversized inputs are rejected. Do not claim a listed source path was inspected unless it actually was.
 
-Exit 0: rendered/check matched; 1: freshness mismatch/missing sources; 2: invalid input or filesystem error. `--open` requests browser launch, not proof of display. An opener failure leaves the artifact intact and grants no implementation permission.
+`--validate-input` needs `--root` and `--input`. It uses existing schema, source, geometry, size and wording checks without creating files, directories or Python helper caches, and without opening a browser. It cannot combine with `--output`, `--open`, `--check` or `--replace-unpresented`. Exit 0 means valid, 1 means blocking wording, and 2 means invalid input or arguments. Advisory notes remain successful. This covers renderer-controlled writes, not unrelated host instrumentation, and proves neither meaning nor approval.
+
+Ordinary render/check behavior is unchanged. Exit 0: rendered/check matched; 1: freshness mismatch/missing sources; 2: invalid input or filesystem error. `--open` requests browser launch, not proof of display. An opener failure leaves the artifact intact and grants no implementation permission.
 
 Default zoom is 100% native size inside a locally scrollable panel. Native radio inputs select view/100/125/150/Fit, including without JavaScript. Fit may reduce text and is optional, never the mandatory reading size. Progressive script adds mouse drag, centered entry on narrow screens, focused-canvas +/−/F/0 and evidence-detail opening. A native “Go to start” link works without JavaScript. Keyboard arrows and touch use native scrolling. No executable application controls.
 

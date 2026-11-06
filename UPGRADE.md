@@ -1,4 +1,4 @@
-# Upgrade to workflow-axa 2.8.0-rc.11
+# Upgrade to workflow-axa 2.8.0-rc.12
 
 ## Safe adoption of this candidate
 

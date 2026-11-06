@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+from concurrent.futures import ThreadPoolExecutor
 import importlib.util
 import io
 import os
@@ -218,16 +219,30 @@ class RecordSafetyTests(unittest.TestCase):
 
     def test_parallel_appends_lose_nothing(self):
         findings = self.write("FINDINGS.md", b"# F\n")
-        procs = [subprocess.Popen([sys.executable, "-X", "utf8", "-I", str(SCRIPT), "append", str(findings), "-"],
-                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                 for _ in range(8)]
-        for number, proc in enumerate(procs):
-            proc.stdin.write(f"entry-{number}\n".encode())
-            proc.stdin.close()
-        codes = [proc.wait(60) for proc in procs]
-        for proc in procs:
-            proc.stdout.close()
-            proc.stderr.close()
+        procs = []
+        try:
+            for _ in range(8):
+                procs.append(subprocess.Popen(
+                    [sys.executable, "-X", "utf8", "-I", str(SCRIPT), "append", str(findings), "-"],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+            # A worker can refuse the lock before reading stdin. communicate handles
+            # that closed pipe while retaining the actual exit status and diagnostics.
+            with ThreadPoolExecutor(max_workers=8) as workers:
+                pending = [workers.submit(proc.communicate, f"entry-{number}\n".encode(), timeout=60)
+                           for number, proc in enumerate(procs)]
+                results = [future.result() for future in pending]
+            codes = [proc.returncode for proc in procs]
+            for code, (stdout, stderr) in zip(codes, results):
+                self.assertIn(code, (0, 1), (stdout, stderr))
+                self.assertEqual(stderr, b'')
+                if code == 1:
+                    self.assertIn(b'BLOCKED:', stdout)
+                    self.assertIn(b'is being changed by another writer', stdout)
+        finally:
+            for proc in procs:
+                if proc.poll() is None:
+                    proc.kill()
+                proc.communicate(timeout=10)
         text = findings.read_text(encoding="utf-8")
         written = {n for n in range(8) if f"entry-{n}" in text}
         self.assertEqual(written, {n for n, code in enumerate(codes) if code == 0})

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0-rc.12 — report preflight and release verification (2026-11-06)
+
+- Add read-only `--validate-input` to the existing report renderer. Reuse schema, source, size and wording checks without files, Python helper caches or browser opening. Existing render and protected replacement behavior stays unchanged.
+- Validate before recording the final report path, then save the approval-wait checkpoint before the last check and render.
+- Synchronize renderer and authored-scenario version metadata with the package. Preserve historical baselines and every unrun scenario result.
+- Repair the parallel append test's pipe handling and child cleanup. Keep its successful-write and lock-refusal assertions. No record.py runtime change.
+
 ## 2.8.0-rc.11 — superseded review cleanup (2026-11-06)
 
 - Ask once whether to delete named superseded review files after their replacement is accepted. Reuse one filename for unpresented drafts.

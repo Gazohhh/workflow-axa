@@ -6,6 +6,13 @@ Python 3.10+, standard library only. No repository writes except the requested H
 """
 from __future__ import annotations
 
+import sys
+
+# The CLI must not create helper or standard-library caches while checking input,
+# including when argparse rejects a combination or a malformed flag value.
+if any(arg.split('=', 1)[0] == '--validate-input' for arg in sys.argv[1:]):
+    sys.dont_write_bytecode = True
+
 import argparse
 import base64
 import hashlib
@@ -13,7 +20,6 @@ import html
 import importlib.util
 import json
 import re
-import sys
 import webbrowser
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,7 +31,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.8.0-rc.6'
+RENDERER_VERSION = '2.8.0-rc.12'
 
 
 def ui_module():
@@ -952,11 +958,35 @@ def main() -> int:
     parser.add_argument('--open',action='store_true',help='Request default-browser opening; not proof of display. '
                         'Skipped while wording problems remain.')
     parser.add_argument('--check',type=Path,help='Check an existing HTML against its supplied sources; no writes.')
+    parser.add_argument('--validate-input',action='store_true',
+                        help='Validate input without files or browser opening; exit 1 for wording problems.')
     args=parser.parse_args()
+    previous_bytecode = sys.dont_write_bytecode
+    if args.validate_input:
+        sys.dont_write_bytecode = True
     try:
         root=args.root.resolve(strict=True)
         if not root.is_dir():
             raise ValueError('--root must be a directory')
+        if args.validate_input:
+            if not args.input or args.output or args.open or args.check or args.replace_unpresented:
+                raise ValueError('--validate-input requires --input and cannot combine with output, open, check or replace')
+            if not args.input.resolve().is_relative_to(root):
+                raise ValueError('Input JSON must be inside the supplied source root')
+            data = load_json(args.input)
+            result = render(data, root, args.input)
+            if len(result.encode('utf-8')) > MAX_BYTES:
+                raise ValueError('Rendered report exceeds 8 MiB; reduce captures or split the view')
+            issues = task_module().prose_issues(data)
+            for path, problem in issues:
+                print(f'PLAIN ENGLISH: {path}: {problem}')
+            for path, note in task_module().prose_notes(data):
+                print(f'PLAIN ENGLISH NOTE: {path}: {note}')
+            if issues:
+                print('INVALID WORDING: fix these fields before recording the final report path.')
+                return 1
+            print('VALID: input checks passed; no files written or browser opened. Not semantic or approval verification.')
+            return 0
         if args.check:
             if args.input or args.output or args.open:
                 raise ValueError('--check cannot be combined with render arguments')
@@ -1003,6 +1033,8 @@ def main() -> int:
     except (OSError,ValueError,TypeError,KeyError,UnicodeError) as exc:
         print(f'ERROR: {exc}',file=sys.stderr)
         return 2
+    finally:
+        sys.dont_write_bytecode = previous_bytecode
 
 
 if __name__=='__main__':

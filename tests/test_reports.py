@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -340,6 +341,94 @@ class ReportTests(unittest.TestCase):
         shutil.copytree(SKILL,copy_path,ignore=shutil.ignore_patterns('__pycache__'))
         result=subprocess.run([sys.executable,str(copy_path/'scripts/render_report.py'),'--root',str(copy_path/'examples'),'--input',str(copy_path/'examples/review.json'),'--output',str(self.output)],capture_output=True,text=True,timeout=15)
         self.assertEqual(result.returncode,0,result.stderr)
+
+
+class PreflightTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.skill = self.root / 'codebase-map'
+        shutil.copytree(SKILL, self.skill, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+        self.sources = self.skill / 'examples'
+        self.input = self.sources / 'review.json'
+        self.script = self.skill / 'scripts/render_report.py'
+
+    def inventory(self):
+        return {p.relative_to(self.root).as_posix(): p.read_bytes() if p.is_file() else None
+                for p in self.root.rglob('*')}
+
+    def preflight(self, *args):
+        env = dict(os.environ)
+        env.pop('PYTHONDONTWRITEBYTECODE', None)
+        env.pop('PYTHONPYCACHEPREFIX', None)
+        before = self.inventory()
+        result = subprocess.run([sys.executable, str(self.script), '--root', str(self.sources),
+                                 '--input', str(self.input), '--validate-input', *map(str, args)],
+                                env=env, capture_output=True, text=True, timeout=15)
+        self.assertEqual(self.inventory(), before, 'Preflight must not write even bytecode caches')
+        return result
+
+    def test_valid_input_is_checked_without_writes(self):
+        result = self.preflight()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('VALID', result.stdout)
+
+    def test_wording_errors_fail_but_advice_does_not(self):
+        data = json.loads(self.input.read_text(encoding='utf-8'))
+        data['understanding'] = 'The order changes; the output stays the same.'
+        self.input.write_text(json.dumps(data), encoding='utf-8')
+        result = self.preflight()
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn('PLAIN ENGLISH: understanding: semicolon', result.stdout)
+        data['understanding'] = 'The cause is not proven. It could be the cache.'
+        self.input.write_text(json.dumps(data), encoding='utf-8')
+        result = self.preflight()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('PLAIN ENGLISH NOTE', result.stdout)
+
+    def test_invalid_inputs_leave_no_output_or_caches(self):
+        data = json.loads(self.input.read_text(encoding='utf-8'))
+        invalid_schema = copy.deepcopy(data)
+        invalid_schema['schema_version'] = 1
+        missing_source = copy.deepcopy(data)
+        missing_source['sources'][0]['path'] = 'missing.md'
+        invalid_geometry = copy.deepcopy(data)
+        invalid_geometry['graphs'][0]['nodes'][0]['width'] = 1
+        for value in ('{', json.dumps(invalid_schema), json.dumps(missing_source), json.dumps(invalid_geometry)):
+            with self.subTest(value=value[:50]):
+                self.input.write_text(value, encoding='utf-8')
+                result = self.preflight()
+                self.assertEqual(result.returncode, 2, result.stdout)
+                self.assertIn('ERROR:', result.stderr)
+
+    def test_incompatible_options_and_malformed_flag_are_read_only(self):
+        for args in [('--output', self.root / 'output.html'), ('--open',),
+                     ('--check', self.root / 'missing.html'), ('--replace-unpresented',),
+                     ('--validate-input=false',)]:
+            with self.subTest(args=args):
+                result = self.preflight(*args)
+                self.assertEqual(result.returncode, 2, result.stdout)
+
+    def test_outside_root_input_is_rejected_before_parsing(self):
+        outside = self.root / 'outside.json'
+        outside.write_text('{', encoding='utf-8')
+        result = self.preflight('--input', outside)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('inside the supplied source root', result.stderr)
+
+    def test_preflight_never_calls_browser_even_for_rejected_open(self):
+        for extra in ([], ['--open']):
+            argv = ['render', '--root', str(self.sources), '--input', str(self.input),
+                    '--validate-input', *extra]
+            before = self.inventory()
+            previous = sys.dont_write_bytecode
+            with patch.object(sys, 'argv', argv), patch.object(report.webbrowser, 'open') as opener, \
+                    patch('builtins.print'):
+                self.assertEqual(report.main(), 2 if extra else 0)
+            opener.assert_not_called()
+            self.assertEqual(self.inventory(), before)
+            self.assertEqual(sys.dont_write_bytecode, previous)
 
 
 if __name__=='__main__':

@@ -1,6 +1,12 @@
-# Workflow AXA — 2.8.0-rc.11
+# Workflow AXA — 2.8.0-rc.12
 
-## Candidate: explicit revision naming
+## Current update: report input preflight
+
+The report renderer now checks input with `--validate-input` before creating a file. It checks schema, sources and wording without files, Python caches or browser opening. Report producers record the final path and approval-wait checkpoint before their final check and render. Existing rendering and protected report replacement stay unchanged.
+
+Release metadata now matches the package version. The parallel record test handles workers that refuse a busy lock before reading stdin and always reaps its children. Authored host scenarios remain unrun until actual host evidence exists. See VALIDATION.md for current checks and limits.
+
+## Earlier candidate: explicit revision naming
 
 Plans now document the existing r1, r2 naming convention. Historical labels can be reconciled with explicit owner authority while preserving the original report and approval words. The hook is unchanged; native Claude recovery passed in the Hooqd evaluation. Broader project acceptance remains partial.
 

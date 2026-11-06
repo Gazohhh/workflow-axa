@@ -29,7 +29,7 @@ Reuse workflow-editorial-v1 styling and offline/system fonts; no branding interv
 
 Read [REPORT.md](REPORT.md); workflow plan, progress and delivery reports also follow [TASK-REPORT.md](TASK-REPORT.md). Derive schema-2 JSON from authoritative task records. Historical/draft inputs remain readable; UI-FLOW.md tightens new application approvals. Use the optional checkpoint/revision log only for a requested task overview; show its as-of/source and treat the selected flow as historical reviewed scope, not live implementation proof. Explicit node geometry and connector routes are validated; each change retains requirement/task/evidence traceability. Approval-ready compare requires the resolved revision, PLAN/TODO/acceptance and no material open decisions; otherwise use draft.
 
-Render with the bundled standard-library tool in the authorized artifact directory. The renderer packages the explicit design; it neither understands code nor authenticates approval. No implementation, installation, publication. Explicit no-file instructions take precedence.
+Follow REPORT.md: `--validate-input`, fix, record path, recheck, render in the authorized directory. The renderer packages the explicit design; it neither understands code nor authenticates approval. No implementation, installation, publication. Explicit no-file instructions take precedence.
 
 Check freshness and meaning. Inspect desktop/mobile output when available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. Disclose unavailable checks instead of claiming them.
 
