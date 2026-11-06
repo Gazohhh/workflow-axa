@@ -1,6 +1,6 @@
 # One code-backed catalogue, not copied UI
 
-A kit is a project-local preview of **the actual framework components and approved patterns**. React renders its React components; Angular/Ionic renders its components. The workflow report is a saved projection/capture, not another implementation of those controls. Existing project sources are required; this package contains no Altinstar/Cheflabels kit and installs no preview tools.
+A kit is a project-local preview of **the actual framework components and approved patterns**. React renders its React components; Angular/Ionic renders its components. The workflow report is a saved projection/capture, not another implementation of those controls. Existing project sources are required; this package contains no project kit and installs no preview tools.
 
 ## Single sources
 
@@ -17,18 +17,28 @@ Rebuilding/reloading the existing catalogue reflects component changes. A new in
 
 ## Setup sequence through ui-design
 
-1. `kit-audit <area>` finds designated real components, existing preview tooling and authority. Search is inventory, not approval. No installation, routes, builds or captures without permission.
-2. `kit-setup <area>` proposes connecting existing sources, short project pointers and safe preview/verification. Setup is not application implementation approval. After approval, normal execution may add the minimum framework example and registration that render real components or mirror existing tags, classes and wrappers. A missing example alone is not a designer blocker. New visual designs, styling, dependencies or custom preview infrastructure remain outside that reuse scope; name the specific gap before dependent work. Do not install a tool merely to satisfy this skill.
+1. `kit-audit <area>` finds designated real components, the application's development route and build-mode mechanisms, existing preview tooling and authority. Search is inventory, not approval. No installation, routes, builds or captures without permission.
+2. `kit-setup <area>` proposes the development kit route (next section), the page anatomy and coverage check below, a DESIGN.md shaped by `templates/DESIGN.md` when the project has no equivalent record, and safe preview/verification. Setup is not application implementation approval. After approval, normal execution may add the minimum framework example and registration that render real components or mirror existing tags, classes and wrappers. A missing example alone is not a designer blocker. New visual designs, styling, dependencies or custom preview infrastructure remain outside that reuse scope; name the specific gap before dependent work. Do not install a tool merely to satisfy this skill.
 3. `kit-check <catalogue>` checks selected sources/scope. A Markdown catalogue remains valid; do not force conversion. If a JSON profile is used, it is a generated projection or the sole existing catalogue, not another independently maintained truth source.
 4. Check claimed variants against their renderer and real callers, including host wrappers/styles. A declared type or enum is not proof of a working example. Identify absent, inert and context-dependent variants in the plan before approval; preserve distinct existing variants. Record exact selections in the existing task, generate the existing review with captured screens and per-element references, obtain normal approval, then wire only selected supported component APIs.
 
 ## Development access and production exclusion
 
-Kit and developer-preview routes (for example /kit, /design-kit and /dev) open without login in development. Keep them outside authentication guards and account initialization; use local synthetic data and the real component providers without starting production services. Do not build a fake login or require customer credentials to inspect a kit.
+The default kit is **one development-only page inside the real application**, for example `/design-kit`. Register it only in development builds or environments, outside authentication guards and account initialization, and render it inside the application's real layout, providers and global styles with local synthetic data, without starting production services. Each application or client build has one kit: a client build's kit includes that client's overrides and enabled modules. Use a separate preview server only when the framework cannot host a development route, and state that reason in the setup proposal. Do not build a fake login or require customer credentials to inspect a kit.
 
 Use the framework's existing build-mode and route mechanisms to omit preview registration and preview-only imports from production. Hiding a menu item, checking a user role, or redirecting after importing the kit is insufficient. Shared production components remain shared; exclude the preview entry and its sample data. Treat unknown build mode as unavailable. Do not add a dependency or a second design system for this boundary.
 
 Trace route parents, providers, imports and every supported production configuration during audit. Include access/exclusion in the implementation plan and checks: a fresh logged-out development browser opens the kit with backend requests blocked; direct production URLs cannot open it; production output contains no preview entry or synthetic sample data. Builds still require the project's authorization. Missing runtime/build evidence stays unverified. Existing authenticated or production-reachable previews require a scoped route revision, not an authentication workaround.
+
+## Page anatomy and coverage
+
+The kit page follows design.md like any other screen: existing classes and components only.
+
+- **Navigation:** category navigation built from an existing navigation element.
+- **Each example:** a title; a caption naming the exact element pattern(s) as `tag.class.class` and the variants and states shown; then real instances of every variant and state inside their real wrappers. Interactions give local, visible feedback on the page.
+- **Server-dependent components:** render with fixture data while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
+
+**Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears in the kit or is listed with a reason in an exclusion list kept beside the kit's examples. An **element index** shows each pattern, its count, source references and whether the kit shows it. Generate it from the views on each check, for example a project test that fails on an uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
 
 ## Optional read-only Storybook index adapter
 

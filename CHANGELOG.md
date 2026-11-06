@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.15 — one in-app design kit with a fixed shape (2026-11-06)
+
+- ui-design: the default kit is one development-only page inside the real application (for example `/design-kit`), registered only in development, outside login, using the real layout and styles; one per application or client build, including its overrides and enabled modules. A separate preview server needs a stated reason.
+- New LIVE-KIT section "Page anatomy and coverage": per example a title, a caption naming the exact `tag.class` patterns and variants, then real instances in their real wrappers; server-dependent components render with fixture data. Every component and every element pattern used twice or more must be in the kit or excluded with a reason, checked by a generated element index.
+- New `templates/DESIGN.md`: the default shape for a project's design-decision record (intent, source of truth, access, approval, reuse rules, caller-inferred usage guidance, findings, history), with no CSS values or inventories.
+
 ## 2.8.0-rc.14 — single-command recovery after a shell denial (2026-11-06)
 
 - Workflow RULES.md: a denied shell command refuses only that command. Run each required helper alone, as one command, before reporting that it cannot run. The rc.13 Claude evaluation (P70) and P67 both stopped after one denied compound command although the single helper commands were allowed.

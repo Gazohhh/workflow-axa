@@ -25,7 +25,7 @@ REQUIRED = (
     "skills/rule-maker/rules/operations.md", "skills/rule-maker/rules/angular.md",
     "skills/rule-maker/rules/ionic.md", "skills/rule-maker/rules/capacitor.md",
     "skills/ui-design/KIT.md", "skills/ui-design/CATALOGUE.md",
-    "skills/ui-design/templates/KIT.md", "skills/ui-design/templates/design-kit.json",
+    "skills/ui-design/templates/KIT.md", "skills/ui-design/templates/DESIGN.md", "skills/ui-design/templates/design-kit.json",
     "skills/ui-design/scripts/check_design_kit.py", "tests/test_design_kit.py", "tests/test_rules_audit.py",
 
     ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json",
