@@ -11,6 +11,12 @@ Inspect actual task changes against the initial ownership baseline and the recor
 5. Capture after the framework's presentation/completion event and finite transitions have settled. An open/presented flag or arbitrary delay alone does not prove a finished frame. Compare examples with real callers under equivalent viewport, theme and host context; label reference-only or unsupported cases honestly.
 6. Report evidence and limits. Keep only useful captures/results under the workflow artifact policy. Designer handoff reuses existing records. Missing browser/device access means the visual layer is unverified. A static scan is not an accessibility audit or release gate.
 
+## Isolated live previews
+
+When bypassing application bootstrap, trace the real provider state and shell readiness first. Reuse initial reducers/providers and existing loading-completion APIs; a minimal unit-test mock may omit dependencies that the real rendered component needs. Keep backend access blocked. Distinguish fixture initialization failures from application defects before changing application code.
+
+Before retrying an edited fixture, verify the browser received the current module. Output folders may be excluded from the dev-server watcher even when their modules can be served. Use a content-specific module URL or restart the owned server and verify the served content; a fresh browser alone does not invalidate the server's transform cache. Preserve the project's watcher exclusions. Keep a repeatable check that fails on page errors, unfinished loading and failed interactions. Capture only after presentation settles, and record viewport/layout failures separately from interaction passes.
+
 ## Optional local diff triage
 
 `python -X utf8 <installed-ui-design>/scripts/review_ui_diff.py` reads a standard unified diff on stdin. `--diff /path/to/existing.diff` reads an existing file. No command execution, network, dependency install, repository walk, Git writes or output files. Do not create a diff artifact just for this helper; use stdin when available. Feed only the correctly attributed patch, with necessary context, after inspecting how it was obtained. New/untracked files must be included explicitly; a plain Git diff may omit them.

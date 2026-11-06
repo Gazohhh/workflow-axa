@@ -2,7 +2,7 @@
 
 ## Current verification
 
-Candidate workflow-axa 2.8.0-rc.8, shared rules 1.8.2, 21 registered skills.
+Candidate workflow-axa 2.8.0-rc.9, shared rules 1.8.2, 21 registered skills.
 
 This revision adds only revision-naming guidance and release metadata. The package validator passes. Native Opus 5.5 with the unchanged rc.7 hook accepted the explicitly reconciled plan identity and permitted its approved application test edit. This does not prove every approval format or host configuration.
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.9 — isolated preview verification (2026-11-06)
+
+- Check real provider initialization, shell readiness and served-module freshness in isolated previews. Preserve watcher exclusions and separate fixture failures from application defects.
+- Altinstar real-component browser interactions pass after fixing the fixture. Narrow desktop-brand layout still clips; no responsiveness or release acceptance claimed.
+- Documentation-only correction; hook behavior unchanged.
+
 ## 2.8.0-rc.8 — revision naming (2026-11-06)
 
 - Document the existing r1, r2 revision convention before plan generation. Preserve historical report bytes and require explicit owner authority when reconciling another label.
