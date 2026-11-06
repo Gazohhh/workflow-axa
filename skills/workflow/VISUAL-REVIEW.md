@@ -38,6 +38,13 @@ A correction at gate two: behavior or scope goes back to `workflow-clarify` for 
 
 On resume, the recorded approval stands if it still covers the work; don't ask again or re-render without a reason.
 
+## Superseded review cleanup
+
+Keep one filename while a draft is unpresented; use the renderer's guarded replacement instead of making retry copies. When a new review revision is ready, inspect older HTML/JSON pairs and associated captures in this task. Ask once, separately from plan approval: "Delete these superseded review files after the replacement is accepted, or retain them?" Name the exact files and recommend removing only redundant, unneeded revisions. Silence preserves files; a plan approval is not deletion approval.
+
+Before offering deletion, identify active approval/fingerprint dependencies, needed comparisons, rollback proof and explicit retention instructions. Keep needed evidence and state its concrete reason in the current task record. Label retained older revisions as superseded in that record, with the replacement link; do not rewrite their historical contents. If retiring a report would invalidate active approval, reconcile approval to the replacement first. After explicit file-scoped permission, update current links and remove only the selected unused files. Preserve the approval decision and explain that its retired artifact is unavailable; never invent proof from a saved hash. No bulk cleanup, automatic archiving, or changes to another checkout. Reuse the existing task record rather than creating a cleanup report.
+
+
 ## Legacy approval recovery
 
 A format mismatch does not cancel valid approval. `resume-task` first reconciles the same task/worktree, original report, complete real user answer, restrictions and changes since that answer. Preserve the old report and IDs. An unchanged single-gate scope still holds both gates; do not fabricate a revision just to satisfy a parser.

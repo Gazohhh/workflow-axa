@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0-rc.11 — superseded review cleanup (2026-11-06)
+
+- Ask once whether to delete named superseded review files after their replacement is accepted. Reuse one filename for unpresented drafts.
+- Preserve active approval dependencies and necessary evidence with stated reasons; reconcile current links before owner-approved deletion. No automatic deletion or changes to other checkouts.
+
 ## 2.8.0-rc.10 — development-only preview access (2026-11-06)
 
 - Require kit and developer previews outside login and account initialization in development. Use local synthetic data without backend access.
