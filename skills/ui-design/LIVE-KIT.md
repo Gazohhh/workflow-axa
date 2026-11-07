@@ -34,16 +34,16 @@ Trace route parents, providers, imports and every supported production configura
 
 The kit page follows design.md like any other screen: existing classes and components only.
 
-- **Navigation:** category navigation built from an existing navigation element.
+- **One page, grouped by element type.** Components and repeated elements appear one under another on a single page, grouped by what they are (for example actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. A module's or client's own components and elements sit in the same groups as core ones. No per-module tabs, no whole-page sub-pages and no separate index page.
 - **Each example:** a title; a caption naming the exact element pattern(s) as `tag.class.class` and the variants and states shown; then real instances of every variant and state inside their real wrappers. Interactions give local, visible feedback on the page.
 - **Server-dependent components:** render with fixture data while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
 
-**Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears in the kit or is listed with a reason in an exclusion list kept beside the kit's examples. An **element index** shows each pattern, its count, source references and whether the kit shows it, both as the coverage check and as its own category on the kit page, so the owner sees every element at a glance. Generate it from the views on each check, for example a project test that fails on an uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
+**Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears on the kit page or is listed with a reason in an exclusion list kept beside the kit's examples. A project test generated from the views (not a page) fails on any uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
 
 **Done when** checked against the served application, not only the source:
 
 - The served build contains the current sources the kit renders (components, module views, layouts). A stale build is a setup gap: update it with the project's own sync tooling, or report it before claiming results.
-- Every category and every kit sub-page opens logged out in a real browser with no server error, no console error and no request to an outside host except owner-allowed ones (for example a font service). Real components that load third-party scripts or CDN modules get a local stand-in or a visible reason, never a live outside request.
+- The kit page opens logged out in a real browser with no server error, no console error and no request to an outside host except owner-allowed ones (for example a font service). Real components that load third-party scripts or CDN modules get a local stand-in or a visible reason, never a live outside request.
 - Every action that would write (delete, save, submit) is stopped or answered with fixture data, so the kit can never change real data.
 - In the production configuration the kit route does not exist, checked with the framework's own route listing or a request.
 

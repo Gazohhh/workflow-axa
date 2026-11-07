@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.20 — one stacked kit page grouped by element type (2026-11-07)
+
+- ui-design LIVE-KIT: the kit is one page where components and repeated elements appear one under another, grouped by element type (actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. Module and client components join the same groups. No per-module tabs, whole-page sub-pages or index page; coverage is a generated project test. Replaces the rc.19 index category.
+
 ## 2.8.0-rc.19 — element index visible on the kit page (2026-11-07)
 
 - ui-design LIVE-KIT: the generated element index is both the coverage check and its own category on the kit page. Two fresh kit runs built only the check until the owner asked to see the index.

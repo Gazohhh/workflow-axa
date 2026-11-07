@@ -3,7 +3,7 @@ Template for a project's DESIGN.md: design decisions, allowed use and approval h
 Replace every [bracketed] placeholder with confirmed facts, or leave it visibly unresolved.
 Never invent components, approvals, dates or owners. Keep CSS values, size tables, source
 line numbers, usage counts and component inventories out of this file: the application
-source and the live kit own appearance, and the element index is generated, not copied here.
+source and the live kit own appearance, and the coverage test is generated from the views, not copied here.
 Delete this comment when the file is adopted.
 -->
 
@@ -17,7 +17,7 @@ The live kit at `[/design-kit]` renders the application's actual components and 
 
 Component templates, component styles, the global stylesheet `[path]` and theme/tokens `[path]` own appearance. Rebuilding and reloading reflects changes to existing components and styles without editing this document.
 
-Each component example is registered once in the kit. A new component needs one registered example and any local fixture data; new inputs or states need an example update. The element index generated from the views shows which repeated patterns the kit covers and which are excluded with a reason.
+Each component example is registered once in the kit. A new component needs one registered example and any local fixture data; new inputs or states need an example update. A coverage test generated from the views fails when a repeated pattern is neither on the kit page nor excluded with a reason.
 
 [External design references, such as a design-tool file, record intent only. A missing or uncertain match does not override an explicit owner approval of the code.]
 
@@ -27,7 +27,7 @@ This policy covers [application/client/platform]. [Areas with separate owners] a
 
 ### How to open the kit
 
-Open `[/design-kit]` in a development build using the repository's existing development tooling. It needs no login and uses the application's real layout, providers and styles. [Production/staging/other] builds exclude the route through [the existing build-mode mechanism]. [Client builds: each client's kit includes its overrides and enabled modules.]
+Open `[/design-kit]` in a development build using the repository's existing development tooling. It needs no login and uses the application's real layout, providers and styles. [Production/staging/other] builds exclude the route through [the existing build-mode mechanism]. [Client builds: each client's kit page includes its overrides and its enabled modules' components, in the same element groups as core.]
 
 Previews use synthetic fixtures with backend requests blocked. Never use customer data or run real account, payment, printing or backend actions to demonstrate a control. The kit labels examples that cannot render, with the reason. A rendered example does not prove its full feature journey, backend or native-device behaviour was tested.
 
