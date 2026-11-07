@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.22 — every kit example defines its classes (2026-11-07)
+
+- ui-design LIVE-KIT: one example per component and per repeated pattern; each shows a definition line (source plus base `tag.class` and modifiers) and a class or prop label on every variant, instead of a bulk class list. Tokens and icons come first. Server-dependent components load their real page's stylesheets and scripts. Done-when adds a visual check of the labels and requires each DESIGN.md to follow `templates/DESIGN.md`. On rc.21 a fresh run produced bulk `Patterns:` captions and a how-it-works DESIGN.md.
+
 ## 2.8.0-rc.21 — one-page kit rule stated where setup reads it (2026-11-07)
 
 - ui-design KIT.md setup step and LIVE-KIT anatomy: no per-client or per-module sections, no framed page previews; a view with its own layout contributes its elements to the groups; email and PDF views are excluded as non-screen UI. On rc.20 a fresh kit run read the rule but still recommended module sections and framed page previews.

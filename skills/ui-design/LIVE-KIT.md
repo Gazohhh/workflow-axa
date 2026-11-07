@@ -35,8 +35,12 @@ Trace route parents, providers, imports and every supported production configura
 The kit page follows design.md like any other screen: existing classes and components only.
 
 - **One page, grouped by element type.** Components and repeated elements appear one under another on a single page, grouped by what they are (for example actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. A module's or client's own components and elements sit in the same groups as core ones. No per-client or per-module sections or tabs, no whole-page sub-pages or framed page previews, and no separate index page. A view with its own layout (login, public upload) contributes its elements to the groups; email and PDF views are not screen UI and are excluded with that reason.
-- **Each example:** a title; a caption naming the exact element pattern(s) as `tag.class.class` and the variants and states shown; then real instances of every variant and state inside their real wrappers. Interactions give local, visible feedback on the page.
-- **Server-dependent components:** render with fixture data while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
+- **One example per component and per repeated pattern.** A repeated wrapper, block, row, grid or text helper gets its own example with its own title. Never list one example's classes inside another one, and never fold several patterns into one bulk caption.
+- **Each example defines its pattern, in one block:** a title; one definition line naming where it comes from (the component and its props or slots, or the stylesheet that owns the classes) and the base `tag.class` with its modifier classes; then every variant and state rendered inside its real wrappers, each with a small label beside it naming its exact classes or props (for example `main-btn dark-btn`, `disabled`). The reader sees which class gives which look without opening the code. Interactions give local, visible feedback on the page.
+- **Tokens and icons come first:** colours, type, spacing and similar values read from the running stylesheet (never copied into the page), and the icon set with each icon style it uses.
+- **Server-dependent components render as on their real page:** with fixture data, and with the stylesheets and scripts the real page loads for them, while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
+
+Before building, compare one finished example against this anatomy; if the project has a reference kit named by the owner, compare against that.
 
 **Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears on the kit page or is listed with a reason in an exclusion list kept beside the kit's examples. A project test generated from the views (not a page) fails on any uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
 
@@ -46,6 +50,8 @@ The kit page follows design.md like any other screen: existing classes and compo
 - The kit page opens logged out in a real browser with no server error, no console error and no request to an outside host except owner-allowed ones (for example a font service). Real components that load third-party scripts or CDN modules get a local stand-in or a visible reason, never a live outside request.
 - Every action that would write (delete, save, submit) is stopped or answered with fixture data, so the kit can never change real data.
 - In the production configuration the kit route does not exist, checked with the framework's own route listing or a request.
+- Looking at the page in the browser, every example shows its own definition line and a class or prop label on each variant, and no example is a bulk class list.
+- Each application's or client's DESIGN.md follows `templates/DESIGN.md` section by section, with the usage decisions drafted from real callers and marked as candidates until the owner approves them. How the kit page is built and how coverage runs belong in the kit's own source comments or the project's AGENTS.md pointer, not in place of those sections.
 
 ## Optional read-only Storybook index adapter
 
