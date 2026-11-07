@@ -34,7 +34,7 @@ Trace route parents, providers, imports and every supported production configura
 
 The kit page follows design.md like any other screen: existing classes and components only.
 
-- **One page, grouped by element type.** Components and repeated elements appear one under another on a single page, grouped by what they are (for example actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. A module's or client's own components and elements sit in the same groups as core ones. No per-module tabs, no whole-page sub-pages and no separate index page.
+- **One page, grouped by element type.** Components and repeated elements appear one under another on a single page, grouped by what they are (for example actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. A module's or client's own components and elements sit in the same groups as core ones. No per-client or per-module sections or tabs, no whole-page sub-pages or framed page previews, and no separate index page. A view with its own layout (login, public upload) contributes its elements to the groups; email and PDF views are not screen UI and are excluded with that reason.
 - **Each example:** a title; a caption naming the exact element pattern(s) as `tag.class.class` and the variants and states shown; then real instances of every variant and state inside their real wrappers. Interactions give local, visible feedback on the page.
 - **Server-dependent components:** render with fixture data while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
 

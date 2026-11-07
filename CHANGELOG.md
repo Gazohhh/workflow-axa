@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.21 — one-page kit rule stated where setup reads it (2026-11-07)
+
+- ui-design KIT.md setup step and LIVE-KIT anatomy: no per-client or per-module sections, no framed page previews; a view with its own layout contributes its elements to the groups; email and PDF views are excluded as non-screen UI. On rc.20 a fresh kit run read the rule but still recommended module sections and framed page previews.
+
 ## 2.8.0-rc.20 — one stacked kit page grouped by element type (2026-11-07)
 
 - ui-design LIVE-KIT: the kit is one page where components and repeated elements appear one under another, grouped by element type (actions, forms, lists, overlays, feedback, icons, layout), never by owner, module or page. Module and client components join the same groups. No per-module tabs, whole-page sub-pages or index page; coverage is a generated project test. Replaces the rc.19 index category.
