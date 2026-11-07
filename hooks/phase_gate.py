@@ -580,7 +580,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 14
+STATE_VERSION = 15
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 REPORT_REFERENCE = re.compile(r'(?:(?:[A-Za-z]:/|/)[^\n`<>"\']*?)?'
@@ -632,12 +632,15 @@ def fresh_state() -> dict:
     return {'v': STATE_VERSION, 'offset': 0, 'head': '', 'mark': '', 'n': 0, 'lines': 0, 'parsed': 0,
             'active': False, 'rules': False, 'tasks': [], 'users': [], 'presented': {}, 'asks': {}, 'last_user': -1,
             'last_words': '', 'report_presented': {}, 'chat_presented': {}, 'paused_tasks': {},
-            'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}}
+            'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}, 'task_roots': {}}
 
 
-def set_task(state: dict, name: str, n: int):
+def set_task(state: dict, name: str, n: int, record: str = ''):
     if name and not re.search(r'\.\w{1,4}$', name) and (not state['tasks'] or state['tasks'][-1][0] != name):
         state['tasks'].append([name, n])
+    root = worktree(record) if name and record else None
+    if root:  # where this task's records were written: a task spanning several repositories keeps one record set
+        state.setdefault('task_roots', {})[name] = slash(root)
 
 
 def control_intent(text: str) -> str | None:
@@ -869,12 +872,12 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
         elif name in EDIT_TOOLS:
             found = TASK_PATH.search(slash(str(data.get('file_path') or data.get('notebook_path') or '')) + '/')
             if found:
-                set_task(state, found.group(1), n)
+                set_task(state, found.group(1), n, slash(str(data.get('file_path') or data.get('notebook_path') or '')))
         elif name in SHELLS:
             for kind, where, _ in shell_writes(str(data.get('command', '')), str(entry.get('cwd') or cwd),
                                                name == 'PowerShell'):
                 for task in TASK_PATH.findall(where + '/') if kind == 'path' else []:
-                    set_task(state, task, n)
+                    set_task(state, task, n, where)
 
 
 def digest(data: bytes) -> str:
@@ -1272,6 +1275,12 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
         return (f"workflow-axa: {label} was stopped because the current task changed to {task} after the user's last "
                 "message. Tell the user which task this change belongs to and let them answer before you edit.")
     plan = Path(root or '.') / 'docs' / 'plans' / task / 'PLAN.md'
+    home = state.get('task_roots', {}).get(task)
+    if not plan.is_file() and home and common_dir(home) != common_dir(root):
+        # One task across several repositories (Core plus client and module repos): its records live in the
+        # repository where the session wrote them. Its approval and write paths still apply; a linked worktree of
+        # the same repository never borrows another worktree's records.
+        plan = Path(home) / 'docs' / 'plans' / task / 'PLAN.md'
     try:
         text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
     except OSError:

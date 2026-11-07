@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0-rc.26 — one task across repositories; kit examples stay elements (2026-11-08)
+
+- phase gate: a task whose records live in one repository (Core) now covers its approved edits in sibling repositories (clients, modules) when the session works there; the approval and write paths still apply, and linked worktrees of one repository still never borrow records. On rc.25 a fresh kit run had approved client edits refused because the client repository held no copy of the plan.
+- ui-design LIVE-KIT: example titles name the element, never a module, client or page; one icons example; definition lines are one short line with no caller lists or findings; overlays are placed in the page flow, never opened with their script and copied, and nothing sits fixed over content at any moment, page load included; fake text fits its space; no raw keys anywhere in the markup; a note never excuses a defect. The visual review covers gapless segments and the first seconds after load. On rc.25 an independent review failed the kit for an empty list dialog, dialogs flashing over the page on load, a loader over the top bar, paragraph definitions and module-named examples.
+
 ## 2.8.0-rc.25 — kit anatomy overrides older kit decisions (2026-11-07)
 
 - ui-design LIVE-KIT: an older task's recorded tabs, example picker, one-at-a-time view, coverage or index page, full-page previews or preview server do not carry forward; a new kit task reopens them under the one-page anatomy. Coverage is the generated test, never a page. On rc.24 a fresh run resumed an older preview task and planned tabs, a picker and a Coverage category.

@@ -761,6 +761,20 @@ class ApprovalGateTests(unittest.TestCase):
         (unrelated / ".git").mkdir(parents=True)
         self.assertIsNone(self.decision(rows[:1], "Edit", {"file_path": str(unrelated / "x.ts")}))  # not this project
 
+    def test_one_task_across_repositories_uses_the_repository_holding_its_records(self):
+        # Kit run 7: the plan lives in Core; the session's cwd moved into a client repository, whose approved
+        # edits were refused because that repository holds no copy of the task records.
+        self.task(TASK, APPROVED)
+        client = self.base / "client"
+        (client / ".git").mkdir(parents=True)
+        rows = [ROUTER] + self.approval("Yes to both")
+        target = {"file_path": str(client / "src" / "a.ts")}
+        self.assertIsNone(self.decision(rows, "Edit", target, cwd=client))
+        self.assertEqual(self.decision(rows, "Bash", {"command": "git push"}, cwd=client), None)
+        # Without approval the borrowed plan blocks just the same.
+        self.task(TASK, "- Approval: not approved")
+        self.assertEqual(self.decision(rows, "Edit", target, cwd=client), "deny")
+
     # E4: shell writes, judged per written path
 
     def test_shell_writes_into_project_files_are_gated(self):
