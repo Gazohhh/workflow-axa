@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.24 — kit examples render correctly and are visually reviewed (2026-11-07)
+
+- ui-design LIVE-KIT: labels are exact classes or props under their own variant, never prose; each icon is rendered with its class; page shells contribute elements, never whole pages; overlays render open; sticky elements cannot cover others; no empty, unstyled, clipped or placeholder-text examples and no duplicates. Done-when requires a full top-to-bottom screenshot review, repeated until clean. On rc.23 an independent review of a fresh kit found bulk icon lists, prose labels, whole-page examples, trigger-only modals, empty examples and leaked "Laravel::" keys.
+
 ## 2.8.0-rc.23 — kit requests reach ui-design; reference kits lend definitions, not navigation (2026-11-07)
 
 - ui-design description now names building, setting up or checking a design kit, so a plain "build the design kit" prompt loads it. On rc.22 a fresh run never loaded workflow or ui-design.
