@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0-rc.23 — kit requests reach ui-design; reference kits lend definitions, not navigation (2026-11-07)
+
+- ui-design description now names building, setting up or checking a design kit, so a plain "build the design kit" prompt loads it. On rc.22 a fresh run never loaded workflow or ui-design.
+- LIVE-KIT: a reference kit the owner points to supplies its element definitions, class labels, variants and DESIGN.md sections; its tabs, example picker, one-at-a-time views and full-page previews are never copied. The rc.22 run copied the Cheflabels tabs and picker.
+
 ## 2.8.0-rc.22 — every kit example defines its classes (2026-11-07)
 
 - ui-design LIVE-KIT: one example per component and per repeated pattern; each shows a definition line (source plus base `tag.class` and modifiers) and a class or prop label on every variant, instead of a bulk class list. Tokens and icons come first. Server-dependent components load their real page's stylesheets and scripts. Done-when adds a visual check of the labels and requires each DESIGN.md to follow `templates/DESIGN.md`. On rc.21 a fresh run produced bulk `Patterns:` captions and a how-it-works DESIGN.md.

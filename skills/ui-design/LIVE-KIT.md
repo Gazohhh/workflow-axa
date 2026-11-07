@@ -40,7 +40,7 @@ The kit page follows design.md like any other screen: existing classes and compo
 - **Tokens and icons come first:** colours, type, spacing and similar values read from the running stylesheet (never copied into the page), and the icon set with each icon style it uses.
 - **Server-dependent components render as on their real page:** with fixture data, and with the stylesheets and scripts the real page loads for them, while backend requests stay blocked. Mark only what genuinely cannot render, such as a native-only control, with a visible reason on the page.
 
-Before building, compare one finished example against this anatomy; if the project has a reference kit named by the owner, compare against that.
+A reference kit the owner points to (for example another project's kit) shows how each element is defined: copy its definition line, class labels, variants and DESIGN.md sections. Never copy its navigation: tabs, an example picker, one-example-at-a-time views or full-page previews become this one stacked page. Before building the rest, compare one finished example against this anatomy and the reference.
 
 **Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears on the kit page or is listed with a reason in an exclusion list kept beside the kit's examples. A project test generated from the views (not a page) fails on any uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
 
