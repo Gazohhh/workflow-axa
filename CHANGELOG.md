@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.18 — kit "done when" checks against the served app (2026-11-07)
+
+- ui-design LIVE-KIT: a kit is done only when the served build is current, every category and sub-page opens logged out in a real browser without server or console errors or outside requests (owner-allowed services excepted; CDN modules get local stand-ins), write actions are stopped, and the production configuration has no kit route. A fresh kit run on rc.17 needed a fix round for exactly these.
+
 ## 2.8.0-rc.17 — mimic question without alternatives (2026-11-06)
 
 - Shared rules 1.8.5: after the exact question, list only same-tag existing elements, nothing else. On rc.16 a fresh Claude session asked the exact question but still listed plain HTML and "add a style yourself".

@@ -40,6 +40,13 @@ The kit page follows design.md like any other screen: existing classes and compo
 
 **Coverage rule:** every component, and every element pattern (tag plus full class list) used two or more times in the application's views and its enabled modules' views, appears in the kit or is listed with a reason in an exclusion list kept beside the kit's examples. An **element index** shows each pattern, its count, source references and whether the kit shows it. Generate it from the views on each check, for example a project test that fails on an uncovered pattern without an exclusion. Keep it out of DESIGN.md and never maintain it by hand. Coverage shows presence in the kit, not approval: new and uncovered patterns are candidates for the owner.
 
+**Done when** checked against the served application, not only the source:
+
+- The served build contains the current sources the kit renders (components, module views, layouts). A stale build is a setup gap: update it with the project's own sync tooling, or report it before claiming results.
+- Every category and every kit sub-page opens logged out in a real browser with no server error, no console error and no request to an outside host except owner-allowed ones (for example a font service). Real components that load third-party scripts or CDN modules get a local stand-in or a visible reason, never a live outside request.
+- Every action that would write (delete, save, submit) is stopped or answered with fixture data, so the kit can never change real data.
+- In the production configuration the kit route does not exist, checked with the framework's own route listing or a request.
+
 ## Optional read-only Storybook index adapter
 
 For an already generated local v4/v5 `index.json`:
