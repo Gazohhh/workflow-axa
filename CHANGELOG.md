@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.29 — kit labels stay with their variant; widgets show their editor (2026-11-08)
+
+- ui-design LIVE-KIT: each variant and its label are grouped in one existing wrapper so the label sits visibly closer to its own variant than to the next, framed variants included; third-party widgets show their open interface (a date picker's calendar, a cropper's editor, not only its preview) or exclude that state with its reason; nothing extra sits beside a variant unless its label names it. On rc.28 four independent reviewers found labels that read as belonging to the next card, toast or list, and an extra textarea beside open selects; after these fixes all four found no blocking defect.
+
 ## 2.8.0-rc.28 — the approval gate stops asking twice; kit parts and states (2026-11-08)
 
 - phase gate (Putten task): messages typed while the agent works count as the owner's answer; a bold or code-marked task path still presents the plan; "no repor"-style typos decline the report; record-helper writes through a shell variable and handoff notes to another or paused task no longer switch the current task; a recorded lightweight edit may be committed when the owner asks for the commit and only its files changed (push and other git writes unchanged); blocks caused by how the approval is recorded say exactly what to fix instead of asking the owner again. On rc.20 the owner approved one plan four or five times before one commit went through.
