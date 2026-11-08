@@ -35,6 +35,15 @@ def tool(name, **data):
     return {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": name, "input": data}]}}
 
 
+def queued(text, kind="human", **extra):
+    """A message the owner typed while the agent was working, as Claude Code records it (Putten, 2026-11-07)."""
+    data = {"type": "queued_command", "prompt": [{"type": "text", "text": text}],
+            "commandMode": "prompt" if kind in ("human", "peer") else "task-notification", "humanTurn": kind == "human"}
+    if kind:
+        data["origin"] = {"kind": kind}
+    return {"type": "attachment", "isSidechain": False, "attachment": data, **extra}
+
+
 def hook_context(event, *lines):
     """A host-recorded hook context entry, as Claude Code stores the gate's PostToolUse/UserPromptSubmit output."""
     return {"type": "attachment", "attachment": {"type": "hook_additional_context", "hookEvent": event, "content": list(lines)}}
@@ -52,7 +61,8 @@ def hooked(rows, root):
         if row.get("type") == "assistant" and isinstance(content, list):
             text = " ".join(str(b.get("text", "")) for b in content if isinstance(b, dict) and b.get("type") == "text")
             for found in REPORT_PATH.findall(text.replace("\\", "/")):
-                path = Path(found) if re.match(r'^(?:[A-Za-z]:|/)', found) else Path(root) / found
+                found = found.lstrip("*_")  # markdown emphasis around the path
+                path =Path(found) if re.match(r'^(?:[A-Za-z]:|/)', found) else Path(root) / found
                 if path.is_file():
                     rel = "docs/plans/" + found.split("docs/plans/", 1)[1]
                     shown[rel] = path
@@ -60,6 +70,8 @@ def hooked(rows, root):
         out.append(row)
         typed = row.get("type") == "user" and not row.get("isSidechain") and "toolUseResult" not in row and (
             isinstance(content, str) or any(isinstance(b, dict) and b.get("type") == "text" for b in content or []))
+        typed = typed or (row.get("type") == "attachment" and (row.get("attachment") or {}).get("type") == "queued_command"
+                          and ((row.get("attachment") or {}).get("origin") or {}).get("kind") == "human")
         answered = row.get("type") == "user" and isinstance(row.get("toolUseResult"), dict) and "answers" in row["toolUseResult"]
         if (typed or answered) and shown:
             out.append(hook_context("UserPromptSubmit" if typed else "PostToolUse",
@@ -989,11 +1001,13 @@ class ApprovalGateTests(unittest.TestCase):
     def test_a_task_switch_after_the_last_user_message_is_stopped(self):
         self.task(TASK, APPROVED)
         self.task("2026-11-02-other", "- Approval: not approved")
-        rows = [ROUTER] + self.approval("Yes to both") + [self.records("2026-11-02-other"), self.records(TASK)]
+        rows = [ROUTER] + self.approval("Yes to both") + [self.records("2026-11-02-other")]
         out = self.fire(rows, "Edit", {"file_path": self.code})
         self.assertEqual(out["permissionDecision"], "deny")
         self.assertIn("changed to", out["permissionDecisionReason"])
         self.assertIsNone(self.decision(rows + [user(f"Yes, this is docs/plans/{TASK}")], "Edit", {"file_path": self.code}))
+        # Putten: a note in another task's records followed by this task's records again is no switch.
+        self.assertIsNone(self.decision(rows + [self.records(TASK)], "Edit", {"file_path": self.code}))
 
     def test_a_whole_read_of_the_router_skill_activates_the_gate(self):
         router = str(ROOT / "skills/workflow/SKILL.md")
@@ -1069,6 +1083,192 @@ class ApprovalGateTests(unittest.TestCase):
         self.assertEqual(self.decision(rows, "Edit", {"file_path": self.code}), "deny")
         (folder / "reviews" / "plan-r1.html").write_text("<!DOCTYPE html>", encoding="utf-8")
         self.assertIsNone(self.decision(rows, "Edit", {"file_path": self.code}))
+
+    # Putten (Hooqd, 2026-11-07): the owner approved the same plan four or five times before one commit went through.
+
+    def test_putten_a_message_typed_while_the_agent_works_counts_as_the_owners_answer(self):
+        # "approved, no report" was typed mid-turn; the host recorded it as a queued_command attachment, not a user row.
+        self.task(TASK, APPROVED)
+        shown = [ROUTER, self.records(), self.present()]
+        self.assertIsNone(self.decision(shown + [queued("Yes to both")], "Edit", {"file_path": self.code}))
+        # The same words from a subagent, a task notification, a sidechain or a meta entry are not the owner's.
+        for row in (queued("Yes to both", kind="peer"), queued("Yes to both", kind="task-notification"),
+                    queued("Yes to both", kind=None), queued("Yes to both", isSidechain=True),
+                    queued("Yes to both", isMeta=True), queued("<task-notification>Yes to both</task-notification>")):
+            with self.subTest(row=row):
+                self.assertEqual(self.decision(shown + [row], "Edit", {"file_path": self.code}), "deny")
+        # A queued answer before the plan was shown still does not count, and a queued stop still stops.
+        self.assertEqual(self.decision([ROUTER, self.records(), queued("Yes to both"), self.present()], "Edit",
+                                       {"file_path": self.code}), "deny")
+        out = self.fire(shown + [user("Yes to both"), queued("stop")], "Edit", {"file_path": self.code})
+        self.assertIn("stopped", out["permissionDecisionReason"])
+
+    def test_putten_a_bold_or_code_task_path_still_presents_the_plan(self):
+        # The plan was shown as "**Plan r1 for docs/plans/<task>**"; the asterisks hid the task path from the gate.
+        self.task(TASK, '- Approval (gate two): r1 approved, no plan report by the owner\'s choice: "approved, no report"',
+                  report=None)
+        for text in (f"**Plan r1 for docs/plans/{TASK}** (no HTML report, as you chose). Approve?",
+                     f"Plan r1 for *docs/plans/{TASK}*, approve?", f"Plan r1 for `docs/plans/{TASK}`, approve?",
+                     f"Plan r1 for __docs/plans/{TASK}__, approve?"):
+            with self.subTest(text=text):
+                rows = [ROUTER, self.records(), say(text), user("approved, no report")]
+                self.assertIsNone(self.decision(rows, "Bash", {"command": "git commit -m x"}))
+        # A bold report path presents the report as well.
+        self.task(TASK, APPROVED)
+        report = self.repo / "docs/plans" / TASK / "reviews/plan-r1.html"
+        rows = [ROUTER, self.records(), say(f"Plan report: **{report}**. Approve?"), user("Yes to both")]
+        self.assertIsNone(self.decision(rows, "Edit", {"file_path": self.code}))
+        # Emphasis does not create a presentation that was never made.
+        self.task(TASK, '- Approval (gate two): r1 approved, no report: "approved, no report"', report=None)
+        rows = [ROUTER, self.records(), say(f"**docs/plans/{TASK}** is ready"), user("approved, no report")]
+        self.assertEqual(self.decision(rows, "Bash", {"command": "git commit -m x"}), "deny")
+
+    def test_putten_a_no_report_typo_still_declines_the_report(self):
+        # "approved, no repor" was the owner's whole answer; the gate read it as no answer at all.
+        shown = [ROUTER, self.records(), say(f"Plan r1 for docs/plans/{TASK}, update src/a.ts only. Approve?")]
+        for answer in ("approved, no repor", "approved, no repo", "approved, no reports"):
+            with self.subTest(answer=answer):
+                self.task(TASK, f'- Approval (gate two): r1 approved, no report: "{answer}"', report=None)
+                self.assertIsNone(self.decision(shown + [user(answer)], "Edit", {"file_path": self.code}))
+        # Nothing broader: other words after "no" do not decline the report.
+        for answer in ("approved, no repository changes", "approved, no rep", "approved, nothing else"):
+            with self.subTest(answer=answer):
+                self.task(TASK, f'- Approval (gate two): r1 approved, no report: "{answer}"', report=None)
+                self.assertEqual(self.decision(shown + [user(answer)], "Edit", {"file_path": self.code}), "deny")
+
+    def test_putten_record_helper_through_a_script_variable_switches_the_task(self):
+        # The agent ran `R=".../record.py"; python -X utf8 -I "$R" batch docs/plans/<task>/PLAN.md -`. The gate did not
+        # see that record write, so the current task never moved back; the owner's "go" could not help and they had to
+        # type the task name.
+        other = "2026-11-07-remote-board-screenshot"
+        self.task(TASK, "- Lightweight edit: src/a.ts — log the logo sizes", report=None)
+        self.task(other, "- Approval (gate two): not yet", report=None)
+        script = 'R="C:/x/workflow/scripts/record.py"; '
+        rows = [ROUTER, self.records(TASK), user("do both"), self.records(other),
+                user("remove the screenshot for now, finish the logo logging"),
+                tool("Bash", command=script + f'python -X utf8 -I "$R" set-line docs/plans/{other}/PLAN.md "- Next:" "- Next: paused"; '
+                     + f'python -X utf8 -I "$R" batch "docs/plans/{TASK}/PLAN.md" -')]
+        out = self.fire(rows, "Edit", {"file_path": self.code})
+        self.assertIn(f"changed to {TASK}", out["permissionDecisionReason"])
+        self.assertIsNone(self.decision(rows + [user("go")], "Edit", {"file_path": self.code}))
+
+    def test_putten_a_handoff_note_to_another_task_is_not_a_task_switch(self):
+        # Hooqd line 3435: one command wrote a pause note into the screenshot task, then the Putten checkpoint. The note
+        # quoted the owner as `\"let's ...\"`, the gate lost the Putten write, and the screenshot task became current.
+        other = "2026-11-07-remote-board-screenshot"
+        self.task(TASK, "- Lightweight edit: src/a.ts — log the logo sizes", report=None)
+        self.task(other, "- Approval (gate two): not yet", report=None)
+        record = 'python -X utf8 -I "C:/x/workflow/scripts/record.py" set-line '
+        rows = [ROUTER, self.records(TASK), user("let's do 1 and 2"), self.records(other), user("only for us admins"),
+                self.records(TASK), user("let's for now remove screenshot, finish the logo fix"),
+                tool("Bash", command=record + f'docs/plans/{other}/PLAN.md "- Updated:" "- Updated: paused by the owner '
+                     '(user: \\"let\'s for now remove screenshot\\")"; ' + record + f'docs/plans/{TASK}/PLAN.md "- Next:" "- Next: x"')]
+        self.assertIsNone(self.decision(rows, "Edit", {"file_path": self.code}))
+        # A note into the other task alone does switch; the block says how to switch back without asking again.
+        out = self.fire(rows[:-1] + [self.records(other)], "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn(f"changed to {other}", out)
+        self.assertIn(f"write a record of {TASK}", out)
+
+    def test_putten_a_handoff_note_to_a_paused_task_keeps_the_current_task(self):
+        # Updating the paused task's FINDINGS must not make it current again (and stop the next edit).
+        old = "2026-11-05-board-fit"
+        self.task(old, "- Approval (gate two): not yet", report=None)
+        self.task(TASK, "- Lightweight edit: src/a.ts — log the logo sizes", report=None)
+        script = 'python -X utf8 -I "C:/x/workflow/scripts/record.py" append '
+        rows = [ROUTER, self.records(old), user("stop"), user(f"work on docs/plans/{TASK} instead"),
+                tool("Bash", command=script + f'docs/plans/{old}/FINDINGS.md "- handoff: paused by the owner"')]
+        self.assertIsNone(self.decision(rows, "Edit", {"file_path": self.code}))
+        edit = tool("Write", file_path=str(self.repo / "docs/plans" / old / "FINDINGS.md"), content="x")
+        self.assertIsNone(self.decision(rows[:-1] + [edit], "Edit", {"file_path": self.code}))
+        # A task that is not paused still switches, and that switch still needs the owner's word.
+        rows = [ROUTER, self.records(old), user(f"work on docs/plans/{TASK} instead"), self.records(old)]
+        self.assertIn(f"changed to {old}", self.fire(rows, "Edit", {"file_path": self.code})["permissionDecisionReason"])
+        # Once the owner resumes the paused task, writing its records makes it current as before.
+        rows = [ROUTER, self.records(old), user("stop"), user("continue"), user(f"work on docs/plans/{TASK} first"),
+                tool("Bash", command=script + f'docs/plans/{old}/FINDINGS.md "- note"')]
+        self.assertIn(f"changed to {old}", self.fire(rows, "Edit", {"file_path": self.code})["permissionDecisionReason"])
+
+    def git_repo(self):
+        repo = self.base / "gitrepo"
+        repo.mkdir()
+
+        def run(*args):
+            subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+
+        run("init", "-q")
+        run("config", "user.email", "t@example.invalid")
+        run("config", "user.name", "t")
+        (repo / "src").mkdir()
+        (repo / "src/a.ts").write_text("a\n", encoding="utf-8")
+        (repo / "src/b.ts").write_text("b\n", encoding="utf-8")
+        run("add", "-A")
+        run("commit", "-q", "-m", "base")
+        return repo
+
+    def test_putten_owner_asked_commit_of_a_lightweight_edit_is_allowed(self):
+        # The Lightweight edit line allowed the edits, but `git commit` of those same files needed full approval.
+        repo = self.git_repo()
+        self.task(TASK, "- Lightweight edit: src/a.ts — log the logo sizes", root=repo, report=None)
+        (repo / "src/a.ts").write_text("changed\n", encoding="utf-8")
+        records = tool("Write", file_path=str(repo / "docs/plans" / TASK / "TODO.md"), content="x")
+        rows = [ROUTER, records]
+        commit = {"command": f'cd "{repo.as_posix()}" && git add src/a.ts docs/plans && git commit -m "log logo sizes"'}
+        for words in ("yes lmk when done you can push commit merge so i can run jenkins after", "commit it",
+                      "don't push yet, just commit"):
+            with self.subTest(words=words):
+                self.assertIsNone(self.decision(rows + [user(words)], "Bash", commit, cwd=repo))
+                self.assertIsNone(self.decision(rows + [queued(words)], "Bash", commit, cwd=repo))
+        # The owner must ask for the commit in their latest message.
+        for words in ("looks good", "do not commit", "don't commit yet", "never commit this"):
+            with self.subTest(words=words):
+                out = self.fire(rows + [user(words)], "Bash", commit, cwd=repo)
+                self.assertEqual(out["permissionDecision"], "deny")
+                self.assertIn("latest message", out["permissionDecisionReason"])
+        asked = rows + [user("commit and push")]
+        # Push, amend and other git writes keep the full gate.
+        for command in ("git push origin master", "git commit -m x && git push", "git commit --amend -m x", "git merge x",
+                        "git reset --hard"):
+            with self.subTest(command=command):
+                self.assertEqual(self.decision(asked, "Bash", {"command": f'cd "{repo.as_posix()}" && {command}'},
+                                               cwd=repo), "deny")
+        # Only the recorded lightweight files (and task records) may be changed.
+        (repo / "src/b.ts").write_text("changed\n", encoding="utf-8")
+        out = self.fire(asked, "Bash", commit, cwd=repo)
+        self.assertEqual(out["permissionDecision"], "deny")
+        self.assertIn("src/b.ts", out["permissionDecisionReason"])
+        (repo / "src/b.ts").write_text("b\n", encoding="utf-8")
+        (repo / "src/new.ts").write_text("new\n", encoding="utf-8")  # untracked counts as changed
+        self.assertIn("src/new.ts", self.fire(asked, "Bash", commit, cwd=repo)["permissionDecisionReason"])
+
+    def test_putten_record_problems_say_what_to_fix_in_the_record(self):
+        # Blocks caused by how the agent wrote the record must say what to fix, so the owner is not asked again.
+        answer = "approved, no report. tell me than after what has been done. more logs right?"
+        shown = [ROUTER, self.records(), say(f"Plan r1 for docs/plans/{TASK}, update src/a.ts only. Approve?"), user(answer)]
+        self.task(TASK, f'- Approval (gate two): logo logging, no plan report by the owner\'s choice: "{answer}"', report=None)
+        out = self.fire(shown, "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn("outside the quotes", out)
+        self.assertIn("do not ask the owner again", out)
+        # Quoting only the start of the message: the gate names the whole message to quote.
+        self.task(TASK, '- Approval (gate two): r1 approved, no report: "approved, no report"', report=None)
+        out = self.fire(shown, "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn("whole message", out)
+        self.assertIn("tell me than after what has been done", out)
+        self.assertIn("do not ask the owner again", out)
+        # An answer given before the plan was shown is a missing consent, and the block says how a plan counts as shown.
+        self.task(TASK, f'- Approval (gate two): r1 approved, no report: "{answer}"', report=None)
+        early = [ROUTER, self.records(), user(answer), say(f"Plan r1 for docs/plans/{TASK}, approve?")]
+        out = self.fire(early, "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn("before the plan", out)
+        self.assertIn(f"docs/plans/{TASK}", out)
+        # A Lightweight edit line that does not list the file says so instead of asking for one.
+        self.task(TASK, "- Lightweight edit: src/b.ts — typo", report=None)
+        out = self.fire([ROUTER, self.records()], "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn("does not list src/a.ts", out)
+        # The task-switch block says how to switch so one reply from the owner is enough.
+        self.task("2026-11-02-other", "- Approval: not approved")
+        rows = [ROUTER, self.records(), user("x"), self.records("2026-11-02-other")]
+        out = self.fire(rows, "Edit", {"file_path": self.code})["permissionDecisionReason"]
+        self.assertIn("need not type the task name", out)
 
     # Unreadable input
 

@@ -11,11 +11,13 @@ counted as permission, chat text granted the lightweight route, and many shell w
   the other worktrees of the same repository), and rule files while rule-maker is loaded.
 - Every other write, and every git write, needs the current task: the `docs/plans/<task>/` the session last wrote
   records in or the user named, looked up inside the target's git worktree. Its PLAN.md checkpoint must either list
-  the file on a `- Lightweight edit: <files> — <why>` line, or carry an `- Approval:` line that approves, waives or
+  the file on a `- Lightweight edit: <files> — <why>` line (which also allows a `git commit` of only those files
+  when the user's latest message asks to commit), or carry an `- Approval:` line that approves, waives or
   reconciles one legacy report (never "not approved", "proposed" or "pending") and quotes in double quotes words that
   match the complete real user answer after the named report was shown: this transcript, or a sibling `*.jsonl` in the same folder (an earlier
-  session of the project, so a resumed task keeps its approval). A real user message is one the user typed, or the
-  choice they picked in AskUserQuestion; tool output, meta entries, subagent prompts and hand-backs never count.
+  session of the project, so a resumed task keeps its approval). A real user message is one the user typed (also
+  while the agent was working), or the choice they picked in AskUserQuestion; tool output, meta entries,
+  subagent prompts and hand-backs never count.
 - A transcript that exists but cannot be read blocks the explicit edit tools. No transcript path: allowed.
 - Install guard: in a session the gate is active for, package installs and npx-style downloads need the user's
   latest words (message, AskUserQuestion answer or slash-command arguments) to allow installing.
@@ -47,8 +49,9 @@ TYPED = re.compile(r'<command-name>\s*/(?:workflow-axa:)?(workflow(?:-clarify|-s
                    r'|^\s*/(?:workflow-axa:)?(workflow(?:-clarify|-specify|-execute|-deliver)?)(?![\w-])', re.M)
 RULE_FILE = re.compile(r'(?:^|/)(?:AGENTS|CLAUDE)(?:\.override|\.local)?\.md$|/\.claude/rules/', re.I)
 RECORD = re.compile(r'(?:docs/plans|\.artifacts)(?:/|$)', re.I)
-TASK_PATH = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=/|$|[\s"\'`),;])')
-TASK_NAMED = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=/|$|[\s"\'`),;.])|(?<![\w/-])(\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)')
+# A task path may sit inside markdown emphasis (`**docs/plans/x**`, `_docs/plans/x_`): Putten, 2026-11-07.
+TASK_PATH = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=[*_]*(?:/|$|[\s"\'`),;]))')
+TASK_NAMED = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=[*_]*(?:/|$|[\s"\'`),;.]))|(?<![\w/-])(\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)')
 NULL_TARGETS = ('/dev/null', '/dev/stdout', '/dev/stderr', 'nul', '$null')
 
 # Approval line (TASK-FOLDER.md checkpoint): `- Approval (gate two): <approved/waived/legacy/not approved; ...>`.
@@ -63,7 +66,8 @@ POSITIVE = re.compile(r'\b(?:approved|waived|legacy)\b', re.I)
 # Keep lowercase rN checkpoint notation and numbered plan/review filenames; exclude qualified IDs.
 REVISION = re.compile(r'\b(?i:revision)\s+[rR]?(\d+)(?![\w-])|'
                       r'(?:(?<![\w/-])r|\b(?:plan|review)-r)(\d+)(?![\w-])')
-NO_REPORT = re.compile(r'\b(?:no\s+(?:plan\s+|html\s+)?report|without\s+(?:the\s+|an?\s+)?(?:html\s+|plan\s+)?report)\b', re.I)  # the user skipped the plan report
+# "no repor" (Putten, 2026-11-07) is a typo of "no report"; "no repository" is not.
+NO_REPORT = re.compile(r'\b(?:no\s+(?:plan\s+|html\s+)?repo(?!sitor)\w*|without\s+(?:the\s+|an?\s+)?(?:html\s+|plan\s+)?report)\b', re.I)  # the user skipped the plan report
 QUOTE = re.compile(r'"([^"\n]+)"|\u201c([^\u201d\n]+)\u201d')
 
 # Shell writes. Interpreter code that writes files: Python, Node, PHP, Ruby, .NET (E4: node -e writeFileSync).
@@ -206,6 +210,10 @@ def lex(text: str, powershell: bool) -> list[tuple[str, str]]:
     while i < len(text):
         c = text[i]
         if quote:
+            if quote == '"' and not powershell and c == '\\' and text[i + 1:i + 2] in ('"', '\\'):
+                word += text[i + 1]  # bash: \" and \\ inside double quotes (Putten: `"... (user: \"let's ...\")"`)
+                i += 2
+                continue
             if c == quote:
                 quote = ''
             else:
@@ -373,6 +381,8 @@ def git_writes(args: list[str], here: str) -> list[tuple[str, str, str]]:
     if not write:
         return []
     shown = {'reset': ' --hard', 'branch': ' -D', 'worktree': ' add'}.get(sub, '')
+    if sub == 'commit' and any(a == '--amend' for a in rest):
+        shown = ' --amend'  # rewrites an earlier commit: never a lightweight commit
     return [('git', repo, f"`git {sub}{shown}`")]
 
 
@@ -461,15 +471,17 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
                     files.append(arg)
             for target in files if script_given else files[1:]:
                 add(target, f'an in-place edit (`sed -i`) of {target}')
-        elif name in INTERPRETERS and any(slash(a).endswith(('record.py', 'render_report.py')) for a in args):
-            script = next(i for i, a in enumerate(args) if slash(a).endswith(('record.py', 'render_report.py')))
+        elif name in INTERPRETERS and any(slash(expand(a)).endswith(('record.py', 'render_report.py')) for a in args):
+            # Putten (2026-11-07): `R=".../record.py"; python -X utf8 -I "$R" batch ...` hid the record write, so the
+            # current task never followed it.
+            script = next(i for i, a in enumerate(args) if slash(expand(a)).endswith(('record.py', 'render_report.py')))
             rest = args[script + 1:]
-            if slash(args[script]).endswith('record.py'):
+            if slash(expand(args[script])).endswith('record.py'):
                 files = [a for a in rest if not a.startswith('-')][1:2]  # record.py <verb> <file> ...
             else:
                 files = [rest[i + 1] for i, a in enumerate(rest[:-1]) if a == '--output']
             for target in files:
-                add(target, f'`{slash(args[script]).rsplit("/", 1)[-1]}` writing {target}')
+                add(target, f'`{slash(expand(args[script])).rsplit("/", 1)[-1]}` writing {target}')
         elif name in INTERPRETERS:
             code = ''
             for i, arg in enumerate(args):
@@ -580,13 +592,13 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 16
+STATE_VERSION = 17
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
 REPORT_REFERENCE = re.compile(r'(?:(?:[A-Za-z]:/|/)[^\n`<>"\']*?)?'
                               r'docs/plans/[A-Za-z0-9][\w.-]*?/(?:reviews/)?[\w.-]+\.html'
-                              r'(?=$|[\s`<>"\'\]),;]|\.(?=\s|$)|[!?](?=\s|$))')
+                              r'(?=[*_]*(?:$|[\s`<>"\'\]),;]|\.(?=\s|$)|[!?](?=\s|$)))')
 INLINE_TARGET = re.compile(r'''\s*(?:<([^<>"'\r\n]+)>|([^\s<>"']+))(?:\s+(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\((?:[^()\\]|\\.)*\)))?\s*''')
 URI_REFERENCE = re.compile(r'(?<![\w+.-])(?:[A-Za-z][\w+.-]*://|[A-Za-z][\w+.-]+:)'
                            r'[^\s`<>"\'()]+')
@@ -617,10 +629,34 @@ def user_text(entry: dict) -> str | None:
         text = '\n'.join(str(b.get('text', '')) for b in content if isinstance(b, dict) and b.get('type') == 'text')
     else:
         return None
+    return human_words(text)
+
+
+def human_words(text: str) -> str | None:
+    """The typed text without host notes and IDE context, or None for command output and notifications."""
     if re.search(r'<(?:local-command-std\w+|bash-std\w+|bash-input|user-prompt-submit-hook|task-notification)>', text):
         return None
     text = re.sub(r'<system-reminder>.*?</system-reminder>', ' ', text, flags=re.S)
     return IDE_TEXT.sub(' ', text)
+
+
+def queued_text(entry: dict) -> str | None:
+    """A message the owner typed while the agent was working (Putten, 2026-11-07). The host records it as a
+    `queued_command` attachment with a human origin; subagent hand-backs (origin peer), task notifications, sidechain
+    and meta entries never count."""
+    data = entry.get('attachment') or {}
+    origin = data.get('origin')
+    if data.get('type') != 'queued_command' or entry.get('isSidechain') or entry.get('isMeta') \
+            or data.get('commandMode') != 'prompt' or not isinstance(origin, dict) or origin.get('kind') != 'human':
+        return None
+    prompt = data.get('prompt')
+    if isinstance(prompt, str):
+        text = prompt
+    elif isinstance(prompt, list):
+        text = '\n'.join(str(b.get('text', '')) for b in prompt if isinstance(b, dict) and b.get('type') == 'text')
+    else:
+        return None
+    return human_words(text)
 
 
 def clean(text: str) -> str:
@@ -636,7 +672,12 @@ def fresh_state() -> dict:
             'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}, 'task_roots': {}}
 
 
-def set_task(state: dict, name: str, n: int, record: str = ''):
+def set_task(state: dict, name: str, n: int, record: str = '', written: bool = False):
+    """Make `name` the current task. A record the agent writes (`written`) for a task the owner paused is a handoff note:
+    it does not make that task current again (Putten, 2026-11-07). The owner naming the task still does."""
+    current = state['tasks'][-1][0] if state['tasks'] else None
+    if written and name != current and name in state.get('paused_tasks', {}):
+        return
     if name and not re.search(r'\.\w{1,4}$', name) and (not state['tasks'] or state['tasks'][-1][0] != name):
         state['tasks'].append([name, n])
     root = worktree(record) if name and record else None
@@ -805,6 +846,18 @@ def present_reports(state: dict, text: str, n: int, cwd: str):
             roots[name.lower()] = (roots.get(name.lower(), []) + [[n, slash(home)]])[-50:]
 
 
+def owner_said(state: dict, n: int, text: str):
+    """A real user message, typed at the prompt or while the agent was working."""
+    for a, b in TASK_NAMED.findall(slash(text)):
+        set_task(state, a or b, n)
+    if '<command-name>' in text:
+        state['last_user'] = n  # a slash command: its arguments are not consent
+        args = re.search(r'<command-args>(.*?)</command-args>', text, re.S)
+        state['last_words'] = clean(args.group(1))[:4000] if args else ''
+    else:
+        add_words(state, n, text, 'msg')
+
+
 def feed(state: dict, entry: dict, raw: str, cwd: str):
     """Fold one transcript entry into the state."""
     n = state['n']
@@ -812,6 +865,11 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
     content = (entry.get('message') or {}).get('content')
     if entry.get('type') == 'attachment':  # recorded by the host from this hook's own output, not by the agent
         hook = entry.get('attachment') or {}
+        text = queued_text(entry)
+        if text is not None:
+            state['active'] = state['active'] or bool(TYPED.search(text))
+            owner_said(state, n, text)
+            return
         if hook.get('type') == 'hook_additional_context' and hook.get('hookEvent') in ('PostToolUse', 'UserPromptSubmit') \
                 and not entry.get('isSidechain'):
             for mark, path, sha in FINGERPRINT.findall('\n'.join(str(line) for line in hook.get('content') or [])):
@@ -827,14 +885,7 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
         state['active'] = state['active'] or (not entry.get('isMeta') and bool(TYPED.search(typed)))
         text = user_text(entry)
         if text is not None:
-            for a, b in TASK_NAMED.findall(slash(text)):
-                set_task(state, a or b, n)
-            if '<command-name>' in text:
-                state['last_user'] = n  # a slash command: its arguments are not consent
-                args = re.search(r'<command-args>(.*?)</command-args>', text, re.S)
-                state['last_words'] = clean(args.group(1))[:4000] if args else ''
-            else:
-                add_words(state, n, text, 'msg')
+            owner_said(state, n, text)
             return
         result = entry.get('toolUseResult')
         if not entry.get('isSidechain') and not entry.get('isMeta') \
@@ -888,12 +939,13 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
         elif name in EDIT_TOOLS:
             found = TASK_PATH.search(slash(str(data.get('file_path') or data.get('notebook_path') or '')) + '/')
             if found:
-                set_task(state, found.group(1), n, slash(str(data.get('file_path') or data.get('notebook_path') or '')))
+                set_task(state, found.group(1), n, slash(str(data.get('file_path') or data.get('notebook_path') or '')),
+                         written=True)
         elif name in SHELLS:
             for kind, where, _ in shell_writes(str(data.get('command', '')), str(entry.get('cwd') or cwd),
                                                name == 'PowerShell'):
                 for task in TASK_PATH.findall(where + '/') if kind == 'path' else []:
-                    set_task(state, task, n, where)
+                    set_task(state, task, n, where, written=True)
 
 
 def digest(data: bytes) -> str:
@@ -970,6 +1022,63 @@ def lightweight_files(text: str, root: str) -> set[str]:
             if name:
                 files.add(key(relative(absolute(name, root), root) if is_absolute(name) else name))
     return files
+
+
+COMMIT_WORD = re.compile(r'\bcommit\b')
+
+
+def owner_asks_commit(words: str) -> bool:
+    """The owner's latest words ask for a commit: a clause (split like the install guard's) that says "commit" and has
+    no refusal word. "just commit" asks; "do not commit" and "looks good" do not."""
+    return any(COMMIT_WORD.search(clause) and not INSTALL_REFUSAL.search(clause) for clause in CLAUSE.split(words))
+
+
+def changed_files(root: str) -> list[str] | None:
+    """Every path `git status` reports as changed in the worktree (staged, unstaged and untracked), or None."""
+    import subprocess
+    try:
+        out = subprocess.run(['git', '--no-optional-locks', '-C', root, 'status', '--porcelain=v1', '-z',
+                              '--untracked-files=all'],
+                             capture_output=True, timeout=15)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if out.returncode:
+        return None
+    files, parts = [], out.stdout.decode('utf-8', errors='replace').split('\0')
+    i = 0
+    while i < len(parts):
+        entry = parts[i]
+        i += 1
+        if len(entry) < 4:
+            continue
+        files.append(entry[3:])
+        if entry[0] in 'RC' or entry[1] in 'RC':  # a rename or copy also names its source
+            if i < len(parts) and parts[i]:
+                files.append(parts[i])
+            i += 1
+    return files
+
+
+def lightweight_commit_problem(target: tuple[str, str, str], state: dict, root: str, listed: set[str]) -> str | None:
+    """Putten (2026-11-07): None when this `git commit` only commits the recorded lightweight files (plus task records)
+    and the owner's latest message asks for it, otherwise why not. Push, amend and other git writes are never covered."""
+    kind, _where, label = target
+    if kind != 'git' or label != '`git commit`':
+        return (f'its `- Lightweight edit:` line covers file edits and, when the owner asks for it, a `git commit` of '
+                f'only those files; {label} still needs implementation approval')
+    if not owner_asks_commit(state.get('last_words', '')):
+        return ('its `- Lightweight edit:` line allows a `git commit` of those files only when the owner\'s latest '
+                'message asks for the commit. Ask the owner whether to commit; their reply is enough')
+    files = changed_files(root)
+    if files is None:
+        return f'the gate could not list the changed files in {root} with `git status`'
+    extra = [f for f in files if key(slash(f)) not in listed and not re.match(r'docs/plans/', slash(f), re.I)]
+    if extra:
+        shown = ', '.join(extra[:8]) + (' …' if len(extra) > 8 else '')
+        return (f'these changed files are not on its `- Lightweight edit:` line: {shown}. If they belong to the '
+                'lightweight edit, add them to that line; otherwise commit only the listed files or get implementation '
+                'approval')
+    return None
 
 
 def report_file(folder: Path | None, name: str) -> Path | None:
@@ -1128,6 +1237,38 @@ def revision_numbers(text: str) -> list[int]:
     return [int(a or b) for a, b in REVISION.findall(text)]
 
 
+class RecordFix(str):
+    """A block caused by how the agent wrote the record, not by missing consent (Putten, 2026-11-07): the message says
+    what to fix so the owner is not asked to approve again."""
+
+
+RECORD_EXAMPLE = '`- Approval (gate two): r1 approved, <date>, no report: "<the owner\'s whole message>"`'
+
+
+def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...]) -> str | None:
+    """Why a quoted answer was not found, when the cause is known: the quote is only part of a real message given after
+    the plan was shown (a record fix), or the matching message came before any presentation (missing consent)."""
+    wanted, start = clean(quote), presentation_start(quote, state, task, reports, revisions)
+    users = [(n, words) for n, words, truncated, _kind in state['users'] if not truncated]
+    if start is not None:
+        longer = [words for n, words in users if n > start and wanted and words.startswith(wanted) and words != wanted]
+        if longer and not any(words == wanted for n, words in users if n > start):
+            return RecordFix(f'quotes "{quote}", but that is only part of the owner\'s whole message after the plan was '
+                             f'shown: "{longer[-1][:600]}". Quote that whole message, with all its conditions, then '
+                             'retry; do not ask the owner again')
+    exact = [n for n, words in users if words == wanted]
+    if exact and (start is None or all(n <= start for n in exact)):
+        shown = (f'names its report path docs/plans/{task}/reviews/<file>.html' if reports or not NO_REPORT.search(quote)
+                 else f'contains the word plan, the task path docs/plans/{task} and the revision '
+                      f'r{max(revisions) if revisions else "<N>"}')
+        when = 'it came before the plan for this task was presented' if start is not None else \
+            'the gate found no presentation of this task\'s plan in this session'
+        return (f'quotes "{quote}", a real message from the owner, but {when}. A plan counts as shown when one '
+                f'message of yours {shown} (markdown emphasis is fine). An answer given before that cannot approve '
+                'it: present the plan that way, ask the owner, then quote their new answer')
+    return None
+
+
 def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: str, folder: Path | None = None,
                      used: list | None = None) -> str | None:
     """Why the checkpoint's Approval line does not authorise implementation, or None. `used` collects the reports whose
@@ -1139,12 +1280,20 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
     # The checkpoint status and the verbatim answer are separate fields. A later
     # acceptance gate can remain pending inside an implementation approval.
     marker = QUOTE.sub('', line)
-    if NEGATIVE.search(marker) or not POSITIVE.search(marker):
+    if NEGATIVE.search(marker):
         return f'does not approve a revision (`{line[:160]}`)'
+    if not POSITIVE.search(marker):
+        return RecordFix(f'does not say outside the quotes that a revision is approved (`{line[:160]}`). Write the '
+                         f'status outside the quotes and the owner\'s words inside them, for example {RECORD_EXAMPLE}. '
+                         'If the owner already approved after the plan was shown, do not ask the owner again')
     reports = tuple(re.findall(r'([\w.-]+\.html)\b', line))
     revisions = revision_numbers(line)
     other_revisions = [r for other in text.splitlines() if other.strip() != found.group(0).strip()
                        for r in revision_numbers(other)]
+    if not revisions and not reports and any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(line)):
+        return RecordFix('names no revision. A plan shown in chat without a report is identified by the revision you '
+                         f'showed; write it outside the quotes, for example {RECORD_EXAMPLE}. If the owner already '
+                         'approved after the plan was shown, do not ask the owner again')
     if not revisions:
         # A legacy report can be the immutable scope identity. The complete real
         # answer must still follow that exact report's presentation below.
@@ -1200,6 +1349,9 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
                 'Claude Code with one verified plugin source. Do not keep asking for the same approval in this '
                 f'session. After recovery, read and present {report}, obtain the real answer, and preserve it on '
                 'a separate Reconfirmed (gate two) line. Keep existing approval records and edits intact')
+    known = unmatched_quote(missing[0], state, task, reports, tuple(revisions))
+    if known:
+        return known
     why = f' ({notes[0]})' if notes else ''
     return (f'quotes "{missing[0]}", but no user message given after this task\'s plan was presented contains those '
             f'words as the whole message or whole selected answer, in this session or an earlier one{why}. Keep all '
@@ -1287,9 +1439,16 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
                 "plan. A lightweight edit (no behavior a user or caller can notice) needs a checkpoint line in the task's "
                 "PLAN.md naming its files: `- Lightweight edit: <files> — <why>`.")
     task, changed_at = state['tasks'][-1]
-    if len(state['tasks']) > 1 and changed_at > state['last_user']:
+    # The task that was current when the user last spoke. A handoff note to another task followed by a record of the
+    # same task again is no switch (Putten, 2026-11-07).
+    then = next((name for name, at in reversed(state['tasks']) if at <= state['last_user']), None)
+    if len(state['tasks']) > 1 and changed_at > state['last_user'] and then != task:
+        back = (f" If it belongs to {then}, the task current at the user's last message, write a record of {then} "
+                "(for example its checkpoint) and retry; no reply is needed then.") if then else ''
         return (f"workflow-axa: {label} was stopped because the current task changed to {task} after the user's last "
-                "message. Tell the user which task this change belongs to and let them answer before you edit.")
+                f"message (a write to docs/plans/{task}/ makes it current).{back} If it belongs to {task}, tell the "
+                "user and let them answer before you edit: any reply from them after the switch is enough, and they "
+                "need not type the task name.")
     plan = Path(root or '.') / 'docs' / 'plans' / task / 'PLAN.md'
     home = state.get('task_roots', {}).get(task)
     if not plan.is_file() and home and common_dir(home) != common_dir(root):
@@ -1302,17 +1461,36 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
     except OSError:
         return (f"workflow-axa: {label} needs the current task's approval, but the current task {task} has no PLAN.md in "
                 f"this worktree ({root}). Record the task there, or name the task this change belongs to.")
-    if kind == 'path' and key(relative(where, root)) in lightweight_files(text, root):
+    listed = lightweight_files(text, root)
+    if kind == 'path' and key(relative(where, root)) in listed:
         return None
+    light = None
+    if listed and kind == 'git':
+        light = lightweight_commit_problem(target, state, root, listed)
+        if light is None:
+            return None
+    elif listed and kind == 'path':
+        light = (f'its `- Lightweight edit:` line does not list {relative(where, root)}. If this file belongs to the '
+                 'lightweight edit (no behavior a user or caller can notice), add it to that line; otherwise it needs '
+                 'implementation approval')
     problem = report_problem(plan.parent, text)
+    if problem and light:
+        return (f"workflow-axa: {label} is not covered by the current task {task}: {light}. It has no implementation "
+                f"approval either ({problem}). Do not edit or disable the hook to bypass this block.")
     if problem:
         return (f"workflow-axa: {label} needs implementation approval, but the current task {task} has {problem}. "
-                "Approval needs the HTML plan from workflow-specify. For a change with no behavior a user or caller can "
-                "notice, record a `- Lightweight edit: <files> — <why>` line in the checkpoint instead.")
+                "Approval needs the HTML plan from workflow-specify; if the owner declined a report, the quoted answer "
+                "on the Approval line must contain their words for that (for example \"no report\"). For a change with "
+                "no behavior a user or caller can notice, record a `- Lightweight edit: <files> — <why>` line in the "
+                "checkpoint instead.")
     used: list[str] = []
     problem = approval_problem(text, state, task, transcript, project.cwd, plan.parent, used)
     if not problem:
         return scope_problem(target, root, plan.parent, used)
+    if isinstance(problem, RecordFix):
+        return (f"workflow-axa: {label} is blocked by how the approval is recorded in the current task {task}: the "
+                f"Approval line in {slash(str(plan))} {problem}. Fix the line with record.py set-line, then retry. "
+                "Do not edit or disable the hook to bypass this block.")
     return (f"workflow-axa: {label} needs implementation approval, and the current task {task} does not have it: the "
             f"Approval line in {slash(str(plan))} {problem}. Loading a phase grants nothing by itself. Agree the behavior "
             "(workflow-clarify), approve the plan (workflow-specify), and record the user's answer in quotes on the "
