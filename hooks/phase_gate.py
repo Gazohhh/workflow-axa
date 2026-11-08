@@ -592,7 +592,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 18
+STATE_VERSION = 20
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -687,18 +687,22 @@ def set_task(state: dict, name: str, n: int, record: str = '', written: bool = F
 
 # Approval forms that lift a plan-only pause. Deny by default: the first real clause is one explicit
 # approval, and every later clause must be on the short allow list below. A hold word anywhere wins.
-_COURTESY = re.compile(r"^(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|thank you|lgtm|nice|"
+_COURTESY = re.compile(r"^(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|thank you|lgtm|nice|please|yes please|"
                        r"looks good|looks great|all good|yes to all|alright|cool)$")
-_ASK = re.compile(r"^(?:(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|lgtm|alright|cool|i)[\s,]+)*"
-                  r"(?:approved?(?: (?:plan )?r\d+)?|approve (?:it|this|the plan)|"
-                  r"(?:implement|build) (?:it|this|the plan|the approved plan|plan r\d+)|go ahead|go|proceed|start implementing)"
-                  r"(?: now)?(?: please)?(?: now)?(?:$|\s+(?:and|then)\s+(?P<rest>.+))")
+_ASK = re.compile(r"^(?:(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|lgtm|alright|cool|please|i)[\s,]+)*"
+                  r"(?:(?:approved?|aproved|approvd|goedgekeurd)(?: (?:plan )?r\d+)?|approve (?:it|this|the plan)|"
+                  r"(?:implement|build)(?: (?:it|this|the plan|the approved plan|(?:plan )?r\d+))?|go ahead|go for it|go|proceed|"
+                  r"do it|start implementing|ga je gang|doe maar|"
+                  r"(?:continue|resume)(?: (?:this task|the task|the approved task|implementing|the build|with the build|"
+                  r"(?:docs/plans/)?\d{4}-\d{2}-\d{2}-[\w-]+/?))?)"
+                  r"(?: now)?(?: please)?(?: now)?(?: (?:implement|build|do) it(?: now)?(?: please)?)?"
+                  r"(?:$|\s+(?:and|then)\s+(?P<rest>.+))")
 _LIMIT = re.compile(r"^(?:but\s+)?(?:do not|don't|dont|never|no)\s+(?:commit|push|merge|deploy|publish|release|tag)\w*"
                     r"(?:\s+(?:or|and|nor)\s+(?:commit|push|merge|deploy|publish|release|tag)\w*)*"
                     r"(?:\s+(?:it|this|anything|yet|until i(?: have)? review\w*(?: it)?))?$")
 _ALLOWED_TAIL = re.compile(
     r"^(?:(?:plan )?r\d+(?: as written)?|as written|"
-    r"(?:implement|build) (?:it|this|the plan|plan r\d+)(?: now)?|go ahead|"
+    r"(?:implement|build) (?:it|this|the plan|(?:plan )?r\d+)(?: now)?(?: please)?|go ahead|go|go for it|do it|"
     r"(?:check|verify|test) (?:if|that|whether) it works?(?:ed)?(?: (?:let me know|tell me)(?: when (?:it'?s |you'?re |also )?done)?)?|"
     r"(?:let me know|tell me|report back)(?: when (?:it'?s |you'?re |also )?done)?|run the tests|thanks|thank you)$")
 _HOLD = re.compile(r"\b(?:not|no|never|nope|don'?t|do not|wait\w*|hold|first|yet|until|later|tomorrow|next|once|"
@@ -722,8 +726,9 @@ def control_intent(text: str) -> str | None:
         return 'pause'
     if re.match(r"^(?:please\s+)?(?:stop|pause|cancel)(?:[.!?]|$|\s+(?:now|here|this task|the task|working|coding|implementation)\b)", words):
         return 'pause'
-    if re.match(r"^(?:please\s+)?(?:continue|resume)(?:[.!?]|$|\s+(?:now|this task|the task|the approved task|working)\b)", words):
-        return 'resume'
+    # "wait, not yet" after a go puts the pause back (sixth review).
+    if re.match(r"^(?:please\s+)?(?:wait|hold on|hold up|hold off|not yet|no wait|nog niet|wacht)\b", words):
+        return 'pause'
     # An explicit approval that asks for the build lifts a plan-only pause (rc.32; deny-by-default in
     # rc.33 after three independent reviews). Questions, held approvals and feature prose never do.
     if '?' in text:
@@ -744,21 +749,32 @@ def control_intent(text: str) -> str | None:
 
 def add_words(state: dict, n: int, text: str, kind: str):
     """Retain the full answer, including restrictions; oversized answers cannot be clipped into consent."""
-    words = clean(re.sub(r'\s*\(recommended\)\s*$', '', text, flags=re.I) if kind == 'answer' else text)
+    raw = re.sub(r'\s*\(recommended\)\s*$', '', text, flags=re.I)
+    words = clean(raw)
     state['users'].append([n, words[:16000], len(words) > 16000, kind])
     state['last_words'] = (state['last_words'] + ' . ' if state['last_user'] == n else '') + words[:4000]
     state['last_user'] = n
     task = state['tasks'][-1][0] if state['tasks'] else '*'
     state['user_tasks'][str(n)] = task
-    intent = control_intent(text if kind != 'answer' else words)
+    intent = control_intent(raw)
+    # One message can arrive in several parts (several answers). It resumes only when no part holds
+    # the build back: a pause or a hold word in any part keeps or restores the pause.
+    if intent is None and ('?' in raw or (_HOLD.search(words) and not _LIMIT.match(words))):
+        intent = 'held'
     intents = state.setdefault('intents', {})
-    if intents.get(str(n)) != 'pause':
+    rank = {'pause': 3, 'held': 2, 'resume': 1}
+    if rank.get(intent, 0) > rank.get(intents.get(str(n)), 0) or str(n) not in intents:
         intents[str(n)] = intent
+    lifted = state.setdefault('lifted', {})
+    if intents[str(n)] in ('pause', 'held') and str(n) in lifted:
+        for key, at in lifted.pop(str(n)).items():
+            state['paused_tasks'][key] = at
     if intent == 'pause':
         state['paused_tasks'][task] = n
-    elif intent == 'resume':
-        state['paused_tasks'].pop(task, None)
-        state['paused_tasks'].pop('*', None)
+    elif intents[str(n)] == 'resume':
+        before = {key: state['paused_tasks'].pop(key) for key in (task, '*') if key in state['paused_tasks']}
+        if before:
+            lifted.setdefault(str(n), {}).update(before)
 
 
 def local_report_target(reference: str) -> str:
@@ -1217,7 +1233,6 @@ def presentation_start(quote: str, state: dict, task: str, reports: tuple[str, .
 REVOKED = re.compile(r"\b(?:revoke[sd]?|withdraw[sn]?|withdrawn|retract(?:ed|s)?)\b|\bnot approved\b|\bno longer approved\b"
                      r"|\bcancel (?:this|the) (?:task|approval|plan)\b|\bdo not (?:implement|continue)\b|\bdon't (?:implement|continue)\b")
 RESTRICTS = re.compile(r"\b(?:but|except|only|without|nothing in|no changes? (?:to|in)|must not|never|leave)\b")
-CONTINUES = re.compile(r'\b(?:continue|resume)\b')
 WAITING_APPROVAL = re.compile(r'\b(?:approval|implementation|decision)\s+(?:(?:is|remains?|still)\s+)*'
                               r'(?:pending|awaiting)\b|\b(?:pending|awaiting)\s+(?:approval|permission|decision)\b', re.I)
 REFUSED_APPROVAL = re.compile(r'\b(?:not|never|no)\s+(?:yet\s+)?approved\b|\bunapproved\b', re.I)
@@ -1268,7 +1283,10 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
         said = lambda n, w: intents[str(n)] if str(n) in intents else control_intent(w)
         stopped = [n for n, words in later if said(n, words) == 'pause']
         if stopped and not any(n > stopped[-1] and said(n, w) == 'resume' for n, w in later) \
-                and not any(CONTINUES.search(w) for _n, w, _t, _k in (current or {}).get('users', [])):
+                and not any(((current or {}).get('intents', {}).get(str(_n)) if str(_n) in (current or {}).get('intents', {})
+                             else control_intent(w)) == 'resume'
+                            and (current or {}).get('user_tasks', {}).get(str(_n), '*') in (task, '*')
+                            for _n, w, _t, _k in (current or {}).get('users', [])):
             return False, 'that session was stopped after the approval and nobody has asked to continue since'
         for n, words in later:
             if RESTRICTS.search(words) and words not in recorded:

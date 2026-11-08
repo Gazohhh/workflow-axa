@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.34 — continue and answers go through the strict approval rule (2026-11-08)
+
+- phase gate: "continue"/"resume" no longer bypass the question and hold checks ("continue the task tomorrow", "continue?" and "continue working on the plan" keep a pause); a bare continue/resume, "continue the approved task" or "continue <task folder>" still resume. Typed answers keep their question mark. A message whose answers say "Stop" and then "Implement it" keeps the live pause. The consent check uses the same rule instead of any word "continue". More clear approvals pass ("Approved. Go.", "implement r1", "do it", "approved implement it now", "aproved", "goedgekeurd", "ga je gang"); "ship it" does not, because it can mean deploy. A message whose answers mix an approval with a hold ("approved r1" plus "wait for QA") keeps the pause, and a resume counts only for its own task. A question in any part of a message holds it, and a message starting with "wait", "hold on", "not yet", "nog niet" or "wacht" pauses again after a go. `STATE_VERSION` 20. Found by the fourth, fifth and sixth independent reviews; the sixth found no blocking false resume.
+
 ## 2.8.0-rc.33 — review fixes for kit screens and the approval rule (2026-11-08)
 
 - phase gate: the approval that lifts a plan-only pause is now deny-by-default. The first real phrase must be one explicit approval ("approved", "approve it", "implement it", "build it", "go ahead", "approved r1"); later phrases may only be push/commit limits, plan references, a repeated build request or a report-back request; any hold word (not, wait, first, later, weekdays, nvm, Dutch nog/niet/wacht/morgen, …) or a question mark keeps the pause. Each message's intent is stored from its raw text (a stored message loses its "?"), and `STATE_VERSION` is 18 so older caches are rebuilt. Found by three independent reviews of rc.32.

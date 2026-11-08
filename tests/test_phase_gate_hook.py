@@ -1580,10 +1580,56 @@ class ControlIntentTests(unittest.TestCase):
                       'Looks good, approve it and check if it worked let me know when also done'):
             self.assertEqual(self.gate.control_intent(words), 'resume', words)
 
+    def test_fourth_review_cases(self):
+        for words in ('continue the task tomorrow', 'continue the approved task next week',
+                      'continue working. wait for my approval', 'continue the task. hold on',
+                      'continue the approved task, actually wait', 'continue now? no wait', 'continue?', 'resume?',
+                      'continue working on the plan', 'resume working on revisions only'):
+            self.assertNotEqual(self.gate.control_intent(words), 'resume', words)
+        for words in ('Approved. Go.', 'Approved, implement r1', 'ok implement', 'yes please implement', 'go for it',
+                      'do it', 'yes do it', 'aproved', 'approvd r1', 'goedgekeurd', 'ja, ga je gang',
+                      'continue', 'Continue.', 'resume', 'Continue the approved task.', 'please continue'):
+            self.assertEqual(self.gate.control_intent(words), 'resume', words)
+
+    def test_an_answer_keeps_its_question_mark(self):
+        state = self.gate.fresh_state()
+        self.gate.add_words(state, 1, 'approved?', 'answer')
+        self.assertNotEqual(state['intents']['1'], 'resume')
+
+    def test_stop_then_go_in_one_message_keeps_the_pause(self):
+        state = self.gate.fresh_state()
+        self.gate.add_words(state, 5, 'Stop', 'answer')
+        self.gate.add_words(state, 5, 'Implement it', 'answer')
+        self.assertTrue(state['paused_tasks'])
+
+    def test_fifth_review_cases(self):
+        for answers in (['approved r1', 'wait for QA before building'], ['not yet', 'go ahead']):
+            state = self.gate.fresh_state()
+            self.gate.add_words(state, 1, 'Write the plan, then stop; do not implement.', 'human')
+            for answer in answers:
+                self.gate.add_words(state, 2, answer, 'answer')
+            self.assertTrue(state['paused_tasks'], answers)
+        for words in ('approved. implement it now please', 'approved implement it now', 'approved r1 (recommended)'):
+            self.assertEqual(self.gate.control_intent(self.gate.re.sub(r'\s*\(recommended\)\s*$', '', words)), 'resume', words)
+        self.assertNotEqual(self.gate.control_intent('lgtm, ship it'), 'resume')
+
+    def test_sixth_review_cases(self):
+        state = self.gate.fresh_state()
+        self.gate.add_words(state, 1, 'Write the plan, then stop; do not implement.', 'human')
+        self.gate.add_words(state, 2, 'approve it?', 'answer')
+        self.gate.add_words(state, 2, 'go', 'answer')
+        self.assertTrue(state['paused_tasks'])
+        state = self.gate.fresh_state()
+        self.gate.add_words(state, 1, 'Write the plan, then stop; do not implement.', 'human')
+        self.gate.add_words(state, 2, 'go', 'human')
+        self.assertFalse(state['paused_tasks'])
+        self.gate.add_words(state, 3, 'wait, not yet', 'human')
+        self.assertTrue(state['paused_tasks'])
+
     def test_a_stored_question_keeps_its_meaning(self):
         state = self.gate.fresh_state()
         self.gate.add_words(state, 1, 'Approved?', 'human')
-        self.assertIsNone(state['intents']['1'])
+        self.assertNotEqual(state['intents']['1'], 'resume')
 
     def test_feature_prose_is_neither(self):
         for words in ('Add a Stop button to the player.', 'Can you explain how the approval list works?',
