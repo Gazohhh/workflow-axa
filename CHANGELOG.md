@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0-rc.28 — the approval gate stops asking twice; kit parts and states (2026-11-08)
+
+- phase gate (Putten task): messages typed while the agent works count as the owner's answer; a bold or code-marked task path still presents the plan; "no repor"-style typos decline the report; record-helper writes through a shell variable and handoff notes to another or paused task no longer switch the current task; a recorded lightweight edit may be committed when the owner asks for the commit and only its files changed (push and other git writes unchanged); blocks caused by how the approval is recorded say exactly what to fix instead of asking the owner again. On rc.20 the owner approved one plan four or five times before one commit went through.
+- ui-design LIVE-KIT: a part used only inside one parent is labelled inside the parent's example, never a separate example repeating the parent; each element's state classes come from its stylesheet and every state renders, active items among their siblings, third-party pickers and croppers open or excluded with a reason; colour swatches only when an existing element can show one; reviewers see at most about 50 segments each. On rc.27 four independent reviewers failed a fresh kit for part-of-element duplicates, unshown loading, select, cropper and picker states, and an invisible lone active item.
+
 ## 2.8.0-rc.27 — kit states shown open; plans named relative to their task (2026-11-08)
 
 - ui-design LIVE-KIT: colour tokens show swatches; every icon class shows its glyph, aliases included; labels are exact classes or props, never descriptions; every state is its own variant, so dropdowns, multi-selects, croppers and loading states render open or active; variants share one wrapper; dialogs are filled. The visual review steps by the viewport height minus any fixed header and gets the anatomy as its checklist. On rc.26 a fresh run passed six internal reviews, yet two independent reviewers found empty icon slots, closed dropdowns, half-empty dialogs and prose labels, and the fixed header hid a strip at every seam.

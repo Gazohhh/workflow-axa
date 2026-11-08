@@ -1,4 +1,4 @@
-# Workflow AXA — 2.8.0-rc.27
+# Workflow AXA — 2.8.0-rc.28
 
 ## Current update: report input preflight
 
