@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.27 — kit states shown open; plans named relative to their task (2026-11-08)
+
+- ui-design LIVE-KIT: colour tokens show swatches; every icon class shows its glyph, aliases included; labels are exact classes or props, never descriptions; every state is its own variant, so dropdowns, multi-selects, croppers and loading states render open or active; variants share one wrapper; dialogs are filled. The visual review steps by the viewport height minus any fixed header and gets the anatomy as its checklist. On rc.26 a fresh run passed six internal reviews, yet two independent reviewers found empty icon slots, closed dropdowns, half-empty dialogs and prose labels, and the fixed header hid a strip at every seam.
+- phase gate: a plan report named relative to the current task (`reviews/plan-r2.html`) counts as presented when it exists in that task's folder. On rc.26 a real approval was refused and had to be reconfirmed.
+- workflow TASK-FOLDER: a waiver needs the user's own words; a non-interactive session or a request for a finished result is never one. On rc.26 a fresh run wrote a waived Approval line from the prompt; the hook refused it.
+
 ## 2.8.0-rc.26 — one task across repositories; kit examples stay elements (2026-11-08)
 
 - phase gate: a task whose records live in one repository (Core) now covers its approved edits in sibling repositories (clients, modules) when the session works there; the approval and write paths still apply, and linked worktrees of one repository still never borrow records. On rc.25 a fresh kit run had approved client edits refused because the client repository held no copy of the plan.

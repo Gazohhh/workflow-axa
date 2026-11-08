@@ -775,6 +775,22 @@ class ApprovalGateTests(unittest.TestCase):
         self.task(TASK, "- Approval: not approved")
         self.assertEqual(self.decision(rows, "Edit", target, cwd=client), "deny")
 
+    def test_a_report_named_relative_to_the_current_task_counts_as_presented(self):
+        # Kit run 8: the plan was named as `reviews/plan-r1.html`; the owner's approval was refused.
+        folder = self.task(TASK, APPROVED)
+        rel = f"docs/plans/{TASK}/reviews/plan-r1.html"
+        digest = sha(folder / "reviews" / "plan-r1.html")
+
+        def rows_for(named):
+            return [ROUTER, self.records(),
+                    hook_context("PostToolUse", f"workflow-axa report fingerprint: {rel} sha256={digest}"),  # rendered
+                    say(f"Plan report: {named}. Approve?"), user("Yes to both"),
+                    hook_context("UserPromptSubmit", f"workflow-axa report at owner reply: {rel} sha256={digest}")]
+        self.assertIsNone(self.decision(rows_for("reviews/plan-r1.html"), "Edit", {"file_path": self.code}, hooks=False))
+        # A bare name that is not in the current task's folder presents nothing.
+        self.assertEqual(self.decision(rows_for("reviews/plan-r9.html"), "Edit", {"file_path": self.code}, hooks=False),
+                         "deny")
+
     # E4: shell writes, judged per written path
 
     def test_shell_writes_into_project_files_are_gated(self):

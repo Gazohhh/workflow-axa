@@ -41,7 +41,7 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 ## Current checkpoint
 - Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, paused, stopped, cancelled, closed>
 - Agreement (gate one): <agreed/waived/legacy/not required — lightweight/pending; revision and record>
-- Approval (gate two): <approved/waived/legacy/not approved; revision rN, the report file or the user's recorded "no report", and the user's exact words in quotes (the whole answer, including restrictions, from a real message after the named plan was shown)>
+- Approval (gate two): <approved/waived/legacy/not approved; revision rN, the report file or the user's recorded "no report", and the user's exact words in quotes (the whole answer, including restrictions, from a real message after the named plan was shown)>. `waived` needs the user's own words skipping this approval; a non-interactive session, a request for a finished result or "don't ask me" about something else is never a waiver: stop and ask
 - Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; it never allows git writes
 - Implementation: <not started/in progress/implemented/partial>
 - Verification / owner acceptance: <not run/passed/limited/blocked; evidence and what is outstanding>

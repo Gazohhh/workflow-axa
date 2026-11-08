@@ -580,9 +580,10 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 15
+STATE_VERSION = 16
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
+BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
 REPORT_REFERENCE = re.compile(r'(?:(?:[A-Za-z]:/|/)[^\n`<>"\']*?)?'
                               r'docs/plans/[A-Za-z0-9][\w.-]*?/(?:reviews/)?[\w.-]+\.html'
                               r'(?=$|[\s`<>"\'\]),;]|\.(?=\s|$)|[!?](?=\s|$))')
@@ -787,6 +788,21 @@ def present_reports(state: dict, text: str, n: int, cwd: str):
         shown[report.lower()] = (shown.get(report.lower(), []) + [n])[-50:]
         roots = state['shown_roots'].setdefault(task, {})
         roots[report.lower()] = (roots.get(report.lower(), []) + [[n, root]])[-50:]
+    # Kit run 8: the plan was named as `reviews/plan-r2.html`, relative to the current task's folder. A bare name
+    # counts for the current task only when that report exists in its folder.
+    current = state['tasks'][-1][0] if state['tasks'] else None
+    if not current:
+        return
+    home = state.get('task_roots', {}).get(current) or Project(cwd).root
+    for name in BARE_REVIEW.findall(slash(text)):
+        if home and (Path(home) / 'docs' / 'plans' / current / 'reviews' / name).is_file():
+            reports = state['report_presented'].setdefault(current, {})
+            reports.setdefault(name.lower(), n)
+            state['presented'][current] = max(reports.values())
+            shown = state['shown_at'].setdefault(current, {})
+            shown[name.lower()] = (shown.get(name.lower(), []) + [n])[-50:]
+            roots = state['shown_roots'].setdefault(current, {})
+            roots[name.lower()] = (roots.get(name.lower(), []) + [[n, slash(home)]])[-50:]
 
 
 def feed(state: dict, entry: dict, raw: str, cwd: str):
