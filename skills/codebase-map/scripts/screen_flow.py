@@ -34,6 +34,13 @@ def quick_module():
     return module
 
 
+def kit_screens_module():
+    spec = importlib.util.spec_from_file_location('workflow_kit_screens', Path(__file__).with_name('kit_screens.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def kit_records(ui, root, sources):
     module = bindings_module()
     return module.snapshot_records(module.resolve(ui, root, sources), sources)
@@ -109,7 +116,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
         raise ValueError('UI authority needs confirmed/unconfirmed status')
     record(ui.get('preview'), 'Preview authority', sources, api)
     if ui['preview'].get('status') not in ('proposed','authorised','not-needed'):
-        raise ValueError('Preview status is not-needed (sketches only), proposed or authorised')
+        raise ValueError('Preview status is not-needed (kit screens or sketches only), proposed or authorised')
     api.text(ui['preview'].get('destination'), 'preview.destination')
     acceptance = ui.get('acceptance')
     if not isinstance(acceptance, dict) or acceptance.get('status') not in ('pending','accepted'):
@@ -156,7 +163,8 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     for key,s in screens.items():
         try:
             allowed_screen = {'id','title','description','state','x','y','width','height','representation',
-                              'content','capture','sources','requirements','evidence','tasks','decisions','markers','elements','capture_context'}
+                              'content','capture','sources','requirements','evidence','tasks','decisions','markers','elements','capture_context',
+                              'kit_snapshot','kit_markup','sketch_reason'}
             if set(s)-allowed_screen:
                 raise ValueError('Unknown screen fields; executable markup/styles are prohibited')
             api.text(s.get('title'), 'screen.title', 48)
@@ -204,9 +212,14 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
                     if (not isinstance(position, list) or len(position) != 2 or
                         any(type(n) not in (int, float) or not 0 <= n <= 1 for n in position)):
                         raise ValueError('Capture marker position uses two fractions from 0 to 1')
+            elif s.get('representation') == 'kit':
+                total += kit_screens_module().validate_screen(s, root, sources, api)
             elif s.get('representation') == 'schematic':
                 if 'capture' in s or 'markers' in s:
                     raise ValueError('Schematic screen cannot claim a captured source')
+                if any(x.get('representation') == 'kit' for x in screens.values() if isinstance(x, dict)):
+                    # Next to kit screens a sketch must say which part the kit lacks; the owner sees it.
+                    api.text(s.get('sketch_reason'), 'screen.sketch_reason (which part the kit has no example of)', 200)
                 content = api.rows(s.get('content'),'screen.content',empty=False)
                 if len(content)>6:
                     raise ValueError('Use at most six controls/text blocks in one schematic screen')
@@ -232,7 +245,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
                     if 'decision' in c and c['decision'] not in s['decisions']:
                         raise ValueError('Control decision is not mapped to this screen')
             else:
-                raise ValueError('Use a captured PNG or an explicitly labelled schematic')
+                raise ValueError('Use a kit screen (kit markup), a captured PNG or an explicitly labelled schematic')
         except ValueError as exc:  # report every screen problem in one run, not one per attempt
             problems.append(f"screen {s.get('id', key) if isinstance(s, dict) else key}: {exc}")
             continue
@@ -241,7 +254,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     if problems:
         raise ValueError('; '.join(problems))
     if total > MAX_CAPTURE_TOTAL:
-        raise ValueError('UI captures exceed the 4 MB total report budget')
+        raise ValueError('UI captures and kit screens exceed the 4 MB total report budget')
     for d in decisions.values():
         if any(d['id'] not in screens[s]['decisions'] for s in d['screens']):
             raise ValueError('Decision must be mapped on all referenced screens')
@@ -263,7 +276,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
     if proposed_capture and ui['preview']['status']!='authorised':
         raise ValueError('A captured proposed screen needs recorded preview authority (it ran a preview of the app); '
                          'a labelled sketch in this report needs none')
-    if ui['mode']=='approved-kit' and any(screen['representation']!='capture' for screen in screens.values()):
+    if ui['mode']=='approved-kit' and any(screen['representation'] not in ('capture','kit') for screen in screens.values()):
         raise ValueError('Approved-kit review needs actual component captures; schematics do not prove its appearance')
     if acceptance['status']=='accepted' and (ui['authority']['status']!='confirmed' or ui['mode']=='unselected'
                                            or any(d['status']!='selected' for d in decisions.values())):
@@ -345,6 +358,9 @@ def screen_svg(screen: dict, root: Path, sources: dict, api, suffix: str) -> str
                 parts.append(f'<a href="#ui-decision-{d}" aria-label="Review decision {d}"><circle class="ui-marker" cx="{cx}" cy="{y-5}" r="13"/>'
                              f'<text class="ui-marker-text" x="{cx}" y="{y-1}" text-anchor="middle">{d}</text></a>')
             y+=48
+    if screen['representation']!='capture' and screen.get('sketch_reason'):
+        parts.append(f'<text class="ui-footnote" x="20" y="{height-16}">Sketch · not in the kit: see Inspect</text></svg>')
+        return ''.join(parts)
     caption=(('Screenshot · kit parts listed below' if 'item' in screen['elements'][0] else 'Screenshot · copied elements listed below') if screen.get('elements') else 'Screenshot of the page') if screen['representation']=='capture' else 'Sketch · not a screenshot'
     parts.append(f'<text class="ui-footnote" x="20" y="{height-16}">{caption}</text></svg>')
     return ''.join(parts)
@@ -367,17 +383,22 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
     cards=[];details=[]
     for s in ui['screens']:
         detail='ui-detail-'+s['id']
+        kit = s['representation']=='kit'
+        page = kit_screens_module().page_width(s,root,sources,api) if kit else 0
+        view = kit_screens_module().card(s,page) if kit else screen_svg(s,root,sources,api,"board")
         cards.append(f'<article class="ui-screen-node" id="ui-screen-{e(s["id"])}" '
                      f'style="left:{s["x"]}px;top:{s["y"]}px;width:{s["width"]}px;height:{s["height"]}px">'
-                     f'{screen_svg(s,root,sources,api,"board")}<a class="ui-inspect" href="#{detail}">Inspect screen ↗</a></article>')
+                     f'{view}<a class="ui-inspect" href="#{detail}">Inspect screen ↗</a></article>')
         refs=api.links(s['sources'],'s')
-        full_screen=screen_svg(s,root,sources,api,'detail')
+        full_screen=kit_screens_module().detail(s,page) if kit else screen_svg(s,root,sources,api,'detail')
         if s['representation']=='capture':
             capture,iw,ih=png_bytes(api.safe_source(root,sources[s['capture']]['path']))
             full_screen=(f'<img class="ui-capture-detail" width="{iw}" height="{ih}" alt="{e(s["description"])}" '
                          f'src="data:image/png;base64,{base64.b64encode(capture).decode("ascii")}"/>')
         details.append(f'<details id="{detail}" class="ui-screen-detail"><summary>{e(s["title"])}: screen and sources</summary>'
-                       f'<p>{e(s["description"])}</p>{full_screen}'
+                       f'<p>{e(s["description"])}</p>'
+                       + (f'<p class="ui-evidence"><strong>Why a sketch:</strong> {e(s["sketch_reason"])}</p>' if s.get('sketch_reason') else '')
+                       + f'{full_screen}'
                        f'{bindings.selection_html(s, resolved, sources, api)}'
                        f'<p class="ui-evidence">State: {e(s["state"])}. Sources: {refs}. '
                        f'Requirements: {api.links(s["requirements"],"r")}. Tasks: {api.links(s["tasks"],"t")}.</p></details>')
@@ -399,6 +420,8 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
     source_note=f'{e(authority["summary"])} Reference: {api.links([authority["source"]],"s")}, {e(authority["locator"])}.'
     first=ui['screens'][0]['id']
     gallery=quick_module().render(quick_module().collect(ui, root, sources, api), api)
+    kit_data=kit_screens_module().payload(ui, root, sources, api)
+    kit_json=kit_screens_module().data_script(kit_data) if kit_data['screens'] else ''
     return (f'<figure class="panel ui-review" id="panel-ui-preview"><div class="figure-head"><h2>{e(ui["title"])}</h2>'
             '<span>screens · interaction · design</span></div>'
             f'<p class="figure-description">{e(ui["summary"])}</p>{illustration}{legacy_note}'
@@ -408,7 +431,7 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
             f'{e(ui["acceptance"]["summary"])}</p></div>'
             '<p class="hint">Screen frames are connected by actions. Markers refer to design decisions below. '
             f'<a href="#ui-screen-{e(first)}">Go to first screen</a>. Scroll at readable size; Fit is an overview.</p>'
-            '<noscript><p class="hint">Screen Fit needs JavaScript; use normal-size scrolling and the screen details below.</p></noscript>'
+            '<noscript><p class="hint">Screen Fit and kit previews need JavaScript; use normal-size scrolling and the screen details below.</p></noscript>'
             f'<div class="canvas ui-canvas" tabindex="0" role="region" aria-label="UI screen flow, scroll to explore" '
             f'data-start-id="ui-screen-{e(first)}" style="--board-width:{w}px"><div class="ui-scaled" style="--ui-width:{w}px;--ui-height:{h}px">'
             f'<div class="ui-board">{"".join(routes)}{"".join(cards)}</div></div></div>'
@@ -416,4 +439,4 @@ def render(ui: dict, root: Path, sources: dict, api) -> str:
             + gallery
             + ('<section class="ui-decisions"><h2>Design decisions on these screens</h2>'+''.join(decisions)+'</section>' if decisions else '') +
             '<details class="ui-screen-index"><summary>Inspect screens and their sources</summary>'+''.join(details)+'</details>'
-            '</figure>')
+            + kit_json + '</figure>')

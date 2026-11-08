@@ -31,7 +31,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.8.0-rc.30'
+RENDERER_VERSION = '2.8.0-rc.31'
 
 
 def ui_module():
@@ -783,14 +783,23 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     ui_html = ''
     image_policy = "'none'"
     frame_policy = "'none'"
+    font_policy = "'none'"
+    style_policy = "'unsafe-inline'"
     if 'ui_review' in data:
         css += '\n' + (ASSETS/'ui-review.css').read_text(encoding='utf-8')
         js += '\n' + (ASSETS/'ui-review.js').read_text(encoding='utf-8')
         ui_html = ui_module().render(data['ui_review'], root, sources, renderer_api())
-        if data['ui_review'].get('quick_previews'):
+        kit = [s for s in data['ui_review']['screens'] if s['representation'] == 'kit']
+        if data['ui_review'].get('quick_previews') or kit:
             frame_policy = "'self' about:"
-        if any(s['representation'] == 'capture' for s in data['ui_review']['screens']):
+        if any(s['representation'] == 'capture' for s in data['ui_review']['screens']) or kit:
             image_policy = 'data:'
+        if kit:
+            # Kit frames are srcdoc documents and inherit this policy: inlined fonts, and Typekit only.
+            typekit = ui_module().kit_screens_module().uses_typekit(
+                ui_module().kit_screens_module().payload(data['ui_review'], root, sources, renderer_api()))
+            font_policy = 'data: https://use.typekit.net' if typekit else 'data:'
+            style_policy = "'unsafe-inline' https://use.typekit.net https://p.typekit.net" if typekit else "'unsafe-inline'"
     script_hash = base64.b64encode(hashlib.sha256(js.encode('utf-8')).digest()).decode('ascii')
     state = data['state']
     overview = data.get('report_kind') == 'task-overview'
@@ -857,7 +866,7 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     viewer_note = ('<p class="muted">System-font mode. No network assets. A saved projection, not a live repository map.</p>')
     head = f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src {image_policy}; frame-src {frame_policy}; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src {style_policy}; img-src {image_policy}; frame-src {frame_policy}; connect-src 'none'; font-src {font_policy}; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><main>
 <header><div class="mast"><strong>{esc(data['snapshot']['repository'])}</strong><span>{esc('Delivery ' + data['revision'] if data.get('task_report', {}).get('phase') == 'delivery' else plan_label(data['revision']))}</span></div>
 <h1>{esc(data['title'])}</h1>'''
@@ -877,7 +886,7 @@ def render(data: dict, root: Path, input_path: Path) -> str:
         mast = esc('Delivery ' + data['revision'] if data['task_report']['phase'] == 'delivery' else plan_label(data['revision']))
         return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src 'unsafe-inline'; img-src {image_policy}; frame-src {frame_policy}; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-{script_hash}'; style-src {style_policy}; img-src {image_policy}; frame-src {frame_policy}; connect-src 'none'; font-src {font_policy}; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>{esc(data['title'])}</title><style>{css}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
 <div class="page"><header class="masthead"><strong>{esc(data['snapshot']['repository'])}</strong><span>{mast}</span></header>
 <main id="report"><header class="report-header"><h1 class="report-title">{esc(data['title'])}</h1>

@@ -147,7 +147,7 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('never edit or offer to edit an old report',(ROOT/'skills/resume-task/SKILL.md').read_text())
         # Design loop: plan and delivery of a capturable page used sketches only.
         self.assertIn('real captures of the built result',(ROOT/'skills/workflow-deliver/SKILL.md').read_text())
-        self.assertIn('capture the current screen when it opens safely',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
+        self.assertIn('kit screens with a design kit',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         self.assertIn('Answering grilling questions is not agreement',router)
         rows=[line for line in router.splitlines() if line.startswith('| ') and '`workflow-' in line]
         self.assertLess([i for i,r in enumerate(rows) if 'workflow-deliver' in r][0],[i for i,r in enumerate(rows) if 'workflow-execute' in r][0],

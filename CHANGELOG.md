@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.31 — kit screens: plan reports show the real kit (2026-11-08)
+
+- codebase-map: UI plan reports show **kit screens** instead of drawn sketches when the project has a design kit. `scripts/kit_snapshot.py` saves the developer's rendered local kit page (any stack that renders in Chromium: Blade, Angular/Ionic, React) through Python Playwright and the installed Edge or Chrome, blocking every other site. It keeps open shadow roots as declarative shadow DOM, inlines the stylesheets and only the fonts the page loaded, and never writes the kit address. `--width` sets the window width (1280 desktop, 390 phone apps); several kit addresses merge into one snapshot; `--click` opens examples the kit shows only after a click.
+- The agent composes every current and proposed screen from kit elements copied whole, with fake text; the report shows them live in sandboxed frames (no scripts; inlined fonts and Typekit only), small in the flow and full size fitted to the column. The renderer refuses a screen that uses any tag, class, inline style or image the kit does not have (classes the kit's CSS defines count), or a web component copied without its shadow style, and names each one. A sketch next to kit screens needs `sketch_reason` naming the missing kit part.
+- ui-design, workflow-specify and codebase-map point to kit screens first; sketches remain for projects without a kit. Tested with fresh runs on Intervat (Blade), Cheflabels (Ionic) and Hooqd (React/Tamagui).
+
 ## 2.8.0-rc.30 — DESIGN.md names no local address (2026-11-08)
 
 - ui-design LIVE-KIT: DESIGN.md names no machine-specific local address, port or web-server setup; it says to open `/design-kit` on the reader's own local build, and an agent that does not know the address finds it or asks. Kit runs had written the owner's local hostnames and temporary ports into DESIGN.md, which other developers do not share.

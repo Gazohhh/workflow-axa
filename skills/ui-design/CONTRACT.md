@@ -21,7 +21,7 @@ Projects without a design kit follow exactly the same rules with existing code a
 
 ## Report diagram
 
-Every UI-visible change shows a screen diagram in the same full codebase-map report (UI-FLOW.md): current and proposed screens with the interaction arrows. Use real captures when they can be taken safely with existing tooling; otherwise draw a **layout sketch** clearly labelled as a sketch, built only from the reused elements. A sketch shows structure; it does not approve a look. A missing diagram keeps the report a draft.
+Every UI-visible change shows a screen diagram in the same full codebase-map report (UI-FLOW.md): current and proposed screens with the interaction arrows. With a design kit, build both as **kit screens**: kit markup copied from a saved snapshot of the developer's local kit page, shown live with the kit's own styles (UI-FLOW.md "Kit screens"). Without one, use real captures when they can be taken safely with existing tooling; otherwise draw a **layout sketch** clearly labelled as a sketch, built only from the reused elements. A sketch shows structure; it does not approve a look. A missing diagram keeps the report a draft.
 
 The codebase-map renderer may generate its own HTML/CSS/SVG report shell. That is report code, not application code, and gives no permission to style the application or build prototypes under a reports path.
 

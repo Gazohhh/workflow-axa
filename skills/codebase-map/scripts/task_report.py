@@ -554,7 +554,7 @@ def scaffold_delivery(review: dict) -> dict:
     if isinstance(ui, dict) and isinstance(ui.get('preview'), dict):
         sketches_only = all(s.get('representation') != 'capture' for s in ui.get('screens', []))
         ui['preview'].update(status='not-needed' if sketches_only else ui['preview'].get('status'),
-                             summary=FILL + 'how the screens were shown (sketch or capture of the built result)')
+                             summary=FILL + 'how the screens were shown (kit screens, sketch or capture of the built result)')
     for task in data.get('tasks', []):  # round 7: the scaffold left these out; never claim more than implemented
         task.setdefault('outcome', 'implemented')
         task.setdefault('outcome_note', FILL + 'result and V-ID; set verified only with passing evidence')

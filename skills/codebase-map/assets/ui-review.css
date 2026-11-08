@@ -54,3 +54,11 @@
 .ui-quick-full { margin:12px 0; border:1px solid var(--rule); border-radius:6px; }
 .ui-quick-full iframe { height:min(75vh,850px); min-height:420px; }
 @media print { .ui-quick-small { display:none; } .ui-quick-full iframe { height:520px; } }
+/* Kit screens: report-only frame boxes; the application's own CSS stays inside each frame. */
+.ui-kit-card { position:relative; height:100%; padding:8px; box-sizing:border-box; background:white; border:1px solid var(--rule); border-radius:6px; }
+.ui-kit-caption { margin:4px 0 10px 8px; font-size:14px; font-weight:600; }
+.ui-kit-frame { overflow:hidden; border:1px solid var(--rule); border-radius:4px; background:white; }
+.ui-kit-frame iframe { display:block; border:0; transform-origin:0 0; pointer-events:none; background:white; }
+.ui-kit-footnote { margin:8px 0 0 8px; font-size:12px; color:var(--muted, #666); }
+.ui-kit-detail { overflow:hidden; max-width:100%; border:1px solid var(--rule); border-radius:6px; }
+.ui-kit-detail iframe { display:block; border:0; background:white; transform-origin:0 0; }

@@ -45,7 +45,7 @@ Run `plan-review` in a fresh context and resolve its findings. A behavior questi
 
 First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Build the HTML plan as `workflow/VISUAL-REVIEW.md` "Prepare the report" says and ask for implementation approval; say "implements the behavior we agreed" only when that comparison found no difference. **STOP.** Until the answer, write only task records and the report.
 
-Done when the report exists for this revision and its path is in your approval question (one-line changes included), or the user's explicit "no report" is recorded. Set `task_report.screen_change`; a change a user can see on screen (`visible`) also needs the report's screen diagram (`ui-design` step 3): capture the current screen when it opens safely (a local page: `../codebase-map/scripts/screenshot_report.py`), sketch the proposed one; a sketch-only preview is `not-needed`.
+Done when the report exists for this revision and its path is in your approval question (one-line changes included), or the user's explicit "no report" is recorded. Set `task_report.screen_change`; a change a user can see on screen (`visible`) also needs the report's screen diagram (`ui-design` step 3): kit screens with a design kit (`../codebase-map/UI-FLOW.md`), else capture and sketch; then preview is `not-needed`.
 
 Record the answer in the checkpoint `Approval` line and DECISIONS: approved (revision, report, tickets, exclusions), a correction (behavior or scope → `workflow-clarify`; tickets, seams, presentation → here), or a scoped waiver.
 
