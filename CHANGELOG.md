@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.30 — DESIGN.md names no local address (2026-11-08)
+
+- ui-design LIVE-KIT: DESIGN.md names no machine-specific local address, port or web-server setup; it says to open `/design-kit` on the reader's own local build, and an agent that does not know the address finds it or asks. Kit runs had written the owner's local hostnames and temporary ports into DESIGN.md, which other developers do not share.
+
 ## 2.8.0-rc.29 — kit labels stay with their variant; widgets show their editor (2026-11-08)
 
 - ui-design LIVE-KIT: each variant and its label are grouped in one existing wrapper so the label sits visibly closer to its own variant than to the next, framed variants included; third-party widgets show their open interface (a date picker's calendar, a cropper's editor, not only its preview) or exclude that state with its reason; nothing extra sits beside a variant unless its label names it. On rc.28 four independent reviewers found labels that read as belonging to the next card, toast or list, and an extra textarea beside open selects; after these fixes all four found no blocking defect.

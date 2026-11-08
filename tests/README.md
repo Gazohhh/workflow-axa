@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.29; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.30; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
