@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0-rc.32 — an approval lifts a plan-only pause (2026-11-08)
+
+- phase gate: after a plan-only request ("write the plan, then stop; do not implement") the owner's approval that asks for the build ("Approved: plan r1. Implement it now", "approve it", "implement it", "go ahead") now lifts the pause. Before, only a message starting with "continue" or "resume" did, so the kit-preview test builds on Hooqd and Cheflabels were refused after a clear approval. Negated forms ("approve the plan but don't implement yet") still pause.
+
 ## 2.8.0-rc.31 — kit screens: plan reports show the real kit (2026-11-08)
 
 - codebase-map: UI plan reports show **kit screens** instead of drawn sketches when the project has a design kit. `scripts/kit_snapshot.py` saves the developer's rendered local kit page (any stack that renders in Chromium: Blade, Angular/Ionic, React) through Python Playwright and the installed Edge or Chrome, blocking every other site. It keeps open shadow roots as declarative shadow DOM, inlines the stylesheets and only the fonts the page loaded, and never writes the kit address. `--width` sets the window width (1280 desktop, 390 phone apps); several kit addresses merge into one snapshot; `--click` opens examples the kit shows only after a click.

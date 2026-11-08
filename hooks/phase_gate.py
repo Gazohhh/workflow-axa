@@ -698,6 +698,12 @@ def control_intent(text: str) -> str | None:
         return 'pause'
     if re.match(r"^(?:please\s+)?(?:continue|resume)(?:[.!?]|$|\s+(?:now|this task|the task|the approved task|working)\b)", words):
         return 'resume'
+    # An approval that asks for the build lifts a plan-only pause ("write the plan, then stop; do not
+    # implement"). Before this only a message starting with continue/resume did (kit-preview test, rc.32).
+    if (re.match(r"^(?:yes[,\s]+)?(?:i\s+)?(?:approve|approved)\b", words)
+            or re.search(r"(?<!not )(?<!n't )\b(?:implement|build|approve)\s+(?:it|this|the (?:approved )?plan|plan r\d+)(?:\s+now)?\b", words)
+            or re.match(r"^(?:please\s+)?(?:go ahead|start implementing|start the implementation)\b", words)):
+        return 'resume'
     return None
 
 

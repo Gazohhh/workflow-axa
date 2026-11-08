@@ -1516,3 +1516,30 @@ class RequiredReadTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ControlIntentTests(unittest.TestCase):
+    """Kit-preview test (rc.32): an approval after a plan-only pause was refused until "continue"."""
+
+    def setUp(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('phase_gate_intent', HOOK)
+        self.gate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.gate)
+
+    def test_plan_only_request_pauses(self):
+        for words in ('Write the plan and its report for my approval, then stop and wait; do not implement.',
+                      "Approve the plan but don't implement yet.", 'Stop.'):
+            self.assertEqual(self.gate.control_intent(words), 'pause', words)
+
+    def test_approval_that_asks_for_the_build_resumes(self):
+        for words in ("Approved: plan r1 as written. Implement it now. Don't commit or push anything.",
+                      'Looks good, approve it and check if it worked', 'implement it', 'Yes, approved.',
+                      'Continue the approved task.', 'Go ahead.', 'I approve r2'):
+            self.assertEqual(self.gate.control_intent(words), 'resume', words)
+
+    def test_feature_prose_is_neither(self):
+        for words in ('Add a Stop button to the player.', 'Can you explain how the approval list works?',
+                      'The approval list should show older approvals.'):
+            self.assertIsNone(self.gate.control_intent(words), words)
+
