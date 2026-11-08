@@ -213,6 +213,8 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
                         any(type(n) not in (int, float) or not 0 <= n <= 1 for n in position)):
                         raise ValueError('Capture marker position uses two fractions from 0 to 1')
             elif s.get('representation') == 'kit':
+                if 'sketch_reason' in s:
+                    raise ValueError('sketch_reason belongs only on a sketch (schematic) screen')
                 total += kit_screens_module().validate_screen(s, root, sources, api)
             elif s.get('representation') == 'schematic':
                 if 'capture' in s or 'markers' in s:
@@ -277,7 +279,7 @@ def validate(data: dict, root: Path, sources: dict, api) -> None:
         raise ValueError('A captured proposed screen needs recorded preview authority (it ran a preview of the app); '
                          'a labelled sketch in this report needs none')
     if ui['mode']=='approved-kit' and any(screen['representation'] not in ('capture','kit') for screen in screens.values()):
-        raise ValueError('Approved-kit review needs actual component captures; schematics do not prove its appearance')
+        raise ValueError('Approved-kit review needs captures or kit screens; schematics do not prove its appearance')
     if acceptance['status']=='accepted' and (ui['authority']['status']!='confirmed' or ui['mode']=='unselected'
                                            or any(d['status']!='selected' for d in decisions.values())):
         raise ValueError('An accepted design cannot retain an unselected source or unresolved design decisions')

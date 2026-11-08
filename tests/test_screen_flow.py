@@ -114,7 +114,7 @@ class ScreenFlowTests(unittest.TestCase):
 
     def test_draft_kit_cannot_substitute_schematics(self):
         self.ui['mode']='approved-kit'
-        with self.assertRaisesRegex(ValueError,'actual component captures'):self.render()
+        with self.assertRaisesRegex(ValueError,'needs captures or kit screens'):self.render()
 
     def test_accepted_design_cannot_have_unresolved_source_or_choices(self):
         self.application()
@@ -167,7 +167,7 @@ class ScreenFlowTests(unittest.TestCase):
 
     def test_approved_kit_cannot_use_schematic_as_visual_proof(self):
         self.ready();self.ui['mode']='approved-kit'
-        with self.assertRaisesRegex(ValueError,'actual component captures'):self.render()
+        with self.assertRaisesRegex(ValueError,'needs captures or kit screens'):self.render()
 
     def test_source_backed_capture_can_be_rendered_for_approved_kit(self):
         self.ready();self.data['state']='draft';self.ui['mode']='approved-kit';self.capture()

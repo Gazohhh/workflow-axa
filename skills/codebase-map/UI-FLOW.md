@@ -17,7 +17,7 @@ When the project has a design kit page (Blade, Angular/Ionic, React or any other
 
 The renderer refuses a kit screen that uses any tag, class, inline style or image that is not in the snapshot, and names each one. Never add it to make the check pass: ask the owner "I couldn't find a matching style for [element]. Is there an existing element I should mimic?" A `<style>` with CSS, a script, an event handler or a link is refused too.
 
-In the report each kit screen is a scaled live frame in the flow (Inspect opens it at full size, 1280 px wide). Frames run **no scripts**: menus, toggles and popups show the state the copied kit example shows (the kit shows states open), so copy the example in the state the screen needs. Only inlined fonts and Typekit may load. The page's own stylesheets stay inside the frame; the report shell is unchanged.
+In the report each kit screen is a scaled live frame in the flow (Inspect opens it at full size, at the snapshot width). Frames run **no scripts**: menus, toggles and popups show the state the copied kit example shows (the kit shows states open), so copy the example in the state the screen needs. Only inlined fonts and Typekit may load (Typekit also requests its own `p.typekit.net` stylesheet when the report opens). The page's own stylesheets stay inside the frame; the report shell is unchanged.
 
 Use a sketch (below) only when there is no kit, the kit page cannot be reached, Playwright for Python or a browser is missing, or the kit has no example of that part of the screen. A sketch next to kit screens needs `sketch_reason` naming the missing kit part (the owner sees it); say the rest in `preview.summary`. Never install anything to avoid the sketch.
 

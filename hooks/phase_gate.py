@@ -592,7 +592,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 17
+STATE_VERSION = 18
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -685,24 +685,59 @@ def set_task(state: dict, name: str, n: int, record: str = '', written: bool = F
         state.setdefault('task_roots', {})[name] = slash(root)
 
 
+# Approval forms that lift a plan-only pause. Deny by default: the first real clause is one explicit
+# approval, and every later clause must be on the short allow list below. A hold word anywhere wins.
+_COURTESY = re.compile(r"^(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|thank you|lgtm|nice|"
+                       r"looks good|looks great|all good|yes to all|alright|cool)$")
+_ASK = re.compile(r"^(?:(?:yes|yep|yeah|ja|ok|okay|sure|great|good|fine|perfect|thanks|lgtm|alright|cool|i)[\s,]+)*"
+                  r"(?:approved?(?: (?:plan )?r\d+)?|approve (?:it|this|the plan)|"
+                  r"(?:implement|build) (?:it|this|the plan|the approved plan|plan r\d+)|go ahead|go|proceed|start implementing)"
+                  r"(?: now)?(?: please)?(?: now)?(?:$|\s+(?:and|then)\s+(?P<rest>.+))")
+_LIMIT = re.compile(r"^(?:but\s+)?(?:do not|don't|dont|never|no)\s+(?:commit|push|merge|deploy|publish|release|tag)\w*"
+                    r"(?:\s+(?:or|and|nor)\s+(?:commit|push|merge|deploy|publish|release|tag)\w*)*"
+                    r"(?:\s+(?:it|this|anything|yet|until i(?: have)? review\w*(?: it)?))?$")
+_ALLOWED_TAIL = re.compile(
+    r"^(?:(?:plan )?r\d+(?: as written)?|as written|"
+    r"(?:implement|build) (?:it|this|the plan|plan r\d+)(?: now)?|go ahead|"
+    r"(?:check|verify|test) (?:if|that|whether) it works?(?:ed)?(?: (?:let me know|tell me)(?: when (?:it'?s |you'?re |also )?done)?)?|"
+    r"(?:let me know|tell me|report back)(?: when (?:it'?s |you'?re |also )?done)?|run the tests|thanks|thank you)$")
+_HOLD = re.compile(r"\b(?:not|no|never|nope|don'?t|do not|wait\w*|hold|first|yet|until|later|tomorrow|next|once|"
+                   r"before|after|pending|except|unless|conditional\w*|revise|discuss\w*|think|sleep|kidding|nvm|"
+                   r"scratch|standby|tight|await\w*|minute|moment|monday|tuesday|wednesday|thursday|friday|"
+                   r"saturday|sunday|sprint|reject\w*|instead|cancel\w*|undo|stop\w*|pause\w*|"
+                   r"niet|nog|nee|wacht\w*|morgen|eerst|later|stoppen)\b")
+
+
 def control_intent(text: str) -> str | None:
     """Recognise direct stop/resume requests, not feature prose mentioning a Stop button.
 
     This intentionally small vocabulary is not a natural-language permission classifier.
     Other wording remains subject to the phase instructions and host permissions.
+    Pass the raw message where possible: a question mark means it is not an instruction.
     """
     words = clean(text)
-    if re.search(r"\b(?:do not|don't)\s+(?:start\s+)?(?:implement|write (?:application )?code|edit (?:application )?files)(?:[.!?]|$|\s+(?:yet|until|now)\b)", words):
+    if re.search(r"\b(?:do not|don't|dont|never)\s+(?:ever\s+)?(?:start\s+)?(?:implementing|implement|building|build|"
+                 r"write (?:application )?code|edit (?:application )?files)(?:\s+(?:it|this|anything|the plan|plan r\d+))?"
+                 r"(?:[.!?;,]|$|\s+(?:yet|until|now|but|and)\b)", words):
         return 'pause'
     if re.match(r"^(?:please\s+)?(?:stop|pause|cancel)(?:[.!?]|$|\s+(?:now|here|this task|the task|working|coding|implementation)\b)", words):
         return 'pause'
     if re.match(r"^(?:please\s+)?(?:continue|resume)(?:[.!?]|$|\s+(?:now|this task|the task|the approved task|working)\b)", words):
         return 'resume'
-    # An approval that asks for the build lifts a plan-only pause ("write the plan, then stop; do not
-    # implement"). Before this only a message starting with continue/resume did (kit-preview test, rc.32).
-    if (re.match(r"^(?:yes[,\s]+)?(?:i\s+)?(?:approve|approved)\b", words)
-            or re.search(r"(?<!not )(?<!n't )\b(?:implement|build|approve)\s+(?:it|this|the (?:approved )?plan|plan r\d+)(?:\s+now)?\b", words)
-            or re.match(r"^(?:please\s+)?(?:go ahead|start implementing|start the implementation)\b", words)):
+    # An explicit approval that asks for the build lifts a plan-only pause (rc.32; deny-by-default in
+    # rc.33 after three independent reviews). Questions, held approvals and feature prose never do.
+    if '?' in text:
+        return None
+    clauses = [c.strip() for c in re.split(r"[.;:!,\n]+|\s[-\u2013\u2014]+\s|\bbut\b", words) if c.strip()]
+    clauses = [c for c in clauses if not _COURTESY.match(c)]
+    if not clauses or any(_HOLD.search(c) for c in clauses if not _LIMIT.match(c)):
+        return None
+    first = next((c for c in clauses if not _LIMIT.match(c)), None)
+    found = _ASK.match(first) if first else None
+    if not found:
+        return None
+    tail = ([found.group('rest')] if found.group('rest') else []) + [c for c in clauses if c is not first]
+    if all(_LIMIT.match(c) or _ALLOWED_TAIL.match(c) for c in tail):
         return 'resume'
     return None
 
@@ -715,7 +750,10 @@ def add_words(state: dict, n: int, text: str, kind: str):
     state['last_user'] = n
     task = state['tasks'][-1][0] if state['tasks'] else '*'
     state['user_tasks'][str(n)] = task
-    intent = control_intent(words)
+    intent = control_intent(text if kind != 'answer' else words)
+    intents = state.setdefault('intents', {})
+    if intents.get(str(n)) != 'pause':
+        intents[str(n)] = intent
     if intent == 'pause':
         state['paused_tasks'][task] = n
     elif intent == 'resume':
@@ -1226,8 +1264,10 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
         for n, words in later:
             if REVOKED.search(words):
                 return False, f'a later message in that session withdraws it ("{words[:120]}")'
-        stopped = [n for n, words in later if control_intent(words) == 'pause']
-        if stopped and not any(n > stopped[-1] and control_intent(w) == 'resume' for n, w in later) \
+        intents = state.get('intents', {})
+        said = lambda n, w: intents[str(n)] if str(n) in intents else control_intent(w)
+        stopped = [n for n, words in later if said(n, words) == 'pause']
+        if stopped and not any(n > stopped[-1] and said(n, w) == 'resume' for n, w in later) \
                 and not any(CONTINUES.search(w) for _n, w, _t, _k in (current or {}).get('users', [])):
             return False, 'that session was stopped after the approval and nobody has asked to continue since'
         for n, words in later:

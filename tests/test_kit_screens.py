@@ -147,6 +147,20 @@ class KitScreenTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'shadow root of <ion-button> lost its kit style'):
             self.render()
 
+    def test_markup_the_browser_reads_differently_is_refused(self):
+        # Independent review of rc.31: both hid new CSS from the check.
+        for markup, expected in [('<main class="page"><!--><style>.x{color:red}</style>--></main>', 'HTML comment'),
+                                 ('<main class="page"><style data-kit-shadow-ref="k1"/>.n{color:red}</style></main>', 'self-closing')]:
+            self.write_screen(markup)
+            with self.assertRaisesRegex(ValueError, expected):
+                self.render()
+
+    def test_data_block_escapes_every_angle_bracket(self):
+        self.write_screen('<main class="page"><h1 class="title">a &lt;!--&lt;script b</h1></main>')
+        html = self.render()
+        block = re.search(r'<script type="application/json" id="ui-kit-data">(.*?)</script>', html, re.S).group(1)
+        self.assertNotIn('<', block)
+
     def test_snapshot_never_closes_its_own_style_element(self):
         text = ks.document({'html_attrs': '', 'body_attrs': '', 'css': 'a{content:"</style><script>"}',
                             'shadow': {}, 'body': ''}, [])

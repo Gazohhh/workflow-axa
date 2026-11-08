@@ -151,7 +151,15 @@ async ({maxAsset, maxTotal}) => {
         continue;
       }
       if (/^\s*javascript:/i.test(a.value)) continue;
-      out.push(a.value === '' ? ` ${name}` : ` ${name}="${attrEsc(a.value)}"`);
+      let value = a.value;
+      if (name === 'style' && /url\(/i.test(value)) {
+        value = value.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g, (m, q, raw) => {
+          if (raw.startsWith('data:') || raw.startsWith('__KIT_ASSET_')) return m;
+          try { return `url("${dataUri(new URL(raw, location.href).href)}")`; } catch { return 'url("data:,")'; }
+        });
+      }
+      if (value.includes(location.host)) { notes.push(`attribute ${name} dropped: it named the kit site`); continue; }
+      out.push(value === '' ? ` ${name}` : ` ${name}="${attrEsc(value)}"`);
     }
     return out;
   }
@@ -248,7 +256,8 @@ def merge(pages: list[dict]) -> dict:
             g = urls.index(url)
             local[str(i)] = g
             priority[str(g)] = max(priority.get(str(g), 1), page['priority'].get(str(i), 1))
-        swap = lambda text, local=local: placeholder.sub(lambda m: f'__KIT_ASSET_{local[m.group(1)]}__', text)
+        swap = lambda text, local=local: placeholder.sub(
+            lambda m: f'__KIT_ASSET_{local[m.group(1)]}__' if m.group(1) in local else m.group(0), text)
         refs = {}
         for key, css in page['shadow'].items():
             css = swap(css)
@@ -298,8 +307,14 @@ def main(argv: list[str]) -> int:
     for flag in ('--browser', '--wait-selector', '--width'):
         if flag in args:
             i = args.index(flag)
+            if i + 1 >= len(args):
+                print(f'{flag} needs a value.')
+                return 2
             options[flag] = args[i + 1]
             del args[i:i + 2]
+    if not str(options.get('--width', '1280')).isdigit() or not 320 <= int(options.get('--width', 1280)) <= 2560:
+        print('--width must be a number of pixels from 320 to 2560.')
+        return 2
     if len(args) < 2:
         print(__doc__)
         return 2
@@ -310,6 +325,9 @@ def main(argv: list[str]) -> int:
         return 2
     if out.suffix.lower() != '.html' or not out.parent.is_dir():
         print('The output must be an .html file in an existing folder (the task output folder).')
+        return 2
+    if out.exists():
+        print(f'{out.name} exists; choose a new name or remove your own earlier snapshot first.')
         return 2
     try:
         from playwright.sync_api import sync_playwright
@@ -335,8 +353,11 @@ def main(argv: list[str]) -> int:
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path=browser_path, headless=True)
-            page = browser.new_page(viewport={'width': width, 'height': 900})
-            page.route('**/*', route)
+            context = browser.new_context(viewport={'width': width, 'height': 900}, service_workers='block')
+            context.route('**/*', route)
+            if hasattr(context, 'route_web_socket'):
+                context.route_web_socket(re.compile('.*'), lambda ws: (blocked.append('websocket'), ws.close()))
+            page = context.new_page()
             pages = []
             for url in urls:
                 page.goto(url, wait_until='networkidle', timeout=90_000)
@@ -356,10 +377,13 @@ def main(argv: list[str]) -> int:
         return 1
     typekit = sorted({h for h in result['externals'] if h and TYPEKIT.match(h)})
     dropped = sorted({h for h in result['externals'] if h and not TYPEKIT.match(h)})
-    if out.exists():
-        print(f'{out.name} exists; choose a new name or remove your own earlier snapshot first.')
-        return 2
-    out.write_text(document(result, typekit, width), encoding='utf-8')
+    text = document(result, typekit, width)
+    # Last guard: the kit's own address never stays in the file (text content included).
+    leaks = text.count(origin) + text.count(parts.netloc)
+    text = text.replace(origin, '').replace(parts.netloc, 'local-site')
+    if leaks:
+        result['notes'].append(f'{leaks} mention(s) of the kit address removed')
+    out.write_text(text, encoding='utf-8')
     summary = {'file': str(out), 'bytes': out.stat().st_size, 'inlined_asset_bytes': inlined,
                'shadow_styles': len(result['shadow']), 'typekit': typekit, 'dropped_stylesheets': dropped,
                'blocked_hosts': sorted(set(blocked)), 'notes': sorted(set(result['notes'] + asset_notes))[:20]}

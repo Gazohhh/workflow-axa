@@ -80,6 +80,27 @@ class Inventory(HTMLParser):
         if tag == 'style' and 'data-kit-shadow-ref' not in dict(attrs):
             self.unsafe.append('<style> (copy kit elements; never add CSS)')
 
+    # Python's parser and the browser disagree on comments, declarations and "/>" on normal tags:
+    # "<!-->" or "<style .../>" could hide CSS from this check, so screen markup may not use them.
+    def handle_comment(self, data):
+        self.unsafe.append('an HTML comment')
+
+    def handle_decl(self, decl):
+        self.unsafe.append('a <!...> declaration')
+
+    def unknown_decl(self, data):
+        self.unsafe.append('a <![...]> section')
+
+    def handle_pi(self, data):
+        self.unsafe.append('a <?...> instruction')
+
+    def handle_startendtag(self, tag, attrs):
+        if tag not in VOID_TAGS:
+            self.unsafe.append(f'a self-closing <{tag}/> (write <{tag}></{tag}>)')
+        self.handle_starttag(tag, attrs)
+        if tag not in VOID_TAGS:
+            self.handle_endtag(tag)
+
     def handle_endtag(self, tag):
         if self.pending is not None and tag == 'template':
             self.bare_hosts.add(self.pending)
@@ -220,5 +241,6 @@ def detail(screen: dict, page: int) -> str:
 
 
 def data_script(data: dict) -> str:
-    text = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    # Every "<" escaped, so no markup in a screen can end or confuse the data block.
+    text = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
     return f'<script type="application/json" id="ui-kit-data">{text}</script>'

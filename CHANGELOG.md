@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.33 — review fixes for kit screens and the approval rule (2026-11-08)
+
+- phase gate: the approval that lifts a plan-only pause is now deny-by-default. The first real phrase must be one explicit approval ("approved", "approve it", "implement it", "build it", "go ahead", "approved r1"); later phrases may only be push/commit limits, plan references, a repeated build request or a report-back request; any hold word (not, wait, first, later, weekdays, nvm, Dutch nog/niet/wacht/morgen, …) or a question mark keeps the pause. Each message's intent is stored from its raw text (a stored message loses its "?"), and `STATE_VERSION` is 18 so older caches are rebuilt. Found by three independent reviews of rc.32.
+- kit screens: screen markup may not use comments, `<!...>` declarations or self-closing normal tags (the parser and the browser read them differently, which could hide new CSS); the report's kit data escapes every `<`; a kit screen refuses `sketch_reason`.
+- kit_snapshot: inline-style `url()` values are inlined; attributes naming the kit site are dropped and any remaining mention of the address is removed; other sites are blocked for the whole browser context, service workers are blocked and WebSockets are closed; bad `--width` or an existing output file stop before the browser starts; a literal placeholder in page text no longer crashes the merge.
+
 ## 2.8.0-rc.32 — an approval lifts a plan-only pause (2026-11-08)
 
 - phase gate: after a plan-only request ("write the plan, then stop; do not implement") the owner's approval that asks for the build ("Approved: plan r1. Implement it now", "approve it", "implement it", "go ahead") now lifts the pause. Before, only a message starting with "continue" or "resume" did, so the kit-preview test builds on Hooqd and Cheflabels were refused after a clear approval. Negated forms ("approve the plan but don't implement yet") still pause.

@@ -1538,6 +1538,53 @@ class ControlIntentTests(unittest.TestCase):
                       'Continue the approved task.', 'Go ahead.', 'I approve r2'):
             self.assertEqual(self.gate.control_intent(words), 'resume', words)
 
+    def test_an_approval_that_holds_the_build_back_does_not_resume(self):
+        # Independent review of rc.32: these lifted a plan-only pause.
+        for words in ("Approve the plan but don't build it", 'Approved, but wait for my go',
+                      'approved r1. hold off on implementation', 'I approve of stopping here', 'dont build it',
+                      'do not ever build it', 'never implement it', 'not yet. implement it later',
+                      'Should we implement this now?', 'before you implement it, show me the tests',
+                      "Can you explain how you'd build it", 'go ahead and stop', "don't implement it yet"):
+            self.assertNotEqual(self.gate.control_intent(words), 'resume', words)
+        for words in ("Approve the plan but don't build it", 'dont build it', 'never implement it', "don't implement it yet"):
+            self.assertEqual(self.gate.control_intent(words), 'pause', words)
+
+    def test_second_review_cases(self):
+        # Second independent review of rc.33: questions, held approvals and feature prose did resume.
+        for words in ('Approved?', 'Implement it now?', 'Build it?', "I'm not sure, approve it?",
+                      'Approved, but not yet', 'approved. no wait', 'Approved. Hmm, actually stop.',
+                      'implement it tomorrow', 'Approve the plan; implement next week', 'build it when I say so',
+                      'Implement it once the API is ready', "approve it once I've checked", 'Approved, pending legal review',
+                      'Approved except ticket 3', 'Approve it, I mean reject it', 'Build a login page',
+                      'Implement dark mode in the settings', 'Approve button should be green', 'build the plan doc',
+                      'implement nothing', 'No. Implement it differently', 'go ahead and explain the plan'):
+            self.assertNotEqual(self.gate.control_intent(words), 'resume', words)
+        for words in ('yes to all, go ahead', 'approved, implement it',
+                      'ok build it', "don't push but implement it", "Approved. Don't commit until I review."):
+            self.assertEqual(self.gate.control_intent(words), 'resume', words)
+
+    def test_third_review_cases(self):
+        for words in ('approved; do not proceed', "approved, don't proceed", "approved, but don't start",
+                      "approved, but don't do anything yet", 'approved, but do nothing', 'approved. dont touch the code',
+                      'approved, sit tight', 'approved, standby', 'approved; await my signal', 'approved, give me a minute',
+                      "approved, i'll tell you when to start", 'approved. let me think about it first',
+                      'approved, but first let me review', 'approved, but let me sleep on it', "approved, but let's discuss",
+                      'approved, just kidding', 'approved. nvm', 'approved. scratch that', 'approved, do it on monday',
+                      'approved, start next sprint', 'approved, morgen', 'approved, nee nog niet',
+                      'approved, maar nog niet bouwen', 'approved, wacht even', 'i approve, nog even wachten',
+                      'approved, revise first', 'approved, change step 3 first', 'approved, update the plan first',
+                      'approved, conditional on review'):
+            self.assertNotEqual(self.gate.control_intent(words), 'resume', words)
+        for words in ('approved r1', 'approved plan r1', 'Approved — implement it', 'yes, implement it now please',
+                      'ok go', 'ja approved', 'yep approved', 'proceed',
+                      'Looks good, approve it and check if it worked let me know when also done'):
+            self.assertEqual(self.gate.control_intent(words), 'resume', words)
+
+    def test_a_stored_question_keeps_its_meaning(self):
+        state = self.gate.fresh_state()
+        self.gate.add_words(state, 1, 'Approved?', 'human')
+        self.assertIsNone(state['intents']['1'])
+
     def test_feature_prose_is_neither(self):
         for words in ('Add a Stop button to the player.', 'Can you explain how the approval list works?',
                       'The approval list should show older approvals.'):
