@@ -172,7 +172,7 @@ class VersionFactsTests(unittest.TestCase):
         self.assertEqual(c['packages'][0]['locked'], 'v11.3.0')
         self.assertIn('NOT_OBSERVED', c['runtime'])
         self.assertIn('NOT_INFERRED', c['application_structure'])
-        self.assertEqual(c['modules'], ['php.md', 'laravel.md'])
+        self.assertEqual(c['modules'], ['PHP.md', 'LARAVEL.md'])
 
     def test_composer_empty_platform_array_is_accepted(self):
         self.composer()
@@ -189,12 +189,12 @@ class VersionFactsTests(unittest.TestCase):
 
     def test_php_without_laravel_does_not_load_laravel(self):
         self.put('composer.json', {'require': {'php': '^8.1'}})
-        self.assertEqual(self.inspect()['contexts'][0]['modules'], ['php.md'])
+        self.assertEqual(self.inspect()['contexts'][0]['modules'], ['PHP.md'])
 
     def test_standalone_illuminate_is_not_called_full_app(self):
         self.put('composer.json', {'require': {'illuminate/database': '^10.0'}})
         c = self.inspect()['contexts'][0]
-        self.assertIn('laravel.md', c['modules'])
+        self.assertIn('LARAVEL.md', c['modules'])
         self.assertIn('NOT_INFERRED', c['application_structure'])
 
     def test_composer_aliases_are_explicit(self):

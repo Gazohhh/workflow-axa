@@ -7,9 +7,9 @@ description: "Diagnose workflow-axa installation, global routing, rule coverage,
 
 Inspect without changing the environment. Check package/version, host profile/registrations, global/project routing, duplicate copies, local assets and selected Matt specialists. Return PASS / WARNING / BLOCKED / NOT VERIFIED with evidence and the next step in chat, not a new artifact folder.
 
-Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Validators cannot prove the later claims. Do not install, enable, delete, overwrite or repair anything automatically.
+Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Do not install, enable, delete, overwrite or repair anything automatically.
 
-Verify `python` starts; otherwise warn that hooks cannot run. Repeated approval denials: workflow/SETUP.md "Updating sessions safely". Repeated waiting: inspect goal_status and Stop feedback using workflow/TASK-FOLDER.md "Approval waits and host goals".
+Verify `python` starts; otherwise warn that hooks cannot run. The duplicate-copy guard (`hooks/duplicate_skills.py`) names second skill copies at session start. Codex has no such guard. Repeated approval denials: workflow/SETUP.md "Updating sessions safely". Repeated waiting: inspect goal_status and Stop feedback using workflow/TASK-FOLDER.md "Approval waits and host goals".
 
 ## Global artifact policy
 
@@ -17,14 +17,14 @@ Use workflow/scripts/global_policy.py --check with the actual profile paths. Res
 
 ## Shared rules
 
-Use rule-maker/INSTALLATION.md and scripts/audit_installation.py --check-global with explicit known candidate paths. activate_rules.py --check remains available. Byte comparisons detect mixed copies; names do not. readiness.py inspects bounded inputs but cannot infer adequate rules from file presence. version_facts.py reports static versions, not runtime compatibility. Adequate existing project rules need no migration. Report `rule-maker/scripts/rules_stamp.py <project-root>` (CURRENT, BEHIND with its changes, NONE or AHEAD). Report host-loading and enforcement gaps separately; missing capabilities block dependent work, not diagnosis.
+Use rule-maker/INSTALLATION.md and scripts/audit_installation.py --check-global with explicit known candidate paths. activate_rules.py --check remains available. Byte comparisons detect mixed copies; names do not. readiness.py inspects bounded inputs but cannot infer adequate rules from file presence. version_facts.py reports static versions, not runtime compatibility. Adequate existing project rules pass; migration only through an approved rule-maker proposal. Report `rule-maker/scripts/rules_stamp.py <project-root>` (CURRENT, BEHIND with its changes, NONE or AHEAD). Report host-loading and enforcement gaps separately; missing capabilities block dependent work, not diagnosis.
 
 ## UI and report route
 
-Check local ui-design, shared design.md, CONTRACT.md, VERIFY.md, LIVE-KIT.md and the diff/index helpers. The UI rule forbids new CSS, allows only existing classes (kit or code) and plain HTML only on explicit instruction. Behaviour-only repairs preserving presentation need no complete kit; new UI needs selected approved components/patterns. A sample, filename or tag is not approval.
+Check local ui-design, shared DESIGN.md, CONTRACT.md, VERIFY.md, LIVE-KIT.md and the diff/index helpers. DESIGN.md owns the UI rule (never write CSS). `behaviour-only` repairs preserving presentation need no complete kit; new UI needs selected approved components/patterns. A sample, filename or tag is not approval.
 
-Check codebase-map/kit_bindings.py and its ui-design sibling. Distinguish current story-source observations, declared approval, real capture provenance and actual renderer use. Missing/deleted/stale sources block their selection, not unrelated work. Do not build a kit, refresh approval hashes or create substitute templates. No UI framework or tool-level enforcement is installed.
+Check codebase-map/kit_bindings.py and its ui-design sibling. Distinguish current story-source observations, declared approval, real capture provenance and actual renderer use. Missing/deleted/stale sources block their selection, not unrelated work. Do not build a kit, refresh approval hashes or create substitute templates.
 
 ## Existing records
 
-Report conflicts with preservation of presented reviews or unnecessary bulk migration. Legacy STATUS.md layouts and old review filenames are not setup defects. New approval-ready UI inputs need current kit references; historical reports stay unchanged. Test ordinary prompts, scope changes, resume and delegation on the installed hosts before claiming reliable operation.
+Report conflicts with preservation of presented reports or unnecessary bulk migration. Legacy STATUS.md layouts and old review filenames are not setup defects. New approval-ready UI inputs need current kit references; historical reports stay unchanged. Test ordinary prompts, scope changes, resume and delegation on the installed hosts before claiming reliable operation.

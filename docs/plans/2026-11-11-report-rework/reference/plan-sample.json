@@ -1,0 +1,1296 @@
+{
+ "schema_version": 2,
+ "title": "Duplicate skill copy guard",
+ "revision": "r1",
+ "mode": "compare",
+ "state": "awaiting-approval",
+ "snapshot": {
+  "repository": "workflow-axa",
+  "branch": "main, main checkout, with 18 staged files of the uncommitted rc.35 work",
+  "basis": "Based on reading the hook files, the installed skill folders and this session's skill list on 2026-11-11. The proposed behavior is not built."
+ },
+ "understanding": "The plugin will find a second copy of its skills and ask you to delete it. Change work waits until you do, so that every session gives the same result.",
+ "requirements": [
+  {
+   "id": "R1",
+   "text": "At each session start, look for a workflow-axa skill name that is also visible from the personal or the project skills folder.",
+   "origin": "Owner, 2026-11-11: \"i want to prevent this and ask user to delete this\""
+  },
+  {
+   "id": "R2",
+   "text": "Tell the owner the exact paths and ask for deletion. The guard deletes nothing.",
+   "origin": "Same owner message, 2026-11-11"
+  },
+  {
+   "id": "R3",
+   "text": "While a duplicate exists, refuse to load workflow-clarify, workflow-specify, workflow-execute and bare duplicate names. Read-only skills keep working.",
+   "origin": "Owner answer to Q3: \"Ask and pause changes (Recommended)\""
+  },
+  {
+   "id": "R4",
+   "text": "The words \"continue with duplicates\" in a real user message lift the pause for that session only.",
+   "origin": "Owner answer to Q3: \"Ask and pause changes (Recommended)\""
+  },
+  {
+   "id": "R5",
+   "text": "A copy with equal bytes still counts as a duplicate.",
+   "origin": "Assumption shown at gate one and not rejected, 2026-11-11"
+  },
+  {
+   "id": "R6",
+   "text": "Compare the rules copy that the global instructions import with the plugin's rules. A difference gives a warning and no pause.",
+   "origin": "Assumption shown at gate one and not rejected, 2026-11-11"
+  }
+ ],
+ "boundaries": [
+  "hooks/phase_gate.py and both approval gates stay as they are.",
+  "The folder ~/.agents/skills stays, because Codex and the global rules import use it.",
+  "The 18 staged rc.35 files stay staged. This work adds to them and reverts none."
+ ],
+ "open_decisions": [],
+ "write_paths": [
+  "hooks/duplicate_skills.py",
+  "hooks/hooks.json",
+  "tests/test_duplicate_skills_hook.py",
+  "tests/",
+  "tools/validate.py",
+  "skills/workflow-doctor/SKILL.md",
+  "skills/workflow/SETUP.md",
+  "CHANGELOG.md",
+  ".claude-plugin/plugin.json",
+  ".claude-plugin/marketplace.json",
+  "skills/rule-maker/rules/version.json",
+  "README.md",
+  "UPGRADE.md",
+  "VALIDATION.md"
+ ],
+ "sources": [
+  {
+   "id": "S1",
+   "path": "docs/plans/2026-11-11-duplicate-skill-guard/PLAN.md",
+   "role": "plan"
+  },
+  {
+   "id": "S2",
+   "path": "docs/plans/2026-11-11-duplicate-skill-guard/TODO.md",
+   "role": "todo"
+  },
+  {
+   "id": "S3",
+   "path": "docs/plans/2026-11-11-duplicate-skill-guard/FINDINGS.md",
+   "role": "findings"
+  },
+  {
+   "id": "S4",
+   "path": "docs/plans/2026-11-11-duplicate-skill-guard/DECISIONS.md",
+   "role": "decisions"
+  },
+  {
+   "id": "S5",
+   "path": "hooks/hooks.json",
+   "role": "code"
+  }
+ ],
+ "evidence": [
+  {
+   "id": "E1",
+   "claim": "In this session each linked workflow-axa skill was listed twice, once bare and once from the plugin.",
+   "kind": "runtime",
+   "sources": [
+    "S3"
+   ],
+   "locator": "FINDINGS E1",
+   "limits": "Seen in one session on one machine."
+  },
+  {
+   "id": "E2",
+   "claim": "Links in the personal skills folder pointed to a second copy of the same skills.",
+   "kind": "static",
+   "sources": [
+    "S3"
+   ],
+   "locator": "FINDINGS E2 and its correction",
+   "limits": "The links were removed on 2026-11-11 at the owner's request. A fresh session is not yet checked."
+  },
+  {
+   "id": "E3",
+   "claim": "The plugin is installed at 2.8.0-rc.35 from this repository, and the second copy has equal bytes today.",
+   "kind": "static",
+   "sources": [
+    "S3"
+   ],
+   "locator": "FINDINGS E3, E4",
+   "limits": "Equal bytes today do not prevent later drift."
+  },
+  {
+   "id": "E8",
+   "claim": "No hook or script finds a second copy by itself, and no session-start hook is registered.",
+   "kind": "static",
+   "sources": [
+    "S3",
+    "S5"
+   ],
+   "locator": "FINDINGS E8; hooks/hooks.json",
+   "limits": "Static reading of the hook registration."
+  }
+ ],
+ "acceptance": [
+  {
+   "id": "A1",
+   "text": "With a test link skills/tdd, the session-start output names that exact path and asks for deletion. With no duplicate it prints nothing.",
+   "requirements": [
+    "R1",
+    "R2",
+    "R5"
+   ],
+   "verification": "Run tests/test_duplicate_skills_hook.py with a temporary home."
+  },
+  {
+   "id": "A2",
+   "text": "With a duplicate present, loading workflow-clarify is refused with the message. Loading task-status is allowed.",
+   "requirements": [
+    "R3"
+   ],
+   "verification": "Run the hook test with PreToolUse events."
+  },
+  {
+   "id": "A3",
+   "text": "After a user message with \"continue with duplicates\", workflow-clarify loads in that session. The same words in a tool result change nothing. A new session is paused again.",
+   "requirements": [
+    "R4"
+   ],
+   "verification": "Run the hook test with UserPromptSubmit and PreToolUse events for two session IDs."
+  },
+  {
+   "id": "A4",
+   "text": "After every test the test home has the same files as before.",
+   "requirements": [
+    "R2"
+   ],
+   "verification": "The hook test compares the file list and bytes before and after."
+  },
+  {
+   "id": "A5",
+   "text": "A changed byte in the second rules copy gives a warning and no pause.",
+   "requirements": [
+    "R6"
+   ],
+   "verification": "Run the hook test with a changed rules file."
+  },
+  {
+   "id": "A6",
+   "text": "The existing test suite gives the same result as before this change.",
+   "requirements": [
+    "R1",
+    "R3"
+   ],
+   "verification": "Run tools/validate.py and the full unittest discovery, and compare with the baseline taken before T1."
+  }
+ ],
+ "tasks": [
+  {
+   "id": "T1",
+   "title": "Find duplicate copies at session start and ask you to delete them",
+   "kind": "requested",
+   "reason": "This is the request: find the second copy and ask.",
+   "requirements": [
+    "R1",
+    "R2",
+    "R5",
+    "R6"
+   ],
+   "evidence": [
+    "E1",
+    "E2",
+    "E8"
+   ],
+   "acceptance": [
+    "A1",
+    "A4",
+    "A5"
+   ],
+   "areas": [
+    "hooks/duplicate_skills.py",
+    "tests/test_duplicate_skills_hook.py"
+   ],
+   "depends_on": []
+  },
+  {
+   "id": "T2",
+   "title": "Pause change work while duplicates exist, with a one-session override",
+   "kind": "requested",
+   "reason": "The owner chose to pause change work so that a wrong copy cannot be used unnoticed.",
+   "requirements": [
+    "R3",
+    "R4"
+   ],
+   "evidence": [
+    "E2"
+   ],
+   "acceptance": [
+    "A2",
+    "A3",
+    "A4"
+   ],
+   "areas": [
+    "hooks/duplicate_skills.py",
+    "tests/test_duplicate_skills_hook.py"
+   ],
+   "depends_on": [
+    "T1"
+   ]
+  },
+  {
+   "id": "T3",
+   "title": "Register the guard, document it and release it as rc.36",
+   "kind": "prerequisite",
+   "reason": "Without registration the script never runs in a real session.",
+   "requirements": [
+    "R1",
+    "R3"
+   ],
+   "evidence": [
+    "E3",
+    "E8"
+   ],
+   "acceptance": [
+    "A6"
+   ],
+   "areas": [
+    "hooks/hooks.json",
+    "tools/validate.py",
+    "skills/workflow-doctor/SKILL.md",
+    "skills/workflow/SETUP.md",
+    "CHANGELOG.md",
+    "version files"
+   ],
+   "depends_on": [
+    "T2"
+   ]
+  }
+ ],
+ "graphs": [
+  {
+   "id": "proposed",
+   "kind": "proposed",
+   "purpose": "flow",
+   "tab": "Session start",
+   "title": "What happens when a session starts",
+   "description": "Runs at every session start.",
+   "width": 840,
+   "height": 624,
+   "nodes": [
+    {
+     "id": "N1",
+     "label": "Session starts",
+     "note": "",
+     "shape": "start",
+     "x": 104,
+     "y": 32,
+     "width": 288,
+     "height": 64,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "N2",
+     "label": "Guard checks skill folders",
+     "note": "Personal and project",
+     "shape": "action",
+     "x": 96,
+     "y": 144,
+     "width": 304,
+     "height": 88,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2",
+      "E8"
+     ],
+     "tasks": [
+      "T1"
+     ],
+     "highlight": false
+    },
+    {
+     "id": "N3",
+     "label": "Duplicate\nfound?",
+     "note": "",
+     "shape": "decision",
+     "x": 120,
+     "y": 280,
+     "width": 256,
+     "height": 160,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T1"
+     ],
+     "highlight": true
+    },
+    {
+     "id": "N4",
+     "label": "Agent asks you to delete",
+     "note": "Exact paths, nothing deleted",
+     "shape": "result",
+     "x": 504,
+     "y": 312,
+     "width": 304,
+     "height": 96,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T1"
+     ],
+     "highlight": true
+    },
+    {
+     "id": "N5",
+     "label": "Session continues",
+     "note": "Nothing is shown",
+     "shape": "result",
+     "x": 104,
+     "y": 520,
+     "width": 288,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    }
+   ],
+   "edges": [
+    {
+     "from": "N1",
+     "to": "N2",
+     "label": "",
+     "points": [
+      [
+       248,
+       96
+      ],
+      [
+       248,
+       144
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [
+      "T1"
+     ]
+    },
+    {
+     "from": "N2",
+     "to": "N3",
+     "label": "",
+     "points": [
+      [
+       248,
+       232
+      ],
+      [
+       248,
+       280
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T1"
+     ]
+    },
+    {
+     "from": "N3",
+     "to": "N4",
+     "label": "Yes",
+     "points": [
+      [
+       376,
+       360
+      ],
+      [
+       504,
+       360
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      440,
+      340
+     ]
+    },
+    {
+     "from": "N3",
+     "to": "N5",
+     "label": "No",
+     "points": [
+      [
+       248,
+       440
+      ],
+      [
+       248,
+       520
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      284,
+      484
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pause",
+   "kind": "proposed",
+   "purpose": "flow",
+   "tab": "Skill load",
+   "title": "What happens when a change skill is requested",
+   "description": "Runs each time workflow-clarify, workflow-specify or workflow-execute is requested.",
+   "width": 840,
+   "height": 496,
+   "nodes": [
+    {
+     "id": "N1",
+     "label": "Change skill requested",
+     "note": "Clarify, specify or execute",
+     "shape": "start",
+     "x": 16,
+     "y": 32,
+     "width": 272,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "N2",
+     "label": "Duplicate\nstill there?",
+     "note": "",
+     "shape": "decision",
+     "x": 40,
+     "y": 168,
+     "width": 224,
+     "height": 144,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "highlight": true
+    },
+    {
+     "id": "N3",
+     "label": "Override given\nthis session?",
+     "note": "",
+     "shape": "decision",
+     "x": 320,
+     "y": 168,
+     "width": 240,
+     "height": 144,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "highlight": false
+    },
+    {
+     "id": "N4",
+     "label": "Skill loads",
+     "note": "This session only",
+     "shape": "result",
+     "x": 632,
+     "y": 192,
+     "width": 176,
+     "height": 96,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "highlight": false
+    },
+    {
+     "id": "N5",
+     "label": "Skill loads",
+     "note": "Work continues",
+     "shape": "result",
+     "x": 40,
+     "y": 392,
+     "width": 224,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "N6",
+     "label": "Skill is refused",
+     "note": "Delete the copies, or say the words",
+     "shape": "result",
+     "x": 296,
+     "y": 392,
+     "width": 288,
+     "height": 88,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "highlight": true
+    }
+   ],
+   "edges": [
+    {
+     "from": "N1",
+     "to": "N2",
+     "label": "",
+     "points": [
+      [
+       152,
+       120
+      ],
+      [
+       152,
+       168
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [
+      "T2"
+     ]
+    },
+    {
+     "from": "N2",
+     "to": "N3",
+     "label": "Yes",
+     "points": [
+      [
+       264,
+       240
+      ],
+      [
+       320,
+       240
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "label_position": [
+      292,
+      220
+     ]
+    },
+    {
+     "from": "N3",
+     "to": "N4",
+     "label": "Yes",
+     "points": [
+      [
+       560,
+       240
+      ],
+      [
+       632,
+       240
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "label_position": [
+      596,
+      220
+     ]
+    },
+    {
+     "from": "N2",
+     "to": "N5",
+     "label": "No",
+     "points": [
+      [
+       152,
+       312
+      ],
+      [
+       152,
+       392
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "label_position": [
+      188,
+      356
+     ]
+    },
+    {
+     "from": "N3",
+     "to": "N6",
+     "label": "No",
+     "points": [
+      [
+       440,
+       312
+      ],
+      [
+       440,
+       392
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [
+      "T2"
+     ],
+     "label_position": [
+      476,
+      356
+     ]
+    }
+   ]
+  },
+  {
+   "id": "context",
+   "kind": "proposed",
+   "purpose": "structure",
+   "tab": "System context",
+   "title": "Where the guard sits",
+   "description": "The guard only reads. It changes no file.",
+   "width": 840,
+   "height": 480,
+   "nodes": [
+    {
+     "id": "C1",
+     "label": "You",
+     "note": "",
+     "shape": "start",
+     "x": 24,
+     "y": 32,
+     "width": 176,
+     "height": 88,
+     "basis": "proposed",
+     "change": "unchanged",
+     "evidence": [],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "C2",
+     "label": "Claude Code session",
+     "note": "Loads skills, runs hooks",
+     "shape": "action",
+     "x": 280,
+     "y": 32,
+     "width": 304,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "C3",
+     "label": "Duplicate guard",
+     "note": "New hook script in the plugin",
+     "shape": "action",
+     "x": 264,
+     "y": 200,
+     "width": 336,
+     "height": 88,
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [
+      "T1",
+      "T2",
+      "T3"
+     ],
+     "highlight": true
+    },
+    {
+     "id": "C4",
+     "label": "Personal skills",
+     "note": "Can hold a second copy",
+     "shape": "action",
+     "x": 24,
+     "y": 376,
+     "width": 240,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E2"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "C5",
+     "label": "Project skills",
+     "note": ".claude/skills",
+     "shape": "action",
+     "x": 300,
+     "y": 376,
+     "width": 240,
+     "height": 88,
+     "basis": "proposed",
+     "change": "unchanged",
+     "evidence": [],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "C6",
+     "label": "Rules copy",
+     "note": "Global instructions import it",
+     "shape": "action",
+     "x": 576,
+     "y": 376,
+     "width": 248,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E3"
+     ],
+     "tasks": [],
+     "highlight": false
+    }
+   ],
+   "edges": [
+    {
+     "from": "C1",
+     "to": "C2",
+     "label": "messages",
+     "points": [
+      [
+       200,
+       60
+      ],
+      [
+       280,
+       60
+      ]
+     ],
+     "basis": "proposed",
+     "change": "unchanged",
+     "evidence": [],
+     "tasks": [],
+     "label_position": [
+      240,
+      40
+     ]
+    },
+    {
+     "from": "C2",
+     "to": "C1",
+     "label": "requests",
+     "points": [
+      [
+       280,
+       92
+      ],
+      [
+       200,
+       92
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      240,
+      128
+     ]
+    },
+    {
+     "from": "C2",
+     "to": "C3",
+     "label": "runs",
+     "points": [
+      [
+       384,
+       120
+      ],
+      [
+       384,
+       200
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T3"
+     ],
+     "label_position": [
+      344,
+      164
+     ]
+    },
+    {
+     "from": "C3",
+     "to": "C2",
+     "label": "paths, refusal",
+     "points": [
+      [
+       480,
+       200
+      ],
+      [
+       480,
+       120
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T1",
+      "T2"
+     ],
+     "label_position": [
+      556,
+      164
+     ]
+    },
+    {
+     "from": "C3",
+     "to": "C4",
+     "label": "reads",
+     "points": [
+      [
+       336,
+       288
+      ],
+      [
+       336,
+       332
+      ],
+      [
+       144,
+       332
+      ],
+      [
+       144,
+       376
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      236,
+      316
+     ]
+    },
+    {
+     "from": "C3",
+     "to": "C5",
+     "label": "reads",
+     "points": [
+      [
+       420,
+       288
+      ],
+      [
+       420,
+       376
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      460,
+      340
+     ]
+    },
+    {
+     "from": "C3",
+     "to": "C6",
+     "label": "compares",
+     "points": [
+      [
+       504,
+       288
+      ],
+      [
+       504,
+       332
+      ],
+      [
+       700,
+       332
+      ],
+      [
+       700,
+       376
+      ]
+     ],
+     "basis": "proposed",
+     "change": "added",
+     "evidence": [],
+     "tasks": [
+      "T1"
+     ],
+     "label_position": [
+      604,
+      316
+     ]
+    }
+   ]
+  },
+  {
+   "id": "current",
+   "kind": "current",
+   "purpose": "flow",
+   "tab": "Current flow",
+   "title": "Today: nobody is told about a second copy",
+   "description": "Found by reading the installed folders and the skill list of this session.",
+   "width": 840,
+   "height": 408,
+   "nodes": [
+    {
+     "id": "N1",
+     "label": "Session starts",
+     "note": "No check of skill places",
+     "shape": "start",
+     "x": 268,
+     "y": 32,
+     "width": 304,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "N2",
+     "label": "Skills load",
+     "note": "From the plugin and other folders",
+     "shape": "action",
+     "x": 268,
+     "y": 168,
+     "width": 304,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E2",
+      "E3"
+     ],
+     "tasks": [],
+     "highlight": false
+    },
+    {
+     "id": "N3",
+     "label": "Skill listed twice",
+     "note": "Copies can differ",
+     "shape": "result",
+     "x": 268,
+     "y": 304,
+     "width": 304,
+     "height": 88,
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": [],
+     "highlight": false
+    }
+   ],
+   "edges": [
+    {
+     "from": "N1",
+     "to": "N2",
+     "label": "",
+     "points": [
+      [
+       420,
+       120
+      ],
+      [
+       420,
+       168
+      ]
+     ],
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E8"
+     ],
+     "tasks": []
+    },
+    {
+     "from": "N2",
+     "to": "N3",
+     "label": "",
+     "points": [
+      [
+       420,
+       256
+      ],
+      [
+       420,
+       304
+      ]
+     ],
+     "basis": "observed",
+     "change": "unchanged",
+     "evidence": [
+      "E1"
+     ],
+     "tasks": []
+    }
+   ]
+  }
+ ],
+ "default_view": "proposed",
+ "comparison": [
+  {
+   "label": "A second copy exists",
+   "current": "Nobody is told. Every skill is listed twice.",
+   "proposed": "The first reply names the exact paths and asks you to delete them.",
+   "requirements": [
+    "R1",
+    "R2",
+    "R5"
+   ],
+   "evidence": [
+    "E1",
+    "E2",
+    "E8"
+   ],
+   "tasks": [
+    "T1",
+    "T3"
+   ]
+  },
+  {
+   "label": "Change work with a second copy",
+   "current": "It runs, and can mix skills from two copies.",
+   "proposed": "It waits until the copies are deleted or you say \"continue with duplicates\".",
+   "requirements": [
+    "R3",
+    "R4"
+   ],
+   "evidence": [
+    "E2"
+   ],
+   "tasks": [
+    "T2",
+    "T3"
+   ]
+  },
+  {
+   "label": "Rules copy differs",
+   "current": "Only found when someone runs the audit script.",
+   "proposed": "A warning at session start. Work is not paused.",
+   "requirements": [
+    "R6"
+   ],
+   "evidence": [
+    "E3"
+   ],
+   "tasks": [
+    "T1"
+   ]
+  }
+ ],
+ "task_report": {
+  "phase": "planning",
+  "screen_change": "none",
+  "agreement": {
+   "status": "approved",
+   "revision": "r1",
+   "response": "yes",
+   "summary": "You agreed to the behavior in agreement r1 on 2026-11-11.",
+   "source": "S1",
+   "locator": "PLAN.md, Current checkpoint, Agreement line; DECISIONS D6"
+  },
+  "sections": [
+   {
+    "id": "request",
+    "title": "The request",
+    "source": "S1",
+    "locator": "PLAN.md, Goal and acceptance",
+    "text": "You saw every workflow-axa skill twice, for the second time. Two copies can differ, and then two sessions give different results.\n\nYou asked for a check that finds a second copy and asks you to delete it."
+   },
+   {
+    "id": "goals",
+    "title": "Goals",
+    "source": "S1",
+    "locator": "PLAN.md, Agreement, Requirements R1 to R6",
+    "text": "Find a second copy of any workflow-axa skill at every session start.\n\nName the exact paths and ask you to delete them.\n\nHold the skills that change a project until the copies are gone. Read-only work continues.\n\nLet you lift the pause for one session with the words \"continue with duplicates\".\n\nWarn when the imported rules copy differs from the rules of the plugin."
+   },
+   {
+    "id": "non-goals",
+    "title": "Non-goals",
+    "source": "S1",
+    "locator": "PLAN.md, Agreement, Not included",
+    "text": "Deleting a copy automatically. The guard deletes nothing.\n\nCodex support. Codex has no hooks.\n\nCleanup of old versions in the plugin cache.\n\nRepair of the 17 broken links.\n\nThe five review findings. They are a separate second task."
+   },
+   {
+    "id": "specification",
+    "title": "How it is built",
+    "source": "S2",
+    "locator": "TODO.md, Tickets",
+    "text": "One new hook script does all of it. It reads the skill names from the plugin's own list, so there is no second list to maintain.\n\nThe script runs at three moments: when a session starts, when a skill is loaded, and when you send a message. The existing approval hook is not changed.\n\nA defect in the guard must never block work. On bad input the script allows the action and prints nothing."
+   },
+   {
+    "id": "decisions",
+    "title": "Decisions",
+    "source": "S4",
+    "locator": "DECISIONS.md, D1 to D5 and Options not chosen",
+    "text": "Build on top of the staged rc.35 work and leave it staged. Not chosen: commit rc.35 first, which publishes an unfinished release under this task.\n\nDelete the duplicate links and keep the plugin and ~/.agents/skills. Not chosen: delete nothing, which keeps every skill listed twice.\n\nThe agent removed 6 more links of the same kind than the 15 you approved, because its first count was cut off. Leaving them kept the duplicate you asked to remove. This is decision D3.\n\nThe guard asks and pauses change work, with a one-session override. Not chosen: warn only, because the agent could still load the wrong copy unnoticed. Not chosen: block all workflow use, because one stale link could stop urgent work.\n\nThe guard is a new script. Not chosen: change hooks/phase_gate.py, because that file carries open approval defects you asked not to touch.\n\nThe guard reads the skill names from plugin.json. Not chosen: a fixed list of names in the script, because plugin.json already is that list."
+   },
+   {
+    "id": "risks",
+    "title": "Risks and limits",
+    "source": "S3",
+    "locator": "FINDINGS.md, Break-it pass",
+    "text": "Without Python no hook runs, so the guard does not run. Codex has no hooks, so the guard does not run there.\n\nThe tests run the script with test events. They cannot show how a real Claude Code session displays the message. You check that after you install rc.36."
+   },
+   {
+    "id": "testing",
+    "title": "How it is tested",
+    "source": "S2",
+    "locator": "TODO.md, How to verify and Bigger checks",
+    "text": "Each behavior gets a test first. The tests run the script as a process with a temporary home folder, and compare that folder before and after.\n\nThe full existing suite runs before the first change and after the last one. The two results must be equal, apart from the new tests."
+   }
+  ],
+  "tickets": [
+   {
+    "task": "T1",
+    "source": "S2",
+    "locator": "TODO.md, T1",
+    "specification": "Add hooks/duplicate_skills.py. At session start it looks in the personal skills folder and in the project's .claude/skills for a name the plugin registers. It also compares the imported rules copy with the plugin's rules.",
+    "expected": "A duplicate with equal bytes is still reported. A broken link is not reported."
+   },
+   {
+    "task": "T2",
+    "source": "S2",
+    "locator": "TODO.md, T2",
+    "specification": "Extend the same script. When a change skill is loaded and a duplicate exists, it refuses. A user message with \"continue with duplicates\" stores an override for that session.",
+    "expected": "The refusal names the paths and both ways out. task-status and workflow-doctor still load. After you delete the copies, the next call is allowed without a restart."
+   },
+   {
+    "task": "T3",
+    "source": "S2",
+    "locator": "TODO.md, T3",
+    "specification": "Register the script in hooks/hooks.json for session start, skill loading and user messages. Add it to the package check, describe it in workflow-doctor and SETUP.md, and set version 2.8.0-rc.36.",
+    "expected": "Existing hook registrations stay unchanged."
+   }
+  ],
+  "checks": [],
+  "acceptance_results": [],
+  "attention": [
+   {
+    "text": "The agent removed 6 more duplicate links than the 15 you approved.",
+    "source": "S4",
+    "locator": "DECISIONS.md, D3"
+   }
+  ]
+ }
+}

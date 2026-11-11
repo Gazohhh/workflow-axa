@@ -2,6 +2,17 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.7 (2026-11-11)
+
+- The one-word modules are renamed to capitals: DESIGN.md, REACT.md, PHP.md, OPERATIONS.md and the other sixteen. Their rules did not change. A one-word Markdown document name is written in capitals (rule-maker DOCS.md). **Project action:** update project links to a module, such as design.md, to its new name; rename a project's own one-word documents with `git mv` at the next audit.
+
+## 1.8.6 (2026-11-11)
+
+- READINESS.md: run `scripts/docs_check.py` and use its facts as advisory input. READY stays the agent's judgment. Two documentation conditions block: a broken link to a required-read document, and a contradiction the agent judges unsafe to build on. Every other finding is reported and never blocks by itself. In the rule-maker structure, AGENTS.md is the entry point and CLAUDE.md imports it. Valid existing rules still pass in their current files and shape. **Project action:** none. Fix a broken required-read link before the next workflow task.
+- design.md rule 4: an element is chosen by the job it does for the same user. That user comes from the task's purpose statement. Without a task, the user and goal that the request or CONTEXT.md names stand in for it. The reason for the choice is recorded. The job only chooses among existing elements and never permits a new style. **Project action:** reword project UI rules that choose an element by its look alone; otherwise none.
+- design.md: a change on the small change route (workflow VISUAL-REVIEW.md "Small change") needs no screen diagram. Every other UI-visible change still shows one. **Project action:** none.
+- CORE.md, START.md and the other rules files: wording and American spelling only. Release history is removed. Notes on what a check does not prove moved to the package's docs/EVALUATION.md. No rule changed. CORE.md's UI sentence is unchanged. START.md now points to design.md for the UI rules and keeps examples of them. **Project action:** none.
+
 ## 1.8.5 (2026-11-06)
 
 - CORE.md: after the exact mimic question, list only same-tag existing elements and nothing else (no plain-HTML or add-a-style alternatives). **Project action:** none.

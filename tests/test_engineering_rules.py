@@ -14,23 +14,23 @@ r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
 class EngineeringRulesTests(unittest.TestCase):
     def test_new_modules_are_in_the_integrity_manifest(self):
         data=json.loads((RULES/'version.json').read_text())
-        for name in ('ENGINEERING.md','VERSIONS.md','data-contracts.md','lifetimes.md','reliability.md','testing.md','security.md','performance.md','compatibility.md','php.md','laravel.md','rust.md'):
+        for name in ('ENGINEERING.md','VERSIONS.md','data-contracts.md','LIFETIMES.md','RELIABILITY.md','TESTING.md','SECURITY.md','PERFORMANCE.md','COMPATIBILITY.md','PHP.md','LARAVEL.md','RUST.md'):
             self.assertIn(name,data['files']);self.assertIn(name,data['sha256'])
-        self.assertEqual(data['rules_version'],'1.8.5')
+        self.assertEqual(data['rules_version'],'1.8.7')
 
     def test_core_has_no_universal_nesting_or_comment_quota(self):
         text=(RULES/'CORE.md').read_text()
         self.assertIn('No arbitrary universal',text)
-        self.assertIn('not authorise a repository-wide cleanup',text)
+        self.assertIn('not authorize a repository-wide cleanup',text)
         self.assertIn('**default**',text)
         self.assertLessEqual(len(text.split()),650)
 
     def test_selective_loading_and_rust_boundary(self):
         start=(RULES/'START.md').read_text()
-        for name in ('ENGINEERING.md','VERSIONS.md','php.md','laravel.md','rust.md'):
+        for name in ('ENGINEERING.md','VERSIONS.md','PHP.md','LARAVEL.md','RUST.md'):
             self.assertIn(name,start)
-        self.assertIn('Load only for actual Rust work',(RULES/'rust.md').read_text())
-        self.assertIn('Chromium-only',(RULES/'rust.md').read_text())
+        self.assertIn('Load only for actual Rust work',(RULES/'RUST.md').read_text())
+        self.assertIn('Chromium-only',(RULES/'RUST.md').read_text())
 
     def test_engineering_modules_have_applicability_checks_and_sources(self):
         for name in ('data-contracts','lifetimes','reliability','testing','security','performance','compatibility'):
@@ -41,10 +41,10 @@ class EngineeringRulesTests(unittest.TestCase):
             self.assertLessEqual(len(text.split()),450,name)
 
     def test_laravel_preserves_old_structure_and_version_choice(self):
-        text=(RULES/'laravel.md').read_text()
-        for fragment in ('older application structure','No automatic migration or upgrade','php.md','versions','parameter'):
+        text=(RULES/'LARAVEL.md').read_text()
+        for fragment in ('older application structure','No automatic migration or upgrade','PHP.md','versions','parameter'):
             if fragment=='versions':self.assertIn('VERSIONS.md',text)
-            elif fragment=='parameter':self.assertIn('authorise',text)
+            elif fragment=='parameter':self.assertIn('authorize',text)
             else:self.assertIn(fragment,text)
 
     def test_versions_distinguishes_runtime_platform_and_lock(self):

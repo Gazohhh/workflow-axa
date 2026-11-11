@@ -1,3 +1,3 @@
 interface:
   display_name: "Workflow specify"
-  short_description: "Write tickets and test seams, then approve the HTML plan"
+  short_description: "Write tickets and test seams, then get the plan report approved"

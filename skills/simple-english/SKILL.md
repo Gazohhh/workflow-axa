@@ -84,7 +84,7 @@ These rules are for facts and instructions, not marketing copy or brand writing,
 workflow-axa uses this skill for text a person reads: every HTML report (plan, progress, delivery) and the chat messages that hand them over. Plain mode only.
 
 - **Reports are documents.** Apply "The Document" rules to every prose field of the report JSON: the understanding line, section texts, ticket specifications and expected results, acceptance notes, check expectations, results and limits, decision summaries, risks. Run its self-check on that text before rendering.
-- **Never change what must stay exact:** identifiers, file paths, commands, quoted user words (double-quoted or in backticks), decision records, report values (`verified`, `partial` and so on), and design.md rule 4's question, which is quoted word for word.
+- **Never change what must stay exact:** identifiers, file paths, commands, quoted user words (double-quoted or in backticks), decision records, report values (`verified`, `partial` and so on), and DESIGN.md rule 4's question, which is quoted word for word.
 - **Keep the project's names.** One word, one meaning applies, but the project's and the workflow's established terms win (ticket, agreement, gate, acceptance). Do not swap them for synonyms.
 - **Chat messages:** "The Reply" rules 2 to 6 apply: no contractions ("do not", not "don't"), no semicolons, no filler. Rule 1 (prose only) yields to the workflow's required formats: numbered questions with options, short lists of three or more items, and the closing state line ("**Waiting on you:**", "**Running:**", "**Done.**").
 - **Facts first, no padding.** A sentence that states no fact, check or decision is deleted, not reworded.

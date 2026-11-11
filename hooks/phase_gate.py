@@ -7,8 +7,9 @@ counted as permission, chat text granted the lightweight route, and many shell w
 - The gate is active once the session typed or loaded the workflow router or a phase skill. Loading a phase grants
   nothing by itself.
 - Each written target is judged on its own, with `..` resolved and after any `cd`. Free: task records and output
-  (`docs/plans/**`, `.artifacts/**` of the target's worktree), anything outside the project (the cwd's worktree and
-  the other worktrees of the same repository), and rule files while rule-maker is loaded.
+  (`docs/plans/**`, `.artifacts/**` of the target's worktree, and a fixture repository with its own `.git` inside the
+  project's `.artifacts`), anything outside the project (the cwd's worktree and the other worktrees of the same
+  repository), and rule files while rule-maker is loaded.
 - Every other write, and every git write, needs the current task: the `docs/plans/<task>/` the session last wrote
   records in or the user named, looked up inside the target's git worktree. Its PLAN.md checkpoint must either list
   the file on a `- Lightweight edit: <files> — <why>` line (which also allows a `git commit` of only those files
@@ -18,6 +19,17 @@ counted as permission, chat text granted the lightweight route, and many shell w
   session of the project, so a resumed task keeps its approval). A real user message is one the user typed (also
   while the agent was working), or the choice they picked in AskUserQuestion; tool output, meta entries,
   subagent prompts and hand-backs never count.
+- Git commands that write files (`git apply <patch>`, `git checkout ... -- <files>`, `git restore <files>`) are also
+  judged per file like an Edit; the files of `git apply` come from the patch headers, and a patch the gate cannot read
+  is refused (H3, D36). A record of another approved task with its own write_paths does not stop a file write that
+  only the earlier task's write_paths cover (H3, Q17).
+- Small-change route (H4, R11): in a task with no plan report, a valid `- Small change: <files> — <what changes>` line
+  (comma-separated, repository-relative, existing files; no folders or wildcards) allows writes to exactly those files
+  once the Approval line quotes a whole real user message (or AskUserQuestion answer) that came after an offer: a
+  `Small change: <files> — <what changes>` line (also wholly in inline code) in an assistant message or delivered question, shown while the task
+  was current, with exactly the same file set. Other files, new files, deletions, moves, writes the gate cannot match
+  to a file, and git writes outside the Lightweight-edit commit rule are refused with the full-route message. An
+  invalid line counts as absent, and the refusal says why.
 - A transcript that exists but cannot be read blocks the explicit edit tools. No transcript path: allowed.
 - Install guard: in a session the gate is active for, package installs and npx-style downloads need the user's
   latest words (message, AskUserQuestion answer or slash-command arguments) to allow installing.
@@ -59,6 +71,11 @@ APPROVAL = re.compile(r'^\s*[-*]\s*Approval\b[^:\n]*:(.*)$', re.M)
 # A resumed task's later confirmation of the same revision: `- Reconfirmed (gate two): r1, <date>: "<words>"`.
 RECONFIRMED = re.compile(r'^\s*[-*]\s*Reconfirmed\b[^:\n]*:(.*)$', re.M)
 LIGHT_LINE = re.compile(r'^\s*[-*]\s*Lightweight edit:\s*(.+)$', re.M | re.I)
+# H4 (R11, A15): `- Small change: <files> — <what changes>`, and the assistant message that offers it to the owner.
+SMALL_LINE = re.compile(r'^\s*[-*]\s*Small change:[ \t]*(.*)$', re.M | re.I)
+# An offer is a line of the same form, optionally a list item, quoted or in bold: `**Small change:** a.ts — x`.
+# V2: a line wholly wrapped in one inline-code span loses one leading and the matching trailing backtick.
+SMALL_OFFER_LINE = re.compile(r'^[ \t>*_-]*(`)?[ \t>*_-]*Small change:[*_]*[ \t]*(.*?)(?(1)`)[ \t\r]*$', re.M | re.I)
 NEGATIVE = re.compile(r'\b(?:not|never|no)\s+(?:yet\s+)?(?:approved|waived|given)\b|\bunapproved\b|\bproposed\b'
                       r'|\bpending\b|\bawaiting\b|\brevoked\b|\bwithdrawn\b', re.I)
 POSITIVE = re.compile(r'\b(?:approved|waived|legacy)\b', re.I)
@@ -88,6 +105,8 @@ POSIX_WRITERS = ('tee', 'touch', 'truncate', 'mkdir', 'md')
 REMOVERS = ('rm', 'del', 'erase', 'rd', 'rmdir', 'remove-item', 'ri', 'unlink', 'shred')
 COPIERS = ('cp', 'copy', 'copy-item', 'cpi', 'install', 'rsync')
 MOVERS = ('mv', 'move', 'move-item', 'mi', 'ren', 'rename-item', 'rni')
+# H4: label words that mark a write as a deletion (or emptying) or as a move, for the small-change route.
+DELETING, MOVING = ' deleting ', ' moving or renaming '
 PS_TARGET = ('path', 'literalpath', 'filepath', 'destination', 'dest', 'pspath', 'lp')
 PS_VALUE = PS_TARGET + ('value', 'encoding', 'itemtype', 'type', 'filter', 'include', 'exclude', 'name', 'newname',
                         'erroraction', 'stream', 'width', 'inputobject', 'credential', 'delimiter', 'warningaction')
@@ -192,6 +211,16 @@ class Project:
 
     def root_of(self, path: str) -> str:
         return worktree(path) or self.root
+
+    def is_record(self, path: str) -> bool:
+        """Task records and output of the target's worktree. V2: a disposable fixture repository (its own `.git`) in
+        the project's own .artifacts folder is output too; a linked worktree of this repository there is not."""
+        tree = self.root_of(path)
+        if RECORD.match(relative(path, tree)):
+            return True
+        return (bool(self.root) and key(tree) != key(self.root) and under(path, self.root)
+                and bool(re.match(r'\.artifacts(?:/|$)', relative(path, self.root), re.I))
+                and not (self.common and common_dir(tree) == self.common))
 
 
 # Shell commands
@@ -383,7 +412,114 @@ def git_writes(args: list[str], here: str) -> list[tuple[str, str, str]]:
     shown = {'reset': ' --hard', 'branch': ' -D', 'worktree': ' add'}.get(sub, '')
     if sub == 'commit' and any(a == '--amend' for a in rest):
         shown = ' --amend'  # rewrites an earlier commit: never a lightweight commit
-    return [('git', repo, f"`git {sub}{shown}`")]
+    files = git_file_writes(sub, rest, repo)
+    return [('git', repo, f"`git {sub}{shown}`" + (GIT_FILE_WRITE if files else ''))] + files
+
+
+GIT_FILE_WRITE = ' of files'  # marks the git target of a command whose written files are separate path targets (H3)
+
+
+GIT_APPLY_VALUES = ('--whitespace', '--exclude', '--include', '--directory', '--build-fake-ancestor')
+GIT_RESTORE_VALUES = ('-s', '--source', '--conflict')
+
+
+def git_file_writes(sub: str, rest: list[str], repo: str) -> list[tuple[str, str, str]]:
+    """H3 (D36): the files `git apply`, `git checkout ... -- <files>` and `git restore <files>` write, as path targets
+    judged like an Edit (approval and write_paths). A patch the gate cannot read becomes a 'refused' target."""
+    top = worktree(repo) or repo
+    if sub == 'checkout' and '--' in rest:
+        return [('path', absolute(f, repo), f'`git checkout` of {f}') for f in rest[rest.index('--') + 1:]]
+    if sub == 'restore':
+        files, skip, literal = [], False, False
+        for arg in rest:
+            if skip:
+                skip = False
+            elif literal or not arg.startswith('-'):
+                files.append(arg)
+            elif arg == '--':
+                literal = True
+            elif arg in GIT_RESTORE_VALUES:
+                skip = True
+        return [('path', absolute(f, repo), f'`git restore` of {f}') for f in files]
+    if sub != 'apply' or (set(rest) & {'--check', '--stat', '--numstat', '--summary'} and '--apply' not in rest):
+        return []  # a report on the patch stays an approval-only git write, as before H3 (owner: preserve protections)
+    patches, strip, prefix, value_of = [], 1, '', None
+    for arg in rest:
+        if value_of == '-p' and arg.isdigit():
+            strip = int(arg)
+        elif value_of == '--directory':
+            prefix = arg.strip('/') + '/'
+        elif value_of:
+            pass  # the value of another option, such as --whitespace nowarn
+        elif arg in GIT_APPLY_VALUES or arg == '-p':
+            value_of = arg  # the value is the next word
+            continue
+        elif re.fullmatch(r'-p\d+', arg):
+            strip = int(arg[2:])
+        elif arg.startswith('--directory='):
+            prefix = arg.split('=', 1)[1].strip('/') + '/'
+        elif arg == '-' or not arg.startswith('-'):
+            patches.append(arg)
+        value_of = None
+    reason = ("workflow-axa: `git apply` was refused because the gate cannot read the patch {what}, so it cannot check "
+              "which files it changes against the approved plan. Save the patch as a file and pass its path to "
+              "`git apply`, or make the change with the Edit tool.")
+    if not patches or '-' in patches:
+        return [('refused', repo, reason.format(what='from standard input'))]
+    targets = []
+    for name in patches:
+        try:
+            text = Path(absolute(name, repo)).read_text(encoding='utf-8', errors='replace')
+        except (OSError, ValueError) as error:
+            return [('refused', repo, reason.format(what=f'{name} ({type(error).__name__})'))]
+        files = patch_files(text, strip)
+        if not files:
+            return [('refused', repo, reason.format(what=f'{name} (it names no files)'))]
+        targets += [('path', absolute(prefix + f, top), f'`git apply` writing {prefix + f}') for f in files]
+    return list(dict.fromkeys(targets))  # each file once per command, also across patches
+
+
+def patch_files(text: str, strip: int = 1) -> list[str]:
+    """The files a unified or git diff touches, from its headers: `diff --git a/x b/y`, `--- a/x`, `+++ b/y`, and
+    rename/copy lines. /dev/null (a new or deleted file's other side) is skipped; `strip` is git apply's -p.
+    Header lines count only outside hunks: each `@@ -a,b +c,d @@` is followed by its b old and d new lines, so a
+    removed line starting with "-- " or an added line starting with "++ " inside a hunk is never read as a header."""
+    def cut(name: str) -> str:
+        name = name.strip().strip('"')
+        parts = name.split('/')
+        return '/'.join(parts[strip:]) if len(parts) > strip else ''
+
+    files: list[str] = []
+    old = new = 0  # lines left in the current hunk
+    for line in text.splitlines():
+        if (old > 0 or new > 0) and line[:1] not in ('', ' ', '+', '-', '\\'):
+            old = new = 0  # not hunk content (a hunk shorter than it said): read the line as a header again
+        if old > 0 or new > 0:
+            if line.startswith('\\'):
+                continue  # "\ No newline at end of file"
+            if line.startswith('-'):
+                old -= 1
+            elif line.startswith('+'):
+                new -= 1
+            else:
+                old, new = old - 1, new - 1  # context (also a blank context line)
+            continue
+        names: list[str] = []
+        found = re.match(r'^@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@', line)
+        if found:
+            old, new = int(found.group(1) or 1), int(found.group(2) or 1)
+            continue
+        found = re.match(r'^diff --git (\S+) (\S+)\s*$', line)
+        if found:
+            names += [cut(found.group(1)), cut(found.group(2))]
+        found = re.match(r'^(?:---|\+\+\+) ([^\t]+)', line)
+        if found and found.group(1).strip() != '/dev/null':
+            names.append(cut(found.group(1)))
+        found = re.match(r'^(?:rename|copy) (?:from|to) (.+?)\s*$', line)
+        if found:
+            names.append(found.group(1).strip('"'))
+        files += [n for n in dict.fromkeys(names) if n and n not in files]
+    return files
 
 
 def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> list[tuple[str, str, str]]:
@@ -409,8 +545,11 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
     for found in DOTNET_WRITE.finditer(text):
         add(found.group(2), f'a .NET file write into {found.group(2)}')
     for words, redirects in segments(lex(text, powershell)):
+        # H4: a redirect from nothing (`> f`, `: > f`, `cat /dev/null > f`) empties the file. `>>` cannot be told apart
+        # here, so it is counted as emptying too; that only matters on the small-change route, where it is refused.
+        empties = [w.lower() for w in words] in ([], [':'], ['true'], ['cat', '/dev/null'], ['type', 'nul'])
         for target in redirects:
-            add(target, f'a redirect into {target}')
+            add(target, f'a redirect{DELETING if empties else " into "}{target}')
         if len(words) >= 3 and re.fullmatch(r'\$[A-Za-z_]\w*', words[0]) and words[1] == '=':
             names[words[0][1:]] = expand(words[2])  # PowerShell: $f = 'path'
             continue
@@ -422,6 +561,12 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
             words = words[1:]
         if not words:
             continue
+        called = re.fullmatch(r'\$(?:\{(\w+)\}|(\w+))', words[0])
+        held = names.get((called.group(1) or called.group(2)) if called else '', '')
+        if 'record.py' in held:
+            # 2026-11-11 (E36, D36): `R="python ... record.py" && $R append docs/plans/<task>/...` hid the record write,
+            # so the current task never followed it. Only a variable set earlier in this command and holding record.py.
+            words = [w.strip('"\'') for w in held.split()] + words[1:]
         name = re.sub(r'\.exe$', '', slash(words[0]).rsplit('/', 1)[-1].lower())
         args = words[1:]
         plain = [a for a in args if not a.startswith('-')]
@@ -444,11 +589,24 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
         elif name in CONTENT_WRITERS:
             named, positional = ps_params(args)
             for target in [v for k in PS_TARGET for v in named.get(k, [])] or positional[:1]:
-                add(target, f'`{words[0]}` into {target}')
+                add(target, f'`{words[0]}`{DELETING if name in ("clear-content", "clc") else " into "}{target}')
+        elif name == 'truncate':
+            files, size, skip = [], None, False
+            for arg in args:
+                if skip:
+                    size, skip = arg, False
+                elif arg in ('-s', '--size'):
+                    skip = True
+                elif arg.startswith('--size='):
+                    size = arg.split('=', 1)[1]
+                elif not arg.startswith('-'):
+                    files.append(arg)
+            for target in files:
+                add(target, f'`{words[0]}`{DELETING if size in ("0", "-0") else " on "}{target}')
         elif name in POSIX_WRITERS + REMOVERS:
             named, positional = ps_params(args)
             for target in [v for k in PS_TARGET for v in named.get(k, [])] + positional:
-                add(target, f'`{words[0]}` on {target}')
+                add(target, f'`{words[0]}`{DELETING if name in REMOVERS else " on "}{target}')
         elif name in COPIERS:
             named, positional = ps_params(args)
             targets = named.get('destination', []) + named.get('dest', [])
@@ -459,7 +617,7 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
         elif name in MOVERS:
             named, positional = ps_params(args)
             for target in [v for k in PS_TARGET for v in named.get(k, [])] + positional:
-                add(target, f'`{words[0]}` on {target}')
+                add(target, f'`{words[0]}`{MOVING}{target}')
         elif name == 'sed' and any(re.match(r'^-[A-Za-z]*i', a) or a == '--in-place' for a in args):
             files, script_given, skip = [], False, False
             for arg in args:
@@ -592,7 +750,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 20
+STATE_VERSION = 25
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -608,6 +766,17 @@ SHOWN_MARK, REPLY_MARK = 'workflow-axa report fingerprint', 'workflow-axa report
 FINGERPRINT = re.compile(r'^(workflow-axa report (?:fingerprint|at owner reply)): (docs/plans/\S+?\.html) sha256=([0-9a-f]{64})$', re.M)
 IDE_TEXT = re.compile(r'<(ide_\w+)>.*?</\1>', re.S)
 SKILL_READ = re.compile(r'/(workflow(?:-clarify|-specify|-execute|-deliver)?)/SKILL\.md$')
+
+
+def package_skill_read(data: dict) -> bool:
+    """For plain_reply's Stop hook only (H2, 2026-11-11): a whole Read (no offset or limit) of the router's or a phase's
+    SKILL.md, under CLAUDE_PLUGIN_ROOT when the host sets it. The gate's own activation below keeps its broader rule:
+    any whole read of such a file turns the gate on (owner: "Preserve ALL existing ... protections")."""
+    path = slash(str(data.get('file_path', '')))
+    if data.get('limit') or data.get('offset') or not SKILL_READ.search(path):
+        return False
+    root = os.environ.get('CLAUDE_PLUGIN_ROOT')
+    return not root or under(absolute(path, ''), absolute(root, ''))
 
 
 def user_text(entry: dict) -> str | None:
@@ -669,7 +838,8 @@ def fresh_state() -> dict:
     return {'v': STATE_VERSION, 'offset': 0, 'head': '', 'mark': '', 'n': 0, 'lines': 0, 'parsed': 0,
             'active': False, 'rules': False, 'tasks': [], 'users': [], 'presented': {}, 'asks': {}, 'last_user': -1,
             'last_words': '', 'report_presented': {}, 'chat_presented': {}, 'paused_tasks': {},
-            'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}, 'task_roots': {}}
+            'shown_at': {}, 'shown_roots': {}, 'chat_roots': {}, 'user_tasks': {}, 'fingerprints': {}, 'replies': {}, 'task_roots': {},
+            'small_shown': {}}
 
 
 def set_task(state: dict, name: str, n: int, record: str = '', written: bool = False):
@@ -906,6 +1076,20 @@ def present_reports(state: dict, text: str, n: int, cwd: str):
             roots[name.lower()] = (roots.get(name.lower(), []) + [[n, slash(home)]])[-50:]
 
 
+def small_offers(state: dict, text: str, n: int, task: str | None):
+    """H4: record each `Small change: <files> — <what changes>` line of a delivered assistant message or
+    AskUserQuestion question as an offer of exactly that file set, under the task current when it was shown. An offer
+    while no task is current counts for none; other path words in the message never count."""
+    if not task:
+        return
+    for found in SMALL_OFFER_LINE.finditer(text):
+        files = sorted({key(f) for f in small_files(found.group(2))})
+        if files:
+            rows = state.setdefault('small_shown', {}).setdefault(task, [])
+            rows.append([n, files, small_description(found.group(2), offer=True)])
+            del rows[:-20]
+
+
 def owner_said(state: dict, n: int, text: str):
     """A real user message, typed at the prompt or while the agent was working."""
     for a, b in TASK_NAMED.findall(slash(text)):
@@ -934,9 +1118,18 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                 and not entry.get('isSidechain'):
             for mark, path, sha in FINGERPRINT.findall('\n'.join(str(line) for line in hook.get('content') or [])):
                 found = TASK_REVIEW.fullmatch(path) or TASK_REVIEW.match(path)
-                if found:
-                    rows = state['replies' if mark == REPLY_MARK else 'fingerprints'].setdefault(found.group(1), {})
-                    rows[found.group(2).lower()] = (rows.get(found.group(2).lower(), []) + [[n, sha]])[-50:]
+                if not found:
+                    continue
+                rows = state['replies' if mark == REPLY_MARK else 'fingerprints'].setdefault(found.group(1), {})
+                seen = rows.setdefault(found.group(2).lower(), [])
+                if mark == REPLY_MARK:
+                    # report_check reads only the first mark after an owner message. Hand-backs and notifications
+                    # also fire UserPromptSubmit; their marks are dropped rather than allowed to push the answer's
+                    # own mark out of a capped list. At most one mark per owner message, so no cap is needed.
+                    if not seen or seen[-1][0] < state['last_user']:
+                        seen.append([n, sha])
+                elif not seen or seen[-1][1] != sha:  # a repeat of the latest hash adds nothing to report_check
+                    rows[found.group(2).lower()] = (seen + [[n, sha]])[-50:]
         return
     if entry.get('type') == 'user':
         typed = content if isinstance(content, str) else '\n'.join(
@@ -956,12 +1149,13 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                 asked = state['asks'].pop(block.get('tool_use_id'), None)
                 if asked is None:
                     continue
-                at, origin, questions = asked
+                at, origin, questions, *asked_task = asked
                 for question, value in result['answers'].items():
                     if question in questions:
                         # A matched host answer establishes that this question was actually delivered.
                         # The question alone, a cancelled tool or thinking never presents/approves anything.
                         present_reports(state, question, at, origin)
+                        small_offers(state, question, at, asked_task[0] if asked_task else None)
                         add_words(state, n, str(value), 'answer')
         return
     if entry.get('type') != 'assistant' or entry.get('isSidechain') or not isinstance(content, list):
@@ -972,6 +1166,7 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                         if isinstance(b, dict) and b.get('type') == 'text')
     origin = str(entry.get('cwd') or cwd)
     present_reports(state, visible, n, origin)
+    small_offers(state, visible, n, state['tasks'][-1][0] if state['tasks'] else None)
     if re.search(r'\b(?:plan|proposal|implementation scope)\b', visible, re.I):
         for task in TASK_PATH.findall(slash(visible) + '/'):
             for a, b in REVISION.findall(visible):
@@ -987,7 +1182,7 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
         if name == 'AskUserQuestion' and block.get('id'):
             questions = [q['question'] for q in data.get('questions', [])
                          if isinstance(q, dict) and isinstance(q.get('question'), str)]
-            state['asks'][block['id']] = [n, origin, questions]
+            state['asks'][block['id']] = [n, origin, questions, current]
             state['asks'] = dict(list(state['asks'].items())[-200:])
         elif name == 'Skill':
             skill = str(data.get('skill', '')).split(':')[-1]
@@ -1119,15 +1314,17 @@ def changed_files(root: str) -> list[str] | None:
     return files
 
 
-def lightweight_commit_problem(target: tuple[str, str, str], state: dict, root: str, listed: set[str]) -> str | None:
+def lightweight_commit_problem(target: tuple[str, str, str], state: dict, root: str, listed: set[str],
+                               line: str = 'Lightweight edit') -> str | None:
     """Putten (2026-11-07): None when this `git commit` only commits the recorded lightweight files (plus task records)
-    and the owner's latest message asks for it, otherwise why not. Push, amend and other git writes are never covered."""
+    and the owner's latest message asks for it, otherwise why not. Push, amend and other git writes are never covered.
+    `line` names the checkpoint line in the messages: the small-change route (H4) uses the same rule."""
     kind, _where, label = target
     if kind != 'git' or label != '`git commit`':
-        return (f'its `- Lightweight edit:` line covers file edits and, when the owner asks for it, a `git commit` of '
+        return (f'its `- {line}:` line covers file edits and, when the owner asks for it, a `git commit` of '
                 f'only those files; {label} still needs implementation approval')
     if not owner_asks_commit(state.get('last_words', '')):
-        return ('its `- Lightweight edit:` line allows a `git commit` of those files only when the owner\'s latest '
+        return (f'its `- {line}:` line allows a `git commit` of those files only when the owner\'s latest '
                 'message asks for the commit. Ask the owner whether to commit; their reply is enough')
     files = changed_files(root)
     if files is None:
@@ -1135,8 +1332,8 @@ def lightweight_commit_problem(target: tuple[str, str, str], state: dict, root: 
     extra = [f for f in files if key(slash(f)) not in listed and not re.match(r'docs/plans/', slash(f), re.I)]
     if extra:
         shown = ', '.join(extra[:8]) + (' …' if len(extra) > 8 else '')
-        return (f'these changed files are not on its `- Lightweight edit:` line: {shown}. If they belong to the '
-                'lightweight edit, add them to that line; otherwise commit only the listed files or get implementation '
+        return (f'these changed files are not on its `- {line}:` line: {shown}. If they belong to the '
+                f'{line.lower()}, add them to that line; otherwise commit only the listed files or get implementation '
                 'approval')
     return None
 
@@ -1333,6 +1530,193 @@ def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...]
     return None
 
 
+def refuses(quotes: list[str]) -> bool:
+    """A quoted answer that refuses or delays rather than approves."""
+    return any(clean(q) in {'no', 'nope', 'not yet', 'not now', 'nee', 'niet', 'decline', 'hold off',
+                            'pending', 'awaiting', 'proposed', 'not waived', 'not given'}
+               or REVOKED.search(clean(q)) or WAITING_APPROVAL.search(q)
+               or REFUSED_APPROVAL.search(q) for q in quotes)
+
+
+SMALL_DASH = re.compile(r'(?:^|\s+)(?:—|–|--|-)(?:\s+|$)')
+
+
+def small_files(rest: str) -> list[str]:
+    """The comma-separated file part of a Small change line (before ` — `), each without quotes, backticks or `./`."""
+    listed = SMALL_DASH.split(rest.strip(), maxsplit=1)[0]
+    names = [slash(n.strip().strip('`"\'').strip()).removeprefix('./') for n in listed.split(',')]
+    return [n for n in names if n]
+
+
+# RR1: a short question to the owner after the description ("Approve?", "OK?", "Shall I proceed?"). Only these words,
+# so a question that adds to the change ("Also delete the Cancel button?") stays part of the description.
+SMALL_ASK = re.compile(r'(?<=[.!?])\s+(?:(?:approve|approved|ok|okay|go|ahead|proceed|shall|should|can|may|i|we|it|this|'
+                       r'that|yes|fine|good|sound|sounds|agree|agreed|confirm|do|you|apply)\b[\s,]*){1,5}\?$', re.I)
+
+
+def small_description(rest: str, offer: bool = False) -> str:
+    """SP8: the `<what changes>` part of a Small change line (after ` — `), whitespace-normalized. RR1: surrounding
+    `*`/`_` emphasis and end punctuation are dropped, and on an offer a short approval question after it; the words
+    themselves must still match exactly."""
+    parts = SMALL_DASH.split(rest.strip(), maxsplit=1)
+    text = ' '.join(parts[1].split()) if len(parts) > 1 else ''
+    if offer:
+        text = SMALL_ASK.sub('', text)
+    previous = None
+    while text != previous:
+        previous = text
+        text = text.strip().rstrip('.!?').strip()
+        if len(text) > 1 and text[0] in '*_' and text[-1] == text[0]:
+            text = text.strip(text[0])
+    return text
+
+
+def small_change(text: str, root: str) -> tuple[list[str] | None, str]:
+    """H4 (R11): the files of a valid `- Small change: <files> — <what changes>` checkpoint line, as lowercase
+    repository-relative paths. (None, why) for an invalid line, which then counts as absent; (None, '') for none.
+    Valid files are comma-separated, repository-relative, existing files: no folder, wildcard or `..`."""
+    found = SMALL_LINE.search(text)
+    if not found:
+        return None, ''
+    names = small_files(found.group(1))
+    if not names:
+        return None, 'it names no files'
+    for name in names:
+        if re.search(r'[*?\[\]{}]', name):
+            return None, f'{name} is a wildcard'
+        if is_absolute(name) or name.startswith('~') or '..' in name.split('/'):
+            return None, f'{name} is not a repository-relative path'
+        path = Path(root or '.') / name
+        if name.endswith('/') or path.is_dir():
+            return None, f'{name} is a folder'
+        if not path.is_file():
+            return None, f'{name} does not exist (a small change never adds a file)'
+    return [key(n) for n in dict.fromkeys(names)], ''
+
+
+def small_offer_start(state: dict, task: str, files: list[str], description: str) -> int | None:
+    """The first offer, shown while this task was current, whose `Small change:` line lists exactly the same file set
+    (order and spacing ignored) and the same description (SP8, whitespace-normalized) as the checkpoint line. A line
+    edited later to add a file or change what changes needs a new offer."""
+    wanted = sorted(set(files))
+    starts = [n for n, offered, shown in state.get('small_shown', {}).get(task, [])
+              if offered == wanted and shown == description]
+    return min(starts) if starts else None
+
+
+class Reconfirm(str):
+    """SP2: the Approval line records a yes that this session cannot see (often one given in an earlier session). The
+    refusal asks for a new yes on a separate Reconfirmed line, so the original quote stays as recorded."""
+
+
+def small_yes_problem(quotes: list[str], state: dict, task: str, files: list[str], description: str) -> str | None:
+    """Why these quotes are not each the whole of a real user message after this session's offer of the same file set
+    and description, not withdrawn since, or None."""
+    start = small_offer_start(state, task, files, description)
+    if start is None:
+        return (f'no message of yours in this session says "Small change:" with every listed file '
+                f'({", ".join(files)}) and the same description as the checkpoint line ("{description[:160]}"), so '
+                'the owner was not shown this change')
+    for quote in quotes:
+        wanted = clean(quote)
+        if not any(n > start and words == wanted and not truncated and not revoked_after(state, task, n)
+                   for n, words, truncated, _kind in state['users']):
+            return (f'it quotes "{quote}", but no real user message after your "Small change:" message is exactly '
+                    'those words and still stands')
+    return None
+
+
+def small_approval_problem(text: str, state: dict, task: str, files: list[str]) -> str | None:
+    """Why the Approval line does not carry the owner's yes to this small change, or None. The yes must be the whole of
+    a real user message after the offer, not withdrawn since; stop and pause handling stay in judge(). A later session
+    cannot see the original yes: a `- Reconfirmed (gate two): small change, <date>: "<words>"` line that passes the
+    same test stands in for it while the Approval line still says approved (SP2). Returns a Reconfirm then."""
+    found = APPROVAL.search(text)
+    if not found:
+        return 'the checkpoint has no `- Approval:` line quoting the owner\'s yes'
+    line = found.group(1).strip()
+    marker = QUOTE.sub('', line)
+    if NEGATIVE.search(marker) or not POSITIVE.search(marker):
+        return f'the Approval line does not say outside the quotes that the small change is approved (`{line[:160]}`)'
+    quotes = [a or b for a, b in QUOTE.findall(line) if re.search(r'\w', a or b)]
+    if not quotes:
+        return 'the Approval line quotes none of the owner\'s words'
+    if refuses(quotes):
+        return 'the Approval line quotes a refusal or delay'
+    description = small_description(SMALL_LINE.search(text).group(1))
+    why = small_yes_problem(quotes, state, task, files, description)
+    if why is None:
+        return None
+    for again in RECONFIRMED.finditer(text):
+        if not re.search(r'\bsmall change\b', QUOTE.sub('', again.group(1)), re.I):
+            continue  # a report revision's confirmation, not this route's
+        said = [a or b for a, b in QUOTE.findall(again.group(1)) if re.search(r'\w', a or b)]
+        if said and not refuses(said) and small_yes_problem(said, state, task, files, description) is None:
+            return None
+    return Reconfirm(why)
+
+
+def small_route_problem(target: tuple[str, str, str], files: list[str], text: str, state: dict, task: str,
+                        root: str) -> str | None:
+    """A write under a valid Small change line in a task without a plan report: only the listed existing files, and
+    only after the owner's quoted yes. Git writes need the same yes; their files are separate path targets (H3)."""
+    kind, where, label = target
+    full = ('Switch to the full route: agree the behavior (workflow-clarify), then render and present the plan report '
+            '(workflow-specify) and get it approved.')
+    if (kind == 'path' and DELETING in label) or (kind == 'git' and label.startswith('`git rm`')):
+        return f"workflow-axa: {label} is refused in task {task}: a small change never deletes a file. {full}"
+    if (kind == 'path' and MOVING in label) or (kind == 'git' and label.startswith('`git mv`')):
+        return f"workflow-axa: {label} is refused in task {task}: a small change never moves or renames a file. {full}"
+    if kind == 'path' and (key(relative(where, root)) not in files or not Path(where).is_file()):
+        return (f"workflow-axa: {label} is not covered by the current task {task}: its `- Small change:` line lists only "
+                f"{', '.join(files)}, and a small change never adds a file. {full}")
+    if kind not in ('path', 'git'):
+        return (f"workflow-axa: {label} cannot be matched to the files of the `- Small change:` line of task {task}. "
+                f"{full}")
+    if kind == 'git' and not label.endswith(GIT_FILE_WRITE):
+        # Commit, push and every other git write that is not a file write: the Lightweight-edit rule exactly. The
+        # quoted yes alone never allows them; a commit also needs the owner's latest message to ask for it.
+        light = lightweight_commit_problem(target, state, root, set(files), 'Small change')
+        if light:
+            return f"workflow-axa: {label} is not covered by the small change in task {task}: {light}."
+    why = small_approval_problem(text, state, task, files)
+    if isinstance(why, Reconfirm):
+        return (f"workflow-axa: {label} needs the owner's yes to the small change in task {task}: {why}. If the owner "
+                "approved it in an earlier session, show the same \"Small change:\" line again in one message and ask "
+                "the owner, then add their whole new answer on a separate line: "
+                "`- Reconfirmed (gate two): small change, <date>: \"<the owner's whole answer>\"`. Keep the "
+                f"`- Approval:` line as it is: never change the original Approval quote. {full}")
+    if why:
+        return (f"workflow-axa: {label} needs the owner's yes to the small change in task {task}: {why}. Show the change "
+                "in one message that says \"Small change:\" and names every listed file, ask the owner, then quote their "
+                f"whole answer on the `- Approval:` line. {full}")
+    return None
+
+
+def small_change_without_report(state: dict, cwd: str) -> bool:
+    """For plain_reply.py: the current task has a valid `- Small change:` line (the gate's own validation) and no plan
+    report. An invalid line counts as absent here too."""
+    if not state.get('tasks'):
+        return False
+    task = state['tasks'][-1][0]
+    root = Project(cwd).root if cwd else ''
+    plan = task_plan(task, state, root)
+    try:
+        text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
+    except OSError:
+        return False
+    return (small_change(text, root)[0] is not None and report_problem(plan.parent, text) is not None
+            and not has_plan_report(plan.parent))
+
+
+def has_plan_report(folder: Path) -> bool:
+    """Whether the task folder or its reviews/ folder holds an .html report. The small route needs neither (D46)."""
+    try:
+        return any([*folder.glob('*.html'), *(folder / 'reviews').glob('*.html')])
+    except OSError:
+        return False
+
+
 def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: str, folder: Path | None = None,
                      used: list | None = None) -> str | None:
     """Why the checkpoint's Approval line does not authorise implementation, or None. `used` collects the reports whose
@@ -1375,10 +1759,7 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
     quotes = [a or b for a, b in QUOTE.findall(line) if re.search(r'\w', a or b)]
     if not quotes:
         return 'quotes none of the user\'s words; record their approval in double quotes, exactly as they wrote it'
-    if any(clean(q) in {'no', 'nope', 'not yet', 'not now', 'nee', 'niet', 'decline', 'hold off',
-                       'pending', 'awaiting', 'proposed', 'not waived', 'not given'}
-           or REVOKED.search(clean(q)) or WAITING_APPROVAL.search(q)
-           or REFUSED_APPROVAL.search(q) for q in quotes):
+    if refuses(quotes):
         return 'quotes an explicit refusal or delay, not implementation approval'
     recorded = frozenset(clean(a or b) for a, b in QUOTE.findall(text))
     notes = []
@@ -1450,12 +1831,9 @@ def report_problem(folder: Path, text: str) -> str | None:
 MANIFEST = re.compile(r'<script type="application/json" id="report-manifest">(.*?)</script>', re.S)
 
 
-def scope_problem(target: tuple[str, str, str], root: str, folder: Path, reports: list[str]) -> str | None:
-    """The approved report's explicit `write_paths` (render_report.py manifest) bound file writes; reports without
-    them keep approval-only behaviour. Git and unresolved shell writes are not path-checked."""
-    kind, where, label = target
-    if kind != 'path' or not reports:
-        return None
+def report_write_paths(folder: Path, reports: list[str]) -> tuple[list[str], str | None]:
+    """The explicit `write_paths` of these reports (render_report.py manifest), and the name of a report that lists
+    them in an unreadable form (None when all are readable). Reports without a manifest add nothing."""
     allowed: list[str] = []
     for name in dict.fromkeys(reports):
         path = report_file(folder, name)
@@ -1467,13 +1845,56 @@ def scope_problem(target: tuple[str, str, str], root: str, folder: Path, reports
         if listed is None:
             continue
         if not isinstance(listed, list) or not all(isinstance(p, str) and p.strip() for p in listed):
-            return (f"workflow-axa: {label} cannot be checked against the approved plan: {name} lists its write paths in "
-                    "an unreadable form. Re-render the plan with explicit `write_paths` and ask the owner to approve it.")
+            return allowed, name
         allowed += [p.strip() for p in listed]
+    return allowed, None
+
+
+def covers(allowed: list[str], where: str, root: str) -> bool:
+    rel = key(relative(where, root))
+    return any(rel == key(p.rstrip('/')) or (p.endswith('/') and rel.startswith(key(p))) for p in allowed)
+
+
+def task_plan(task: str, state: dict, root: str) -> Path:
+    """The task's PLAN.md in this worktree, or where the session wrote its records for a task that spans several
+    repositories (Core plus client and module repos). A linked worktree of the same repository never borrows another
+    worktree's records."""
+    plan = Path(root or '.') / 'docs' / 'plans' / task / 'PLAN.md'
+    home = state.get('task_roots', {}).get(task)
+    if not plan.is_file() and home and common_dir(home) != common_dir(root):
+        plan = Path(home) / 'docs' / 'plans' / task / 'PLAN.md'
+    return plan
+
+
+def approved_write_paths(task: str, state: dict, root: str, project: 'Project', transcript: Path) -> list[str]:
+    """The write_paths a task's valid approval grants, or [] when it has no valid approval, no plan report, no
+    write_paths or an unreadable list. Used only to narrow the task-switch stop (H3), never to grant a write."""
+    plan = task_plan(task, state, root)
+    try:
+        text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
+    except OSError:
+        return []
+    used: list[str] = []
+    if report_problem(plan.parent, text) or approval_problem(text, state, task, transcript, project.cwd, plan.parent,
+                                                            used):
+        return []
+    allowed, bad = report_write_paths(plan.parent, used)
+    return [] if bad else allowed
+
+
+def scope_problem(target: tuple[str, str, str], root: str, folder: Path, reports: list[str]) -> str | None:
+    """The approved report's explicit `write_paths` (render_report.py manifest) bound file writes; reports without
+    them keep approval-only behaviour. Git and unresolved shell writes are not path-checked."""
+    kind, where, label = target
+    if kind != 'path' or not reports:
+        return None
+    allowed, bad = report_write_paths(folder, reports)
+    if bad:
+        return (f"workflow-axa: {label} cannot be checked against the approved plan: {bad} lists its write paths in "
+                "an unreadable form. Re-render the plan with explicit `write_paths` and ask the owner to approve it.")
     if not allowed:
         return None  # an older report without write paths: approval-only, as before
-    rel = key(relative(where, root))
-    if any(rel == key(p.rstrip('/')) or (p.endswith('/') and rel.startswith(key(p))) for p in allowed):
+    if covers(allowed, where, root):
         return None
     return (f"workflow-axa: {label} is outside the files the approved plan may change ({', '.join(allowed)}). If this "
             "work needs another file, or the owner's approval narrowed the scope, update the plan's write paths in a new "
@@ -1507,19 +1928,21 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
     # same task again is no switch (Putten, 2026-11-07).
     then = next((name for name, at in reversed(state['tasks']) if at <= state['last_user']), None)
     if len(state['tasks']) > 1 and changed_at > state['last_user'] and then != task:
-        back = (f" If it belongs to {then}, the task current at the user's last message, write a record of {then} "
-                "(for example its checkpoint) and retry; no reply is needed then.") if then else ''
-        return (f"workflow-axa: {label} was stopped because the current task changed to {task} after the user's last "
-                f"message (a write to docs/plans/{task}/ makes it current).{back} If it belongs to {task}, tell the "
-                "user and let them answer before you edit: any reply from them after the switch is enough, and they "
-                "need not type the task name.")
-    plan = Path(root or '.') / 'docs' / 'plans' / task / 'PLAN.md'
-    home = state.get('task_roots', {}).get(task)
-    if not plan.is_file() and home and common_dir(home) != common_dir(root):
-        # One task across several repositories (Core plus client and module repos): its records live in the
-        # repository where the session wrote them. Its approval and write paths still apply; a linked worktree of
-        # the same repository never borrows another worktree's records.
-        plan = Path(home) / 'docs' / 'plans' / task / 'PLAN.md'
+        # H3 (Q17, D36): a note in another approved task's records does not stop a file write that only the earlier
+        # task's approved write_paths cover. Both tasks need explicit write_paths; the write is then judged in full
+        # against the earlier task below. Every other case keeps the stop.
+        mine = approved_write_paths(then, state, root, project, transcript) if then and kind == 'path' else []
+        theirs = approved_write_paths(task, state, root, project, transcript) if mine else []
+        if mine and theirs and covers(mine, where, root) and not covers(theirs, where, root):
+            task = then
+        else:
+            back = (f" If it belongs to {then}, the task current at the user's last message, write a record of {then} "
+                    "(for example its checkpoint) and retry; no reply is needed then.") if then else ''
+            return (f"workflow-axa: {label} was stopped because the current task changed to {task} after the user's "
+                    f"last message (a write to docs/plans/{task}/ makes it current).{back} If it belongs to {task}, tell "
+                    "the user and let them answer before you edit: any reply from them after the switch is enough, and "
+                    "they need not type the task name.")
+    plan = task_plan(task, state, root)
     try:
         text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
     except OSError:
@@ -1538,25 +1961,38 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
                  'lightweight edit (no behavior a user or caller can notice), add it to that line; otherwise it needs '
                  'implementation approval')
     problem = report_problem(plan.parent, text)
+    small, ignored = small_change(text, root)
+    has_report = has_plan_report(plan.parent)
+    # H4: a valid small change in a task folder with no .html report. D46: an Approval line naming a missing report
+    # while another report exists keeps the full route.
+    if problem and small is not None and not has_report:
+        return small_route_problem(target, small, text, state, task, root)
+    ignored = f" Its `- Small change:` line was ignored: {ignored}." if ignored else ''
+    if small is not None and (has_report or not problem):
+        # SP4: a valid line that the full route overrides. Say so, or the agent keeps quoting yeses for it.
+        why = 'this task has a plan report' if has_report else \
+            'its Approval line quotes "no report", which belongs to the full route'
+        ignored = f" Its `- Small change:` line is ignored because {why}; use the full route or a new task."
     if problem and light:
         return (f"workflow-axa: {label} is not covered by the current task {task}: {light}. It has no implementation "
-                f"approval either ({problem}). Do not edit or disable the hook to bypass this block.")
+                f"approval either ({problem}).{ignored} Do not edit or disable the hook to bypass this block.")
     if problem:
-        return (f"workflow-axa: {label} needs implementation approval, but the current task {task} has {problem}. "
-                "Approval needs the HTML plan from workflow-specify; if the owner declined a report, the quoted answer "
-                "on the Approval line must contain their words for that (for example \"no report\"). For a change with "
-                "no behavior a user or caller can notice, record a `- Lightweight edit: <files> — <why>` line in the "
-                "checkpoint instead.")
+        return (f"workflow-axa: {label} needs implementation approval, but the current task {task} has {problem}."
+                f"{ignored} Approval needs the plan report from workflow-specify; if the owner declined a report, the "
+                "quoted answer on the Approval line must contain their words for that (for example \"no report\"). For "
+                "a change with no behavior a user or caller can notice, record a `- Lightweight edit: <files> — <why>` "
+                "line in the checkpoint instead.")
     used: list[str] = []
     problem = approval_problem(text, state, task, transcript, project.cwd, plan.parent, used)
     if not problem:
-        return scope_problem(target, root, plan.parent, used)
+        outside = scope_problem(target, root, plan.parent, used)
+        return outside + ignored if outside else outside
     if isinstance(problem, RecordFix):
         return (f"workflow-axa: {label} is blocked by how the approval is recorded in the current task {task}: the "
-                f"Approval line in {slash(str(plan))} {problem}. Fix the line with record.py set-line, then retry. "
-                "Do not edit or disable the hook to bypass this block.")
+                f"Approval line in {slash(str(plan))} {problem}. Fix the line with record.py set-line, then retry."
+                f"{ignored} Do not edit or disable the hook to bypass this block.")
     return (f"workflow-axa: {label} needs implementation approval, and the current task {task} does not have it: the "
-            f"Approval line in {slash(str(plan))} {problem}. Loading a phase grants nothing by itself. Agree the behavior "
+            f"Approval line in {slash(str(plan))} {problem}.{ignored} Loading a phase grants nothing by itself. Agree the behavior "
             "(workflow-clarify), approve the plan (workflow-specify), and record the user's answer in quotes on the "
             "`- Approval:` line before requesting the edit. For an older record, use resume-task to reconcile the "
             "original report, complete answer and scope; ask only where that evidence is insufficient. "
@@ -1572,7 +2008,7 @@ UI_GUIDE = 'codebase-map/UI-FLOW.md'
 def unread_report_guides(path: Path, reads: 'ReadEvidence | None' = None) -> list[str]:
     """Report guides not read whole in this context, when specify or deliver loaded (round v3: in all four
     worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test."""
-    missing = reply_module().unread_files(path, reads.get() if reads else None)
+    missing = reply_module().unread_files(path, (reads or ReadEvidence(str(path))).get())
     wanted = REPORT_GUIDES + (UI_GUIDE,)
     return sorted({rel for phase in ('workflow-specify', 'workflow-deliver') for rel in missing.get(phase, ())
                    if rel in wanted})
@@ -1592,9 +2028,15 @@ def reply_module():
     return _REPLY
 
 
+class EvidenceUnavailable(Exception):
+    """plain_reply.py could not be loaded or its scan failed on an unexpected entry. Callers skip the check, as
+    they did before H2 when such an error reached main() (no new blocking for these tools)."""
+
+
 class ReadEvidence:
     """One plain_reply.scan_reads pass per hook event, shared by the report-guide and declared-read checks.
-    A read error is remembered and raised again to each caller."""
+    A read error is remembered and raised again to each caller: OSError/ValueError for a transcript that cannot be
+    read (unchanged), EvidenceUnavailable for a broken plain_reply.py or a scan error."""
 
     def __init__(self, transcript: str):
         self.path, self.result, self.error = Path(transcript), None, None
@@ -1602,9 +2044,14 @@ class ReadEvidence:
     def get(self) -> dict:
         if self.result is None and self.error is None:
             try:
-                self.result = reply_module().scan_reads(self.path)
+                # The gate's own checks keep the old rule: any whole read of a phase SKILL.md loads it (H2 rework).
+                # Passing this module avoids loading phase_gate.py a second time inside plain_reply.
+                self.result = reply_module().scan_reads(self.path, entry_required=False,
+                                                        gate=sys.modules.get(__name__))
             except (OSError, ValueError) as error:
                 self.error = error
+            except (SyntaxError, ImportError, AttributeError, KeyError, TypeError) as error:
+                self.error = EvidenceUnavailable(f'{type(error).__name__}: {error}')
         if self.error is not None:
             raise self.error
         return self.result
@@ -1744,6 +2191,8 @@ def required_read_problem(event: dict, reads: ReadEvidence | None = None) -> str
                     return None
             except (OSError, ValueError):
                 pass
+            except EvidenceUnavailable:
+                return None  # plain_reply.py is broken: skip the check, as before H2
         what = phase or 'this report operation'
         return (f'workflow-axa: {what} cannot check the project\'s required reads: {error}. Fix the declaration in '
                 f'the project root ({root}), then retry. {recovery}')
@@ -1751,6 +2200,8 @@ def required_read_problem(event: dict, reads: ReadEvidence | None = None) -> str
         return None  # an undeclared project keeps its existing behavior
     try:
         evidence = reads.get()
+    except EvidenceUnavailable:
+        return None  # plain_reply.py is broken: skip the check, as before H2
     except (OSError, ValueError):
         return (f'workflow-axa: the session transcript ({transcript}) cannot be read, so the files this project '
                 f'declares as required reads cannot be checked before {phase or "this report operation"}. Restore '
@@ -1781,7 +2232,7 @@ def judge(event: dict) -> int:
     if 'render_report.py' in command and '--help' not in command and transcript:
         try:
             unread = unread_report_guides(Path(transcript), reads)
-        except (OSError, ValueError, AttributeError):
+        except (OSError, ValueError, AttributeError, EvidenceUnavailable):
             unread = []
         if unread:
             return deny("workflow-axa: read these whole before rendering the report, because they set its content and "
@@ -1809,7 +2260,7 @@ def judge(event: dict) -> int:
                         'replace-section for updates. The helper stays available for planning and stopped-task '
                         'handoff, subject to normal permissions. Do not use Write/Edit/MultiEdit for these records.')
     targets = [t for t in all_targets
-               if t[0] != 'path' or (project.contains(t[1]) and not RECORD.match(relative(t[1], project.root_of(t[1]))))]
+               if t[0] != 'path' or (project.contains(t[1]) and not project.is_record(t[1]))]
     if not targets or not transcript:
         return 0  # nothing gated, or no transcript to judge by (documented in SETUP.md)
     path = Path(transcript)
@@ -1840,6 +2291,8 @@ def judge(event: dict) -> int:
     if state['rules']:
         targets = [t for t in targets if t[0] != 'path' or not RULE_FILE.search(t[1])]  # D20: rule-maker writes rules
     for target in targets:
+        if target[0] == 'refused':
+            return deny(target[2])
         if target[0] == 'ambiguous':
             return deny(f"workflow-axa: {target[2]} is relative to a folder set by a shell variable the gate cannot "
                         "resolve, so it cannot tell whether this is a task record. Use an explicit path (or set the "

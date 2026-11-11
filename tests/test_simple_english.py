@@ -19,7 +19,7 @@ class SimpleEnglishTests(unittest.TestCase):
         self.assertIn("MIT License", (SKILL / "LICENSE").read_text(encoding="utf-8"))
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Bundled with workflow-axa from [AminBlg/SimpleEnglish]", text)
-        self.assertIn("design.md rule 4's question, which is quoted word for word", text)
+        self.assertIn("DESIGN.md rule 4's question, which is quoted word for word", text)
 
     def test_upstream_text_and_references_are_unchanged(self):
         readme = (ROOT / "VENDORED-SKILLS.md").read_text(encoding="utf-8")

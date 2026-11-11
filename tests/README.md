@@ -23,9 +23,9 @@ Use a fresh destination for each run. Available variants: `clean`, `approved`, `
 
 `.fixture-state.json` records the starting commit, staged diff, unstaged diff and status. It is local evaluation metadata, not the agent's handoff record. Preserve it to compare later ownership/staging effects. The secret scenario contains an unmistakably fake credential, never a real one. The intentionally partial/failing scenarios are not expected to have complete behavior or green tests.
 
-## Run the current skill and candidate fairly
+## Run a candidate and a baseline fairly
 
-For this candidate, use the supplied **post-hardening 2.8.0-rc.1 archive** as the baseline; its identity is in CANDIDATE-REVIEW.md. Do not use the much older pre-refactor revision `9daf507` from earlier evaluations. Follow CLAUDE-TEST-PROMPT.txt: preserve both sources, agree the live budget before any model runs, and return one read-only retro before proposing changes. Load only one version per fresh session; do not mix a global copy, repository skill and session plugin.
+For the current candidate, prepare and run fresh sessions as [docs/EVALUATION.md](../docs/EVALUATION.md) describes. Historical, 2.8.0-rc.1 to rc.4 only: the baseline was the supplied **post-hardening 2.8.0-rc.1 archive**, identified in docs/archive/CANDIDATE-REVIEW.md, and runs followed docs/archive/CLAUDE-TEST-PROMPT.txt; neither is current test authority. Load only one version per fresh session; do not mix a global copy, repository skill and session plugin.
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
 constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
@@ -58,7 +58,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.34; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.36; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks

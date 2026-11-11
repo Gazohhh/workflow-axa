@@ -7,6 +7,7 @@ from __future__ import annotations
 import ast
 import functools
 import json
+import os
 import re
 import shlex
 import sys
@@ -16,8 +17,8 @@ CONTRACTION = re.compile(r"\b(?:[A-Za-z]+n['’]t|I['’]m|I['’]ve|I['’]ll|I
 CODE = re.compile(r"```.*?```|`[^`\n]*`", re.S)
 
 
-def last_reply_and_usage(path: Path) -> tuple[str, bool]:
-    reply, used = "", False
+def last_reply(path: Path) -> str:
+    reply = ""
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             entry = json.loads(line)
@@ -25,18 +26,45 @@ def last_reply_and_usage(path: Path) -> tuple[str, bool]:
             continue
         if not isinstance(entry, dict):
             continue  # a valid JSON line that is not an entry
-        message = entry.get("message") or {}
-        content = message.get("content")
+        content = (entry.get("message") or {}).get("content")
         if entry.get("type") == "assistant" and isinstance(content, list):
             texts = [block.get("text", "") for block in content if isinstance(block, dict) and block.get("type") == "text"]
             if texts:
                 reply = "\n".join(texts)
-            if any(isinstance(b, dict) and b.get("type") == "tool_use" and "workflow-axa" in json.dumps(b.get("input", {}))
-                   for b in content):
-                used = True
-        elif entry.get("type") == "user" and "workflow-axa:" in json.dumps(content):
-            used = True
-    return reply, used
+    return reply
+
+
+GATE_LOAD_ERRORS = (SyntaxError, ImportError, OSError, AttributeError)
+
+
+@functools.lru_cache(maxsize=1)
+def gate_module():
+    """phase_gate.py, loaded once per process: it owns the typed-command, task-path and shell-write parsing.
+    phase_gate passes itself to scan_reads instead, so its own process never loads it twice. Raises one of
+    GATE_LOAD_ERRORS when the file is missing or broken; main() then stays silent."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('phase_gate_stop', Path(__file__).with_name('phase_gate.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@functools.lru_cache(maxsize=1)
+def package_skills() -> frozenset[str]:
+    """The bare names of this plugin's skills: the folders under <plugin root>/skills that hold a SKILL.md."""
+    root = Path(os.environ.get('CLAUDE_PLUGIN_ROOT') or Path(__file__).resolve().parents[1]) / 'skills'
+    try:
+        return frozenset(p.parent.name for p in root.glob('*/SKILL.md'))
+    except OSError:
+        return frozenset()
+
+
+def own_skill(name: str) -> str | None:
+    """The bare name when a Skill call names one of this package's skills: `workflow-axa:<name>`, or a bare name
+    without any plugin prefix (another plugin's `x:workflow` is not ours). None otherwise."""
+    if name.startswith('workflow-axa:'):
+        return name[len('workflow-axa:'):]
+    return name if ':' not in name and name in package_skills() else None
 
 
 @functools.lru_cache(maxsize=1)
@@ -172,11 +200,22 @@ def complete_result(entry: dict, result: dict) -> bool:
         r'\[truncated\]|\d+\s+characters truncated)|^<persisted-output>', text, re.I | re.M)
 
 
-def scan_reads(path: Path) -> dict:
+def scan_reads(path: Path, entry_required: bool = True, gate=None) -> dict:
     """One pass over the transcript: the phases loaded, read evidence and the visible/TDD/code signals.
     `inputs` is the package-guide evidence, where legacy ID-less calls still count. `complete` holds the paths of
-    calls with an ID whose own result is successful and complete. Both restart at compaction."""
+    calls with an ID whose own result is successful and complete. Both restart at compaction.
+    `entered` (H2, 2026-11-11) turns true once the session started a workflow (a typed router or phase command, or a
+    Skill call of one) or wrote a task record. A path that merely contains "workflow-axa" starts nothing.
+    With `entry_required` (this Stop hook), a whole Read of a router or phase SKILL.md loads the phase only after
+    that, and only for the package's copy (phase_gate.package_skill_read). phase_gate passes False for its own
+    report-guide and declared-read checks, which keep the old rule: any whole read loads the phase, and passes
+    itself as `gate` so it is not loaded a second time.
+    `session` (agreement R12) is wider than `entered`: it also counts a Skill call of any package skill and typed
+    text naming one ("workflow-axa:"). It decides whether the Stop checks apply at all. The old match of
+    "workflow-axa" anywhere in a tool input, such as a path, no longer counts."""
     reads, _ui = phase_reads_table()
+    gate = gate or gate_module()
+    entered = session = False
     loaded: set[str] = set()
     inputs: list[str] = []
     complete: list[str] = []
@@ -198,15 +237,18 @@ def scan_reads(path: Path) -> dict:
             pending = {}
         if entry.get('isSidechain'):
             continue
+        queued = gate.queued_text(entry) if entry.get("type") == "attachment" else None
+        if queued is not None and gate.TYPED.search(queued):
+            entered = True
         if entry.get("type") == "user":
             for result in content if isinstance(content, list) else []:
                 if not isinstance(result, dict) or result.get('type') != 'tool_result':
                     continue
-                read, name = pending.pop(result.get('tool_use_id'), ('', ''))
+                read, loads = pending.pop(result.get('tool_use_id'), ('', False))
                 if read and complete_result(entry, result):
                     inputs.append(read)
                     complete.extend(read.splitlines())
-                    if name == 'Read':
+                    if loads:
                         loaded.update(phase for phase in reads if read.endswith(f'/{phase}/SKILL.md'))
             if not entry.get('isMeta') and not any(isinstance(b, dict) and b.get('type') == 'tool_result'
                                                   for b in (content if isinstance(content, list) else [])):
@@ -214,21 +256,38 @@ def scan_reads(path: Path) -> dict:
                 for name in reads:
                     if f"/workflow-axa:{name}" in text or f"/{name}<" in text:
                         loaded.add(name)
+                typed = content if isinstance(content, str) else '\n'.join(
+                    str(b.get('text', '')) for b in content or [] if isinstance(b, dict) and b.get('type') == 'text')
+                typed = re.sub(r'<system-reminder>.*?</system-reminder>', ' ', typed, flags=re.S)
+                if gate.TYPED.search(typed):
+                    entered = True
+                if 'workflow-axa:' in typed:
+                    session = True
         if entry.get("type") != "assistant" or not isinstance(content, list):
             continue
         for block in content:
             if not isinstance(block, dict) or block.get("type") != "tool_use":
                 continue
-            data = json.dumps(block.get("input", {})).replace("\\\\", "/").replace("\\", "/")
+            data = block.get("input") or {}
             if block.get("name") == "Skill":
-                skill = str((block.get("input") or {}).get("skill", "")).split(":")[-1]
+                skill = own_skill(str(data.get("skill", "")).lstrip("/"))
+                session = session or skill is not None
+                entered = entered or skill == "workflow" or skill in gate.PHASES
                 if skill in reads:
                     loaded.add(skill)
-            if block.get("name") == "Read":
-                # E5: the router's fallback, "or read its SKILL.md in full", loads the phase too.
+            # E5: the router's fallback, "or read its SKILL.md in full", loads the phase too. For the Stop hook only
+            # in a session that already started a workflow or wrote a task record (H2).
+            loads = block.get("name") == "Read" and (not entry_required or (entered and gate.package_skill_read(data)))
+            if loads and not block.get('id'):
                 read = whole_reads(block)
-                if read and not block.get('id'):
-                    loaded.update(name for name in reads if read.endswith(f"/{name}/SKILL.md"))
+                loaded.update(name for name in reads if read.endswith(f"/{name}/SKILL.md"))
+            if block.get("name") in EDIT_TOOLS:
+                entered = entered or bool(gate.TASK_PATH.search(
+                    str(data.get("file_path") or data.get("notebook_path") or "").replace("\\", "/") + "/"))
+            elif block.get("name") in ("Bash", "PowerShell"):
+                entered = entered or any(kind == 'path' and gate.TASK_PATH.search(where + '/') for kind, where, _ in
+                                         gate.shell_writes(str(data.get('command', '')), str(entry.get('cwd') or ''),
+                                                           block.get("name") == "PowerShell"))
             # Detect explicit task metadata, not the mere presence of "screen_change": "not-needed".
             plain = json.dumps(block.get("input", {})).replace('\\"', '"')
             if re.search(r'"screen_change"\s*:\s*"visible"|"ui_review"\s*:\s*\{', plain):
@@ -242,10 +301,11 @@ def scan_reads(path: Path) -> dict:
                 code = True
             read = whole_reads(block)
             if block.get('id'):
-                pending[block['id']] = (read, block.get('name', ''))
+                pending[block['id']] = (read, loads)
             else:
                 inputs.append(read)  # legacy ID-less transcripts: best-effort call evidence only
-    return {'loaded': loaded, 'inputs': inputs, 'complete': complete, 'visible': visible, 'tdd': tdd, 'code': code}
+    return {'loaded': loaded, 'inputs': inputs, 'complete': complete, 'visible': visible, 'tdd': tdd, 'code': code,
+            'entered': entered, 'session': session or entered}
 
 
 def unread_files(path: Path, found: dict | None = None) -> dict[str, list[str]]:
@@ -370,20 +430,30 @@ def main() -> int:
         return 0  # one substantive correction at most; never loop
     # A direct stop must not cause another round of reading, reviewing or implementation.
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location('phase_gate_stop', Path(__file__).with_name('phase_gate.py'))
-        gate = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(gate)
+        gate = gate_module()
+    except GATE_LOAD_ERRORS:
+        return 0  # a missing or broken phase_gate.py: no Stop checks rather than a crash
+    try:
         state = gate.scan(Path(event.get('transcript_path', '')), str(event.get('cwd') or ''))
         task = state['tasks'][-1][0] if state['tasks'] else '*'
         if task in state.get('paused_tasks', {}) or '*' in state.get('paused_tasks', {}):
             return 0
     except (OSError, ValueError, KeyError, TypeError):
-        pass
+        state = None
     try:
-        reply, used = last_reply_and_usage(Path(event.get("transcript_path", "")))
+        # H4 (R11): a small change has no plan report, so its guides are not demanded. The review still is.
+        small = bool(state) and gate.small_change_without_report(state, str(event.get('cwd') or ''))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        small = False
+    try:
+        reply = last_reply(Path(event.get("transcript_path", "")))
     except OSError:
         return 0
+    try:
+        evidence = scan_reads(Path(event.get("transcript_path", "")), gate=gate)
+    except (OSError, ValueError, AttributeError):
+        evidence = None
+    used = bool(evidence and evidence['session'])  # a package skill, typed command or record write, never a path (R12)
     # The host supplies conversational output even when its transcript representation differs.
     # This input only controls stopping; it never becomes approval or persistent presentation evidence.
     if isinstance(event.get('last_assistant_message'), str):
@@ -392,9 +462,12 @@ def main() -> int:
         return 0  # no correction/review/read loop while the owner is deciding; write gates stay active
     found = problems(reply) if used else []
     try:
-        unread = unread_files(Path(event.get("transcript_path", ""))) if used else {}
+        unread = unread_files(Path(event.get("transcript_path", "")), evidence) if used else {}
     except (OSError, ValueError, AttributeError):
         unread = {}
+    if small:
+        unread = {phase: kept for phase, files in unread.items()
+                  if (kept := [rel for rel in files if rel not in gate.REPORT_GUIDES])}
     try:
         behind = unsaid_behind(Path(event.get("transcript_path", ""))) if used else None
     except OSError:

@@ -47,6 +47,7 @@ for (const canvas of document.querySelectorAll('.canvas')) {
   canvas.addEventListener('keydown', event => {
     const choices = ['100', '125', '150'];
     const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    if (!selected) return;  // diagrams that fit the column have no zoom controls
     let index = choices.indexOf(selected.id.slice(5));
     let next = null;
     if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];

@@ -1,0 +1,1799 @@
+{
+  "schema_version": 2,
+  "title": "Consistent, lighter workflow and documentation",
+  "revision": "r1",
+  "mode": "compare",
+  "state": "awaiting-approval",
+  "snapshot": {
+    "repository": "workflow-axa",
+    "branch": "main, main checkout. Nothing committed. The tree holds the staged rc.35 work, the guard and your report patch.",
+    "basis": "Based on four read-only investigations, a plan review and your decisions of 2026-11-11. Nothing is built."
+  },
+  "understanding": "You want one short entry point per repository, documentation that stays true to the code, fewer rules said once, and fewer questions. Nothing that protects you today is removed.",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "AGENTS.md is short: rules, boundaries, the common build and test commands, and an index with one line per entry.",
+      "origin": "D24, D25 in DECISIONS.md"
+    },
+    {
+      "id": "R2",
+      "text": "CLAUDE.md is the line @AGENTS.md, and a fresh session must show that it loads.",
+      "origin": "D14, D30 in DECISIONS.md"
+    },
+    {
+      "id": "R3",
+      "text": "Each document has one responsibility. Rule-maker holds one table of what belongs where.",
+      "origin": "D11, D22 in DECISIONS.md"
+    },
+    {
+      "id": "R4",
+      "text": "Every needed document is reachable from AGENTS.md, directly or through shallow nested indexes.",
+      "origin": "D22, D24 in DECISIONS.md"
+    },
+    {
+      "id": "R5",
+      "text": "Each workflow phase handles documentation incrementally. A full audit runs only when asked.",
+      "origin": "D22 in DECISIONS.md"
+    },
+    {
+      "id": "R6",
+      "text": "Each affected claim is reported as verified with evidence, contradicted, or not verified with the reason.",
+      "origin": "D33 in DECISIONS.md"
+    },
+    {
+      "id": "R7",
+      "text": "A broken required link and an unsafe contradiction block. All existing protections stay.",
+      "origin": "D12, D26 in DECISIONS.md"
+    },
+    {
+      "id": "R8",
+      "text": "Rule-maker has three operations: audit, apply an approved proposal, and check.",
+      "origin": "D13, D22 in DECISIONS.md"
+    },
+    {
+      "id": "R9",
+      "text": "User-facing changes carry a purpose statement. Missing intent that changes the result is asked, never invented.",
+      "origin": "D6 to D10 in DECISIONS.md"
+    },
+    {
+      "id": "R10",
+      "text": "One vocabulary, American spelling, each rule stated once, no version history in instructions.",
+      "origin": "D2 to D5, D16 in DECISIONS.md"
+    },
+    {
+      "id": "R11",
+      "text": "A small-change route keeps your quoted yes, tests and one review, and drops the HTML report.",
+      "origin": "D15 in DECISIONS.md"
+    },
+    {
+      "id": "R12",
+      "text": "Hook changes are built in an isolated copy, after the known gate failures are reproduced.",
+      "origin": "D17, D26 in DECISIONS.md"
+    },
+    {
+      "id": "R13",
+      "text": "The session-start guard names overlapping process plugins and disables nothing.",
+      "origin": "D18 in DECISIONS.md"
+    },
+    {
+      "id": "R14",
+      "text": "Budgets for reference files, a duplication check, and obsolete root documents archived.",
+      "origin": "D19, D20 in DECISIONS.md"
+    },
+    {
+      "id": "R15",
+      "text": "Questions: research first, plain choices as assumptions, only consequential choices asked.",
+      "origin": "D23 in DECISIONS.md"
+    },
+    {
+      "id": "R16",
+      "text": "Adversarial tests for documentation, sessions, approval states and bypass attempts.",
+      "origin": "D29 in DECISIONS.md"
+    },
+    {
+      "id": "R17",
+      "text": "Deterministic tests first, then at most 5 capped headless sessions, then manual host checks.",
+      "origin": "D28 in DECISIONS.md"
+    },
+    {
+      "id": "R18",
+      "text": "The real-repository trial is read-only.",
+      "origin": "D31 in DECISIONS.md"
+    }
+  ],
+  "boundaries": [
+    "All approval gates, safety hooks and blocking protections, and the duplicate guard.",
+    "The shared standards library and its global imports.",
+    "Vendored upstream text, byte for byte.",
+    "Your report patch in skills/codebase-map.",
+    "Every project repository outside this one. The trial only reads them."
+  ],
+  "open_decisions": [],
+  "write_paths": [
+    "hooks/",
+    "tests/",
+    "tools/validate.py",
+    "skills/",
+    "CONTEXT.md",
+    "docs/",
+    "CHANGELOG.md",
+    "README.md",
+    "UPGRADE.md",
+    "VALIDATION.md",
+    ".claude-plugin/",
+    "AUDIT-rc5.md",
+    "UI-LITE-HANDOFF.md"
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-11-consistency-review-findings/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-11-consistency-review-findings/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-11-consistency-review-findings/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-11-consistency-review-findings/DECISIONS.md",
+      "role": "decisions"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "Instruction files on this machine range from 9 to 3,055 lines, with four different CLAUDE.md styles.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, Part 4 and E32",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    },
+    {
+      "id": "E2",
+      "claim": "No skill reads a product description, no index exists, and nothing checks documented claims against code.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, Parts 3 and 4",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    },
+    {
+      "id": "E3",
+      "claim": "The package already has CONTEXT.md, docs/adr, version_facts.py and the required-read marker to build on.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, E33",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    },
+    {
+      "id": "E4",
+      "claim": "A UI feature reads 32 files and about 34,600 words. \"Never write CSS\" is stated in 22 places.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, Part 5",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    },
+    {
+      "id": "E5",
+      "claim": "Reading a phase skill file started a phase, and a chained git apply passed the gate.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, Part 5; guard task FINDINGS",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    },
+    {
+      "id": "E6",
+      "claim": "Claude Code 2.1.322 has a per-invocation spending cap. Codex is not installed here.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS.md, E30 and E34",
+      "limits": "Read-only investigation by subagents, partly rechecked by the agent."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "The script reports each structural problem on a fixture, and a negative test proves each one.",
+      "requirements": [
+        "R1",
+        "R4",
+        "R7"
+      ],
+      "verification": "Run tests/test_docs_check.py."
+    },
+    {
+      "id": "A2",
+      "text": "The script lists the documents related to the changed files of a fixture task.",
+      "requirements": [
+        "R5"
+      ],
+      "verification": "Run tests/test_docs_check.py."
+    },
+    {
+      "id": "A3",
+      "text": "Fixtures cover missing docs, nested docs, stale references, conflicts, renames, a monorepo, several instruction files and undocumented code.",
+      "requirements": [
+        "R16"
+      ],
+      "verification": "Run tests/test_docs_check.py."
+    },
+    {
+      "id": "A4",
+      "text": "A wrong command, path and behavior are reported as contradicted with evidence. A business claim is not verifiable.",
+      "requirements": [
+        "R6"
+      ],
+      "verification": "Fresh-subagent check in W1a, and capped run 3."
+    },
+    {
+      "id": "A5",
+      "text": "A fresh session loads AGENTS.md through a one-line CLAUDE.md.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "Capped run 1 with a unique word and file tools disabled."
+    },
+    {
+      "id": "A6",
+      "text": "Each hook change has a test that failed before it. All existing hook tests pass.",
+      "requirements": [
+        "R12"
+      ],
+      "verification": "Hook tests in the copy, then in the checkout."
+    },
+    {
+      "id": "A7",
+      "text": "Adversarial tests for interrupted sessions, resumed tasks, wrong approval states and bypass attempts pass.",
+      "requirements": [
+        "R16"
+      ],
+      "verification": "Run tests/test_gate_regressions.py."
+    },
+    {
+      "id": "A8",
+      "text": "The validator enforces the budgets and the duplication check. The suite gives the baseline plus the new tests.",
+      "requirements": [
+        "R14",
+        "R10"
+      ],
+      "verification": "Run tools/validate.py and the full suite."
+    },
+    {
+      "id": "A9",
+      "text": "Skills stay within their budgets, and a check lists remaining synonyms.",
+      "requirements": [
+        "R10",
+        "R3",
+        "R5"
+      ],
+      "verification": "Run tools/validate.py."
+    },
+    {
+      "id": "A10",
+      "text": "The read-only audit writes a proposal for each accessible repository.",
+      "requirements": [
+        "R8",
+        "R18"
+      ],
+      "verification": "Compare before and after hash lists of each repository."
+    },
+    {
+      "id": "A11",
+      "text": "At most 5 capped sessions show the documentation step, within 5 US dollars in total.",
+      "requirements": [
+        "R17"
+      ],
+      "verification": "Keep each invocation JSON and add up the cost."
+    },
+    {
+      "id": "A12",
+      "text": "With superpowers enabled, the start note names the overlap. Without it, nothing is added.",
+      "requirements": [
+        "R13"
+      ],
+      "verification": "Run tests/test_duplicate_skills_hook.py."
+    },
+    {
+      "id": "A13",
+      "text": "A fresh subagent writes the purpose from CONTEXT.md, chooses by job and records why, and asks when intent is missing.",
+      "requirements": [
+        "R9"
+      ],
+      "verification": "Fresh-subagent check in W1b."
+    },
+    {
+      "id": "A14",
+      "text": "A fresh subagent states plain choices as assumptions and asks only the product choice.",
+      "requirements": [
+        "R15"
+      ],
+      "verification": "Fresh-subagent check in W1c."
+    },
+    {
+      "id": "A15",
+      "text": "The gate allows the listed files after the quoted yes, and refuses other and new files.",
+      "requirements": [
+        "R11"
+      ],
+      "verification": "Hook tests, and capped run 2."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "H1",
+      "title": "Reproduce the known gate failures in an isolated copy",
+      "kind": "prerequisite",
+      "reason": "Each hook change must be checked against real failures.",
+      "requirements": [
+        "R12",
+        "R16"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A6",
+        "A7"
+      ],
+      "areas": [
+        "tests/test_gate_regressions.py (in the copy)"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "H2",
+      "title": "Enter a phase only through a real phase start",
+      "kind": "requested",
+      "reason": "Reading a skill file started a phase by mistake.",
+      "requirements": [
+        "R12"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A6"
+      ],
+      "areas": [
+        "hooks/phase_gate.py",
+        "hooks/plain_reply.py"
+      ],
+      "depends_on": [
+        "H1"
+      ]
+    },
+    {
+      "id": "H3",
+      "title": "Keep edits of one task working while another task's records change, and close the chained-command pass",
+      "kind": "requested",
+      "reason": "Today a second task blocked approved edits, and a chained command passed.",
+      "requirements": [
+        "R12",
+        "R16"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A6",
+        "A7"
+      ],
+      "areas": [
+        "hooks/phase_gate.py"
+      ],
+      "depends_on": [
+        "H2"
+      ]
+    },
+    {
+      "id": "H4",
+      "title": "Let the gate accept the small-change route",
+      "kind": "requested",
+      "reason": "The small-change route needs the gate to allow it.",
+      "requirements": [
+        "R11",
+        "R12"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A6",
+        "A15"
+      ],
+      "areas": [
+        "hooks/phase_gate.py",
+        "hooks/plain_reply.py"
+      ],
+      "depends_on": [
+        "H3"
+      ]
+    },
+    {
+      "id": "H5",
+      "title": "Name overlapping process plugins at session start",
+      "kind": "requested",
+      "reason": "You asked to detect and explain the overlap.",
+      "requirements": [
+        "R13"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A12"
+      ],
+      "areas": [
+        "hooks/duplicate_skills.py"
+      ],
+      "depends_on": [
+        "H1"
+      ]
+    },
+    {
+      "id": "H6",
+      "title": "Copy the verified hooks into the checkout",
+      "kind": "prerequisite",
+      "reason": "The hook changes take effect only in the checkout.",
+      "requirements": [
+        "R12"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "acceptance": [
+        "A6",
+        "A7",
+        "A12"
+      ],
+      "areas": [
+        "hooks/",
+        "tests/"
+      ],
+      "depends_on": [
+        "H4",
+        "H5"
+      ]
+    },
+    {
+      "id": "D1",
+      "title": "Check documentation structure with a script",
+      "kind": "requested",
+      "reason": "Documentation needs a cheap, repeatable structure check.",
+      "requirements": [
+        "R1",
+        "R4",
+        "R7",
+        "R16"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A1",
+        "A3"
+      ],
+      "areas": [
+        "skills/rule-maker/scripts/docs_check.py",
+        "tests/test_docs_check.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "D2",
+      "title": "List related documents and check named facts",
+      "kind": "requested",
+      "reason": "Checks must follow the files a task changes.",
+      "requirements": [
+        "R5",
+        "R6"
+      ],
+      "evidence": [
+        "E2",
+        "E3"
+      ],
+      "acceptance": [
+        "A2",
+        "A4"
+      ],
+      "areas": [
+        "skills/rule-maker/scripts/docs_check.py"
+      ],
+      "depends_on": [
+        "D1"
+      ]
+    },
+    {
+      "id": "D3",
+      "title": "Redesign rule-maker around entry point, index and three operations",
+      "kind": "requested",
+      "reason": "This is the redesign you asked for.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R6",
+        "R7",
+        "R8"
+      ],
+      "evidence": [
+        "E1",
+        "E3"
+      ],
+      "acceptance": [
+        "A9",
+        "A10"
+      ],
+      "areas": [
+        "skills/rule-maker/"
+      ],
+      "depends_on": [
+        "D2"
+      ]
+    },
+    {
+      "id": "W1a",
+      "title": "Add the documentation step to the phases",
+      "kind": "requested",
+      "reason": "Documentation must stay in step with the code on every task.",
+      "requirements": [
+        "R5",
+        "R6",
+        "R7"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A4",
+        "A9"
+      ],
+      "areas": [
+        "skills/workflow-clarify/",
+        "skills/workflow-specify/",
+        "skills/workflow-execute/",
+        "skills/workflow-deliver/",
+        "skills/workflow/"
+      ],
+      "depends_on": [
+        "D3"
+      ]
+    },
+    {
+      "id": "W1b",
+      "title": "Choose UI elements by the job they do for the user",
+      "kind": "requested",
+      "reason": "UI elements were chosen by look, not by purpose.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A13"
+      ],
+      "areas": [
+        "skills/ui-design/",
+        "skills/rule-maker/rules/design.md",
+        "skills/workflow-clarify/"
+      ],
+      "depends_on": [
+        "W1a"
+      ]
+    },
+    {
+      "id": "W1c",
+      "title": "Ask fewer, better questions",
+      "kind": "requested",
+      "reason": "You asked for fewer and better questions.",
+      "requirements": [
+        "R15"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A14"
+      ],
+      "areas": [
+        "skills/grilling/SKILL.md",
+        "skills/workflow-clarify/"
+      ],
+      "depends_on": [
+        "W1b"
+      ]
+    },
+    {
+      "id": "L1",
+      "title": "Describe the small-change route",
+      "kind": "requested",
+      "reason": "The prose must match what the gate enforces.",
+      "requirements": [
+        "R11"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A15",
+        "A9"
+      ],
+      "areas": [
+        "skills/workflow/"
+      ],
+      "depends_on": [
+        "H6",
+        "W1c"
+      ]
+    },
+    {
+      "id": "L3",
+      "title": "Add budgets, the term and owner table, and the term check to the package validator",
+      "kind": "requested",
+      "reason": "Budgets and one vocabulary stop the growth.",
+      "requirements": [
+        "R10",
+        "R14",
+        "R16"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A8",
+        "A9"
+      ],
+      "areas": [
+        "tools/validate.py",
+        "CONTEXT.md",
+        "tests/test_validate_budgets.py"
+      ],
+      "depends_on": [
+        "D1"
+      ]
+    },
+    {
+      "id": "L4",
+      "title": "Archive obsolete root documents",
+      "kind": "requested",
+      "reason": "You asked to archive obsolete working documents.",
+      "requirements": [
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A8"
+      ],
+      "areas": [
+        "AUDIT-rc5.md",
+        "UI-LITE-HANDOFF.md",
+        "docs/archive/"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2a1",
+      "title": "Consolidate and align the wording of skills/workflow",
+      "kind": "requested",
+      "reason": "One language and one home per rule.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/workflow/"
+      ],
+      "depends_on": [
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "T2a2",
+      "title": "Consolidate and align the wording of the phase and status skills",
+      "kind": "requested",
+      "reason": "One language and one home per rule.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/workflow-clarify/",
+        "skills/workflow-execute/",
+        "skills/resume-task/",
+        "skills/task-status/",
+        "skills/plan-review/",
+        "skills/workflow-doctor/"
+      ],
+      "depends_on": [
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "T2b",
+      "title": "Consolidate and align the wording of codebase-map and ui-design",
+      "kind": "requested",
+      "reason": "One language and one home per rule.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/codebase-map/",
+        "skills/ui-design/"
+      ],
+      "depends_on": [
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "T2c",
+      "title": "Consolidate and align the wording of rule-maker",
+      "kind": "requested",
+      "reason": "One language and one home per rule.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/rule-maker/"
+      ],
+      "depends_on": [
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "T2d",
+      "title": "Consolidate and align the wording of the other skills and package docs",
+      "kind": "requested",
+      "reason": "One language and one home per rule.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/",
+        "README.md",
+        "UPGRADE.md",
+        "docs/ARCHITECTURE.md"
+      ],
+      "depends_on": [
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Merge moved explanations, update asserted phrases and run the whole suite",
+      "kind": "requested",
+      "reason": "All wording changes meet their tests here.",
+      "requirements": [
+        "R10",
+        "R14"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "acceptance": [
+        "A8",
+        "A9"
+      ],
+      "areas": [
+        "docs/EVALUATION.md",
+        "tests/",
+        "tools/validate.py"
+      ],
+      "depends_on": [
+        "T2a1",
+        "T2a2",
+        "T2b",
+        "T2c",
+        "T2d"
+      ]
+    },
+    {
+      "id": "X1",
+      "title": "Release notes and version",
+      "kind": "prerequisite",
+      "reason": "The release must name and number this work.",
+      "requirements": [
+        "R14"
+      ],
+      "evidence": [
+        "E3"
+      ],
+      "acceptance": [
+        "A8"
+      ],
+      "areas": [
+        "CHANGELOG.md",
+        ".claude-plugin/",
+        "skills/rule-maker/rules/version.json",
+        "skills/workflow/specialists.json",
+        "skills/codebase-map/scripts/render_report.py",
+        "tests/behavioral/"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    },
+    {
+      "id": "V1",
+      "title": "Audit the accessible repositories read-only",
+      "kind": "requested",
+      "reason": "You asked to test the design against real repositories.",
+      "requirements": [
+        "R8",
+        "R18"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "acceptance": [
+        "A10"
+      ],
+      "areas": [
+        ".artifacts/ (proposals only)"
+      ],
+      "depends_on": [
+        "X1"
+      ]
+    },
+    {
+      "id": "V2",
+      "title": "Run realistic sessions within the cap and the host checks",
+      "kind": "requested",
+      "reason": "Simulated tests do not show live behavior.",
+      "requirements": [
+        "R2",
+        "R7",
+        "R16",
+        "R17"
+      ],
+      "evidence": [
+        "E6"
+      ],
+      "acceptance": [
+        "A4",
+        "A5",
+        "A11",
+        "A15"
+      ],
+      "areas": [
+        ".artifacts/ (runs only)"
+      ],
+      "depends_on": [
+        "V1"
+      ]
+    }
+  ],
+  "graphs": [
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "On a task",
+      "title": "What happens on a task after the change",
+      "description": "Runs for every change task.",
+      "width": 840,
+      "height": 1048,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Task starts",
+          "note": "",
+          "shape": "start",
+          "x": 120,
+          "y": 40,
+          "width": 280,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Agent reads AGENTS.md",
+          "note": "Rules, commands, index",
+          "shape": "action",
+          "x": 120,
+          "y": 160,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "D3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Reads related docs only",
+          "note": "From links, folders, hints",
+          "shape": "action",
+          "x": 120,
+          "y": 296,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "D2",
+            "W1a"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N4",
+          "label": "Builds code and docs",
+          "note": "One task, one change",
+          "shape": "action",
+          "x": 120,
+          "y": 432,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N5",
+          "label": "Unsafe\ncontradiction?",
+          "note": "",
+          "shape": "decision",
+          "x": 132,
+          "y": 568,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N6",
+          "label": "Task stops for you",
+          "note": "You decide what is right",
+          "shape": "result",
+          "x": 520,
+          "y": 604,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N7",
+          "label": "Checks links and claims",
+          "note": "Script, then claim review",
+          "shape": "action",
+          "x": 120,
+          "y": 776,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "D2",
+            "W1a"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N8",
+          "label": "Report what was verified",
+          "note": "Verified, contradicted, not verified",
+          "shape": "result",
+          "x": 100,
+          "y": 912,
+          "width": 320,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              260,
+              112
+            ],
+            [
+              260,
+              160
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "D3"
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "",
+          "points": [
+            [
+              260,
+              248
+            ],
+            [
+              260,
+              296
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "D2"
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "label": "",
+          "points": [
+            [
+              260,
+              384
+            ],
+            [
+              260,
+              432
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "",
+          "points": [
+            [
+              260,
+              520
+            ],
+            [
+              260,
+              568
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ]
+        },
+        {
+          "from": "N5",
+          "to": "N6",
+          "label": "Yes",
+          "points": [
+            [
+              388,
+              648
+            ],
+            [
+              520,
+              648
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "label_position": [
+            452,
+            620
+          ]
+        },
+        {
+          "from": "N5",
+          "to": "N7",
+          "label": "No",
+          "points": [
+            [
+              260,
+              728
+            ],
+            [
+              260,
+              776
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ],
+          "label_position": [
+            300,
+            756
+          ]
+        },
+        {
+          "from": "N7",
+          "to": "N8",
+          "label": "",
+          "points": [
+            [
+              260,
+              864
+            ],
+            [
+              260,
+              912
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "W1a"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "What happens on a task today",
+      "description": "Runs for every change task.",
+      "width": 840,
+      "height": 696,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Task starts",
+          "note": "",
+          "shape": "start",
+          "x": 120,
+          "y": 40,
+          "width": 280,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Loads instruction files",
+          "note": "Up to 3,055 lines today",
+          "shape": "action",
+          "x": 120,
+          "y": 160,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Reads what it finds",
+          "note": "No index, no relations",
+          "shape": "action",
+          "x": 120,
+          "y": 296,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N4",
+          "label": "Builds the change",
+          "note": "Docs updated if noticed",
+          "shape": "action",
+          "x": 120,
+          "y": 432,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N5",
+          "label": "Docs may drift",
+          "note": "Nothing checks claims",
+          "shape": "result",
+          "x": 120,
+          "y": 568,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              260,
+              112
+            ],
+            [
+              260,
+              160
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "",
+          "points": [
+            [
+              260,
+              248
+            ],
+            [
+              260,
+              296
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "label": "",
+          "points": [
+            [
+              260,
+              384
+            ],
+            [
+              260,
+              432
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "",
+          "points": [
+            [
+              260,
+              520
+            ],
+            [
+              260,
+              568
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": []
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "What a session loads",
+      "current": "Instruction files of 9 to 3,055 lines, in four styles.",
+      "proposed": "A short AGENTS.md with an index. CLAUDE.md is one import line.",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "evidence": [
+        "E1"
+      ],
+      "tasks": [
+        "D3"
+      ]
+    },
+    {
+      "label": "Finding the right document",
+      "current": "The agent reads what it happens to find.",
+      "proposed": "The index and the script name the documents related to the task.",
+      "requirements": [
+        "R4",
+        "R5"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "D1",
+        "D2",
+        "W1a"
+      ]
+    },
+    {
+      "label": "Keeping documents true",
+      "current": "Nothing checks documented claims against the code.",
+      "proposed": "Each affected claim is reported as verified, contradicted or not verified.",
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "D2",
+        "W1a"
+      ]
+    },
+    {
+      "label": "A small visible change",
+      "current": "Both gates, an HTML report and a screen diagram.",
+      "proposed": "Your quoted yes, tests and one review, checked by the gate.",
+      "requirements": [
+        "R11"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "tasks": [
+        "H4",
+        "L1"
+      ]
+    },
+    {
+      "label": "How a rule is written",
+      "current": "Up to 22 copies in different words.",
+      "proposed": "Once in its owning file, with pointers elsewhere.",
+      "requirements": [
+        "R10"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "tasks": [
+        "L3",
+        "T2a1"
+      ]
+    },
+    {
+      "label": "Questions you get",
+      "current": "Twenty questions, many with an obvious default.",
+      "proposed": "Plain choices as assumptions, only consequential ones asked.",
+      "requirements": [
+        "R15"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "tasks": [
+        "W1c"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "planning",
+    "screen_change": "none",
+    "agreement": {
+      "status": "approved",
+      "revision": "r2",
+      "response": "I agree with the revised architecture, with the following adjustments before creating the detailed implementation plan.",
+      "summary": "You agreed to revision r2 with nine adjustments. Revision r3 only adds four acceptance checks, asked with this plan.",
+      "source": "S4",
+      "locator": "DECISIONS.md, Agreement"
+    },
+    "attention": [
+      {
+        "text": "Revision r3 adds four acceptance checks the plan review found missing. Your yes to this plan also agrees to them.",
+        "source": "S1",
+        "locator": "PLAN.md, Agreement revision r3"
+      },
+      {
+        "text": "The spending cap is per call with headroom. A call already running when a cap is hit is not bounded by the CLI.",
+        "source": "S2",
+        "locator": "TODO.md, V2"
+      },
+      {
+        "text": "When the hooks are copied back, every session that loads this checkout switches at its next event.",
+        "source": "S2",
+        "locator": "TODO.md, H6"
+      }
+    ],
+    "sections": [
+      {
+        "id": "request",
+        "title": "Context and scope",
+        "source": "S3",
+        "locator": "FINDINGS.md, Parts 1 to 5",
+        "text": "Instruction files on your repositories differ in size and shape. Documentation is scattered, and nothing checks it against the code.\n\nThe workflow skills say the same rule in many places and use several words for one thing. You get many questions with obvious answers.\n\nThis plan builds one short entry point, a documentation check, lighter rules and better questions. Nothing that protects you today is removed."
+      },
+      {
+        "id": "goals",
+        "title": "Goals",
+        "source": "S1",
+        "locator": "PLAN.md, Agreement r2",
+        "text": "A configured repository has a short AGENTS.md with rules, commands and an index of documents with \"read when\" lines.\n\nAn agent reads only the documents a task needs and keeps them true to the code.\n\nThe delivery lists each affected claim as verified, contradicted or not verified.\n\nEach rule is stated once, in one vocabulary.\n\nGenuinely small changes take a lighter route that keeps your approval.\n\nYou get fewer, better questions."
+      },
+      {
+        "id": "non-goals",
+        "title": "Non-goals",
+        "source": "S1",
+        "locator": "PLAN.md, Agreement r2, Not included",
+        "text": "Rewriting any project repository. The trial writes proposals only.\n\nA documentation generator, a generated manifest, or a mapping of every source file.\n\nDisabling plugins automatically.\n\nAn ADR, unless a lasting trade-off is not already in DECISIONS.md."
+      },
+      {
+        "id": "specification",
+        "title": "Overview",
+        "source": "S2",
+        "locator": "TODO.md, Tickets",
+        "text": "Rule-maker becomes the owner of project instructions and documentation, with three operations: audit, apply and check. A small script does the checks a machine can do.\n\nThe script follows links from AGENTS.md, finds related documents through links and folders, and checks named paths, commands and versions. The agent checks the meaning of each affected claim.\n\nHook changes are built in a copy, tested against real failures, and copied back in one step.\n\nThe wording pass runs last, split by folder, so parallel workers never edit the same file."
+      },
+      {
+        "id": "decisions",
+        "title": "Alternatives considered",
+        "source": "S4",
+        "locator": "DECISIONS.md, D1 to D34",
+        "text": "The AGENTS.md index is the manifest. Not chosen: a generated manifest, because it would be a second copy that drifts.\n\nRelationships come from links and folders. Not chosen: a hand-kept file-by-file mapping, which you ruled out.\n\nRule-maker is extended. Not chosen: a new skill, because the responsibility belongs together.\n\nA separate script for documentation. Not chosen: extending readiness.py, whose job is different.\n\nThe gate keeps its stop in every unclear case. Not chosen: attributing an edit to a task whose paths are unknown."
+      },
+      {
+        "id": "risks",
+        "title": "Cross-cutting concerns",
+        "source": "S3",
+        "locator": "FINDINGS.md, Plan review",
+        "text": "The hook changes touch the approval gate. Every existing protection keeps its tests, and new adversarial tests are added first.\n\nThe spending cap works per call. A call already running when a cap is reached can still finish, so the plan keeps one dollar of headroom.\n\nThe reported cost is an estimate at API prices. On a subscription account it is not the amount billed.\n\nCodex is not installed here, so it is checked against its documentation only.\n\nThe audit proposals quote private project content and stay in an ignored folder."
+      },
+      {
+        "id": "testing",
+        "title": "How it is tested",
+        "source": "S2",
+        "locator": "TODO.md, Bigger checks",
+        "text": "Each script and hook change gets a failing test first. Fixtures with deliberate problems prove that each check detects them.\n\nFresh subagents test the new instructions on fixtures: the claim review, the purpose statement and the questions.\n\nThe full suite runs after the hooks are copied back and after the wording pass. An independent reviewer checks the whole result.\n\nThen at most 5 capped live sessions, and two checks only you can do."
+      },
+      {
+        "id": "milestones",
+        "title": "Milestones",
+        "source": "S2",
+        "locator": "TODO.md, Overview",
+        "text": "First, in parallel: the failure reproduction, the guard addition, the documentation script and the archive.\n\nThen the hook changes in a row, and the rule-maker redesign with the phase steps.\n\nThen the small-change prose, the wording pass by folder, the test updates and the release.\n\nLast, the read-only trial on your repositories and the capped live runs."
+      }
+    ],
+    "tickets": [
+      {
+        "task": "H1",
+        "specification": "Copy the repository to a candidate folder and write failing tests for the gate problems seen so far, plus adversarial cases.",
+        "expected": "Problems that cannot be reproduced from trustworthy evidence are recorded as not reproduced.",
+        "source": "S2",
+        "locator": "TODO.md, H1"
+      },
+      {
+        "task": "H2",
+        "specification": "A phase starts through a Skill call, a typed command, or a whole read under the plugin root in an active session. The folder name no longer counts.",
+        "expected": "Every existing hook test still passes.",
+        "source": "S2",
+        "locator": "TODO.md, H2"
+      },
+      {
+        "task": "H3",
+        "specification": "The stop is lifted only when the other task has its own approved paths and the file is outside them. A chained command is judged by its project write.",
+        "expected": "In every unclear case the stop remains. The change never widens an approval.",
+        "source": "S2",
+        "locator": "TODO.md, H3"
+      },
+      {
+        "task": "H4",
+        "specification": "A Small change checkpoint line allows writes to its listed files after your quoted yes, without an HTML report.",
+        "expected": "Other files and new files are refused. An interface change inside a listed file is checked by instructions only.",
+        "source": "S2",
+        "locator": "TODO.md, H4"
+      },
+      {
+        "task": "H5",
+        "specification": "The start note adds one line when settings enable superpowers. It names the overlapping skills and which to use.",
+        "expected": "Nothing is disabled. Malformed settings add nothing.",
+        "source": "S2",
+        "locator": "TODO.md, H5"
+      },
+      {
+        "task": "H6",
+        "specification": "Copy the listed files after a hash check, each in one step. Sessions that load this checkout switch at their next event.",
+        "expected": "A changed checkout stops the copy. All hook tests and the full suite run in the checkout.",
+        "source": "S2",
+        "locator": "TODO.md, H6"
+      },
+      {
+        "task": "D1",
+        "specification": "A read-only script follows links from AGENTS.md and reports missing files, broken links, unreachable documents, cycles, depth, size and repeats.",
+        "expected": "Only a broken link to a required document is blocking. Fixtures are built in a temporary folder.",
+        "source": "S2",
+        "locator": "TODO.md, D1"
+      },
+      {
+        "task": "D2",
+        "specification": "For changed files the script lists related documents by links, folders and optional hints, and checks named paths, commands and versions.",
+        "expected": "It never calls a document accurate. Meaning is left to the claim review.",
+        "source": "S2",
+        "locator": "TODO.md, D2"
+      },
+      {
+        "task": "D3",
+        "specification": "Rule-maker gets audit, apply and check, and a DOCS.md with the responsibility table, the AGENTS.md shape and the claim review.",
+        "expected": "Valid existing rules still pass. The shared standards library stays where it is.",
+        "source": "S2",
+        "locator": "TODO.md, D3"
+      },
+      {
+        "task": "W1a",
+        "specification": "Each phase gets a short documentation step that points to DOCS.md. Delivery lists every affected claim with its verdict.",
+        "expected": "An unsafe contradiction stops the task and comes to you.",
+        "source": "S2",
+        "locator": "TODO.md, W1a"
+      },
+      {
+        "task": "W1b",
+        "specification": "A user-facing change gets a purpose statement. The element is found by its job, mirrored, and the reason recorded.",
+        "expected": "Missing intent that changes the result is asked, never invented.",
+        "source": "S2",
+        "locator": "TODO.md, W1b"
+      },
+      {
+        "task": "W1c",
+        "specification": "Research comes first. Plain choices become stated assumptions. Only consequential choices are asked, grouped, with a recommendation.",
+        "expected": "The vendored grilling text stays byte for byte.",
+        "source": "S2",
+        "locator": "TODO.md, W1c"
+      },
+      {
+        "task": "L1",
+        "specification": "The router, the gate file and the task-folder file describe the small-change route exactly as H4 enforces it.",
+        "expected": "It says which limits only instructions enforce.",
+        "source": "S2",
+        "locator": "TODO.md, L1"
+      },
+      {
+        "task": "L3",
+        "specification": "The validator checks reference-file budgets and repeats. CONTEXT.md holds the terms and the owner of each repeated rule.",
+        "expected": "Ceilings start at today sizes. The synonym check fails only after T3.",
+        "source": "S2",
+        "locator": "TODO.md, L3"
+      },
+      {
+        "task": "L4",
+        "specification": "Two unreferenced root documents move to docs/archive after a reference check.",
+        "expected": "The three documents that tests use stay.",
+        "source": "S2",
+        "locator": "TODO.md, L4"
+      },
+      {
+        "task": "T2a1",
+        "specification": "Terms, spelling, one home per rule, no version history, limit explanations listed for T3.",
+        "expected": "Tests are not edited here. Asserted phrases go to a list for T3.",
+        "source": "S2",
+        "locator": "TODO.md, T2a1"
+      },
+      {
+        "task": "T2a2",
+        "specification": "The same as T2a1 for the phase and status skills.",
+        "expected": "Tests are not edited here.",
+        "source": "S2",
+        "locator": "TODO.md, T2a2"
+      },
+      {
+        "task": "T2b",
+        "specification": "The same as T2a1 for codebase-map and ui-design. Your report patch content is kept.",
+        "expected": "Scripts and tests are not edited here.",
+        "source": "S2",
+        "locator": "TODO.md, T2b"
+      },
+      {
+        "task": "T2c",
+        "specification": "The same as T2a1 for rule-maker and its rules. The rules manifest is regenerated.",
+        "expected": "CORE.md stays within 650 words.",
+        "source": "S2",
+        "locator": "TODO.md, T2c"
+      },
+      {
+        "task": "T2d",
+        "specification": "The same as T2a1 for the remaining skills and the package documents.",
+        "expected": "Vendored upstream text stays byte for byte.",
+        "source": "S2",
+        "locator": "TODO.md, T2d"
+      },
+      {
+        "task": "T3",
+        "specification": "Merge the moved explanations once, update each asserted phrase with the same meaning, lower the ceilings and run the suite.",
+        "expected": "No assertion is weakened. Baseline failures are named separately. An independent review follows.",
+        "source": "S2",
+        "locator": "TODO.md, T3"
+      },
+      {
+        "task": "X1",
+        "specification": "One CHANGELOG entry, version 2.8.0-rc.36 everywhere it is checked, and layout_version 3.",
+        "expected": "The four baseline failures disappear. Your rules copy then differs until you update it.",
+        "source": "S2",
+        "locator": "TODO.md, X1"
+      },
+      {
+        "task": "V1",
+        "specification": "Each of the 11 repositories gets a read-only audit and a private proposal with problems, a new AGENTS.md, risks and loaded words.",
+        "expected": "No repository file changes. Hash lists before and after prove it.",
+        "source": "S2",
+        "locator": "TODO.md, V1"
+      },
+      {
+        "task": "V2",
+        "specification": "At most 5 sessions and 9 invocations, each capped at 0.40 US dollars, started only while the total stays under the limit.",
+        "expected": "Results are observations of these runs only. Codex is reported as not tested.",
+        "source": "S2",
+        "locator": "TODO.md, V2"
+      }
+    ],
+    "checks": [],
+    "acceptance_results": []
+  }
+}

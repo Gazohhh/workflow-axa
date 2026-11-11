@@ -41,9 +41,15 @@ class ReleaseFromCheckoutTests(unittest.TestCase):
                        if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"}
             self.assertEqual({n for n in self.names if n.startswith(folder + "/")}, on_disk, folder)
         for name in ("LICENSE", "README.md", "CHANGELOG.md", "UPGRADE.md", "VALIDATION.md", "VENDORED-SKILLS.md",
-                     "docs/DESIGN.md", ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "hooks/hooks.json"):
+                     "docs/DESIGN.md", "docs/ARCHITECTURE.md", "docs/EVALUATION.md", ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "hooks/hooks.json"):
             self.assertIn(name, self.names)
         self.assertIn("MIT License", (ROOT / "LICENSE").read_text(encoding="utf-8"))
+
+    def test_archived_evaluation_records_are_not_shipped(self):
+        for name in ("CANDIDATE-REVIEW.md", "RC3-CASES.md", "CLAUDE-TEST-PROMPT.txt"):
+            self.assertTrue((ROOT / "docs/archive" / name).is_file(), name)
+            self.assertFalse((ROOT / name).exists(), name)
+            self.assertFalse(any(entry.rsplit("/", 1)[-1] == name for entry in self.names), name)
 
     def test_contains_no_excluded_path(self):
         for name in self.names:

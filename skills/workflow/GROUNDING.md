@@ -17,6 +17,8 @@ No access to the code: record that and stop repository-specific proposals. Don't
 
 In FINDINGS, give each finding an E-ID: path and symbol (line when useful), what it proves, and its limits. When docs and code disagree, say so; don't pick the convenient one. A claim with "only", "never" or "all" names the search behind it (command and scope), or it is not a finding.
 
+A documented claim (a command, a path, a described behavior) is a lead until code confirms it. Review it as `../rule-maker/DOCS.md` "Claim review" says. A contradiction unsafe to build on blocks the task as DOCS.md "Severity" says.
+
 Link requirements to evidence in one compact PLAN table:
 
 | Requirement and source | Journey | Evidence / gap | Acceptance | Work |

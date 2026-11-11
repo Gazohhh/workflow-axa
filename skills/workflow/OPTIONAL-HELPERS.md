@@ -16,7 +16,7 @@ Source: [Anthropic webapp-testing](https://github.com/anthropics/skills/tree/mai
 
 Use the existing browser/test setup, a controlled viewport and stable data. Wait for the required element/state and loaded fonts; do not treat networkidle or a fixed sleep as proof of readiness. Inspect actual behavior, keyboard operation and screenshots. Use an authorized local server only when necessary, with bounded lifecycle/cleanup. No uploads, production probing, dependency installation or browser download without separate authority. Never update a reference screenshot to suppress a failure.
 
-Reference: [Playwright page readiness](https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state) discourages networkidle for test readiness. [Visual comparisons](https://playwright.dev/docs/test-snapshots) explains controlled environments and reference images. Local Python checks do not become live specialist invocation merely because they follow similar methods.
+Reference: [Playwright page readiness](https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state) discourages networkidle for test readiness. [Visual comparisons](https://playwright.dev/docs/test-snapshots) explains controlled environments and reference images.
 
 ## Both helpers
 

@@ -101,8 +101,8 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('identity pending (vs <related task>)',self.text('TASK-FOLDER.md'))
         # Design loop: questions bundled into a readiness stop were never saved; ui-design skipped for a UI change.
         self.assertIn('ask only the readiness choice and stop',self.text('RULES.md'))
-        self.assertIn('first read `../ui-design/SKILL.md` and `../rule-maker/rules/design.md`, then trace',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
-        self.assertIn('A script hook is not styling',(ROOT/'skills/rule-maker/rules/design.md').read_text())
+        self.assertIn('first read `../ui-design/SKILL.md` and `../rule-maker/rules/DESIGN.md`, then trace',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
+        self.assertIn('A script hook is not styling',(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text())
         # Design retro: reference files still taught the strict-kit model, and a plan offered new CSS as an option.
         stale={'skills/codebase-map/UI-FLOW.md':('omit the screen view','requires `approved-kit`, real captures','No new application layout sketches'),
                'skills/workflow/VISUAL-REVIEW.md':('missing kit evidence keeps the UI review a draft','plain-control stand-ins'),
@@ -118,7 +118,7 @@ class InstructionRegressionTests(unittest.TestCase):
         # Design round 4: specify asked whether to delete the replaced, presented review-r1.
         self.assertIn('delete or offer to delete a presented',(ROOT/'skills/workflow/VISUAL-REVIEW.md').read_text(encoding='utf-8'))
         # Round-4 retro: copied pill lost its parent-scoped look; a placement answer bypassed gate one.
-        self.assertIn('Mirror the element, with its context',(ROOT/'skills/rule-maker/rules/design.md').read_text(encoding='utf-8'))
+        self.assertIn('Mirror the element, with its context',(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text(encoding='utf-8'))
         self.assertIn('scripts/class_rules.py',(ROOT/'skills/ui-design/SKILL.md').read_text(encoding='utf-8'))
         specify=(ROOT/'skills/workflow-specify/SKILL.md').read_text(encoding='utf-8')
         self.assertIn('changes the agreement: write a new agreement revision',specify)
@@ -128,8 +128,8 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('Stop and ask which worktree is meant',(ROOT/'skills/workflow/TASK-FOLDER.md').read_text(encoding='utf-8'))
         # Round-5 retro: project rule missed until review; context difference recommended anyway; open finding ticked.
         self.assertIn('- **Rules**: the project rules',(ROOT/'skills/workflow-specify/SKILL.md').read_text(encoding='utf-8'))
-        self.assertIn('a project rule for new code wins over an older neighbour',(ROOT/'skills/rule-maker/rules/CORE.md').read_text(encoding='utf-8'))
-        self.assertIn('never recommend the copy anyway',(ROOT/'skills/rule-maker/rules/design.md').read_text(encoding='utf-8'))
+        self.assertIn('a project rule for new code wins over an older neighbor',(ROOT/'skills/rule-maker/rules/CORE.md').read_text(encoding='utf-8'))
+        self.assertIn('never recommend the copy anyway',(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text(encoding='utf-8'))
         self.assertIn('with no open review finding',(ROOT/'skills/workflow-deliver/SKILL.md').read_text(encoding='utf-8'))
         self.assertIn('name only rule files you actually opened',(ROOT/'skills/workflow/RULES.md').read_text(encoding='utf-8'))
         # Round-6 check: saved Q6 recommended a, the sent message recommended b.
@@ -176,7 +176,7 @@ class InstructionRegressionTests(unittest.TestCase):
         # W2: a later session could not read "Q1 a" because only the question, not its options, was saved.
         self.assertIn('with its exact options, letters and recommendation',questions)
         # E30 retro: tools named where records are written; reviewers labelled correctly.
-        self.assertIn('correct quoting, encoding and an authorised target',self.text('TASK-FOLDER.md'))
+        self.assertIn('correct quoting, encoding and an authorized target',self.text('TASK-FOLDER.md'))
         self.assertIn('task_report.py scaffold',(ROOT/'skills/workflow-deliver/SKILL.md').read_text())
         self.assertIn('independent, axes sequential',(ROOT/'skills/code-review/SKILL.md').read_text())
         self.assertIn("I don't need to see the plan",self.text('VISUAL-REVIEW.md'))
@@ -192,8 +192,8 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('goes to the user before you ship it',execute)
         self.assertIn('read `../tdd/SKILL.md` before the first test',execute)
         gates=self.text('VISUAL-REVIEW.md')
-        # D11: the owner wants the HTML report even for small changes unless they explicitly decline it.
-        self.assertIn('Every gate-two request comes with a fresh HTML report',gates)
+        # D11: the owner wants the HTML report even for small changes unless they explicitly decline it (the small change route is the one exception).
+        self.assertIn('Every implementation approval request comes with a fresh HTML report',gates)
         self.assertIn('(one-line changes included)',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         # A8: clarify asked for both gates itself (no specify, no report) and copied earlier revisions.
         self.assertIn('Clarify never asks for plan approval itself',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())

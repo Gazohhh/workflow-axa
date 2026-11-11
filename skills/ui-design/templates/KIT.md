@@ -5,7 +5,7 @@ This is a template, not an approved kit. Do not fill unknowns with invented comp
 ## Scope and authority
 
 Project/brand/platform/area: [confirmed scope]
-Catalogue revision and status: [draft until explicitly approved]
+Catalog revision and status: [draft until explicitly approved]
 Owner and approval source: [existing decision/message reference]
 Existing preview and access/release boundary: [agreed destination, or unresolved]
 
@@ -22,4 +22,4 @@ Record concrete missing coverage in existing TODOs, not another backlog. Missing
 
 ## History
 
-Point to existing decisions/review history. State what changed, why and the named approval. Do not duplicate task checkpoints or create a new catalogue revision for a test retry.
+Point to existing decisions/review history. State what changed, why and the named approval. Do not duplicate task checkpoints or create a new catalog revision for a test retry.

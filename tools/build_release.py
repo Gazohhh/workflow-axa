@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = ("LICENSE", "README.md", "CHANGELOG.md", "UPGRADE.md", "VALIDATION.md", "VENDORED-SKILLS.md",
-              "docs/DESIGN.md", "CANDIDATE-REVIEW.md", "CLAUDE-TEST-PROMPT.txt", "RC3-CASES.md")
+              "docs/DESIGN.md", "docs/ARCHITECTURE.md", "docs/EVALUATION.md")
 INCLUDED_DIRS = (".claude-plugin", "hooks")  # plus each skill folder plugin.json registers
 SKIPPED_PARTS = {".git", ".artifacts", "__pycache__", ".local-fixtures"}
 SKIPPED_SUFFIXES = {".pyc", ".pyo"}

@@ -1,5 +1,62 @@
 # Changelog
 
+## 2.8.0-rc.36 — one language, documentation checks and a small change route (2026-11-11)
+
+Gate and hooks:
+
+- Phase entry: the Stop hook checks a phase only after a real start (a Skill call, a typed workflow command or a record write). A whole read of a phase SKILL.md file no longer enters the phase for those checks. A tool input that contains the folder name "workflow-axa" no longer makes a session a workflow session. The write gate turns on exactly as before.
+- Task switch and git file writes: the records of a second task no longer stop edits that the approval of the first task covers. In every unclear case the stop remains. Git commands that write files (`git apply`, `git checkout --`, `git restore`) are checked against the approved write paths. A record write through a shell variable is recognized.
+- Small change route: a new route for a visible edit to the text, order or visibility of existing elements on one screen. The edit adds no element, file, data, interface or dependency. The agent offers a `Small change:` line with the files and a description. The user's quoted yes to that exact offer replaces both approvals. The task has no plan report, screen diagram or delivery report. A later session continues only after a new yes on a separate `Reconfirmed (gate two): small change` line. The original Approval quote never changes. The gate refuses deletions, moves and files that the offer does not list. On a task that already has a plan report, the gate ignores the line and says why. An offer line wrapped in inline code counts like a plain one.
+- Disposable test projects under `.artifacts` that have their own `.git` folder stay writable, like the rest of `.artifacts`.
+- Reply marks: the gate kept only the last 50 marks per report, and every subagent hand-back added one. In a long session the mark of the user's real answer was dropped and an approved task was refused. A mark is now kept only when none exists since the last user message.
+- When the superpowers plugin is enabled, the duplicate guard's session-start note names each superpowers skill that overlaps a workflow-axa skill. For each one it names the workflow-axa skill to use instead. It disables nothing.
+- `STATE_VERSION` 25 (older caches are rebuilt).
+
+Rule-maker and documents:
+
+- New `skills/rule-maker/scripts/docs_check.py`. It reads the Markdown links in AGENTS.md and in the indexes that AGENTS.md links. It reports broken links, documents that nothing reaches, index cycles, depth and size. It also reports a CLAUDE.md that does not import AGENTS.md, and stale Covers hints. With `--changed` or `--changed-from-git`, it lists the documents related to the changed files. Then it checks the paths, commands and versions that those documents name. Its facts are advisory. It exits 1 only for a broken required-read link. It skips nested repositories and worktrees, warns when AGENTS.md has no CLAUDE.md, treats CLAUDE.md as the entry point when there is no AGENTS.md, and checks a changed document's own facts. Placeholder, absent and planned paths are not checkable.
+- New `skills/rule-maker/DOCS.md`: what belongs where, the claim review and the severity of documentation findings. Two conditions block: a broken link to a required-read document, and a contradiction that is unsafe to build on.
+- Rule-maker has three operations: audit (read-only, writes a proposal), apply (only an approved proposal) and check (the script). An audit proposal keeps every safety and boundary rule in the text that loads at session start. It lists each command that writes real data or reaches a real backend as needing the owner's OK.
+- Each workflow phase has a short documentation step. Clarify finds the related documents. Specify puts document changes into tickets. Execute updates documents with the code. Deliver runs docs_check and reviews each affected claim as verified, contradicted or not verifiable.
+- Shared rules library 1.8.7. The one-word rules modules are renamed to capitals (DESIGN.md, REACT.md and the others) and DOCS.md says one-word document names are written in capitals. `skills/rule-maker/rules/CHANGES.md` lists each change and the project action.
+
+UI:
+
+- A change that a user sees on screen carries a purpose statement. It names who uses the screen, in what situation, their goal and what must stand out. It comes from CONTEXT.md and the code. The agent asks for a missing part that changes the result, and otherwise writes `unknown`.
+- DESIGN.md rule 4: an existing element is chosen by the job it does for that user, and the reason is recorded. The job never permits a new style.
+
+Questions:
+
+- Grilling asks only what changes product intent, architecture, risk or an irreversible outcome. Plain engineering choices become stated assumptions that the user can reject at the agreement. Decision questions are multiple choice, with a recommendation and its trade-off. Fact and access requests are asked plainly. The question of DESIGN.md rule 4 keeps its exact words.
+
+One language:
+
+- New `CONTEXT.md` glossary at the repository root. `tools/validate.py` fails on a rejected synonym in skill prose and on a paragraph that repeats across skill files. Reference files now have word budgets, as SKILL.md files already had.
+- Wording passes over every skill, README.md, UPGRADE.md and docs/ARCHITECTURE.md. Prose uses American spelling and one term for each concept. Each repeated rule is stated once in its owner file. Release history is removed from instructions. Notes on what a check does not prove moved to `docs/EVALUATION.md`.
+- New regression tests: `tests/test_gate_regressions.py`, `tests/test_docs_check.py` and `tests/test_validate_budgets.py`.
+
+Report rework and archive:
+
+- The owner's report rework patch for codebase-map is included. `RENDERER_VERSION` is 2.8.0-rc.36 and `layout_version` is 3.
+- A plan report now opens with a status box and "Read first" lines. Then it shows context and scope, goals and non-goals, the design, alternatives, cross-cutting concerns and one card per ticket. Old inputs still render.
+- `AUDIT-rc5.md` and `UI-LITE-HANDOFF.md` moved to `docs/archive/`.
+- This repository's own rules and documents: CLAUDE.md is the one line `@AGENTS.md`. AGENTS.md gains an index with "Read when" lines, the two check commands, and the four commands that write outside a task's files and need the owner's OK. README.md and docs/EVALUATION.md no longer name `tools/build_source.py` or `tools/fresh_runs.py`, which never existed (the rc.35 entry below names them), and README.md no longer claims GitHub checks. The release ZIP now ships `docs/ARCHITECTURE.md` and `docs/EVALUATION.md`, which README.md links. `CANDIDATE-REVIEW.md`, `RC3-CASES.md` and `CLAUDE-TEST-PROMPT.txt` moved to `docs/archive/` and are no longer in the ZIP.
+
+Limits:
+
+- Five capped headless sessions ran (9 calls, about 2.64 USD at API prices). Passed: a one-line `@AGENTS.md` loads in a fresh session, and a resumed task with an approval for another revision does not build. Partial: at delivery a stale document was sent back, but docs_check was not run. Not shown: the small change end to end (it found the offer-format defect fixed above), and a contradiction stopping a task (a plain prompt did not start the workflow).
+- Not verified: interactive Claude Code sessions and Codex. A fixture test of the question rule was partial: the agent also asked one question about a visible change on an existing page. The offline tests and the package validator ran.
+- Expected warning: the shared rules copy that the global CLAUDE.md imports (`~/.agents/skills/rule-maker/rules`) differs from the copy in this plugin until the owner updates it. Until then the duplicate guard warns at session start.
+
+## 2.8.0-rc.35 — proportional routing, grounded report drafts and fresh-run harness (2026-11-10)
+
+- Routing distinguishes read-only inspection from plans, changes and task resumption. Explanations and audits do not create records or demand approvals. The existing gates, recovery checkpoint, strict UI reuse and hook authorization remain unchanged.
+- Grilling asks consequential unknowns from traced journeys, accepts zero questions for settled requests and does not require a subagent for ordinary factual lookup. Vendored TDD explicitly permits refactor after green; the implement-spec skill is marked reference-only and code review is described as task-scoped.
+- `codebase-map/scripts/record_projection.py` optionally freezes record-backed headings and labelled tickets into *new unapproved* JSON drafts, with drift detection and refusal of existing/approved output. Authored graphs, checks and approval still need verification.
+- `tools/fresh_runs.py` prepares distinct extracted plugin copies and Git fixtures per case/run, with prompts and rubrics separated. `tools/build_source.py` creates a deterministic full-source ZIP; `tools/build_release.py` still makes the smaller runtime ZIP. Offline regression tests and GitHub CI are added. These are tooling tests, not live Claude/Codex behavior results.
+- New hook `hooks/duplicate_skills.py`: at session start it names every second copy of a workflow-axa skill in the personal skills folder or in the project's `.claude/skills` (start folder and parents up to the repository root) and has the agent ask the owner to delete it. The script deletes nothing. While a copy exists, `workflow-clarify`, `workflow-specify` and `workflow-execute` do not load, also when typed as a slash command. A bare duplicate name does not load through the Skill tool, and a typed bare name such as `/tdd` is not stopped. A user message that is only "continue with duplicates" lifts the pause for that session, for at most 12 hours. While it is lifted, the session-start note still names the copies and says that the pause is lifted. A cache folder that refuses writes keeps the pause, and the way out is to delete the copies. It also warns, without pausing, when the shared rules folder the global CLAUDE.md imports differs from the plugin's. Needs Python. Does not run on Codex.
+- Docs now start with usage rather than historical release notes; `docs/ARCHITECTURE.md` names ownership and proportionate routes, `docs/EVALUATION.md` states the fresh-session acceptance process. Shared rules library 1.8.5 and all 21 skill folders remain unchanged in count; there is no forced migration of historical reports.
+
 ## 2.8.0-rc.34 — continue and answers go through the strict approval rule (2026-11-08)
 
 - phase gate: "continue"/"resume" no longer bypass the question and hold checks ("continue the task tomorrow", "continue?" and "continue working on the plan" keep a pause); a bare continue/resume, "continue the approved task" or "continue <task folder>" still resume. Typed answers keep their question mark. A message whose answers say "Stop" and then "Implement it" keeps the live pause. The consent check uses the same rule instead of any word "continue". More clear approvals pass ("Approved. Go.", "implement r1", "do it", "approved implement it now", "aproved", "goedgekeurd", "ga je gang"); "ship it" does not, because it can mean deploy. A message whose answers mix an approval with a hold ("approved r1" plus "wait for QA") keeps the pause, and a resume counts only for its own task. A question in any part of a message holds it, and a message starting with "wait", "hold on", "not yet", "nog niet" or "wacht" pauses again after a go. `STATE_VERSION` 20. Found by the fourth, fifth and sixth independent reviews; the sixth found no blocking false resume.

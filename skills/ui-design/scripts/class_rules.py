@@ -98,7 +98,7 @@ def compare(root: Path, source: str, target: str) -> int:
         if not hits:
             print('  no stylesheet rule names this class')
     print('Any layout difference (display, flex direction or alignment, width, line-height, a rule that styles '
-          'children) means the copy will not look the same there: it is not a match (ask design.md rule 4).')
+          'children) means the copy will not look the same there: it is not a match (ask DESIGN.md rule 4).')
     # Round 8: a tag copied into an <h1> turned bold; neither parent's rules said so.
     print('Text properties pass down from the new parent (font-weight, font-size, color, line-height, letter-spacing), '
           'and browsers make h1-h6, strong, b and th bold by default: compare the tag you place the copy in too, '
@@ -179,7 +179,7 @@ def match(root: Path, tag: str, classes: list[str]) -> int:
               'Open each location and make sure that the binding really produces exactly this set.')
         return 0
     print(f'NO MATCH: no existing <{tag}> has exactly these classes. A copy keeps the whole class list of the element '
-          'it mirrors; a different set is a new combination (ask design.md rule 4).')
+          'it mirrors; a different set is a new combination (ask DESIGN.md rule 4).')
     for line in near[:10]:
         print(f'  same tag, some of the classes: {line}')
     return 1
@@ -219,7 +219,7 @@ def main(argv: list[str]) -> int:
         print('No stylesheet rule names these classes (they may still come from a component, a mixin or generated CSS).')
         return 1
     print('Rules marked [needs context] apply only inside the ancestors in their selector: '
-          'place the copy inside the same wrapper, or it is not a match (ask design.md rule 4).')
+          'place the copy inside the same wrapper, or it is not a match (ask DESIGN.md rule 4).')
     return 0
 
 

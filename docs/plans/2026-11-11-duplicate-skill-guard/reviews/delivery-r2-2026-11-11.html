@@ -1,0 +1,1989 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dYQaQROLB4Iv+MeYozxq/vQfGln46K+lDwZ2sFYBcZo='; style-src 'unsafe-inline'; img-src 'none'; frame-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Duplicate skill guard: repairs after delivery</title><style>/* ==========================================================================
+   Review report — editorial, white, lean
+   ========================================================================== */
+
+/* Tokens
+   ========================================================================== */
+:root {
+  --color-bg: #fff;
+  --color-ink: #1f2330;
+  --color-muted: #545d6e;   /* 6.6:1 on white */
+  --color-faint: #6b7280;   /* 4.8:1 on white, minimum for small text */
+  --color-line: #e4e6ea;
+  --color-line-strong: #1f2330;
+  --color-wash: #f7f8f9;
+  --color-accent: #b5401c;  /* 5.4:1 on white */
+  --color-accent-soft: #fbf1ec;
+  --color-accent-line: #efd2c6;
+  --color-ok: #2b6535;
+  --color-ok-soft: #e8f2ea;
+  --color-ok-line: #cfe0d2;
+
+  --font-sans: 'Geist', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, monospace;
+
+  --measure: 70ch;
+  --radius: 6px;
+  --toc-width: 200px;
+  --gap: 48px;
+  --sticky-offset: 20px;
+
+  color-scheme: light;
+}
+
+/* Base
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sticky-offset);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font: 15px/1.6 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-line);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+code,
+.code {
+  font: 12.5px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.muted,
+small {
+  color: var(--color-muted);
+}
+
+.visually-hidden,
+.sr-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  padding: 10px 14px;
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: #fff;
+}
+
+/* Page frame
+   ========================================================================== */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px 48px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 0 12px;
+  border-bottom: 1px solid var(--color-line);
+  font: 11px/1.5 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-faint);
+}
+
+.masthead strong {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* Report header
+   ========================================================================== */
+.report-header {
+  padding: 28px 0 32px;
+}
+
+.report-title {
+  max-width: 26ch;
+  margin: 0 0 10px;
+  font: 400 clamp(32px, 3.6vw, 46px)/1.08 var(--font-serif);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.report-lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent);
+  font-size: 14px;
+}
+
+.status--approved {
+  border-left-color: var(--color-ok);
+}
+
+.status__tag {
+  flex: none;
+  font: 500 11px/1.6 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-accent);
+}
+
+.status--approved .status__tag {
+  color: var(--color-ok);
+}
+
+/* At-a-glance facts */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 28px 0 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.facts__item {
+  min-width: 0;
+  padding: 14px 18px 14px 0;
+}
+
+.facts__item + .facts__item {
+  padding-left: 18px;
+  border-left: 1px solid var(--color-line);
+}
+
+.facts dt {
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.facts dd a {
+  text-decoration: none;
+}
+
+.facts__value--attention {
+  color: var(--color-accent);
+}
+
+/* Layout: sticky contents beside the report
+   ========================================================================== */
+.layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 28px 0;
+}
+
+.toc__title {
+  margin: 0 0 8px;
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  font-size: 13px;
+}
+
+.toc__list > li {
+  counter-increment: toc;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  padding: 5px 0;
+  color: var(--color-muted);
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.toc__link::before {
+  content: counter(toc, decimal-leading-zero);
+  font: 11px/1.75 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.toc__link:hover {
+  color: var(--color-ink);
+}
+
+.toc__link[aria-current='true'] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.toc__link[aria-current='true']::before {
+  color: var(--color-accent);
+}
+
+.toc__flag {
+  display: block;
+  grid-column: 2;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.toc__extra {
+  display: block;
+  margin-top: 14px;
+  padding: 5px 0 5px 20px;
+  font-size: 13px;
+  color: var(--color-faint);
+}
+
+/* Sections
+   ========================================================================== */
+.content {
+  counter-reset: section;
+}
+
+.section {
+  padding-top: 32px;
+  counter-increment: section;
+}
+
+.section + .section {
+  margin-top: 40px;
+  border-top: 1px solid var(--color-line);
+}
+
+.section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px;
+  font: 400 30px/1.15 var(--font-serif);
+  letter-spacing: -.01em;
+}
+
+.section__title::before {
+  content: counter(section, decimal-leading-zero);
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+}
+
+.section__summary {
+  max-width: var(--measure);
+  margin: 0 0 20px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.section h3,
+.subhead {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section p {
+  max-width: var(--measure);
+  margin: 0 0 10px;
+}
+
+.block + .block {
+  margin-top: 24px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.columns > * {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.columns p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.list > li {
+  margin: 3px 0;
+  padding-left: 2px;
+}
+
+.list > li::marker {
+  color: var(--color-faint);
+}
+
+.list--check,
+.list--keep {
+  padding-left: 0;
+  list-style: none;
+}
+
+.list--check > li,
+.list--keep > li {
+  position: relative;
+  padding: 7px 0 7px 26px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.list--check > li:last-child,
+.list--keep > li:last-child {
+  border-bottom: 0;
+}
+
+.list--check > li::before,
+.list--keep > li::before {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font: 600 10px/1 var(--font-sans);
+}
+
+.list--check > li::before {
+  content: '✓';
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+.list--keep > li::before {
+  content: '=';
+  background: var(--color-wash);
+  color: var(--color-muted);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+.note {
+  max-width: var(--measure);
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.note a {
+  color: var(--color-accent);
+}
+
+/* Diagrams
+   ========================================================================== */
+.review {
+  position: relative;
+}
+
+.viewbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.view-tabs,
+.zoom-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.zoom-tabs {
+  gap: 14px;
+}
+
+.control-name {
+  display: none;
+}
+
+.view-tabs label,
+.zoom-tabs label {
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.view-tabs label {
+  font-weight: 500;
+}
+
+.zoom-tabs label {
+  font: 11px/44px var(--font-mono);
+}
+
+.view-tabs label:hover,
+.zoom-tabs label:hover {
+  color: var(--color-ink);
+}
+
+.figures {
+  --scale: 1;
+}
+
+#zoom-125:checked ~ .figures {
+  --scale: 1.25;
+}
+
+#zoom-150:checked ~ .figures {
+  --scale: 1.5;
+}
+
+#zoom-fit:checked ~ .figures .map {
+  width: 100%;
+  min-width: 0;
+}
+
+.panel {
+  display: none;
+  margin: 0;
+}
+
+.figure-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0 2px;
+}
+
+.figure-head h3 {
+  margin: 0;
+}
+
+.figure-head span {
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.figure-description {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.canvas {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+
+.canvas.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.map {
+  display: block;
+  width: calc(var(--board-width) * var(--scale));
+  min-width: calc(var(--board-width) * var(--scale));
+  height: auto;
+}
+
+.node-shape {
+  fill: #fff;
+  stroke: var(--color-ink);
+  stroke-width: 1.1;
+}
+
+.start .node-shape,
+.result .node-shape {
+  fill: #eef0f3;
+  stroke: var(--color-muted);
+}
+
+.focal .node-shape {
+  fill: var(--color-accent-soft);
+  stroke: var(--color-accent);
+  stroke-width: 1.3;
+}
+
+.node.inferred .node-shape,
+.node.unknown .node-shape,
+.connector.inferred,
+.connector.unknown {
+  stroke-dasharray: 5 4;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 1.3;
+}
+
+.map marker path {
+  fill: var(--color-faint);
+}
+
+.node-title {
+  font: 600 18px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.node-note {
+  font: 13px var(--font-sans);
+  fill: var(--color-muted);
+}
+
+.node-item {
+  font: 15px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.arrow-label rect {
+  fill: var(--color-wash);
+}
+
+.edge-label {
+  font: 10px var(--font-mono);
+  letter-spacing: 1px;
+  fill: var(--color-muted);
+}
+
+figcaption {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  padding: 10px 0 4px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border: 1px solid var(--color-muted);
+  background: #fff;
+}
+
+.legend .legend-start {
+  border-radius: 8px;
+  background: #eef0f3;
+}
+
+.legend .legend-action {
+  border-radius: 2px;
+}
+
+.legend .legend-decision {
+  width: 11px;
+  height: 11px;
+  margin: 0 4px;
+  transform: rotate(45deg);
+}
+
+.legend .legend-focus {
+  border-color: var(--color-accent);
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+}
+
+/* Tables
+   ========================================================================== */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+caption {
+  padding: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: left;
+}
+
+th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--color-line-strong);
+  font: 500 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  vertical-align: bottom;
+}
+
+td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+}
+
+td:last-child,
+th:last-child {
+  padding-right: 0;
+}
+
+.compare th[scope='row'] {
+  width: 32%;
+  font: 500 14px/1.5 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+  vertical-align: top;
+}
+
+.compare td:nth-child(2) {
+  color: var(--color-muted);
+}
+
+.compare .after {
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.tag--changed {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.tag--recommended {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+/* Work order
+   ========================================================================== */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps > li + li::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--color-faint);
+}
+
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.steps a:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+.steps .key {
+  font: 500 12px var(--font-mono);
+}
+
+/* Tickets
+   ========================================================================== */
+.tickets {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.ticket {
+  --stub: 124px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--stub) minmax(0, 1fr);
+  max-width: 880px;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(31 35 48 / 4%);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ticket:hover {
+  border-color: #d3d6dc;
+  box-shadow: 0 2px 8px rgb(31 35 48 / 6%);
+}
+
+.ticket:target {
+  border-color: var(--color-accent);
+}
+
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--stub) - 7px);
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.ticket::before {
+  top: -8px;
+  clip-path: inset(8px 0 0 0);
+}
+
+.ticket::after {
+  bottom: -8px;
+  clip-path: inset(0 0 8px 0);
+}
+
+.ticket__stub {
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 16px;
+  border-right: 1.5px dashed #d3d6dc;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--color-wash);
+  font: 10.5px/1.4 var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__key {
+  display: block;
+  margin-top: 4px;
+  font: 500 24px/1 var(--font-mono);
+  letter-spacing: -.02em;
+  text-transform: none;
+  color: var(--color-ink);
+}
+
+.ticket__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: #fff;
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.ticket__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.ticket__status--in-progress,
+.ticket__status--blocked {
+  border-color: var(--color-accent-line);
+  color: var(--color-accent);
+}
+
+.ticket__status--in-progress::before {
+  border-right-color: transparent;
+}
+
+.ticket__status--blocked::before {
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.ticket__status--done {
+  border-color: var(--color-ok-line);
+  color: var(--color-ok);
+}
+
+.ticket__status--done::before {
+  background: currentColor;
+}
+
+.ticket__main {
+  padding: 16px 20px 0;
+}
+
+.ticket__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ticket__main p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.ticket__facts {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.ticket__facts dt {
+  font: 10.5px/2 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__facts dd {
+  margin: 0;
+}
+
+.ticket__facts .list > li {
+  margin: 0 0 2px;
+}
+
+.ticket-ref {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-wash);
+  font: 500 12px/1.6 var(--font-mono);
+  text-decoration: none;
+}
+
+.ticket-ref:hover {
+  border-color: var(--color-accent);
+}
+
+/* Checks
+   ========================================================================== */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 880px;
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.progress__bar {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+  height: 6px;
+}
+
+.progress__bar span {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.progress__bar .is-verified {
+  background: var(--color-ok);
+}
+
+.progress__bar .is-failed {
+  background: var(--color-accent);
+}
+
+.checks {
+  max-width: 880px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+
+.check__key {
+  grid-row: 1 / span 2;
+  font: 11px/1.9 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.check__expect {
+  margin: 0;
+  font-weight: 500;
+}
+
+.check__how {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.check .state {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.state::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.state--verified {
+  color: var(--color-ok);
+}
+
+.state--verified::before,
+.state--failed::before {
+  background: currentColor;
+}
+
+.state--failed,
+.state--partial {
+  color: var(--color-accent);
+}
+
+/* Risks and open questions
+   ========================================================================== */
+.risks {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risks > li {
+  position: relative;
+  padding: 8px 0 8px 22px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.risks > li:last-child {
+  border-bottom: 0;
+}
+
+.risks > li::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.questions {
+  max-width: 880px;
+  margin: 28px 0 0;
+  padding: 18px 20px 6px;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.questions__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.questions__head h3 {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.questions__head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.question-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.question {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.question__title {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.question__key {
+  font: 500 12px/1.9 var(--font-mono);
+  color: var(--color-accent);
+}
+
+.options {
+  margin: 0;
+  padding: 0 0 0 30px;
+  list-style: none;
+  counter-reset: option;
+}
+
+.options > li {
+  position: relative;
+  padding: 4px 0 4px 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+  counter-increment: option;
+}
+
+.options > li::before {
+  content: counter(option, lower-alpha);
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  font: 500 10px/1 var(--font-mono);
+}
+
+.options > .is-recommended {
+  color: var(--color-ink);
+}
+
+.options > .is-recommended::before {
+  border-color: var(--color-ok);
+  background: var(--color-ok);
+  color: #fff;
+}
+
+/* Technical details (appendix)
+   ========================================================================== */
+details {
+  padding: 12px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--color-faint);
+  border-bottom: 1.5px solid var(--color-faint);
+  transform: rotate(-45deg);
+  transition: transform .15s;
+}
+
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+details.appendix {
+  margin-top: 48px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+details.appendix > summary {
+  font: 400 24px/1.2 var(--font-serif);
+}
+
+.appendix-body {
+  padding-top: 14px;
+  font-size: 14px;
+}
+
+.appendix-body section {
+  margin-bottom: 28px;
+}
+
+.appendix-body h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.appendix-body > p.muted {
+  max-width: var(--measure);
+  font-size: 13px;
+}
+
+.appendix .table-scroll table {
+  min-width: 820px;
+  font-size: 12px;
+}
+
+.appendix ol {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.appendix ol li {
+  margin: 8px 0;
+}
+
+.appendix blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--color-line);
+  color: var(--color-muted);
+}
+
+.appendix .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  margin: 24px 0;
+}
+
+.appendix .plain {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appendix .plain li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.evidence {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.evidence p,
+.appendix code {
+  font: 12px/1.7 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* Footer
+   ========================================================================== */
+.report-footer {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+  font: 11px/1.7 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+/* Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .facts__item:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 4) {
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+@media (max-width: 960px) {
+  :root {
+    --sticky-offset: 64px;
+  }
+
+  .page {
+    padding: 0 24px 40px;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc {
+    z-index: 5;
+    max-height: none;
+    margin: 0 -24px;
+    padding: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toc__title,
+  .toc__flag,
+  .toc__extra {
+    display: none;
+  }
+
+  .toc__list {
+    display: flex;
+    gap: 20px;
+    padding: 0 24px;
+    white-space: nowrap;
+  }
+
+  .toc__link {
+    display: block;
+    padding: 14px 0 12px; /* 48px touch target */
+    border-bottom: 2px solid transparent;
+  }
+
+  .toc__link::before {
+    margin-right: 6px;
+  }
+
+  .toc__link[aria-current='true'] {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 0 16px 32px;
+  }
+
+  .toc {
+    margin: 0 -16px;
+  }
+
+  .toc__list {
+    padding: 0 16px;
+  }
+
+  .report-title {
+    font-size: 32px;
+  }
+
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facts__item,
+  .facts__item + .facts__item {
+    padding: 12px 12px 12px 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 3) {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .section__title {
+    font-size: 25px;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .figure-head,
+  .viewbar {
+    display: block;
+  }
+
+  .zoom-tabs {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .compare {
+    min-width: 560px;
+  }
+
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    display: none;
+  }
+
+  .ticket__stub {
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1.5px dashed #d3d6dc;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .ticket__key {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .ticket__status {
+    margin-left: auto;
+  }
+
+  .ticket__main {
+    padding: 14px 16px 0;
+  }
+
+  .ticket__facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 10px 16px 14px;
+  }
+
+  .ticket__facts dd {
+    margin-bottom: 8px;
+  }
+
+  .check {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .check .state {
+    grid-column: 2;
+    grid-row: auto;
+    margin-top: 6px;
+  }
+
+  .questions {
+    padding: 16px 16px 4px;
+  }
+
+  .options {
+    padding-left: 0;
+  }
+
+  .appendix .two-col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc,
+  .skip-link,
+  .viewbar,
+  .hint {
+    display: none !important;
+  }
+
+  .panel {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  .canvas {
+    overflow: visible;
+  }
+
+  .map {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ticket,
+  .check,
+  .question,
+  .facts {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* Overrides for paragraphs inside components
+   ========================================================================== */
+.section .check__expect,
+.section .question__title {
+  margin: 0;
+}
+
+.section .question__title {
+  margin-bottom: 8px;
+}
+
+.section .check__how {
+  margin: 2px 0 0;
+}
+
+.compare th[scope='row'],
+.compare td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.compare small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.section h3 + .risks,
+.section h3 + .steps {
+  margin-top: 6px;
+}
+
+.section .risks + .questions,
+.section p + h3,
+.section .section__summary + h3 {
+  margin-top: 24px;
+}
+
+.section .ticket__stub {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .steps {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .steps > li + li::before {
+    display: none;
+  }
+}
+
+/* Diagram view and zoom state (generated per report)
+   ========================================================================== */
+#view-after:checked ~ .figures #panel-after {
+  display: block;
+}
+
+#view-after:checked ~ .viewbar label[for='view-after'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-after:focus-visible ~ .viewbar label[for='view-after'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-today:checked ~ .figures #panel-today {
+  display: block;
+}
+
+#view-today:checked ~ .viewbar label[for='view-today'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-today:focus-visible ~ .viewbar label[for='view-today'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-order:checked ~ .figures #panel-order {
+  display: block;
+}
+
+#view-order:checked ~ .viewbar label[for='view-order'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-order:focus-visible ~ .viewbar label[for='view-order'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-100:checked ~ .viewbar label[for='zoom-100'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-100:focus-visible ~ .viewbar label[for='zoom-100'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-125:checked ~ .viewbar label[for='zoom-125'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-125:focus-visible ~ .viewbar label[for='zoom-125'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-150:checked ~ .viewbar label[for='zoom-150'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-150:focus-visible ~ .viewbar label[for='zoom-150'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-fit:checked ~ .viewbar label[for='zoom-fit'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-fit:focus-visible ~ .viewbar label[for='zoom-fit'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Older token names used by ui-review.css, mapped onto report-style.css tokens. */
+:root {
+  --paper: var(--color-bg);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --rule: var(--color-line);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-soft);
+  --sans: var(--font-sans);
+  --serif: var(--font-serif);
+  --mono: var(--font-mono);
+}
+
+/* Additions for the design-doc layout of task reports. report-style.css stays the owner's design, unchanged. */
+
+/* Header callout: the status line and the "Read first" lines in one box. */
+.callout {
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+}
+
+.callout .status {
+  max-width: none;
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 0;
+}
+
+.callout .status + .status {
+  border-top: 1px solid var(--color-accent-line);
+}
+
+.callout .status__tag {
+  width: 124px;
+}
+
+.callout:has(.status--approved:only-child) {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+}
+
+/* Fewer tiles than the five-column grid expects: let them share the row. */
+.facts {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Prose directly under a section title keeps the reading measure. */
+.section > p {
+  max-width: var(--measure);
+}
+
+/* Blocks and the diagram area inside "The design". */
+.section .block + .review,
+.section .review + .block,
+.section .section__summary + .block {
+  margin-top: 28px;
+}
+
+/* A diagram that fits the column sits in the middle of its canvas and needs no grab cursor. */
+.review--fit .map {
+  margin: 0 auto;
+}
+
+.review--fit .canvas {
+  cursor: default;
+}
+
+/* Checks listed inside a ticket card. */
+.ticket__facts .checks {
+  max-width: none;
+  margin: 0;
+  border-top: 0;
+}
+
+.ticket__facts .check {
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.ticket__facts .check:first-child {
+  padding-top: 0;
+}
+
+.ticket__facts .check:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.ticket__facts .check--ref .check__how {
+  margin: 0;
+}
+
+/* A list directly under a section title keeps the reading measure too. */
+.section > .list {
+  max-width: var(--measure);
+}
+
+#view-proposed:checked~.figures #panel-proposed{display:block}
+#view-proposed:checked~.viewbar label[for="view-proposed"]{border-color:var(--accent);color:var(--ink)}
+#view-proposed:focus-visible~.viewbar label[for="view-proposed"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-current:checked~.figures #panel-current{display:block}
+#view-current:checked~.viewbar label[for="view-current"]{border-color:var(--accent);color:var(--ink)}
+#view-current:focus-visible~.viewbar label[for="view-current"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
+<div class="page"><header class="masthead"><strong>workflow-axa</strong><span>Delivery r2</span></header>
+<main id="report"><header class="report-header"><h1 class="report-title">Duplicate skill guard: repairs after delivery</h1>
+<p class="report-lead">The four small defects of the guard are repaired. Its messages now name the three paused skills, and the start note says so when you lifted the pause.</p>
+<div class="callout"><p class="status status--draft"><span class="status__tag">Delivered</span><span>Delivered: partial. Some work or checks are still open. The sections below name them. Behavior agreed (r2).</span></p><p class="status status--attention"><span class="status__tag">Read first</span><span>One defect is settled in the docs, not in the code: a temp folder that refuses writes keeps the pause. <a href="#alternatives">See the decisions</a>.</span></p></div>
+<dl class="facts" aria-label="At a glance"><div class="facts__item"><dt>Tickets</dt><dd>2</dd></div><div class="facts__item"><dt>Checks</dt><dd>5 of 5 verified</dd></div><div class="facts__item"><dt>As of</dt><dd>2026-11-11</dd></div></dl></header>
+<div class="layout"><nav class="toc" aria-label="Contents"><p class="toc__title">Contents</p><ol class="toc__list"><li><a class="toc__link" href="#context">Context and scope</a></li><li><a class="toc__link" href="#goals">Goals and non-goals</a></li><li><a class="toc__link" href="#design">The design</a></li><li><a class="toc__link" href="#alternatives">Alternatives considered</a></li><li><a class="toc__link" href="#concerns">Cross-cutting concerns</a></li><li><a class="toc__link" href="#the-work">The work</a></li></ol><a class="toc__extra" href="#technical-details">Reference</a></nav><div class="content" id="task-report"><section class="section" aria-labelledby="context"><h2 class="section__title" id="context">Context and scope</h2><p class="section__summary">You agreed to the r2 additions on 2026-11-11, together with the plan.</p><p>The guard is delivered, and you saw it work in live sessions: the start note, the stop of a typed command, and the override.</p><p>The reviews and the reconciliation left four small defects. In your live check the agent also added &quot;deliver&quot; to the paused skills by itself.</p><p>You said &quot;plan r2&quot;. This plan repairs the four defects and makes the messages name the three paused skills.</p></section><section class="section" aria-labelledby="goals"><h2 class="section__title" id="goals">Goals and non-goals</h2><div class="columns"><div><h3>Goals</h3><ul class="list"><li>Both guard messages name the three paused skills.</li><li>The start note tells the truth when your override is active.</li><li>The docs say only what the guard does.</li><li>A test fails when a later edit changes the registration of another hook.</li></ul></div><div><h3>Non-goals</h3><ul class="list"><li>Stopping a typed bare duplicate name such as /tdd. It stays a named limit.</li><li>Making a temp folder that refuses writes lift the pause. The docs name it as a limit.</li><li>A check that an agent-made skill call is refused in a live session.</li></ul></div></div></section><section class="section" aria-labelledby="design"><h2 class="section__title" id="design">The design</h2><div class="block"><h3>Overview</h3><p>The start note asks the same question the refusal already asks: is the pause lifted for this session? If yes, it says so. The paths and the request to delete stay in both cases.</p><p>The list of the three skills comes from the one list the script already has, so the messages and the check cannot drift apart.</p><p>The new test holds the expected commands of every other hook, per event and in order. It reads hooks/hooks.json and changes nothing.</p></div><p class="flow-context">Flow reviewed for r2. The "Today" view shows the code before the change. The proposed view is what was built. The checks below show what was verified.</p><section class="review review--fit" aria-label="Design diagrams"><input class="sr-radio" type="radio" name="diagram-view" id="view-proposed" aria-label="After the change" aria-controls="panel-proposed" checked><input class="sr-radio" type="radio" name="diagram-view" id="view-current" aria-label="Today" aria-controls="panel-current" ><div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name"><span class="control-name" id="view-tabs-name">Show</span><label for="view-proposed">After the change</label><label for="view-current">Today</label></div></div><div class="figures"><figure class="panel" id="panel-proposed"><div class="figure-head"><h3>What the start note says after the repair</h3><span>As built. The results are below.</span></div><p class="figure-description">Runs at every session start.</p><div class="canvas" tabindex="0" role="region" aria-label="Start note diagram" data-start-id="node-8-proposed-N1" style="--board-width:840px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="840" height="760" viewBox="0 0 840 760" role="img" aria-labelledby="proposed-title proposed-desc"><title id="proposed-title">What the start note says after the repair</title><desc id="proposed-desc">Runs at every session start.</desc><defs><marker id="arrow-proposed" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="N1" data-to="N2" data-points="[[260, 112], [260, 160]]" d="M 260 112 L 260 160" marker-end="url(#arrow-proposed)"/><path class="connector observed" data-from="N2" data-to="N3" data-points="[[388, 240], [520, 240]]" d="M 388 240 L 520 240" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N2" data-to="N4" data-points="[[260, 320], [260, 384]]" d="M 260 320 L 260 384" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N4" data-to="N5" data-points="[[388, 464], [520, 464]]" d="M 388 464 L 520 464" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="N4" data-to="N6" data-points="[[260, 544], [260, 616]]" d="M 260 544 L 260 616" marker-end="url(#arrow-proposed)"/><g class="arrow-label"><rect x="433.5" y="197" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="452" y="212">YES</text></g><g class="arrow-label"><rect x="285" y="345" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="300" y="360">NO</text></g><g class="arrow-label"><rect x="433.5" y="421" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="452" y="436">YES</text></g><g class="arrow-label"><rect x="285" y="573" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="300" y="588">NO</text></g><g id="node-8-proposed-N1" class="node start observed " data-id="N1" data-box="120,40,280,72"><title>Session starts. observed / unchanged. </title><rect class="node-shape" x="120" y="40" width="280" height="72" rx="20"/><text class="node-title" x="260" y="82" text-anchor="middle">Session starts</text></g><g id="node-8-proposed-N2" class="node decision observed " data-id="N2" data-box="132,160,256,160"><title>No duplicate?. observed / unchanged. </title><polygon class="node-shape" points="260,160 388,240 260,320 132,240"/><text class="node-title" x="260" y="246" text-anchor="middle">No duplicate?</text></g><g id="node-8-proposed-N3" class="node result observed " data-id="N3" data-box="520,196,280,88"><title>Nothing is shown. observed / unchanged. </title><rect class="node-shape" x="520" y="196" width="280" height="88" rx="20"/><text class="node-title" x="660" y="246" text-anchor="middle">Nothing is shown</text></g><g id="node-8-proposed-N4" class="node decision proposed focal" data-id="N4" data-box="132,384,256,160"><title>Pause lifted
+by you?. proposed / added. </title><polygon class="node-shape" points="260,384 388,464 260,544 132,464"/><text class="node-title" x="260" y="458" text-anchor="middle">Pause lifted</text><text class="node-title" x="260" y="482" text-anchor="middle">by you?</text></g><g id="node-8-proposed-N5" class="node result proposed focal" data-id="N5" data-box="520,420,280,88"><title>Note says &quot;lifted&quot;. proposed / added. </title><rect class="node-shape" x="520" y="420" width="280" height="88" rx="20"/><text class="node-title" x="660" y="460" text-anchor="middle">Note says &quot;lifted&quot;</text><text class="node-note" x="660" y="484" text-anchor="middle">Still asks you to delete</text></g><g id="node-8-proposed-N6" class="node result proposed " data-id="N6" data-box="92,616,336,88"><title>Note names the three skills. proposed / modified. </title><rect class="node-shape" x="92" y="616" width="336" height="88" rx="20"/><text class="node-title" x="260" y="656" text-anchor="middle">Note names the three skills</text><text class="node-note" x="260" y="680" text-anchor="middle">Clarify, specify, execute</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div></figcaption></figure><figure class="panel" id="panel-current"><div class="figure-head"><h3>What the start note says today</h3><span>As the code works today</span></div><p class="figure-description">Runs at every session start.</p><div class="canvas" tabindex="0" role="region" aria-label="Today diagram" data-start-id="node-7-current-N1" style="--board-width:840px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="840" height="520" viewBox="0 0 840 520" role="img" aria-labelledby="current-title current-desc"><title id="current-title">What the start note says today</title><desc id="current-desc">Runs at every session start.</desc><defs><marker id="arrow-current" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="N1" data-to="N2" data-points="[[260, 112], [260, 160]]" d="M 260 112 L 260 160" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N2" data-to="N3" data-points="[[388, 240], [520, 240]]" d="M 388 240 L 520 240" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="N2" data-to="N4" data-points="[[260, 320], [260, 392]]" d="M 260 320 L 260 392" marker-end="url(#arrow-current)"/><g class="arrow-label"><rect x="433.5" y="197" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="452" y="212">YES</text></g><g class="arrow-label"><rect x="285" y="349" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="300" y="364">NO</text></g><g id="node-7-current-N1" class="node start observed " data-id="N1" data-box="120,40,280,72"><title>Session starts. observed / unchanged. </title><rect class="node-shape" x="120" y="40" width="280" height="72" rx="20"/><text class="node-title" x="260" y="82" text-anchor="middle">Session starts</text></g><g id="node-7-current-N2" class="node decision observed " data-id="N2" data-box="132,160,256,160"><title>No duplicate?. observed / unchanged. </title><polygon class="node-shape" points="260,160 388,240 260,320 132,240"/><text class="node-title" x="260" y="246" text-anchor="middle">No duplicate?</text></g><g id="node-7-current-N3" class="node result observed " data-id="N3" data-box="520,196,280,88"><title>Nothing is shown. observed / unchanged. </title><rect class="node-shape" x="520" y="196" width="280" height="88" rx="20"/><text class="node-title" x="660" y="246" text-anchor="middle">Nothing is shown</text></g><g id="node-7-current-N4" class="node result observed " data-id="N4" data-box="100,392,320,88"><title>Note says &quot;paused&quot;. observed / unchanged. </title><rect class="node-shape" x="100" y="392" width="320" height="88" rx="20"/><text class="node-title" x="260" y="432" text-anchor="middle">Note says &quot;paused&quot;</text><text class="node-note" x="260" y="456" text-anchor="middle">Also when you lifted the pause</text></g></svg></div><figcaption></figcaption></figure></div></section><div class="block" id="before-after"><h3>Before and after</h3><div class="table-scroll"><table class="compare"><thead><tr><th scope="col">Situation</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody><tr><th scope="row">Start note while your override is active</th><td>It says the skills stay paused.</td><td class="after">It says the pause is lifted for this session, and still asks you to delete the copies. </td></tr><tr><th scope="row">Which skills the messages name</th><td>None. The agent guessed and added &quot;deliver&quot;.</td><td class="after">workflow-clarify, workflow-specify and workflow-execute. </td></tr><tr><th scope="row">Docs about a typed bare name such as /tdd</th><td>They say it is stopped. It is not.</td><td class="after">They say it is not stopped. </td></tr><tr><th scope="row">A later edit drops another hook from hooks.json</th><td>Nothing notices unless that hook has its own wiring test.</td><td class="after">One test fails and names the missing command. </td></tr></tbody></table></div></div><div class="block" id="constraints"><h3>Constraints</h3><ul class="list--keep"><li>What is paused and how the override works stay as they are.</li><li>hooks/phase_gate.py and hooks/hooks.json stay as they are.</li><li>The version stays 2.8.0-rc.35.</li><li>The staged rc.35 edits in SETUP.md and CHANGELOG.md stay. This work adds to them.</li></ul></div></section><section class="section" aria-labelledby="alternatives"><h2 class="section__title" id="alternatives">Alternatives considered</h2><ul class="list"><li>A temp folder that refuses writes: the plan names it as a limit in the docs. Not chosen: a write probe on every refused call, because it adds file writes to a check that must stay read-only.</li><li>Pinning the other hooks: the plan uses a list of expected commands in the test. Not chosen: a comparison with the last commit, because a test must not depend on the state of Git.</li><li>You chose &quot;plan r2&quot; over leaving the four defects (D14).</li></ul></section><section class="section" aria-labelledby="concerns"><h2 class="section__title" id="concerns">Cross-cutting concerns</h2><ul class="risks"><li>The r2 repairs were not seen in a live session. You can repeat your earlier check.</li><li>The pinning test does not notice an extra key that is added to an existing hook entry.</li><li>A refused bare duplicate name gets a reason that names the three change skills and not that name.</li><li>The limits of the first delivery stand: no Python means no guard, Codex has no hooks, and a typed bare duplicate name is not stopped.</li></ul></section><section class="section" aria-labelledby="the-work"><h2 class="section__title" id="the-work">The work</h2><div class="block"><h3>What was delivered</h3><p>You asked for a plan for the four defects that the first delivery left. Both tickets are built and verified.</p><p>The start note and the refusal name workflow-clarify, workflow-specify and workflow-execute. The start note says the pause is lifted when it is. A test pins the registrations of the other hooks. Both doc texts match the code.</p><p>Changed files: hooks/duplicate_skills.py, tests/test_duplicate_skills_hook.py, skills/workflow/SETUP.md and CHANGELOG.md. Nothing is committed.</p><p>One repair came after the review. The reviewer found that the new start note gave a false reason in one case. The clause is removed, and a test covers it. That last change was not sent back to the reviewer.</p><p>The delivery is partial for one reason. The r2 repairs were checked with test events and not in a live session.</p></div><div class="block"><h3>How it was tested</h3><p>Each change to the script got a failing test first. The pinning test passed at once on the real file, and its changed copies show that it notices a difference.</p><p>Final results: 59 hook tests pass. The package check passes. The full suite has 1024 tests, 4 failures and 13 skipped. The failures are the same four as before all work.</p></div><div class="tickets"><article class="ticket" id="spec-T4" aria-labelledby="spec-T4-title"><p class="ticket__stub">Ticket <span class="ticket__key">T4</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T4-title">Make the guard&#x27;s messages exact, and pin the other hooks&#x27; registrations</h3><p>Change hooks/duplicate_skills.py so that the start note and the refusal name the three paused skills. The start note says the pause is lifted when the override is active. Add a test that pins the commands of the other hooks.</p><p>Without a session ID, or with an expired or missing override, the start note is as before.</p></div><dl class="ticket__facts"><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A7"><span class="check__key">A7</span><p class="check__expect">The session-start message and the refusal each contain the three skill names. The typed-command message is unchanged.</p><p class="check__how">Checked by: Run the hook tests for both messages.</p><p class="check__how">Both messages contain the three skill names. The typed-command message is unchanged. Evidence: <a href="#check-C1">Hook tests of the guard</a> (Passed), <a href="#check-C4">Independent review of T4 and T5</a> (Passed)</p><span class="state state--verified" id="result-A7" data-result="verified">Verified</span></li><li class="check" id="a-A8"><span class="check__key">A8</span><p class="check__expect">With a duplicate and an active override, the start note has the paths and &quot;lifted for this session&quot; and does not say &quot;stay paused&quot;. Without an override it is as before.</p><p class="check__how">Checked by: Run the hook test with and without a stored override.</p><p class="check__how">With an active override the start note has the paths and says the pause is lifted. Without one it says the skills stay paused. Evidence: <a href="#check-C1">Hook tests of the guard</a> (Passed), <a href="#check-C4">Independent review of T4 and T5</a> (Passed)</p><span class="state state--verified" id="result-A8" data-result="verified">Verified</span></li><li class="check" id="a-A10"><span class="check__key">A10</span><p class="check__expect">The new test passes on hooks/hooks.json and fails on a copy where a command of another hook is removed or changed.</p><p class="check__how">Checked by: Run the test on the real file and on two changed copies.</p><p class="check__how">The test passes on hooks/hooks.json and fails on five changed copies: removed, changed matcher, changed timeout, added event, changed command. Evidence: <a href="#check-C1">Hook tests of the guard</a> (Passed)</p><span class="state state--verified" id="result-A10" data-result="verified">Verified</span></li><li class="check" id="a-A11"><span class="check__key">A11</span><p class="check__expect">The hook tests, the package check and the full suite give the result of the delivery, plus the new tests.</p><p class="check__how">Checked by: Run all three and compare with FINDINGS V11: 1020 tests, 4 failures that existed before.</p><p class="check__how">The suite shows the same four failures as the first delivery and four tests more. Evidence: <a href="#check-C1">Hook tests of the guard</a> (Passed), <a href="#check-C2">Full suite against the delivery result</a> (Passed), <a href="#check-C3">Package check</a> (Passed)</p><span class="state state--verified" id="result-A11" data-result="verified">Verified</span></li></ol></dd><dt>Touches</dt><dd><code>hooks/duplicate_skills.py, tests/test_duplicate_skills_hook.py</code></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by the hook tests (V15, V16) and the independent review.</small></dd></dl></article><article class="ticket" id="spec-T5" aria-labelledby="spec-T5-title"><p class="ticket__stub">Ticket <span class="ticket__key">T5</span><span class="ticket__status ticket__status--done">Verified</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T5-title">Correct the two doc texts</h3><p>Correct the paragraph &quot;Duplicate skill copies&quot; in skills/workflow/SETUP.md and the guard bullet in CHANGELOG.md.</p><p>Both texts also say that an active override changes the start note.</p></div><dl class="ticket__facts"><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A9"><span class="check__key">A9</span><p class="check__expect">SETUP.md and CHANGELOG.md no longer say a bare duplicate name is stopped when typed. Both name the limit of a temp folder that refuses writes.</p><p class="check__how">Checked by: A reviewer compares each sentence with the code.</p><p class="check__how">The reviewer compared each sentence of both doc texts with the final code and found all true. Evidence: <a href="#check-C4">Independent review of T4 and T5</a> (Passed), <a href="#check-C3">Package check</a> (Passed)</p><span class="state state--verified" id="result-A9" data-result="verified">Verified</span></li></ol></dd><dt>Touches</dt><dd><code>skills/workflow/SETUP.md, CHANGELOG.md</code></dd><dt>Outcome</dt><dd><small class="task-outcome">Verified: Verified by the reviewer against the final code (V16) and the package check.</small></dd></dl></article></div><div class="block"><h3>Checks and reviews</h3><ol class="checks"><li class="check" id="check-C1"><span class="check__key">C1</span><p class="check__expect">Hook tests of the guard <span class="muted">(test)</span></p><p class="check__how">Expected: All tests of tests/test_duplicate_skills_hook.py pass.</p><p class="check__how">Observed: 59 tests, all pass.</p><p class="check__how">Limits: Run with test events on Windows. Not seen in a live Claude Code session.</p><p class="check__how">Command: <code>python -X utf8 -m unittest discover -s tests -p &quot;test_duplicate_skills_hook.py&quot;</code></p><span class="state state--verified">Passed</span></li><li class="check" id="check-C2"><span class="check__key">C2</span><p class="check__expect">Full suite against the delivery result <span class="muted">(test)</span></p><p class="check__how">Expected: The result of the first delivery plus the new tests.</p><p class="check__how">Observed: 1024 tests, 4 failures, 13 skipped. First delivery: 1020 tests, 4 failures. The four failures have the same names.</p><p class="check__how">Limits: The failures come from the staged rc.35 work and are not part of this task.</p><p class="check__how">Command: <code>python -X utf8 -m unittest discover -s tests -p &quot;test_*.py&quot;</code></p><span class="state state--verified">Passed</span></li><li class="check" id="check-C3"><span class="check__key">C3</span><p class="check__expect">Package check <span class="muted">(test)</span></p><p class="check__how">Expected: tools/validate.py passes.</p><p class="check__how">Observed: PASS.</p><p class="check__how">Limits: It checks structure, not behavior.</p><p class="check__how">Command: <code>python -X utf8 tools/validate.py</code></p><span class="state state--verified">Passed</span></li><li class="check" id="check-C4"><span class="check__key">C4</span><p class="check__expect">Independent review of T4 and T5 <span class="muted">(review)</span></p><p class="check__how">Expected: Standards and Spec findings are closed or recorded as limits.</p><p class="check__how">Observed: Spec: all four requirements implemented, every doc sentence true of the code. Standards: three findings. One repaired with a test, one closed in the test, one left as a named limit.</p><p class="check__how">Limits: The one-clause repair after the review was not sent back to the reviewer.</p><span class="state state--verified">Passed</span></li></ol></div></section><details class="appendix" id="technical-details"><summary>Reference: requirements, evidence and sources</summary><div class="appendix-body"><p class="muted">This page is generated from the task records. It approves nothing, it does not show who approved, and it does not prove that a check ran. Waived or unverified work is not a passed check.</p><section><h2>Behavior agreement record</h2><p>Status: <strong>approved</strong> · r2</p><p>Recorded response:</p><blockquote>Yes to both</blockquote><small>Source: <a href="#s-S1">S1</a>, PLAN.md, Current checkpoint, Agreement line; DECISIONS D15</small></section><section class="task-checkpoint" aria-labelledby="checkpoint-heading"><h2 id="checkpoint-heading">Current task checkpoint</h2><p class="checkpoint-asof">As recorded: 2026-11-11 · <a href="#s-S1">S1</a> , Current checkpoint</p><dl class="checkpoint-axes"><div><dt>Approval</dt><dd><strong>Approved · r2</strong><p>You agreed to the r2 additions and approved plan r2 on 2026-11-11 with &quot;Yes to both&quot;.</p></dd></div><div><dt>Implementation</dt><dd><strong>Implemented</strong><p>Tickets T4 and T5 are built.</p></dd></div><div><dt>Verification / acceptance</dt><dd><strong>Limited</strong><p>All automated checks passed and an independent reviewer checked both tickets. The r2 repairs were not seen in a live session.</p></dd></div></dl><p class="next-action"><strong>Next safe action</strong> Nothing more is planned for the guard. Nothing is committed.</p><p class="checkpoint-limit">Saved from the task records, not a live status check or proof of approval. Approval, completed code and acceptance are different states.</p></section><section><h2>Requirements</h2><div class="table-scroll"><table><thead><tr><th>ID</th><th>Requirement</th><th>Source</th><th>Covered by</th></tr></thead><tbody><tr id="r-R7"><td><strong>R7</strong></td><td>Both guard messages name the paused skills: workflow-clarify, workflow-specify and workflow-execute.</td><td>Your live check, 2026-11-11: the agent added &quot;deliver&quot; by itself (FINDINGS V12)</td><td><a href="#spec-T4">T4</a><br><a href="#a-A7">A7</a> <a href="#a-A11">A11</a></td></tr><tr id="r-R8"><td><strong>R8</strong></td><td>When the override is active, the start note says the pause is lifted for this session. It still names the copies and asks for deletion.</td><td>Remaining defect 4 of the delivery. You said &quot;plan r2&quot; on 2026-11-11</td><td><a href="#spec-T4">T4</a><br><a href="#a-A8">A8</a> <a href="#a-A11">A11</a></td></tr><tr id="r-R9"><td><strong>R9</strong></td><td>The docs say only what the guard does. A typed bare duplicate name is not stopped. A temp folder that refuses writes keeps the pause.</td><td>Remaining defects 1 and 2 of the delivery. You said &quot;plan r2&quot; on 2026-11-11</td><td><a href="#spec-T5">T5</a><br><a href="#a-A9">A9</a></td></tr><tr id="r-R10"><td><strong>R10</strong></td><td>A test pins the registrations of the other hooks.</td><td>Remaining defect 3 of the delivery. You said &quot;plan r2&quot; on 2026-11-11</td><td><a href="#spec-T4">T4</a><br><a href="#a-A10">A10</a> <a href="#a-A11">A11</a></td></tr></tbody></table></div></section><section><h2>Tickets: reason and evidence</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Why it is needed</th><th>Evidence</th><th>Depends on</th></tr></thead><tbody><tr id="t-T4"><td><strong>T4</strong></td><td>requested: Three of the defects are in the script or its tests.</td><td><a href="#e-E2">E2</a> <a href="#e-E3">E3</a> <a href="#e-E5">E5</a></td><td>—</td></tr><tr id="t-T5"><td><strong>T5</strong></td><td>requested: The docs must match the final wording of T4.</td><td><a href="#e-E4">E4</a> <a href="#e-E5">E5</a></td><td><a href="#spec-T4">T4</a></td></tr></tbody></table></div></section><section><h2>Before and after: evidence</h2><ul class="plain"><li><strong>Start note while your override is active</strong>: <a href="#e-E2">E2</a></li><li><strong>Which skills the messages name</strong>: <a href="#e-E3">E3</a></li><li><strong>Docs about a typed bare name such as /tdd</strong>: <a href="#e-E4">E4</a></li><li><strong>A later edit drops another hook from hooks.json</strong>: <a href="#e-E5">E5</a></li></ul></section><section><h2>Where each part comes from</h2><ul class="plain"><li>Context and scope <small>Source: <a href="#s-S4">S4</a>, DECISIONS.md, D14</small></li><li>Goals <small>Source: <a href="#s-S1">S1</a>, PLAN.md, Additions to revision r2</small></li><li>Non-goals <small>Source: <a href="#s-S1">S1</a>, PLAN.md, Additions to revision r2</small></li><li>Overview <small>Source: <a href="#s-S2">S2</a>, TODO.md, Revision r2 tickets</small></li><li>Alternatives considered <small>Source: <a href="#s-S1">S1</a>, PLAN.md, Additions to revision r2</small></li><li>Cross-cutting concerns <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, limits</small></li><li>How it was tested <small>Source: <a href="#s-S2">S2</a>, TODO.md, Bigger checks for r2</small></li><li>What was delivered <small>Source: <a href="#s-S1">S1</a>, PLAN.md, Outcome of revision r2</small></li><li>Read first: One defect is settled in the docs, not in the code: a temp folder that refuses writes keeps the pause. <small>Source: <a href="#s-S1">S1</a>, PLAN.md, Additions to revision r2, R9</small></li><li>Ticket T4 <small>Source: <a href="#s-S2">S2</a>, TODO.md, T4</small></li><li>Ticket T5 <small>Source: <a href="#s-S2">S2</a>, TODO.md, T5</small></li><li>Check C1 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V16</small></li><li>Check C2 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V17</small></li><li>Check C3 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V16</small></li><li>Check C4 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, Review of r2</small></li><li>Result for A7 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V15 to V17</small></li><li>Result for A8 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V15 to V17</small></li><li>Result for A9 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V15 to V17</small></li><li>Result for A10 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V15 to V17</small></li><li>Result for A11 <small>Source: <a href="#s-S3">S3</a>, FINDINGS.md, V15 to V17</small></li></ul></section><section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · runtime: The guard prints nothing at session start when no duplicate exists.</strong><p>FINDINGS V11; hooks/duplicate_skills.py, session_start</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Shown by tests with test events.</small></article><article id="e-E2" class="evidence"><strong>E2 · static: On resume the start note says the skills stay paused, also while an override is active.</strong><p>FINDINGS, whole-feature review and Remaining defects; hooks/duplicate_skills.py, duplicate_message</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Found by reading the code. Not seen live.</small></article><article id="e-E3" class="evidence"><strong>E3 · runtime: In your live check the agent listed &quot;clarify, specify, execute, deliver&quot; as paused. The guard pauses three, and its text names none.</strong><p>FINDINGS V12</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: One session.</small></article><article id="e-E4" class="evidence"><strong>E4 · static: SETUP.md and CHANGELOG.md say a bare duplicate name is also stopped when typed. The code stops only the three change commands.</strong><p>FINDINGS, Remaining defects; hooks/duplicate_skills.py, TYPED</p><small>Sources: <a href="#s-S3">S3</a> <a href="#s-S5">S5</a><br>Limits: Confirmed by the reviewer against the files on disk.</small></article><article id="e-E5" class="evidence"><strong>E5 · static: No test asserts that the registrations of the other hooks are unchanged. A temp folder that refuses writes keeps the pause and has no test.</strong><p>FINDINGS, Reconciliation</p><small>Sources: <a href="#s-S3">S3</a><br>Limits: Found by a subagent that did not build the work.</small></article></section><details><summary>Start note: steps and links</summary><ol><li><strong>N1: Session starts</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2: No duplicate?</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N3: Nothing is shown</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N4: Pause lifted
+by you?</strong>.  (proposed, added)  Evidence <a href="#e-E2">E2</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>N5: Note says &quot;lifted&quot;</strong>. Still asks you to delete (proposed, added)  Evidence <a href="#e-E2">E2</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>N6: Note names the three skills</strong>. Clarify, specify, execute (proposed, modified)  Evidence <a href="#e-E3">E3</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>N1 → N2</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N3</strong>: Yes (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N4</strong>: No (proposed, added)  Evidence <a href="#e-E2">E2</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>N4 → N5</strong>: Yes (proposed, added)  Evidence <a href="#e-E2">E2</a>; tasks <a href="#t-T4">T4</a>.</li><li><strong>N4 → N6</strong>: No (proposed, modified)  Evidence <a href="#e-E3">E3</a>; tasks <a href="#t-T4">T4</a>.</li></ol></details><details><summary>Today: steps and links</summary><ol><li><strong>N1: Session starts</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2: No duplicate?</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N3: Nothing is shown</strong>.  (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N4: Note says &quot;paused&quot;</strong>. Also when you lifted the pause (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li><li><strong>N1 → N2</strong>: continues (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N3</strong>: Yes (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>N2 → N4</strong>: No (observed, unchanged)  Evidence <a href="#e-E2">E2</a>; tasks —.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>workflow-axa · main, main checkout. Nothing is committed. The tree holds the staged rc.35 work, the guard and your report patch.</p>
+<p>Based on the task records, the final files and the test runs of 2026-11-11: the hook tests, the package check and the full suite. The r2 repairs did not run in a live Claude Code session.</p><p>Generated 2026-11-11T13:32:13.569860+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-S1"><td>S1</td><td><code>docs/plans/2026-11-11-duplicate-skill-guard/PLAN.md</code></td><td>plan</td><td><code>15d9d0ed78986d4b…</code></td></tr><tr id="s-S2"><td>S2</td><td><code>docs/plans/2026-11-11-duplicate-skill-guard/TODO.md</code></td><td>todo</td><td><code>28cfa43ddbb9bf75…</code></td></tr><tr id="s-S3"><td>S3</td><td><code>docs/plans/2026-11-11-duplicate-skill-guard/FINDINGS.md</code></td><td>findings</td><td><code>2f3d01c940d7c03d…</code></td></tr><tr id="s-S4"><td>S4</td><td><code>docs/plans/2026-11-11-duplicate-skill-guard/DECISIONS.md</code></td><td>decisions</td><td><code>7db34cd1b83ef0aa…</code></td></tr><tr id="s-S5"><td>S5</td><td><code>hooks/duplicate_skills.py</code></td><td>code</td><td><code>2763d57759ad04ce…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>docs/plans/2026-11-11-duplicate-skill-guard/reviews/delivery-r2-2026-11-11.json</code></td><td>projection</td><td><code>b1d21ca276aaaf60…</code></td></tr></tbody></table></div></details>
+</div></details></div></div></main><footer class="report-footer"><p>A saved snapshot. Progress belongs in the task records.</p></footer></div>
+<script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.8.0-rc.35", "layout_version": 2, "style": "workflow-editorial-v1", "revision": "r2", "report_kind": "task-overview", "generated_utc": "2026-11-11T13:32:13.569860+00:00", "sources": [{"id": "S1", "role": "plan", "path": "docs/plans/2026-11-11-duplicate-skill-guard/PLAN.md", "sha256": "15d9d0ed78986d4b6d10de4391682f1f4ead404e3145a8b5a8cb82dba248862d"}, {"id": "S2", "role": "todo", "path": "docs/plans/2026-11-11-duplicate-skill-guard/TODO.md", "sha256": "28cfa43ddbb9bf750803a17592b0b708bc4b0cd4226a3b8f7cae75f6b3408097"}, {"id": "S3", "role": "findings", "path": "docs/plans/2026-11-11-duplicate-skill-guard/FINDINGS.md", "sha256": "2f3d01c940d7c03df99171c199ac0c1ce56b6c8026f81ee6bc21754e35d7f87d"}, {"id": "S4", "role": "decisions", "path": "docs/plans/2026-11-11-duplicate-skill-guard/DECISIONS.md", "sha256": "7db34cd1b83ef0aa7fcf49352d2231dedec64209aea1d9fee81f49698ff098a4"}, {"id": "S5", "role": "code", "path": "hooks/duplicate_skills.py", "sha256": "2763d57759ad04ce32aae7bdcef006fae675dd8b0e15286daa7259d9832daf7e"}, {"id": "report-input", "role": "projection", "path": "docs/plans/2026-11-11-duplicate-skill-guard/reviews/delivery-r2-2026-11-11.json", "sha256": "b1d21ca276aaaf60ce14b5718f5077b4c601cb73bd2e7eb1ef7e56ae82e56350"}], "write_paths": ["hooks/duplicate_skills.py", "tests/test_duplicate_skills_hook.py", "skills/workflow/SETUP.md", "CHANGELOG.md"]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    if (!selected) return;  // diagrams that fit the column have no zoom controls
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+
+
+// Highlight the contents entry for the section being read.
+(function () {
+  const links = [...document.querySelectorAll('.toc__link')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (!targets.length) return;
+  function update() {
+    const line = Math.min(window.innerHeight * 0.3, 240);
+    let current = targets[0];
+    for (const t of targets) { if (t.getBoundingClientRect().top - line <= 0) current = t; }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = targets[targets.length - 1];
+    for (const a of links) {
+      const on = a.getAttribute('href') === '#' + current.id;
+      a.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && a.closest('.toc').scrollWidth > a.closest('.toc').clientWidth) {
+        const nav = a.closest('.toc');
+        const r = a.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        if (r.left < n.left || r.right > n.right) nav.scrollLeft += r.left - n.left - 24;
+      }
+    }
+  }
+  let queued = false;
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } }, {passive:true});
+  window.addEventListener('resize', update);
+  update();
+})();
+
+// Start diagrams on "Fit" when the whole board fits at a readable size.
+(function () {
+  const canvas = document.querySelector('.panel .canvas');
+  const fit = document.getElementById('zoom-fit');
+  if (!canvas || !fit || location.hash) return;
+  const visible = [...document.querySelectorAll('.canvas')].find(c => c.clientWidth);
+  if (!visible) return;
+  const board = parseFloat(getComputedStyle(visible).getPropertyValue('--board-width')) || 0;
+  if (board && visible.clientWidth < board && visible.clientWidth / board >= 0.6) {
+    fit.checked = true;
+    fit.dispatchEvent(new Event('change'));
+  }
+})();
+</script></body></html>

@@ -165,7 +165,7 @@ class ConditionalGuidanceTests(unittest.TestCase):
                 content=json.dumps({'screen_change': 'not-needed'}))]
         missing = self.missing(rows)['workflow-specify']
         self.assertIn('codebase-map/TASK-REPORT.md', missing)
-        self.assertFalse(any('ui-design/' in name or 'UI-FLOW' in name or name.endswith('/design.md') for name in missing))
+        self.assertFalse(any('ui-design/' in name or 'UI-FLOW' in name or name.endswith('/DESIGN.md') for name in missing))
 
     def test_visible_ui_still_requires_its_guidance(self):
         rows = [fixtures.skill('workflow-specify'), fixtures.tool('Write', file_path='docs/plans/x/report.json',

@@ -12,7 +12,7 @@ AGREEMENT_STATES = {"approved", "waived", "legacy", "not-required", "not-approve
 RECORDED = {"approved", "waived"}  # an exact revision and the real response are required
 AUTHORITY = RECORDED | {"legacy", "not-required"}  # cite the record; no invented response
 TERMINAL_TASKS = {"verified", "removed", "superseded", "not-applicable"}
-SECTIONS = {"request", "agreement", "specification", "decisions", "risks", "testing", "milestones", "delivery"}
+SECTIONS = {"request", "agreement", "goals", "non-goals", "specification", "decisions", "risks", "testing", "milestones", "delivery"}
 
 
 def fields(value, name, required, optional=()):
@@ -35,7 +35,7 @@ def sourced(row, sources, api, name):
 
 def validate(data, sources, api):
     report = data["task_report"]
-    fields(report, "task_report", ("phase", "agreement", "sections", "tickets", "checks", "acceptance_results"), ("completion", "screen_change"))
+    fields(report, "task_report", ("phase", "agreement", "sections", "tickets", "checks", "acceptance_results"), ("completion", "screen_change", "attention"))
     api.text(report["phase"], "task_report.phase", 30)
     if report["phase"] not in PHASES:
         raise ValueError("task_report.phase is invalid")
@@ -74,16 +74,32 @@ def validate(data, sources, api):
     sections = api.indexed(report["sections"], "task_report.sections", empty=False)
     if set(sections) - SECTIONS:
         raise ValueError("Unknown task_report section id")
-    needed = {"request", "agreement", "specification", "decisions", "risks", "testing"}
+    needed = {"request", "specification", "decisions", "risks", "testing"}
     if report["phase"] == "delivery":
         needed.add("delivery")
+    # Goals and non-goals (design-doc layout) replace the older single agreement section; never both.
+    goals = {"goals", "non-goals"} & set(sections)
+    if goals and "agreement" in sections:
+        raise ValueError("Use the goals and non-goals sections or the older agreement section, not both")
+    if len(goals) == 1:
+        raise ValueError("goals and non-goals come together: add the missing one")
+    if not goals:
+        needed.add("agreement")
     if needed - set(sections):
-        raise ValueError("task_report needs request, agreement, specification, decisions, risks and testing sections; delivery also needs its summary")
+        raise ValueError("task_report needs request, agreement (or goals and non-goals), specification, decisions, risks and testing sections; delivery also needs its summary")
     for row in sections.values():
         fields(row, "section", ("id", "title", "text", "source", "locator"))
         api.text(row["title"], "section.title", 100)
         api.text(row["text"], "section.text", 20000)
         sourced(row, sources, api, "section")
+
+    # What the owner must read before approving: one short sourced line each, shown beside the status.
+    for row in api.rows(report.get("attention", []), "task_report.attention"):
+        fields(row, "attention", ("text", "source", "locator"))
+        api.text(row["text"], "attention.text", 300)
+        sourced(row, sources, api, "attention")
+    if len(report.get("attention", [])) > 3:
+        raise ValueError("At most three attention lines: the header names surprises, the sections explain them")
 
     tasks = {row["id"] for row in data["tasks"]}
     ticket_ids = set()
@@ -185,6 +201,7 @@ def prose_fields(data):
     if report:
         fields.append(("task_report.agreement.summary", (report.get("agreement") or {}).get("summary", "")))
     fields += [(f'task_report.sections[{row["id"]}].text', row["text"]) for row in report.get("sections", [])]
+    fields += [(f'task_report.attention[{i}].text', row.get("text", "")) for i, row in enumerate(report.get("attention", []))]
     fields += [(f'task_report.tickets[{row["task"]}].{key}', row[key]) for row in report.get("tickets", []) for key in ("specification", "expected")]
     fields += [(f'task_report.checks[{row["id"]}].{key}', row[key]) for row in report.get("checks", []) for key in ("expected", "actual", "limits")]
     fields += [(f'task_report.acceptance_results[{row["acceptance"]}].note', row["note"]) for row in report.get("acceptance_results", [])]
@@ -276,8 +293,26 @@ CHECK_WORDS = {
     "passed": "Passed", "failed": "Failed", "red": "Failed before the change, as expected", "stale": "Stale: it passed on files that changed after the check",
     "limited": "Limited", "blocked": "Blocked", "not-run": "Not run",
 }
-TOC = (("agreed", None), ("how-it-works", "How it works"), ("what-changes", "What changes"),
-       ("the-work", "The work"), ("checks", "How the work will be checked"), ("risks", "Risks and open questions"))
+# The page follows the design-doc order: context, goals, design, alternatives, concerns. The work comes last.
+TOC = (("context", "Context and scope"), ("goals", "Goals and non-goals"), ("design", "The design"),
+       ("alternatives", "Alternatives considered"), ("concerns", "Cross-cutting concerns"), ("the-work", "The work"))
+# The visible label of each sourced section, for the "Where each part comes from" list.
+SECTION_LABELS = {"request": "Context and scope", "goals": "Goals", "non-goals": "Non-goals", "agreement": "Agreed behavior",
+                  "specification": "Overview", "decisions": "Alternatives considered", "risks": "Cross-cutting concerns",
+                  "testing": "How it is tested", "milestones": "Order of the work", "delivery": "What was delivered"}
+
+
+def bullets(value, style="list"):
+    """One list item per paragraph of a sourced text."""
+    items = "".join(f"<li>{html.escape(part).replace(chr(10), '<br>')}</li>" for part in value.split("\n\n") if part.strip())
+    return f'<ul class="{style}">{items}</ul>'
+
+
+def attention_html(data):
+    """Header lines the owner reads before approving. Each points at the decisions that explain it."""
+    rows = data["task_report"].get("attention", [])
+    return "".join('<p class="status status--attention"><span class="status__tag">Read first</span>'
+                   f'<span>{html.escape(row["text"])} <a href="#alternatives">See the decisions</a>.</span></p>' for row in rows)
 
 
 def status_sentence(data):
@@ -330,20 +365,20 @@ def status_tag(data):
 
 
 def facts(data, api):
-    """The at-a-glance row under the title."""
+    """The at-a-glance row under the title. No tile repeats the masthead or shows an empty value."""
     esc = html.escape
     report = data["task_report"]
     results = report["acceptance_results"]
     verified = sum(1 for row in results if row["status"] == "verified")
     open_count = len(data["open_decisions"])
     as_of = (data.get("checkpoint") or {}).get("as_of", "")
-    items = [("Revision", esc(data["revision"])), ("Tickets", f'{len(report["tickets"])}'),
-             ("Acceptance", f'{verified} of {len(data["acceptance"])} verified'),
-             ("Open questions", f'<a href="#open-questions">{open_count} to answer</a>' if open_count else "None")]
+    items = [("Tickets", f'{len(report["tickets"])}'), ("Checks", f'{verified} of {len(data["acceptance"])} verified')]
+    if open_count:
+        items.append(("Open questions", f'<a href="#open-questions">{open_count} to answer</a>'))
     if as_of:
         items.append(("As of", esc(as_of)))
     attention = ' class="facts__value--attention"'
-    cells = "".join(f'<div class="facts__item"><dt>{name}</dt><dd{attention if name == "Open questions" and open_count else ""}>{value}</dd></div>'
+    cells = "".join(f'<div class="facts__item"><dt>{name}</dt><dd{attention if name == "Open questions" else ""}>{value}</dd></div>'
                     for name, value in items)
     return f'<dl class="facts" aria-label="At a glance">{cells}</dl>'
 
@@ -357,107 +392,133 @@ def render(data, api, parts):
     acceptance = {row["id"]: row for row in data["acceptance"]}
     results = {row["acceptance"]: row for row in report["acceptance_results"]}
     checks = {row["id"]: row for row in report["checks"]}
-    delivered = report["phase"] == "delivery"  # round 8: plan-time headings stayed in delivery reports
-    agreed_title = "What you approve" if report["phase"] == "planning" else "What was agreed"
-    checks_title = "How it was checked" if delivered else "How the work will be checked"
+    planning = report["phase"] == "planning"
+    delivered = report["phase"] == "delivery"
     open_count = len(data["open_decisions"])
 
     def section(key, title, summary=""):
         lead = f'<p class="section__summary">{esc(summary)}</p>' if summary else ""
         return f'<section class="section" aria-labelledby="{key}"><h2 class="section__title" id="{key}">{esc(title)}</h2>{lead}'
 
-    def block(key, label):
+    def block(key, label, anchor=""):
         if key not in sections:
             return ""
-        return f'<div><h3>{esc(label)}</h3>{paragraphs(sections[key]["text"])}</div>'
+        mark = f' id="{anchor}"' if anchor else ""
+        return f'<div class="block"{mark}><h3>{esc(label)}</h3>{paragraphs(sections[key]["text"])}</div>'
 
-    titles = {"agreed": agreed_title, "checks": checks_title}
     flag = f'<span class="toc__flag">{open_count} open question{"s" if open_count != 1 else ""}</span>' if open_count else ""
-    toc = "".join(f'<li><a class="toc__link" href="#{key}">{esc(titles.get(key, title or ""))}{flag if key == "risks" else ""}</a></li>'
-                  for key, title in TOC)
+    toc = "".join(f'<li><a class="toc__link" href="#{key}">{esc(title)}{flag if key == "concerns" else ""}</a></li>' for key, title in TOC)
     out = ['<div class="layout"><nav class="toc" aria-label="Contents"><p class="toc__title">Contents</p>'
-           f'<ol class="toc__list">{toc}</ol><a class="toc__extra" href="#technical-details">Technical details</a></nav>'
+           f'<ol class="toc__list">{toc}</ol><a class="toc__extra" href="#technical-details">Reference</a></nav>'
            '<div class="content" id="task-report">']
 
-    # 1. Agreement, what stays the same, decisions.
-    out.append(section("agreed", agreed_title, report["agreement"]["summary"]))
-    out.append('<div class="columns">' + block("request", "What was asked")
-               + block("agreement", "What will happen" if report["phase"] == "planning" else "Agreed behavior") + "</div>")
-    bounds = "".join(f"<li>{esc(item)}</li>" for item in data["boundaries"])
-    keep = f'<div><h3>What stays the same</h3><ul class="list--keep">{bounds}</ul></div>' if bounds else ""
-    out.append('<div class="columns">' + block("decisions", "Decisions made") + keep + "</div>")
+    # 1. Context and scope: the problem and the facts. No goals and no design here.
+    out.append(section("context", "Context and scope", report["agreement"]["summary"]))
+    out.append(paragraphs(sections["request"]["text"]))
     if open_count:
         out.append(f'<p class="note">{open_count} question{"s are" if open_count != 1 else " is"} still open. '
                    '<a href="#open-questions">See the open questions</a></p>')
     out.append("</section>")
 
-    # 2. Flow diagrams.
-    out.append(section("how-it-works", "How it works") + parts.flow_context +
-               f'<section class="review" aria-label="Flow diagrams">{parts.controls}<div class="figures">{parts.figures}</div></section></section>')
+    # 2. Goals and non-goals. Older reports carry one agreement text instead.
+    out.append(section("goals", "Goals and non-goals"))
+    if "goals" in sections:
+        out.append(f'<div class="columns"><div><h3>Goals</h3>{bullets(sections["goals"]["text"])}</div>'
+                   f'<div><h3>Non-goals</h3>{bullets(sections["non-goals"]["text"])}</div></div>')
+    else:
+        out.append(block("agreement", "What will happen" if planning else "Agreed behavior"))
+    out.append("</section>")
 
-    # 3. Today versus after the change.
+    # 3. The design: overview, diagrams, before and after, constraints.
+    fit = " review--fit" if parts.compact else ""
+    out.append(section("design", "The design") + block("specification", "Overview") + parts.flow_context +
+               f'<section class="review{fit}" aria-label="Design diagrams">{parts.controls}<div class="figures">{parts.figures}</div></section>')
     if data["comparison"]:
         before, after = ("Before", "After") if data.get("report_kind") == "task-overview" else ("Today", "After the change")
         rows = "".join(
             f'<tr><th scope="row">{esc(row["label"])}</th><td>{esc(row["current"])}</td><td class="after">{esc(row["proposed"])} '
             + ('<span class="tag">Unchanged</span>' if row["current"].strip() == row["proposed"].strip() else '')  # no guessed "Changed" tag
             + "</td></tr>" for row in data["comparison"])
-        out.append(section("what-changes", "What changes", "Side by side, before and after the change.")
-                   + f'<div class="table-scroll"><table class="compare"><thead><tr><th scope="col">Situation</th>'
-                   f'<th scope="col">{before}</th><th scope="col">{after}</th></tr></thead><tbody>{rows}</tbody></table></div></section>')
-    else:
-        out.append(section("what-changes", "What changes") + "<p>No before and after comparison is recorded.</p></section>")
+        out.append('<div class="block" id="before-after"><h3>Before and after</h3><div class="table-scroll"><table class="compare"><thead><tr>'
+                   f'<th scope="col">Situation</th><th scope="col">{before}</th><th scope="col">{after}</th></tr></thead>'
+                   f'<tbody>{rows}</tbody></table></div></div>')
+    if data["boundaries"]:
+        bounds = "".join(f"<li>{esc(item)}</li>" for item in data["boundaries"])
+        out.append(f'<div class="block" id="constraints"><h3>Constraints</h3><ul class="list--keep">{bounds}</ul></div>')
+    out.append("</section>")
 
-    # 4. The work: approach, order, one card per ticket.
-    out.append(section("the-work", "The work"))
-    for key, label in (("delivery", "What was delivered"), ("specification", "Approach")):
-        if key in sections:
-            out.append(f'<div class="block"><h3>{label}</h3>{paragraphs(sections[key]["text"])}</div>')
-    steps = "".join(f'<li><a href="#spec-{esc(row["task"])}"><span class="key">{esc(row["task"])}</span> {esc(tasks[row["task"]]["title"])}</a></li>'
-                    for row in report["tickets"])
-    out.append(f'<div class="block"><h3>Order of the work</h3>{paragraphs(sections["milestones"]["text"]) if "milestones" in sections else ""}'
-               f'<ol class="steps">{steps}<li><a href="#checks"><span class="key">Checks</span> {esc(checks_title)}</a></li></ol></div>')
-    cards = []
-    for row in report["tickets"]:
-        task = tasks[row["task"]]
-        label, modifier = TICKET_STATES.get(task.get("outcome"), TICKET_STATES[None])
-        deps = " ".join(f'<a class="ticket-ref" href="#spec-{esc(dep)}">{esc(dep)}</a> {esc(tasks[dep]["title"])}'
-                        for dep in task["depends_on"]) or "Nothing. It can start first."
-        how = "".join(f"<li>{esc(item)}</li>" for item in dict.fromkeys(acceptance[key]["verification"] for key in task["acceptance"]))
-        outcome = f'<dt>Outcome</dt><dd>{parts.outcome(task)}</dd>' if "outcome" in task else ""
-        cards.append(f'<article class="ticket" id="spec-{esc(row["task"])}" aria-labelledby="spec-{esc(row["task"])}-title">'
-                     f'<p class="ticket__stub">Ticket <span class="ticket__key">{esc(row["task"])}</span>'
-                     f'<span class="ticket__status ticket__status--{modifier}">{esc(label)}</span></p>'
-                     f'<div class="ticket__main"><h3 class="ticket__title" id="spec-{esc(row["task"])}-title">{esc(task["title"])}</h3>'
-                     f'{paragraphs(row["specification"])}</div><dl class="ticket__facts"><dt>Expected result</dt><dd>{paragraphs(row["expected"])}</dd>'
-                     f'<dt>Depends on</dt><dd>{deps}</dd><dt>How it is checked</dt><dd><ul class="list">{how}</ul></dd>{outcome}</dl></article>')
-    out.append(f'<div class="tickets">{"".join(cards)}</div></section>')
+    # 4. Alternatives considered: one item per decision, with what it was chosen over and why.
+    out.append(section("alternatives", "Alternatives considered") + bullets(sections["decisions"]["text"]) + "</section>")
 
-    # 5. Each acceptance item once, with its result, then each check.
-    testing = sections.get("testing", {}).get("text", "")
-    out.append(section("checks", checks_title))
-    if testing:
-        out.append(paragraphs(testing))
-    verified = sum(1 for key in acceptance if results.get(key, {}).get("status") == "verified")
-    bar = "".join(f'<span class="is-{"verified" if results.get(k, {}).get("status") == "verified" else "failed" if results.get(k, {}).get("status") == "failed" else "open"}"></span>'
-                  for k in acceptance)
-    out.append(f'<div class="progress"><span>{verified} of {len(acceptance)} verified</span><span class="progress__bar" aria-hidden="true">{bar}</span></div>')
-    if not results and not checks:
-        out.append('<p class="muted">No check has run yet. Results appear here when the work is checked.</p>')
-    items = []
-    for key, row in acceptance.items():
-        result = results.get(key)
+    # 5. Cross-cutting concerns: risks, evidence limits and open questions. Nothing is shown for an empty list.
+    out.append(section("concerns", "Cross-cutting concerns"))
+    several = bool(parts.uncertainty or open_count)
+    out.append(('<h3>Risks and limits</h3>' if several else '') + bullets(sections["risks"]["text"], "risks"))
+    if parts.uncertainty:
+        out.append('<h3>Evidence limits</h3><ul class="risks">' + "".join(f"<li>{esc(v)}</li>" for v in parts.uncertainty) + "</ul>")
+    if open_count:
+        questions = "".join(f'<li class="question" id="q-{i}"><p class="question__title"><span class="question__key">Q{i}</span> {esc(item)}</p></li>'
+                            for i, item in enumerate(data["open_decisions"], 1))
+        out.append('<div class="questions" id="open-questions"><div class="questions__head"><h3>Open questions</h3>'
+                   f'<p>Work starts after these are answered.</p></div><ol class="question-list">{questions}</ol></div>')
+    out.append("</section>")
+
+    # 6. The work: how it is tested, then one card per ticket with its own checks.
+    order = [row["task"] for row in report["tickets"]]
+    linear = all(tasks[key]["depends_on"] == order[max(i - 1, 0):i] for i, key in enumerate(order))
+    count = f'{len(order)} ticket{"s" if len(order) != 1 else ""}'
+    summary = ""
+    if planning:
+        summary = f'The implementation plan: {count}, built after you approve.'
+        if linear and len(order) > 1:
+            summary += " They are built in this order. Each starts when the one before is verified."
+    out.append(section("the-work", "The work", summary))
+    out.append(block("delivery", "What was delivered") + block("testing", "How it was tested" if delivered else "How it is tested")
+               + block("milestones", "Order of the work"))
+
+    def check_item(key):
+        row, result = acceptance[key], results.get(key)
         state = (f'<span class="state state--{STATE_CLASS.get(result["status"], "open")}" id="result-{esc(key)}" data-result="{esc(result["status"])}">'
-                 f'{esc(RESULT_WORDS[result["status"]])}</span>'
-                 if result else '<span class="state">Not checked</span>')
+                 f'{esc(RESULT_WORDS[result["status"]])}</span>' if result else '<span class="state">Not checked</span>')
         note = ""
         if result:
             refs = ", ".join(f'<a href="#check-{esc(ref)}">{esc(checks[ref]["title"])}</a> ({esc(CHECK_WORDS[checks[ref]["status"]])})'
                              for ref in result["checks"]) or "no check linked"
             note = f'<p class="check__how">{esc(result["note"])} Evidence: {refs}</p>'
-        items.append(f'<li class="check" id="a-{esc(key)}"><span class="check__key">{esc(key)}</span>'
-                     f'<p class="check__expect">{esc(row["text"])}</p><p class="check__how">Checked by: {esc(row["verification"])}</p>{note}{state}</li>')
-    out.append(f'<ol class="checks">{"".join(items)}</ol>')
+        return (f'<li class="check" id="a-{esc(key)}"><span class="check__key">{esc(key)}</span>'
+                f'<p class="check__expect">{esc(row["text"])}</p><p class="check__how">Checked by: {esc(row["verification"])}</p>{note}{state}</li>')
+
+    shown = {}  # acceptance id -> the ticket that lists it in full; every check is stated once
+    cards = []
+    for row in report["tickets"]:
+        key = row["task"]
+        task = tasks[key]
+        label, modifier = TICKET_STATES.get(task.get("outcome"), TICKET_STATES[None])
+        items = []
+        for item in task["acceptance"]:
+            if item in shown:
+                items.append(f'<li class="check check--ref"><span class="check__key">{esc(item)}</span><p class="check__how">Listed under '
+                             f'<a href="#a-{esc(item)}">{esc(shown[item])}</a>. It applies to this ticket too.</p></li>')
+            else:
+                shown[item] = key
+                items.append(check_item(item))
+        done = f'<dt>Done when</dt><dd><ol class="checks">{"".join(items)}</ol></dd>' if items else ""
+        deps = ""
+        if not linear and task["depends_on"]:
+            deps = "<dt>Depends on</dt><dd>" + " ".join(f'<a class="ticket-ref" href="#spec-{esc(dep)}">{esc(dep)}</a> {esc(tasks[dep]["title"])}'
+                                                        for dep in task["depends_on"]) + "</dd>"
+        touches = f'<dt>Touches</dt><dd><code>{esc(", ".join(task["areas"]))}</code></dd>' if task.get("areas") else ""
+        outcome = f'<dt>Outcome</dt><dd>{parts.outcome(task)}</dd>' if "outcome" in task else ""
+        cards.append(f'<article class="ticket" id="spec-{esc(key)}" aria-labelledby="spec-{esc(key)}-title">'
+                     f'<p class="ticket__stub">Ticket <span class="ticket__key">{esc(key)}</span>'
+                     f'<span class="ticket__status ticket__status--{modifier}">{esc(label)}</span></p>'
+                     f'<div class="ticket__main"><h3 class="ticket__title" id="spec-{esc(key)}-title">{esc(task["title"])}</h3>'
+                     f'{paragraphs(row["specification"])}{paragraphs(row["expected"])}</div>'
+                     f'<dl class="ticket__facts">{deps}{done}{touches}{outcome}</dl></article>')
+    out.append(f'<div class="tickets">{"".join(cards)}</div>')
+    loose = [key for key in acceptance if key not in shown]
+    if loose:
+        out.append(f'<div class="block"><h3>Checks outside the tickets</h3><ol class="checks">{"".join(check_item(key) for key in loose)}</ol></div>')
     if checks:
         rows = []
         for row in checks.values():
@@ -467,26 +528,10 @@ def render(data, api, parts):
                         f'<p class="check__how">Expected: {esc(row["expected"])}</p><p class="check__how">Observed: {esc(row["actual"])}</p>'
                         f'<p class="check__how">Limits: {esc(row["limits"])}</p>{command}'
                         f'<span class="state state--{STATE_CLASS.get(row["status"], "open")}">{esc(CHECK_WORDS[row["status"]])}</span></li>')
-        out.append(f'<h3>Checks and reviews</h3><ol class="checks">{"".join(rows)}</ol>')
+        out.append(f'<div class="block"><h3>Checks and reviews</h3><ol class="checks">{"".join(rows)}</ol></div>')
     out.append("</section>")
 
-    # 6. Risks, open questions and evidence limits.
-    out.append(section("risks", "Risks and open questions"))
-    if "risks" in sections:
-        risks = "".join(f"<li>{esc(part).replace(chr(10), '<br>')}</li>" for part in sections["risks"]["text"].split("\n\n") if part.strip())
-        out.append(f'<h3>Risks and limits</h3><ul class="risks">{risks}</ul>')
-    if parts.uncertainty:
-        out.append('<h3>Evidence limits</h3><ul class="risks">' + "".join(f"<li>{esc(v)}</li>" for v in parts.uncertainty) + "</ul>")
-    if open_count:
-        questions = "".join(f'<li class="question" id="q-{i}"><p class="question__title"><span class="question__key">Q{i}</span> {esc(item)}</p></li>'
-                            for i, item in enumerate(data["open_decisions"], 1))
-        out.append('<div class="questions" id="open-questions"><div class="questions__head"><h3>Open questions</h3>'
-                   f'<p>Work starts after these are answered.</p></div><ol class="question-list">{questions}</ol></div>')
-    else:
-        out.append('<h3 id="open-questions">Open questions</h3><p>None recorded.</p>')
-    out.append("</section>")
-
-    # 7. Technical details: provenance, records and traceability.
+    # 7. Reference: provenance, records and traceability. One requirements table carries the links.
     agreement = report["agreement"]
     record = [f'<p>Status: <strong>{esc(agreement["status"])}</strong>'
               + (f' · {esc(agreement["revision"])}' if agreement.get("revision") else "") + "</p>"]
@@ -498,27 +543,34 @@ def render(data, api, parts):
     if data["state"] == "approved" and isinstance(data.get("approval"), dict):
         approval = (f'<section><h2>Plan approval record</h2><p>{esc(data["approval"]["record"])}</p>'
                     f'<blockquote>{esc(data["approval"]["response"])}</blockquote></section>')
-    change_rows = "".join(f'<tr><td>{esc(row["label"])}</td><td>{api.links(row["requirements"], "r")}</td>'
-                          f'<td>{api.links(row["evidence"], "e")}</td><td>{api.links(row["tasks"], "t")}</td></tr>' for row in data["comparison"])
-    accept_rows = "".join(f'<li><strong>{esc(key)}</strong>: requirements {api.links(row["requirements"], "r")}</li>' for key, row in acceptance.items())
-    origins = [(f'Section “{row["title"]}”', row) for row in report["sections"]]
+    requirement_rows = "".join(
+        f'<tr id="r-{esc(row["id"])}"><td><strong>{esc(row["id"])}</strong></td><td>{esc(row["text"])}</td><td>{esc(row["origin"])}</td>'
+        f'<td>{api.links([t["id"] for t in data["tasks"] if row["id"] in t["requirements"]], "spec")}<br>'
+        f'{api.links([key for key, a in acceptance.items() if row["id"] in a["requirements"]], "a")}</td></tr>'
+        for row in data["requirements"]) or '<tr><td colspan="4">No requirements recorded.</td></tr>'
+    ticket_rows = "".join(
+        f'<tr id="t-{esc(t["id"])}"><td><strong>{esc(t["id"])}</strong></td><td>{esc(t["kind"])}: {esc(t["reason"])}</td>'
+        f'<td>{api.links(t["evidence"], "e")}</td><td>{api.links(t["depends_on"], "spec")}</td></tr>'
+        for t in data["tasks"]) or '<tr><td colspan="4">No implementation tasks.</td></tr>'
+    change_rows = "".join(f'<li><strong>{esc(row["label"])}</strong>: {api.links(row["evidence"], "e")}</li>' for row in data["comparison"])
+    labels = {**SECTION_LABELS, "agreement": "What will happen" if planning else "Agreed behavior",
+              "testing": "How it was tested" if delivered else "How it is tested"}
+    origins = [(labels.get(row["id"], row["title"]), row) for row in report["sections"]]
+    origins += [(f'Read first: {row["text"]}', row) for row in report.get("attention", [])]
     origins += [(f'Ticket {row["task"]}', row) for row in report["tickets"]]
     origins += [(f'Check {row["id"]}', row) for row in report["checks"]]
     origins += [(f'Result for {row["acceptance"]}', row) for row in report["acceptance_results"]]
     origin_html = "".join(f"<li>{esc(label)} {attribution(row, api)}</li>" for label, row in origins)
-    task_table = parts.task_rows or '<tr><td colspan="4">No implementation tasks.</td></tr>'
-    out.append('<details class="appendix" id="technical-details"><summary>Technical details: sources, evidence and traceability</summary><div class="appendix-body">'
-               '<p class="muted">This page comes from the task records: the plan, the to-do list, the findings and the decisions. '
-               'It does not approve anything, it does not show who approved, and it does not prove that a check ran. '
-               'There is no approve button. Waived or unverified work is not a passed check.</p>'
+    out.append('<details class="appendix" id="technical-details"><summary>Reference: requirements, evidence and sources</summary><div class="appendix-body">'
+               '<p class="muted">This page is generated from the task records. It approves nothing, it does not show who approved, '
+               'and it does not prove that a check ran. Waived or unverified work is not a passed check.</p>'
                f'<section><h2>Behavior agreement record</h2>{"".join(record)}</section>{approval}{parts.checkpoint}{parts.history}'
-               f'<section><h2>Requirements</h2><ul class="plain">{parts.requirements or "<li>No requirements recorded.</li>"}</ul></section>'
-               '<section><h2>Tickets: traceability</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Work and affected areas</th>'
-               f'<th>Traceability</th><th>Depends on</th></tr></thead><tbody>{task_table}</tbody></table></div></section>'
-               + ('<section><h2>What changes: traceability</h2><div class="table-scroll"><table><thead><tr><th>Situation</th><th>Requirements</th>'
-                  f'<th>Evidence</th><th>Tickets</th></tr></thead><tbody>{change_rows}</tbody></table></div></section>' if change_rows else '')
-               + f'<section><h2>Acceptance: traceability</h2><ul class="plain">{accept_rows or "<li>No acceptance criteria.</li>"}</ul></section>'
-               f'<section><h2>Where each part comes from</h2><ul class="plain">{origin_html}</ul></section>'
+               '<section><h2>Requirements</h2><div class="table-scroll"><table><thead><tr><th>ID</th><th>Requirement</th><th>Source</th>'
+               f'<th>Covered by</th></tr></thead><tbody>{requirement_rows}</tbody></table></div></section>'
+               '<section><h2>Tickets: reason and evidence</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Why it is needed</th>'
+               f'<th>Evidence</th><th>Depends on</th></tr></thead><tbody>{ticket_rows}</tbody></table></div></section>'
+               + (f'<section><h2>Before and after: evidence</h2><ul class="plain">{change_rows}</ul></section>' if change_rows else '')
+               + f'<section><h2>Where each part comes from</h2><ul class="plain">{origin_html}</ul></section>'
                f'<section><h2>Evidence and limits</h2>{parts.evidence}</section>{parts.graph_records}\n{parts.snapshot}\n</div></details>')
     out.append("</div></div>")
     return status_sentence(data), facts(data, api), "".join(out)
@@ -564,11 +616,13 @@ def scaffold_delivery(review: dict) -> dict:
     for row in sections.values():  # round 14: plan-time wording ("not yet", "will") stayed in deliveries
         if any(word in row['text'].lower() for word in STALE_WORDS):
             row['text'] = FILL + 'rewrite in the past tense from the records: ' + row['text']
-    for key in ('request', 'agreement', 'specification', 'decisions', 'risks', 'testing', 'delivery'):
+    behavior = () if 'goals' in sections else ('agreement',)  # goals and non-goals replace the agreement section
+    for key in ('request', *behavior, 'specification', 'decisions', 'risks', 'testing', 'delivery'):
         sections.setdefault(key, {'id': key, 'title': key.title(), 'text': FILL + key, **where})
     tickets = {row['task']: row for row in old.get('tickets', [])}
     data['task_report'] = {
         'phase': 'delivery', 'completion': 'partial', 'agreement': agreement,
+        **({'attention': old['attention']} if old.get('attention') else {}),
         'sections': list(sections.values()),
         'tickets': [tickets.get(t['id']) or {'task': t['id'], 'specification': FILL + 'what this ticket built',
                                                'expected': FILL + 'expected result', **where} for t in data['tasks']],

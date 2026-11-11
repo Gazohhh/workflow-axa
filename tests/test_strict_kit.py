@@ -186,7 +186,7 @@ class StrictKitTests(unittest.TestCase):
 
 class StrictPolicyTests(unittest.TestCase):
     def test_no_ordinary_escape_modes(self):
-        core=(ROOT/'skills/rule-maker/rules/design.md').read_text()
+        core=(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
         self.assertIn('No new CSS, ever.',core)
         self.assertIn('Plain only on instruction.',core)
         self.assertIn('Record their words',core)

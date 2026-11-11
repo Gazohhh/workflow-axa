@@ -4,9 +4,9 @@ This is a **live-host protocol**, not a passing evaluation. `cases.json` contain
 
 The format is local to this package; it is not claimed to be native Claude plugin-eval or skill-creator JSON. The shipped result file explicitly says NOT_RUN. Do not convert package test passes into model scores.
 
-## Current candidate handoff
+## 2.8.0-rc.3 candidate handoff (historical)
 
-For 2.8.0-rc.3 use the root CLAUDE-TEST-PROMPT.txt and RC3-CASES.md first. The owner reported that the older baseline was overwritten: test the exact candidate alone unless a separate trusted baseline is available and comparison is approved. Never search for or fabricate a mandatory unavailable version. No paid runs, repeats or extra batch are authorised by this document. One approved batch, one read-only retro, then stop. Older version-comparison material below describes optional/historical testing, not an instruction to launch it.
+For the current candidate, follow docs/EVALUATION.md. For 2.8.0-rc.3 the protocol was docs/archive/CLAUDE-TEST-PROMPT.txt and docs/archive/RC3-CASES.md. The owner reported that the older baseline was overwritten: test the exact candidate alone unless a separate trusted baseline is available and comparison is approved. Never search for or fabricate a mandatory unavailable version. No paid runs, repeats or extra batch are authorised by this document. One approved batch, one read-only retro, then stop. Older version-comparison material below describes optional/historical testing, not an instruction to launch it.
 
 ## Prepare a fair old/new comparison
 
@@ -64,4 +64,4 @@ Use the record-* fixtures for legacy STATUS.md, actual implemented code with old
 
 ## Two-gate cases on 2.8.0
 
-The existing interview and task-reuse cases still apply, with one stricter reading on 2.8.0: on a substantive request, the first approval the agent asks for is the behavior agreement, and no application write may follow it until a separate implementation approval of the HTML plan. An agent that treats the agreement as permission to code fails the case critically. A legacy task approved under one gate must continue without a retroactive agreement request. No phase-specific case has been added to `cases.json` in this candidate; until one is, use the phase checks listed in [tests/README.md](../README.md) and record them NOT RUN until observed.
+The existing interview and task-reuse cases still apply, with one stricter reading on 2.8.0: on a substantive request, the first approval the agent asks for is the behavior agreement, and no application write may follow it until a separate implementation approval of the plan report. An agent that treats the agreement as permission to code fails the case critically. A legacy task approved under one gate must continue without a retroactive agreement request. No phase-specific case has been added to `cases.json` in this candidate; until one is, use the phase checks listed in [tests/README.md](../README.md) and record them NOT RUN until observed.

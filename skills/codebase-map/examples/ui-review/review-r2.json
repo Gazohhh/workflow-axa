@@ -207,7 +207,7 @@
         "A1"
       ],
       "areas": [
-        "skills/rule-maker/rules/typescript.md",
+        "skills/rule-maker/rules/TYPESCRIPT.md",
         "rules/version.json"
       ],
       "depends_on": [

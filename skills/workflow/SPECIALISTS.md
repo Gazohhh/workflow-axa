@@ -33,7 +33,7 @@ These stay external; use them only when installed, and never install them yourse
 
 Before each call, pass: task and approval paths, the exact question or work unit, settled answers, allowed writes, relevant files or diff, output location ([ARTIFACTS.md](ARTIFACTS.md)) and applicable rules (RULES.md, with any exact exception). Only the task owner writes task records; specialists and subagents return evidence. Without subagents, run sequentially and label a self-review as such.
 
-[specialists.json](specialists.json) lists the upstream catalogue for teams that also install Matt's skills; the read-only [checker](scripts/check_specialists.py) inventories installed roots. Installed is not invoked, and invoked is not a correct result.
+[specialists.json](specialists.json) lists the upstream catalog for teams that also install Matt's skills; the read-only [checker](scripts/check_specialists.py) inventories installed roots. Installed is not invoked, and invoked is not a correct result.
 
 ## Manual workflows are never chained in
 
@@ -44,8 +44,8 @@ Before each call, pass: task and approval paths, the exact question or work unit
 ## Local routes
 
 - **Phase skills** `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`: this package's procedures, picked by `workflow` or invoked directly.
-- **`codebase-map`**: flowcharts and the HTML plan report ([VISUAL-REVIEW.md](VISUAL-REVIEW.md)). It never implements, approves, grills or calls back into the workflow. Don't use Matt's `improve-codebase-architecture` just to draw a flow.
-- **`ui-design`**: load it before planning any application UI, even behavior-only UI changes. Its rule: never write CSS; reuse only classes/IDs that already exist (design kit or existing code), mirroring class and tag; when nothing matches, ask which existing element to mimic; plain unstyled HTML only on the user's explicit instruction. Pass its mode, approval source and preview limits to every worker. Code review checks markup, visual props and removed styling, not just CSS additions.
+- **`codebase-map`**: flowcharts and the plan report ([VISUAL-REVIEW.md](VISUAL-REVIEW.md)). It never implements, approves, grills or calls back into the workflow. Don't use Matt's `improve-codebase-architecture` just to draw a flow.
+- **`ui-design`**: load it before planning any application UI, even behavior-only UI changes. Its rule (never write CSS) is owned by `../rule-maker/rules/DESIGN.md`. Pass its mode, approval source and preview limits to every worker. Code review checks markup, visual props and removed styling, not just CSS additions.
 - **Optional helpers** (skill-creator, webapp-testing): [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md); never prerequisites.
 
 Every route: pass the output folder and protected paths from ARTIFACTS.md; each worker cleans only its own scratch. If the host can't apply a specialist's boundaries without conflict, don't run it unchanged: record the conflict and confirm a fallback with the user.

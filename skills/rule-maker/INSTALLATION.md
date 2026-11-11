@@ -12,7 +12,7 @@ python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global
 
 The script accepts a package root, its `skills` directory, or its `skills/rule-maker` directory. For split per-skill installations, supply their common skills parent. It compares the eight local skills and their supporting files to the trusted package running the command, validates the library fingerprints, and reports declared versions, missing/changed files and distinct duplicate copies. Only named candidate locations are read. No recursive search of user profiles, deletion, installation, host execution or network access occurs. Linked/junction candidate inputs require manual review; changing a manifest's version alone cannot hide changed content.
 
-`--check-global` reuses the safe activation helper in read-only mode; `--home`, `--claude-dir`, `--codex-home` and `--host` are supported. It checks the managed blocks including a nonempty Codex override. Unrelated global instructions are preserved and not printed. Disk matches are not proof of host loading, followed rules or enforcement; these remain NOT VERIFIED. Exit 0 means named disk/reference checks match; 1 means drift/duplicate/reference warning; 2 means invalid, unsafe or unreadable input. Do not use the result to skip a fresh-session test.
+`--check-global` reuses the safe activation helper in read-only mode; `--home`, `--claude-dir`, `--codex-home` and `--host` are supported. It checks the managed blocks including a nonempty Codex override. Unrelated global instructions are preserved and not printed. Host loading, followed rules and enforcement remain NOT VERIFIED. Exit 0 means named disk/reference checks match; 1 means drift/duplicate/reference warning; 2 means invalid, unsafe or unreadable input. Do not use the result to skip a fresh-session test.
 
 ## Install byte for byte
 
@@ -22,7 +22,7 @@ Check in two steps:
 1. From the package you are installing, run `audit_installation.py --candidate <installed skills folder>`. It must report MATCH. This compares bytes only.
 2. Then run the **installed** copy's `audit_installation.py --check-global` or `activate_rules.py --check`. Global blocks point at the library of whichever copy runs the check, so only the installed copy verifies the installed route.
 
-The shared baseline is every skill folder the package registers at its version, `~/.workflow-axa/ARTIFACTS.md` and the two managed global blocks; nothing inside projects. MATCH proves equality with the local package you ran the check from, not where that package came from: there is no signature. Each machine is a separate installation, and updating one does not update another.
+The shared baseline is every skill folder the package registers at its version, `~/.workflow-axa/ARTIFACTS.md` and the two managed global blocks; nothing inside projects. Each machine is a separate installation, and updating one does not update another.
 
 ## Trace live loading
 

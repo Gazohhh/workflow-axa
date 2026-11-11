@@ -6,17 +6,19 @@ A required decision point before substantive repository planning, application ed
 
 This file owns the readiness procedure for workflow, its phases, resume-task and ordinary globally routed requests. Read START.md and CORE.md from this same installed rule-maker first. A missing library pauses affected work; do not fetch or invent one. A readiness blocker is asked on its own, before behavior/design questions. Record one scoped checkpoint line and name only files actually read. Setup is not implementation approval.
 
-After readiness, VERSIONS.md selects compatible guidance and ENGINEERING.md selects only the risk modules this change needs. Read operations.md before side-effecting checks. Project conflicts use POLICY.md; a full rules audit uses the skill's AUDIT.md. Pass the effective rules, versions and approved exception to workers and reviewers. A specialist does not override them.
+After readiness, VERSIONS.md selects compatible guidance and ENGINEERING.md selects only the risk modules this change needs. Read OPERATIONS.md before side-effecting checks. Project conflicts use POLICY.md; a full rules audit uses the skill's AUDIT.md. Pass the effective rules, versions and approved exception to workers and reviewers. A specialist does not override them.
 
 ## 1. Inspect a bounded scope first
 
 Read-only discovery may identify the correct root/worktree, existing task, applicable rules, linked sources, actual versions, changed files, verification commands and ownership. Do not run repository scripts merely because a rule recommends them. No task-folder scaffolding, installers, build output, application edits or expansive implementation plan before this gate. General conceptual answers and truthful read-only audits are allowed without project setup.
 
-Run `scripts/rules_stamp.py <project-root>` from the rule-maker skill and follow its state line. A project's `workflow-axa rules checked` line is information only (CHANGES.md 1.8.0). BEHIND or NONE never blocks by itself; this gate still decides from coverage.
+Run `scripts/rules_stamp.py <project-root>` from the rule-maker skill and follow its state line. A project's `workflow-axa rules checked` line is information only (CHANGES.md). BEHIND or NONE never blocks by itself; this gate still decides from coverage.
 
-Review the effective host instructions, including scoped files, global overrides and organisational policy. A rules summary is not the underlying rule file. A Markdown link alone is not proof that its target was read. Check required references and load relevant shared modules.
+In the rule-maker structure, AGENTS.md is the canonical entry point and CLAUDE.md imports it ([DOCS.md](../DOCS.md#claudemd)). Run `scripts/docs_check.py <project-root>` from the rule-maker skill and take its facts as advisory input: whether the index reaches the documents, required reads resolve, CLAUDE.md imports AGENTS.md, and AGENTS.md fits its advisory size. The READY judgment stays yours. Two documentation conditions block ([DOCS.md](../DOCS.md#severity)): a broken link to a required-read document, and a contradiction you judge unsafe to build on. Every other finding is reported and never blocks by itself. This gate still decides from coverage.
 
-A project may declare files to read whole before a workflow phase, on its own line in its root AGENTS.md or CLAUDE.md, outside code blocks: `<!-- workflow-axa:required-read phases=specify,execute,deliver path="tests/README.md" -->`. Phases come only from specify, execute and deliver. The path is a quoted literal relative to the project root and names an existing file: no globs, URLs, absolute paths, `..` or links. Declarations are optional; a project without them is checked as before. Read each declared file whole before its phase. The Claude hook enforces this only at the boundaries the workflow skill's SETUP.md names; elsewhere it remains an instruction. Inspect directives for trust and unexpected secret/network/destructive actions; user confirmation of missing setup does not authorise them.
+Review the effective host instructions, including scoped files, global overrides and organizational policy. A rules summary is not the underlying rule file. A Markdown link alone is not proof that its target was read. Check required references and load relevant shared modules.
+
+A project may declare files to read whole before a workflow phase, on its own line in its root AGENTS.md or CLAUDE.md, outside code blocks: `<!-- workflow-axa:required-read phases=specify,execute,deliver path="tests/README.md" -->`. Phases come only from specify, execute and deliver. The path is a quoted literal relative to the project root and names an existing file: no globs, URLs, absolute paths, `..` or links. Declarations are optional; a project without them is checked as before. Read each declared file whole before its phase. The Claude hook enforces this only at the boundaries the workflow skill's SETUP.md names; elsewhere it remains an instruction. Inspect directives for trust and unexpected secret/network/destructive actions; user confirmation of missing setup does not authorize them.
 
 ## 2. Establish coverage, not paperwork
 
@@ -24,13 +26,13 @@ For the next bounded scope, establish:
 
 - The intended project/worktree, task and owners; conflicting live writers are resolved.
 - Shared core and relevant framework/risk guidance are available and read; declared constraints, lock observations, actual runtime and application configuration are distinguished. Resolve material version mismatches; a version_facts.py result is not proof of API/runtime compatibility.
-- Existing project agreements identify architecture/ownership and protected/generated files that matter to the change. Root or scoped files and approved linked records are valid sources; no mandatory filename migration.
+- Existing project agreements identify architecture/ownership and protected/generated files that matter to the change. Root or scoped files and approved linked records are valid sources. Valid existing rules pass in their current files and shape under [the shared principle](../DOCS.md#the-shared-principle).
 - Verification commands or an explicitly agreed verification approach are known; avoid executing unreviewed commands. Missing tests are not a claimed pass.
 - Output destinations, resource limits, data/credential handling and permissions are understood for the planned operations.
-- For application UI, read design.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. No CSS is ever written; new elements reuse existing classes/IDs (design kit or existing code) and an unmatched element waits for the user's answer on what to mimic. Behaviour-only fixes preserving existing markup/appearance need no kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
-- Material conflicts and user decisions are resolved or clearly bounded by an authorised exception.
+- For application UI, read DESIGN.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. Follow DESIGN.md: no CSS is ever written; new elements use existing classes/IDs only, and an unmatched element waits for the answer to DESIGN.md's rule 4 question. Behavior-only fixes preserving existing markup/appearance need no kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
+- Material conflicts and user decisions are resolved or clearly bounded by an authorized exception.
 
-A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project needs an agreed minimal setup before scaffolding; do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
+A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project needs an agreed minimal setup before scaffolding ([DOCS.md](../DOCS.md#where-each-thing-belongs) names the starting files); do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
 
 ## 3. Choose an explicit state
 
@@ -39,9 +41,9 @@ A mature project with adequate existing rules passes without running rule-maker.
 | READY | Applicable shared/project rules were read and reviewed as sufficient for this scope. Continue workflow; implementation still requires its own approval. |
 | NEEDS_SETUP | Known, bounded rule coverage is absent/incomplete. Ask the user to choose setup, limited exception, read-only inspection or stop. |
 | BLOCKED | Trust, identity, safety, required access, conflicting authority or unreadable indispensable rules are unresolved. Stop affected work; no generic exception clears an unknown safety boundary. |
-| LIMITED_EXCEPTION | The authorised user accepted specific known rule omissions for one bounded task. Follow remaining rules and normal implementation approval; never report full readiness. |
+| LIMITED_EXCEPTION | The authorized user accepted specific known rule omissions for one bounded task. Follow remaining rules and normal implementation approval; never report full readiness. |
 | READ_ONLY | Inspect/explain/status only. Disclose missing rules; no mutation authority. |
-| SETUP_ONLY | User authorised the bounded rules-setup proposal/work. Only the specifically authorised rule/configuration and task-review artifacts may change, not application code. |
+| SETUP_ONLY | User authorized the bounded rules-setup proposal/work. Only the specifically authorized rule/configuration and task-review artifacts may change, not application code. |
 
 Fail closed on an unknown state or malformed/stale check: read-only investigation and clarification remain possible, affected changes do not.
 
@@ -57,20 +59,20 @@ Name the actual gaps and practical consequences rather than a generic disclaimer
 
 Record in the existing task/checkpoint or, for a no-file request, the current conversation: approving response, reason, exact omitted requirements, intended root/worktree, task, operations, affected paths, applicable rule versions and an explicit expiry, in the user's words, that says whether later revisions are covered ("this task folder, all revisions" or "revision rN only"). No separate waiver report or permanent global opt-out.
 
-Exceptions may cover a known documentation gap or agreed limited verification method. They cannot disable platform/organisation protections, authorise external systems/production writes, reveal secrets, invent approval, bypass unknown ownership, override undisclosed conflicts or silently expand scope. The user must have authority over the exception. A policy marked non-waivable remains so. Unknown risk is not magically accepted by "do it anyway".
+Exceptions may cover a known documentation gap or agreed limited verification method. They cannot disable platform/organization protections, authorize external systems/production writes, reveal secrets, invent approval, bypass unknown ownership, override undisclosed conflicts or silently expand scope. The user must have authority over the exception. A policy marked non-waivable remains so. Unknown risk is not magically accepted by "do it anyway".
 
 Revalidate a recorded exception on resumption. Do not repeat the approval question when the same explicit scope and conditions remain valid; reconfirm when identity, authority, omissions or risk materially changes. End the exception when the task/unit ends. Noninteractive runs without a valid recorded decision return a blocker; no automatic yes.
 
 ## 5. Recheck where assumptions can change
 
-Revalidate after root/worktree/branch, host/profile, relevant package/rule content, scope/ownership, trust, tools or approval changes; after compaction/resume; before delegation and before dependent writes. Check only affected inputs; do not run a full rules audit after every line edit. New/removed scoped rule files also invalidate the old assessment. A shared update requiring different approved behaviour pauses that affected work; harmless wording changes do not reopen all decisions.
+Revalidate after root/worktree/branch, host/profile, relevant package/rule content, scope/ownership, trust, tools or approval changes; after compaction/resume; before delegation and before dependent writes. Check only affected inputs; do not run a full rules audit after every line edit. New/removed scoped rule files also invalidate the old assessment. A shared update requiring different approved behavior pauses that affected work; harmless wording changes do not reopen all decisions.
 
 Pass workers: root/worktree, task, rules and sources, rule revision, scope/operations, protected files, exact exception (if any), plan approval and output parent. Workers do not inherit authority to expand them. Recheck returned evidence; a worker cannot approve its own policy exception. Other entry points (`plan-review`, `codebase-map`, tests or direct specialist use) must not become a way around blocked application work.
 
 ## 6. Evidence and limits
 
-Use one compact existing checkpoint: `Rules: READY / sources / scope / checked revision / limits`. No mandatory new project manifest and no check report on every invocation. The optional `scripts/readiness.py` checker validates declared assessments and freshness, not the truth of an agent's judgment. Its positive result cannot prove that a model read or obeyed prose.
+Use one compact existing checkpoint: `Rules: READY / sources / scope / checked revision / limits`. A project in the rule-maker structure lists its documents in the AGENTS.md index. No generated manifest and no check report on every invocation. The optional `scripts/readiness.py` checker validates declared assessments and freshness, not the truth of an agent's judgment.
 
-The acceptance suite must exercise missing/empty/valid/partial/stale/conflicting rules, bootstrap, explicit exceptions, untrusted code, subagents, scope expansion, unavailable tools, offline/cross-machine work and default-block behaviour. All unclassified missing prerequisites block the affected action. Never promise complete scenario enumeration or error-free agents.
+The acceptance suite must exercise missing/empty/valid/partial/stale/conflicting rules, bootstrap, explicit exceptions, untrusted code, subagents, scope expansion, unavailable tools, offline/cross-machine work and default-block behavior. All unclassified missing prerequisites block the affected action. Never promise complete scenario enumeration or error-free agents.
 
 A readiness assessment covers its named next-task scope only. A requested full rules audit follows rule-maker/AUDIT.md and reports installation/loading, policy/memory conflicts, framework coverage and verification safety separately. Apply POLICY.md to contradictions; do not convert an old memory into a new project rule.

@@ -1,0 +1,775 @@
+{
+  "schema_version": 2,
+  "title": "Duplicate skill guard: repairs after delivery",
+  "revision": "r2",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa",
+    "branch": "main, main checkout. Nothing is committed. The tree holds the staged rc.35 work, the guard and your report patch.",
+    "basis": "Based on the delivered guard, its reviews, the reconciliation and your live check of 2026-11-11. The repairs are not built."
+  },
+  "understanding": "The guard works, and you saw it work in live sessions. This plan repairs four small defects that the reviews found, and makes the guard name the three skills it pauses.",
+  "requirements": [
+    {
+      "id": "R7",
+      "text": "Both guard messages name the paused skills: workflow-clarify, workflow-specify and workflow-execute.",
+      "origin": "Your live check, 2026-11-11: the agent added \"deliver\" by itself (FINDINGS V12)"
+    },
+    {
+      "id": "R8",
+      "text": "When the override is active, the start note says the pause is lifted for this session. It still names the copies and asks for deletion.",
+      "origin": "Remaining defect 4 of the delivery. You said \"plan r2\" on 2026-11-11"
+    },
+    {
+      "id": "R9",
+      "text": "The docs say only what the guard does. A typed bare duplicate name is not stopped. A temp folder that refuses writes keeps the pause.",
+      "origin": "Remaining defects 1 and 2 of the delivery. You said \"plan r2\" on 2026-11-11"
+    },
+    {
+      "id": "R10",
+      "text": "A test pins the registrations of the other hooks.",
+      "origin": "Remaining defect 3 of the delivery. You said \"plan r2\" on 2026-11-11"
+    }
+  ],
+  "boundaries": [
+    "What is paused and how the override works stay as they are.",
+    "hooks/phase_gate.py and hooks/hooks.json stay as they are.",
+    "The version stays 2.8.0-rc.35.",
+    "The staged rc.35 edits in SETUP.md and CHANGELOG.md stay. This work adds to them."
+  ],
+  "open_decisions": [],
+  "write_paths": [
+    "hooks/duplicate_skills.py",
+    "tests/test_duplicate_skills_hook.py",
+    "skills/workflow/SETUP.md",
+    "CHANGELOG.md"
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S5",
+      "path": "hooks/duplicate_skills.py",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "The guard prints nothing at session start when no duplicate exists.",
+      "kind": "runtime",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS V11; hooks/duplicate_skills.py, session_start",
+      "limits": "Shown by tests with test events."
+    },
+    {
+      "id": "E2",
+      "claim": "On resume the start note says the skills stay paused, also while an override is active.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS, whole-feature review and Remaining defects; hooks/duplicate_skills.py, duplicate_message",
+      "limits": "Found by reading the code. Not seen live."
+    },
+    {
+      "id": "E3",
+      "claim": "In your live check the agent listed \"clarify, specify, execute, deliver\" as paused. The guard pauses three, and its text names none.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS V12",
+      "limits": "One session."
+    },
+    {
+      "id": "E4",
+      "claim": "SETUP.md and CHANGELOG.md say a bare duplicate name is also stopped when typed. The code stops only the three change commands.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS, Remaining defects; hooks/duplicate_skills.py, TYPED",
+      "limits": "Confirmed by the reviewer against the files on disk."
+    },
+    {
+      "id": "E5",
+      "claim": "No test asserts that the registrations of the other hooks are unchanged. A temp folder that refuses writes keeps the pause and has no test.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS, Reconciliation",
+      "limits": "Found by a subagent that did not build the work."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A7",
+      "text": "The session-start message and the refusal each contain the three skill names. The typed-command message is unchanged.",
+      "requirements": [
+        "R7"
+      ],
+      "verification": "Run the hook tests for both messages."
+    },
+    {
+      "id": "A8",
+      "text": "With a duplicate and an active override, the start note has the paths and \"lifted for this session\" and does not say \"stay paused\". Without an override it is as before.",
+      "requirements": [
+        "R8"
+      ],
+      "verification": "Run the hook test with and without a stored override."
+    },
+    {
+      "id": "A9",
+      "text": "SETUP.md and CHANGELOG.md no longer say a bare duplicate name is stopped when typed. Both name the limit of a temp folder that refuses writes.",
+      "requirements": [
+        "R9"
+      ],
+      "verification": "A reviewer compares each sentence with the code."
+    },
+    {
+      "id": "A10",
+      "text": "The new test passes on hooks/hooks.json and fails on a copy where a command of another hook is removed or changed.",
+      "requirements": [
+        "R10"
+      ],
+      "verification": "Run the test on the real file and on two changed copies."
+    },
+    {
+      "id": "A11",
+      "text": "The hook tests, the package check and the full suite give the result of the delivery, plus the new tests.",
+      "requirements": [
+        "R7",
+        "R8",
+        "R10"
+      ],
+      "verification": "Run all three and compare with FINDINGS V11: 1020 tests, 4 failures that existed before."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T4",
+      "title": "Make the guard's messages exact, and pin the other hooks' registrations",
+      "kind": "requested",
+      "reason": "Three of the defects are in the script or its tests.",
+      "requirements": [
+        "R7",
+        "R8",
+        "R10"
+      ],
+      "evidence": [
+        "E2",
+        "E3",
+        "E5"
+      ],
+      "acceptance": [
+        "A7",
+        "A8",
+        "A10",
+        "A11"
+      ],
+      "areas": [
+        "hooks/duplicate_skills.py",
+        "tests/test_duplicate_skills_hook.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T5",
+      "title": "Correct the two doc texts",
+      "kind": "requested",
+      "reason": "The docs must match the final wording of T4.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E4",
+        "E5"
+      ],
+      "acceptance": [
+        "A9"
+      ],
+      "areas": [
+        "skills/workflow/SETUP.md",
+        "CHANGELOG.md"
+      ],
+      "depends_on": [
+        "T4"
+      ]
+    }
+  ],
+  "graphs": [
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Start note",
+      "title": "What the start note says after the repair",
+      "description": "Runs at every session start.",
+      "width": 840,
+      "height": 760,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Session starts",
+          "note": "",
+          "shape": "start",
+          "x": 120,
+          "y": 40,
+          "width": 280,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "No duplicate?",
+          "note": "",
+          "shape": "decision",
+          "x": 132,
+          "y": 160,
+          "width": 256,
+          "height": 160,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Nothing is shown",
+          "note": "",
+          "shape": "result",
+          "x": 520,
+          "y": 196,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N4",
+          "label": "Pause lifted\nby you?",
+          "note": "",
+          "shape": "decision",
+          "x": 132,
+          "y": 384,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N5",
+          "label": "Note says \"lifted\"",
+          "note": "Still asks you to delete",
+          "shape": "result",
+          "x": 520,
+          "y": 420,
+          "width": 280,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N6",
+          "label": "Note names the three skills",
+          "note": "Clarify, specify, execute",
+          "shape": "result",
+          "x": 92,
+          "y": 616,
+          "width": 336,
+          "height": 88,
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              260,
+              112
+            ],
+            [
+              260,
+              160
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "Yes",
+          "points": [
+            [
+              388,
+              240
+            ],
+            [
+              520,
+              240
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "label_position": [
+            452,
+            212
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N4",
+          "label": "No",
+          "points": [
+            [
+              260,
+              320
+            ],
+            [
+              260,
+              384
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "label_position": [
+            300,
+            360
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "Yes",
+          "points": [
+            [
+              388,
+              464
+            ],
+            [
+              520,
+              464
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "label_position": [
+            452,
+            436
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N6",
+          "label": "No",
+          "points": [
+            [
+              260,
+              544
+            ],
+            [
+              260,
+              616
+            ]
+          ],
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3"
+          ],
+          "tasks": [
+            "T4"
+          ],
+          "label_position": [
+            300,
+            588
+          ]
+        }
+      ]
+    },
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "What the start note says today",
+      "description": "Runs at every session start.",
+      "width": 840,
+      "height": 520,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Session starts",
+          "note": "",
+          "shape": "start",
+          "x": 120,
+          "y": 40,
+          "width": 280,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "No duplicate?",
+          "note": "",
+          "shape": "decision",
+          "x": 132,
+          "y": 160,
+          "width": 256,
+          "height": 160,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Nothing is shown",
+          "note": "",
+          "shape": "result",
+          "x": 520,
+          "y": 196,
+          "width": 280,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N4",
+          "label": "Note says \"paused\"",
+          "note": "Also when you lifted the pause",
+          "shape": "result",
+          "x": 100,
+          "y": 392,
+          "width": 320,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              260,
+              112
+            ],
+            [
+              260,
+              160
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "Yes",
+          "points": [
+            [
+              388,
+              240
+            ],
+            [
+              520,
+              240
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "label_position": [
+            452,
+            212
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N4",
+          "label": "No",
+          "points": [
+            [
+              260,
+              320
+            ],
+            [
+              260,
+              392
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [],
+          "label_position": [
+            300,
+            364
+          ]
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "Start note while your override is active",
+      "current": "It says the skills stay paused.",
+      "proposed": "It says the pause is lifted for this session, and still asks you to delete the copies.",
+      "requirements": [
+        "R8"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "T4"
+      ]
+    },
+    {
+      "label": "Which skills the messages name",
+      "current": "None. The agent guessed and added \"deliver\".",
+      "proposed": "workflow-clarify, workflow-specify and workflow-execute.",
+      "requirements": [
+        "R7"
+      ],
+      "evidence": [
+        "E3"
+      ],
+      "tasks": [
+        "T4"
+      ]
+    },
+    {
+      "label": "Docs about a typed bare name such as /tdd",
+      "current": "They say it is stopped. It is not.",
+      "proposed": "They say it is not stopped.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E4"
+      ],
+      "tasks": [
+        "T5"
+      ]
+    },
+    {
+      "label": "A later edit drops another hook from hooks.json",
+      "current": "Nothing notices unless that hook has its own wiring test.",
+      "proposed": "One test fails and names the missing command.",
+      "requirements": [
+        "R10"
+      ],
+      "evidence": [
+        "E5"
+      ],
+      "tasks": [
+        "T4"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "planning",
+    "screen_change": "none",
+    "agreement": {
+      "status": "not-approved",
+      "summary": "You agreed to revisions r1 and r2 of the guard. The four lines this plan adds are new. This report asks for your agreement to them and your approval of the plan together.",
+      "source": "S1",
+      "locator": "PLAN.md, Additions to revision r2"
+    },
+    "attention": [
+      {
+        "text": "One defect is settled in the docs, not in the code: a temp folder that refuses writes keeps the pause.",
+        "source": "S1",
+        "locator": "PLAN.md, Additions to revision r2, R9"
+      }
+    ],
+    "sections": [
+      {
+        "id": "request",
+        "title": "Context and scope",
+        "source": "S4",
+        "locator": "DECISIONS.md, D14",
+        "text": "The guard is delivered, and you saw it work in live sessions: the start note, the stop of a typed command, and the override.\n\nThe reviews and the reconciliation left four small defects. In your live check the agent also added \"deliver\" to the paused skills by itself.\n\nYou said \"plan r2\". This plan repairs the four defects and makes the messages name the three paused skills."
+      },
+      {
+        "id": "goals",
+        "title": "Goals",
+        "source": "S1",
+        "locator": "PLAN.md, Additions to revision r2",
+        "text": "Both guard messages name the three paused skills.\n\nThe start note tells the truth when your override is active.\n\nThe docs say only what the guard does.\n\nA test fails when a later edit changes the registration of another hook."
+      },
+      {
+        "id": "non-goals",
+        "title": "Non-goals",
+        "source": "S1",
+        "locator": "PLAN.md, Additions to revision r2",
+        "text": "Stopping a typed bare duplicate name such as /tdd. It stays a named limit.\n\nMaking a temp folder that refuses writes lift the pause. The docs name it as a limit.\n\nA check that an agent-made skill call is refused in a live session."
+      },
+      {
+        "id": "specification",
+        "title": "Overview",
+        "source": "S2",
+        "locator": "TODO.md, Revision r2 tickets",
+        "text": "The start note asks the same question the refusal already asks: is the pause lifted for this session? If yes, it says so. The paths and the request to delete stay in both cases.\n\nThe list of the three skills comes from the one list the script already has, so the messages and the check cannot drift apart.\n\nThe new test holds the expected commands of every other hook, per event and in order. It reads hooks/hooks.json and changes nothing."
+      },
+      {
+        "id": "decisions",
+        "title": "Alternatives considered",
+        "source": "S1",
+        "locator": "PLAN.md, Additions to revision r2",
+        "text": "A temp folder that refuses writes: the plan names it as a limit in the docs. Not chosen: a write probe on every refused call, because it adds file writes to a check that must stay read-only.\n\nPinning the other hooks: the plan uses a list of expected commands in the test. Not chosen: a comparison with the last commit, because a test must not depend on the state of Git.\n\nYou chose \"plan r2\" over leaving the four defects (D14)."
+      },
+      {
+        "id": "risks",
+        "title": "Cross-cutting concerns",
+        "source": "S3",
+        "locator": "FINDINGS.md, limits",
+        "text": "The pinned list must be updated on purpose when a hook is added or changed. That is the point of the test.\n\nThe repairs are checked with test events. A live session is not part of this plan. You can repeat your earlier check.\n\nSETUP.md and CHANGELOG.md carry staged rc.35 edits. The work adds to them and reverts none."
+      },
+      {
+        "id": "testing",
+        "title": "How it is tested",
+        "source": "S2",
+        "locator": "TODO.md, Bigger checks for r2",
+        "text": "Each change to the script gets a failing test first.\n\nAfter both tickets the hook tests, the package check and the full suite run. The result must equal the delivery result, plus the new tests.\n\nOne independent reviewer checks both tickets."
+      }
+    ],
+    "tickets": [
+      {
+        "task": "T4",
+        "source": "S2",
+        "locator": "TODO.md, T4",
+        "specification": "Change hooks/duplicate_skills.py so that the start note and the refusal name the three paused skills. The start note says the pause is lifted when the override is active. Add a test that pins the commands of the other hooks.",
+        "expected": "Without a session ID, or with an expired or missing override, the start note is as before."
+      },
+      {
+        "task": "T5",
+        "source": "S2",
+        "locator": "TODO.md, T5",
+        "specification": "Correct the paragraph \"Duplicate skill copies\" in skills/workflow/SETUP.md and the guard bullet in CHANGELOG.md.",
+        "expected": "Both texts also say that an active override changes the start note."
+      }
+    ],
+    "checks": [],
+    "acceptance_results": []
+  }
+}

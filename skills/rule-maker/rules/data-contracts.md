@@ -5,8 +5,8 @@
 ## Required
 
 - Make mutually exclusive states distinguishable. Do not allow invalid combinations accidentally; independent choices remain independent. Use the simplest compatible representation, not a custom type for every primitive.
-- Keep units and identities explicit at conversions and interfaces. A display-formatted amount is not an authoritative stored amount. Honour the project's precision, currency, rounding and timestamp contracts; never invent a global money representation.
-- Validate the structure and meaning of untrusted data at its boundary. A type assertion, successful parse or well-formed identifier is not authorisation. Trusted internal values need not be repeatedly sanitised everywhere.
+- Keep units and identities explicit at conversions and interfaces. A display-formatted amount is not an authoritative stored amount. Honor the project's precision, currency, rounding and timestamp contracts; never invent a global money representation.
+- Validate the structure and meaning of untrusted data at its boundary. A type assertion, successful parse or well-formed identifier is not authorization. Trusted internal values need not be repeatedly sanitized everywhere.
 - Specify intentional conversion. Reject or surface invalid input according to the existing error contract rather than silently replacing it with zero, an empty object or the first available entity. A fallback is valid only when the requirement defines it.
 - Preserve absence, expected failure, cancellation and defects as meaningful distinctions. Add useful, non-sensitive context when propagating failures. Do not mandate exceptions or result objects across every language.
 

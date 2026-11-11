@@ -29,7 +29,7 @@ This policy covers [application/client/platform]. [Areas with separate owners] a
 
 Open `[/design-kit]` in a development build using the repository's existing development tooling. It needs no login and uses the application's real layout, providers and styles. [Production/staging/other] builds exclude the route through [the existing build-mode mechanism]. [Client builds: each client's kit page includes its overrides and its enabled modules' components, in the same element groups as core.]
 
-Previews use synthetic fixtures with backend requests blocked. Never use customer data or run real account, payment, printing or backend actions to demonstrate a control. The kit labels examples that cannot render, with the reason. A rendered example does not prove its full feature journey, backend or native-device behaviour was tested.
+Previews use synthetic fixtures with backend requests blocked. Never use customer data or run real account, payment, printing or backend actions to demonstrate a control. The kit labels examples that cannot render, with the reason. A rendered example does not prove its full feature journey, backend or native-device behavior was tested.
 
 ## Approval authority
 

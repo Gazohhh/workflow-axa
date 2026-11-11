@@ -321,7 +321,7 @@ class ScreenFlowPolicyTests(unittest.TestCase):
         self.assertIn('same full report',text)
         self.assertIn('not replace the report',text)
     def test_design_source_selection_is_not_filename_authority(self):
-        text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
+        text=(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
         self.assertIn('A filename, folder, screenshot or framework name alone does not prove',text)
         self.assertIn('exact source file',text)
     def test_no_automatic_plain_html_fallback(self):

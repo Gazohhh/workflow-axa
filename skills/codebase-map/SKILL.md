@@ -1,19 +1,19 @@
 ---
 name: codebase-map
-description: "Create an evidence-linked local flowchart or codebase map when the user requests one, or workflow requests its visual approval report. Use the bundled flowchart design guide for the approved editorial diagrams; inspect current code and preserve tasks/evidence. Visualization only: never implement, approve work or launch an architecture-refactoring workflow."
+description: "Create an evidence-linked local flowchart or codebase map when the user requests one, or workflow requests its plan report. Use the bundled flowchart design guide for the approved editorial diagrams; inspect current code and preserve tasks/evidence. Visualization only: never implement, approve work or launch an architecture-refactoring workflow."
 ---
 
 # Codebase map
 
-Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screens with actions, decisions and the existing elements each proposed screen copies; kit screens, else captures, else sketches. Every visible change needs it; no invented markup/styles. Never call workflow recursively.
+Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screens with actions, decisions and the existing elements each proposed screen copies; kit screens, else captures, else sketches. Every visible change needs it, except the small change route (no plan report); no invented markup/styles. Never call workflow recursively.
 
-Explain behaviour for a reader new to the project first, technical evidence underneath. Keep risks and unresolved decisions visible.
+Explain behavior for a reader new to the project first, technical evidence underneath. Keep risks and unresolved decisions visible.
 
 ## 1. Establish the view and current evidence
 
-Apply workflow rules readiness: gaps permit read-only inspection or authorised setup drafts, not an approval-ready implementation report. Read project rules, worktree and local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
+Apply workflow rules readiness: gaps permit read-only inspection or authorized setup drafts, not an approval-ready implementation report. Read project rules, worktree and local changes. Inspect the behavior’s owner, entrypoints, callers, alternate paths and tests/docs. Reuse task findings after checking freshness. Keep static inspection, runtime observation, inference and unknowns distinct. Missing access blocks current-code claims; label explicitly requested hypothetical designs.
 
-Choose **explain** when the user wants a no-assumed-context walkthrough of how a feature works today; **current** for a concise current-state map, **proposed** for a supplied/requested future design, **compare** for an implementation review. Explain mode shows the real flow, then exact evidence; do not create a plan or improvements unless asked. Compare opens the proposed flow; current behaviour and an aligned comparison remain available. For new features show the verified integration point, not a fictional baseline.
+Choose **explain** when the user wants a no-assumed-context walkthrough of how a feature works today; **current** for a concise current-state map, **proposed** for a supplied/requested future design, **compare** for an implementation review. Explain mode shows the real flow, then exact evidence; do not create a plan or improvements unless asked. Compare opens the proposed flow; current behavior and an aligned comparison remain available. For new features show the verified integration point, not a fictional baseline.
 
 Identify and reuse the current/named task and its requirements, answers, PLAN, TODO, FINDINGS and decisions. If a likely existing record is ambiguous, ask before creating another artifact location; a new command is not a new task. Read the selected plan/review identity exactly. Distinguish the recorded baseline, approved scope, implementation and acceptance; do not infer authority from a pending badge in a historical snapshot. No new refactor candidates or product features merely to enrich the map. Inspection needs no task scaffold.
 
@@ -21,17 +21,17 @@ Identify and reuse the current/named task and its requirements, answers, PLAN, T
 
 Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md): no external diagram-design installation, lookup or invocation is required. Use local assets/renderer, not Matt's architecture command. Missing files/runtime require repair, not waived approval.
 
-Use the inspected evidence, approved answers, type, audience, revision and allowed artifact paths. Choose the geometry, not new product behavior. Main flow: start/actions/real decisions/results, short domain labels and labelled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
+Use the inspected evidence, approved answers, type, audience, revision and allowed artifact paths. Choose the geometry, not new product behavior. Main flow: start/actions/real decisions/results, short domain labels and labeled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
 
 Reuse workflow-editorial-v1 styling and offline/system fonts; no branding interview or external dependency. Keep the flowchart, not summary cards. Sourced UI previews do not permit redesigning the report shell or application.
 
 ## 3. Render, inspect and open
 
-Read [REPORT.md](REPORT.md); workflow plan, progress and delivery reports also follow [TASK-REPORT.md](TASK-REPORT.md). Derive schema-2 JSON from authoritative task records. Historical/draft inputs remain readable; UI-FLOW.md tightens new application approvals. Use the optional checkpoint/revision log only for a requested task overview; show its as-of/source and treat the selected flow as historical reviewed scope, not live implementation proof. Explicit node geometry and connector routes are validated; each change retains requirement/task/evidence traceability. Approval-ready compare requires the resolved revision, PLAN/TODO/acceptance and no material open decisions; otherwise use draft.
+Read [REPORT.md](REPORT.md) and, for full reports, [TASK-REPORT.md](TASK-REPORT.md). Derive schema-2 JSON from task records. Optional `scripts/record_projection.py` freezes cited heading/ticket prose into a new draft and checks drift, never an approved snapshot. UI-FLOW.md governs application approvals. Only requested task overviews need checkpoint/revision logs; they show historical scope, not current proof. Geometry and traceability remain validated. Approval-ready compare needs the resolved revision, records and decisions; otherwise draft.
 
-Follow REPORT.md: `--validate-input`, fix, record path, recheck, render in the authorized directory. The renderer packages the explicit design; it neither understands code nor authenticates approval. No implementation, installation, publication. Explicit no-file instructions take precedence.
+Follow REPORT.md: `--validate-input`, fix, record path, recheck, render in the authorized directory. No implementation, installation, publication. Explicit no-file instructions take precedence.
 
-Check freshness and meaning. Inspect desktop/mobile output when available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. Disclose unavailable checks instead of claiming them.
+Check freshness and meaning. Inspect desktop/mobile output when available: default text readable, no node/path/mask collision, no document-wide overflow, correct branches and evidence navigation. Native-size scrolling is the default; Fit is optional. A task report whose views are all at most 880px wide shows them whole, without zoom. Disclose unavailable checks instead of claiming them.
 
 Before delivery, check that someone without the prior conversation can explain the change, exclusions and decision. For renderer/style edits, compare stable screenshots with the reviewed reference in a controlled environment; never replace a failed baseline automatically.
 

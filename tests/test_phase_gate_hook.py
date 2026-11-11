@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 HOOK = ROOT / "hooks/phase_gate.py"
@@ -239,6 +240,13 @@ class PhaseGateHookTests(unittest.TestCase):
         whole = [ROUTER, read("workflow-specify/SKILL.md")]
         self.assertEqual(self.fire(whole, "Bash", render)["permissionDecision"], "deny")
         self.assertEqual(self.fire(whole, "PowerShell", render)["permissionDecision"], "deny")
+        # H2 (2026-11-11) narrows only the Stop hook. This check is a protection and keeps the old loading rule: a
+        # whole read with no workflow start, or of a copy outside CLAUDE_PLUGIN_ROOT, still holds the render back.
+        unstarted = self.fire([say("explain specify"), read("workflow-specify/SKILL.md")], "Bash", render)
+        self.assertEqual(unstarted["permissionDecision"], "deny")
+        self.assertIn("codebase-map/TASK-REPORT.md", unstarted["permissionDecisionReason"])
+        with mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_ROOT": "C:/plugins/workflow-axa/2.8.0"}):
+            self.assertEqual(self.fire(whole + [say("b")], "Bash", render)["permissionDecision"], "deny")
 
     def test_report_requires_flowchart_guide_for_render_and_preflight(self):
         other_reads = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')

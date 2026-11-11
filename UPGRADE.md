@@ -1,4 +1,11 @@
-# Upgrade to workflow-axa 2.8.0-rc.34
+# Upgrade to workflow-axa 2.8.0-rc.36
+
+## Choose the right source
+
+- The **Git repository** is the editable source, with tests, docs, scripts and retained plans. Update it through Git; back up your branch, inspect `git status` and preserve local changes.
+- `workflow-axa-<version>.zip`, built by `tools/build_release.py`, contains the **runtime plugin and 21 skills**. Use it to test or install a complete host plugin, not as a source-repository replacement. Hooks apply only where the host loads them.
+
+This candidate keeps existing approval records and report snapshots unchanged. No existing project or global skill installation is changed by unpacking the ZIP elsewhere. See [architecture](docs/ARCHITECTURE.md), [fresh testing](docs/EVALUATION.md) and [current validation](VALIDATION.md).
 
 ## Safe adoption of this candidate
 
@@ -6,21 +13,21 @@ Review the candidate and its tests first. Keep the active directory immutable. U
 
 The new registration passes --hook-protocol=1. An old registration executing a new script blocks gated writes with restart guidance. After restart, verify PostToolUse and UserPromptSubmit fingerprints, present the report in its actual workspace, and obtain the owner's real reconfirmation. Existing source edits and historical approvals remain intact. See skills/workflow/SETUP.md for the contract and limits.
 
-For the observed spinning session, interrupt it and run /goal clear in that session; verify the host acknowledgement. Resuming alone may restore the stale goal. This stops the external retry loop without approving work or marking deferred checks passed. Future goals must be bounded to an authorised phase and allow a legitimate user-input checkpoint.
+For the observed spinning session, interrupt it and run /goal clear in that session; verify the host acknowledgement. Resuming alone may restore the stale goal. This stops the external retry loop without approving work or marking deferred checks passed. Future goals must be bounded to an authorized phase and allow a legitimate user-input checkpoint.
 
 ## Test the candidate before adoption
 
-Use the **source-and-tests ZIP** for Claude's review and local/live tests. It contains all 21 registered skills, hooks, tests, tools and retained task history. The smaller install ZIP omits development tests/history and is not a replacement for the editable repository.
+Use a clone of the **Git repository** for review and local/live tests. It contains all 21 registered skills, hooks, tests, tools and retained task history. The install ZIP omits development tests and history and is not a replacement for the editable repository.
 
-The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorised by the testing handoff.
+The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorized by the testing handoff.
 
 ## What changed
 
 ### Tickets, not another tracker
 
-New nontrivial TODOs use readable labelled blocks; small exact tasks can keep a short checkbox. See `skills/workflow/TASK-FOLDER.md` and `skills/workflow/examples/readable-todo.md`. The latter shows the format (overview table, then tickets with labelled sections) with illustrative states. The table is a summary: each ticket's `Status:` line stays the source, and `open_items.py` reports any row that disagrees.
+New nontrivial TODOs use readable labeled blocks; small exact tasks can keep a short checkbox. See `skills/workflow/TASK-FOLDER.md` and `skills/workflow/examples/readable-todo.md`. The latter shows the format (overview table, then tickets with labeled sections) with illustrative states. The table is a summary: each ticket's `Status:` line stays the source, and `open_items.py` reports any row that disagrees.
 
-Existing formats, IDs and presented reports stay valid. On an actual resume, reconcile only affected current records. A repeated old `T3` must be addressed with its existing revision, such as `D4/T3`; the record helper no longer chooses the first match. It can mark a labelled ticket verified only after its explicit outstanding verification/blockers are resolved. This is not proof a test ran. `set-line` still edits its first matching prefix: do not use `set-line Status:` in a multi-ticket TODO. Use an exact section/batch operation, then the qualified `tick` command where appropriate.
+Existing formats, IDs and presented reports stay valid. On an actual resume, reconcile only affected current records. A repeated old `T3` must be addressed with its existing revision, such as `D4/T3`; the record helper no longer chooses the first match. It can mark a labeled ticket verified only after its explicit outstanding verification/blockers are resolved. This is not proof a test ran. `set-line` still edits its first matching prefix: do not use `set-line Status:` in a multi-ticket TODO. Use an exact section/batch operation, then the qualified `tick` command where appropriate.
 
 Qualified ticket IDs stay in source records. The existing HTML schema uses safe projection aliases (for example `D4-T8`) while the title retains `D4/T8`; REPORT.md describes the mapping. No schema migration or report redesign is required.
 
@@ -32,13 +39,17 @@ The old single-gate decision remains usable for its unchanged scope. An older ch
 
 No agent-recommended plain-HTML fallback; no blanket yes as that exception. No inferred paid-batch cap. Ordinary approval of a shown settled plan still works. The paid-batch ceiling includes child sessions, orchestration and the retro; unobserved categories cannot be called included in the measured total. No billing meter or universal tool-level exception enforcement has been added.
 
+### Rules module names in capitals (rules 1.8.7)
+
+The 20 one-word rules modules are renamed to capitals: design.md is now DESIGN.md, and react.md is now REACT.md. Replace the whole `skills/rule-maker/rules/` folder when you upgrade. Do not copy the new files over an old copy. On Windows a copy keeps the old lowercase name, and the installation checker then reports the right file as unexpected. Do not delete that file: it is the only copy. On Linux an overlay leaves the 20 old files beside the new ones. Project links to a module, such as `design.md`, need the new name (rules CHANGES.md 1.8.7).
+
 ### Windows paths
 
 The advisory partial-read hook now compares canonical paths to its actual package root, not the folder name. Git Bash drive paths, quoted spaces and renamed marketplace caches have regression coverage. Native Windows and the live host still need validation there.
 
 ## Install only after adoption
 
-Replace the complete plugin/runtime-owned folders together (all 21 registered skills, hooks and metadata), preserving local uncommitted changes and unrelated skills. Do not overlay the smaller archive onto an editable repository and assume stale files disappeared. Use the existing read-only installation checker to identify unexpected files; deletion needs review.
+Replace the complete plugin/runtime-owned folders together (all 21 registered skills, hooks and metadata), preserving local uncommitted changes and unrelated skills. Do not overlay the smaller archive onto an editable repository and assume stale files disappeared. Use the existing read-only installation checker to identify unexpected files; deletion needs review. A lowercase rules module that the checker reports on Windows can be the only copy of its capitalized file: replace the folder instead of deleting it.
 
 The global activation helpers and stable references are unchanged. If the source path is unchanged, the references can remain; verify effective profiles and real resolution in a fresh session:
 
@@ -48,11 +59,11 @@ python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
 python -X utf8 skills/workflow/scripts/global_policy.py --check
 ```
 
-No `--apply` is authorised by a test-only instruction. Standalone skill copies do not automatically install Claude hooks; Claude results do not establish Codex/T3 parity.
+No `--apply` is authorized by a test-only instruction. Standalone skill copies do not automatically install Claude hooks; Claude results do not establish Codex/T3 parity.
 
 ## Testing handoff
 
-Read `CLAUDE-TEST-PROMPT.txt` and `RC3-CASES.md`. Safe local tests first; obtain an explicit full-batch cap before any live batch. No assumed $40, no automatic retries, one read-only retro after the authorised batch, then report and wait. A recognised stop blocks new writes but is not a universal cancellation mechanism for an already-running tool. C4 is only tested when the stop actually arrives while the tool is running.
+Follow `docs/EVALUATION.md`. The rc.3 protocol, `docs/archive/CLAUDE-TEST-PROMPT.txt` and `docs/archive/RC3-CASES.md`, is history. Safe local tests first; obtain an explicit full-batch cap before any live batch. No assumed $40, no automatic retries, one read-only retro after the authorized batch, then report and wait. A recognized stop blocks new writes but is not a universal cancellation mechanism for an already-running tool. C4 is only tested when the stop actually arrives while the tool is running.
 
 ## Previous candidate instructions (2.8.0-rc.2) — historical, not current test authority
 
@@ -70,9 +81,9 @@ No application/project rules are rewritten. Matt's pinned specialist files, repo
 
 Approval checkpoints must preserve the **whole** real answer, including conditions. Legacy prefix-only quotes may need reconciliation with the original transcript; never guess or invent replacement words. Short complete answers can count after the named report is visibly presented. A report waiver must be the user's explicit words after the task/revision plan is shown in chat. Opening a phase or writing HTML is not presentation. Repeated links to the same immutable report do not revoke approval; a newly named report needs its own answer.
 
-Recognised direct stop/pause/cancel requests block dependent edits and suppress further forced-read rounds. Handoff records stay writable. Other language, scope changes, revocations in a separate host and arbitrary shell effects still require the workflow instructions and host permissions. Explicit resumption reuses unchanged valid authority; it does not approve changed scope.
+Recognized direct stop/pause/cancel requests block dependent edits and suppress further forced-read rounds. Handoff records stay writable. Other language, scope changes, revocations in a separate host and arbitrary shell effects still require the workflow instructions and host permissions. Explicit resumption reuses unchanged valid authority; it does not approve changed scope.
 
-Baselines captured before the new cwd/exact-command signature naturally report different inputs. Capture a fresh one only after the corresponding authorised checks, not to erase failures. Empty/unknown environment facts are not proof of a stable environment.
+Baselines captured before the new cwd/exact-command signature naturally report different inputs. Capture a fresh one only after the corresponding authorized checks, not to erase failures. Empty/unknown environment facts are not proof of a stable environment.
 
 ### Installation and verification after adoption
 
@@ -84,9 +95,9 @@ python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
 python -X utf8 skills/workflow/scripts/global_policy.py --check
 ```
 
-Verify supported arguments first if your installation differs. Missing/moved references require a reviewed setup change; no automatic apply is authorised. Plugin-only Claude hooks are not silently installed by copying standalone skill folders. Codex and T3 may use other profiles or omit these hooks. Confirm actual resolution in fresh sessions.
+Verify supported arguments first if your installation differs. Missing/moved references require a reviewed setup change; no automatic apply is authorized. Plugin-only Claude hooks are not silently installed by copying standalone skill folders. Codex and T3 may use other profiles or omit these hooks. Confirm actual resolution in fresh sessions.
 
-For source-copy checks, use `python -X utf8 -I tools/validate.py` and the unittest command in VALIDATION.md. Read CLAUDE-TEST-PROMPT.txt for bounded live comparisons. No paid runs or host-level claims have been made here.
+For source-copy checks, use `python -X utf8 -I tools/validate.py` and the unittest command in VALIDATION.md. Read docs/archive/CLAUDE-TEST-PROMPT.txt for bounded live comparisons. No paid runs or host-level claims have been made here.
 
 
 ## Historical upgrade instructions (2.8.0-rc.1 and earlier)
@@ -123,7 +134,7 @@ Full replacement of rc.6, with the owner's stricter **no agent-authored applicat
 
 #### 1. Replace the actual active package
 
-Update the complete plugin, or all sibling skill folders of the version you install: for 2.8.0-rc.1 every folder listed in `.claude-plugin/plugin.json` (21 skill folders); for rc.7/rc.8 only workflow, codebase-map, task-status, resume-task, workflow-doctor, plan-review, rule-maker and ui-design. Keep the stable canonical installation path. Do not merge a few files and leave stale instructions. Review local modifications first and retain a safe previous copy under the existing installation process; do not delete unrelated skills. Matt's 27 catalogue entries are unchanged.
+Update the complete plugin, or all sibling skill folders of the version you install: for 2.8.0-rc.1 every folder listed in `.claude-plugin/plugin.json` (21 skill folders); for rc.7/rc.8 only workflow, codebase-map, task-status, resume-task, workflow-doctor, plan-review, rule-maker and ui-design. Keep the stable canonical installation path. Do not merge a few files and leave stale instructions. Review local modifications first and retain a safe previous copy under the existing installation process; do not delete unrelated skills. Matt's 27 catalog entries are unchanged.
 
 The global rules/artifact activation helpers are unchanged. Existing references work when they point at the same complete current library. From that installed package:
 
@@ -147,15 +158,15 @@ Use the installed shared design.md and ui-design contract. Merge the relevant sm
 - `design-authoring` is historical authority, not a current bypass. Pause dependent writes and explain the changed policy. New presentation is for the designated designer/maintainer unless the owner separately changes policy.
 - Existing HTML/CSS is not removed. Unaffected approved work continues. No mass migration of old task records or public screens.
 
-#### 3. Connect a real project kit only when authorised
+#### 3. Connect a real project kit only when authorized
 
-Run `ui-design kit-audit <area>` against designated existing component/preview sources. LIVE-KIT.md explains the code-backed catalogue: components/examples once, generated current references, human approval once, short project pointer. Installing this package does not create or synchronise a React/Angular page in your project.
+Run `ui-design kit-audit <area>` against designated existing component/preview sources. LIVE-KIT.md explains the code-backed catalog: components/examples once, generated current references, human approval once, short project pointer. Installing this package does not create or synchronize a React/Angular page in your project.
 
-The optional `inspect_kit_index.py` reads an existing local Storybook index with no writes, network or source execution. It reports missing/deleted imports and selected catalogue coverage. Actual story compilation and runtime capture need the project's tools and execution permission. Unknown index versions/virtual imports require an adapter review; no guessed support. A generic approved Markdown catalogue remains valid.
+The optional `inspect_kit_index.py` reads an existing local Storybook index with no writes, network or source execution. It reports missing/deleted imports and selected catalog coverage. Actual story compilation and runtime capture need the project's tools and execution permission. Unknown index versions/virtual imports require an adapter review; no guessed support. A generic approved Markdown catalog remains valid.
 
 #### 4. New report inputs
 
-The same report shell is retained. New approval-ready application screen flows require `approved-kit`, real PNG captures, `kit_binding`, per-screen `elements` including the composition pattern, and `capture_context` with source/image fingerprints and existing evidence references. UI-FLOW.md documents the data fields. A non-JSON catalogue can be projected in the same report input; do not create an independent inventory.
+The same report shell is retained. New approval-ready application screen flows require `approved-kit`, real PNG captures, `kit_binding`, per-screen `elements` including the composition pattern, and `capture_context` with source/image fingerprints and existing evidence references. UI-FLOW.md documents the data fields. A non-JSON catalog can be projected in the same report input; do not create an independent inventory.
 
 Legacy draft/schematic support is read-only/historical compatibility, not permission to create new app mockups. Previously presented HTML is not regenerated or renamed. Existing tests/reports remain historical; new kit input validation does not retroactively prove their sources. Do not refresh capture input hashes without actual evidence/recapture.
 
@@ -163,7 +174,7 @@ Legacy draft/schematic support is read-only/historical compatibility, not permis
 
 Use disposable fixtures first: missing DESIGN.md/source; existing selected kit; removed component; stale capture; ordinary request without /workflow; subagent; resume; old functionality-only record; proposed CSS/inline-style/plain-HTML bypass. Check actual reads and diffs, not statements of compliance. The first real pilot should use a small existing component reuse task. No live project or host tests were run for you here.
 
-No host-level blocker is installed. The read-only diff helper, catalogue checks and renderer validations complement instructions; they do not prevent every tool action. See VALIDATION.md for observed results and limits.
+No host-level blocker is installed. The read-only diff helper, catalog checks and renderer validations complement instructions; they do not prevent every tool action. See VALIDATION.md for observed results and limits.
 
 
 ### Earlier SETUP.md (historical source)
@@ -172,10 +183,10 @@ No host-level blocker is installed. The read-only diff helper, catalogue checks 
 
 Since 2.8.0 the specialists the workflow procedure needs (`grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, plus `implement-spec` and `retro`) ship as this package's own skills, copied from Matt Pocock's collection (VENDORED-SKILLS.md at the package root); nothing below is required for them. Install the package as one set: a separately installed Matt copy with the same name is never what the workflow loads, and keeping both only adds a confusing duplicate to the host's list. Matt Pocock's full collection remains an optional separate install for the other routes (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) and for personal use. Installing
 `workflow-axa` alone does **not** install that collection. Flowchart design is local to codebase-map. Keep one collection installation route per
-agent; plugin plus copied skills can create duplicate names. The catalogue records the
+agent; plugin plus copied skills can create duplicate names. The catalog records the
 27 names observed on 2026-10-09, including 11 model-invocable routes. Upstream metadata
 was 1.3.1; no immutable source commit or live-tested installation is asserted here.
-[Upstream setup and catalogue](https://github.com/mattpocock/skills#installation-30-second-setup)
+[Upstream setup and catalog](https://github.com/mattpocock/skills#installation-30-second-setup)
 
 #### 1. Install once, with setup permission
 
@@ -194,7 +205,7 @@ claude plugin install workflow-axa@gazohhh
 
 **What the hooks enforce.** The phase gate (`hooks/phase_gate.py`) starts once a session types or loads `/workflow` or a phase skill, or reads one of their SKILL.md files whole. From then on, a change to a project file or a git write needs the current task's approval. Loading a phase grants nothing. Task records (`docs/plans/`), test output (`.artifacts/`) and files outside the project stay writable.
 
-The current task is the `docs/plans/<task>/` folder the session last wrote into, or the one the user named. If the session moves to another task after the user's last message, the gate stops and asks for the user's word first. The task's PLAN.md checkpoint needs an `- Approval:` line for a revision, such as `revision r1 approved by the owner: "Yes to both"`. No other checkpoint line may name a later revision. The task folder or its `reviews/` folder must hold the HTML plan report, and the very one the Approval line names when it names one. When the user chose to skip the report, the Approval line says "no report" and still quotes the user's words, which pass the quote rule below. A small change with no visible effect can use a `- Lightweight edit: <files> — <why>` line instead, and that line covers only the files it lists.
+The current task is the `docs/plans/<task>/` folder the session last wrote into, or the one the user named. If the session moves to another task after the user's last message, the gate stops and asks for the user's word first. The task's PLAN.md checkpoint needs an `- Approval:` line for a revision, such as `revision r1 approved by the owner: "Yes to both"`. No other checkpoint line may name a later revision. The task folder or its `reviews/` folder must hold the plan report, and the very one the Approval line names when it names one. When the user chose to skip the report, the Approval line says "no report" and still quotes the user's words, which pass the quote rule below. A small change with no visible effect can use a `- Lightweight edit: <files> — <why>` line instead, and that line covers only the files it lists.
 
 The quote rule:
 
@@ -250,7 +261,7 @@ automatically install or authenticate themselves.
 
 #### 2. Align repository setup once
 
-**2.8.0 requires this package's twenty local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver` and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec` and `retro`.** (2.6.0 had the first six; 2.7 added `rule-maker` and `ui-design`.) The Claude plugin registers all twenty. Direct installations must copy each complete folder into the same host skill root, as siblings from one version: the four phase skills read their shared policies from the installed `workflow` folder and stop when it is missing or from another version. They are not Matt catalogue entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
+**2.8.0 requires this package's twenty local skills: `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver` and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec` and `retro`.** (2.6.0 had the first six; 2.7 added `rule-maker` and `ui-design`.) The Claude plugin registers all twenty. Direct installations must copy each complete folder into the same host skill root, as siblings from one version: the four phase skills read their shared policies from the installed `workflow` folder and stop when it is missing or from another version. They are not Matt catalog entries, so `check_specialists.py` does not validate their host availability. Verify actual identifiers, enabled state, model invocation and a safe invocation of each. Do not keep old and new copies active together.
 
 For ordinary prompts, merge the small [project routing block](skills/workflow/templates/PROJECT-ROUTING.md) into the applicable existing host-loaded policy as an authorized setup change. Preserve existing content and directory overrides; do not overwrite policy files or copy the whole workflow into them. Confirm Codex's applicable AGENTS instructions and Claude's actual CLAUDE/project instructions separately. The template is not active just because it is bundled.
 
@@ -331,13 +342,13 @@ python -X utf8 skills/workflow/scripts/check_specialists.py --root "C:\Path\To\I
 Changed content blocks automatic reuse of the affected route until reviewed; new file
 names and supporting-file changes count. Hashes are byte-sensitive, so line-ending
 changes also need review. A content match does not prove current host availability.
-Review new upstream skills intentionally before adding routes/catalogue entries; do
+Review new upstream skills intentionally before adding routes/catalog entries; do
 not silently accept `latest` or invent an upstream commit hash from a version string.
 
 #### 5. Run a runtime smoke test, then normal tasks
 
 In a disposable project with only the intended workflow version and approved specialist installations,
-first make a plain behavioral-change request with no skill name. Verify workflow loaded and routed to `workflow-clarify`, code was inspected, and the behavior agreement was presented in PLAN and chat (gate one) with no tickets or code yet. After agreeing, verify `workflow-specify` produced tickets with dependencies and test seams and showed the HTML plan report (gate two) before application changes. Test rejection/correction at each gate and subsequent approval; a gate-two correction to behavior must return to clarify. Invoke one phase skill directly on a task missing its prerequisite and verify it refuses and names the earlier phase. Then request a research/plan task with one genuine decision. Verify the trace shows the
+first make a plain behavioral-change request with no skill name. Verify workflow loaded and routed to `workflow-clarify`, code was inspected, and the behavior agreement was presented in PLAN and chat with no tickets or code yet. After agreeing, verify `workflow-specify` produced tickets with dependencies and test seams and showed the plan report (implementation approval) before application changes. Test rejection/correction at each gate and subsequent approval; a behavior correction at implementation approval must return to clarify. Invoke one phase skill directly on a task missing its prerequisite and verify it refuses and names the earlier phase. Then request a research/plan task with one genuine decision. Verify the trace shows the
 qualified `grilling` specialist actually loaded, facts investigated rather than asked,
 and the question batch saved to the existing task record. Approve a bounded code fix
 with explicit test seams; verify the diagnosis/TDD/review routes, no repeated approval,

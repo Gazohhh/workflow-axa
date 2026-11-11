@@ -228,7 +228,7 @@ class UiPolicyContractTests(unittest.TestCase):
         self.assertEqual(data['skills'].count('./skills/ui-design'),1)
 
     def test_strict_modes_and_no_kit_invention(self):
-        text=(ROOT/'skills/rule-maker/rules/design.md').read_text()
+        text=(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
         for name in ('behaviour-only','reuse','blocked','plain-by-instruction','Mirror the element','screen diagram'):
             self.assertIn(name,text)
         self.assertIn('No new CSS, ever.',text)

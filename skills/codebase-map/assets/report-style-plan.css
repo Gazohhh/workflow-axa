@@ -1,0 +1,86 @@
+/* Additions for the design-doc layout of task reports. report-style.css stays the owner's design, unchanged. */
+
+/* Header callout: the status line and the "Read first" lines in one box. */
+.callout {
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+}
+
+.callout .status {
+  max-width: none;
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 0;
+}
+
+.callout .status + .status {
+  border-top: 1px solid var(--color-accent-line);
+}
+
+.callout .status__tag {
+  width: 124px;
+}
+
+.callout:has(.status--approved:only-child) {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+}
+
+/* Fewer tiles than the five-column grid expects: let them share the row. */
+.facts {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Prose directly under a section title keeps the reading measure. */
+.section > p {
+  max-width: var(--measure);
+}
+
+/* Blocks and the diagram area inside "The design". */
+.section .block + .review,
+.section .review + .block,
+.section .section__summary + .block {
+  margin-top: 28px;
+}
+
+/* A diagram that fits the column sits in the middle of its canvas and needs no grab cursor. */
+.review--fit .map {
+  margin: 0 auto;
+}
+
+.review--fit .canvas {
+  cursor: default;
+}
+
+/* Checks listed inside a ticket card. */
+.ticket__facts .checks {
+  max-width: none;
+  margin: 0;
+  border-top: 0;
+}
+
+.ticket__facts .check {
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.ticket__facts .check:first-child {
+  padding-top: 0;
+}
+
+.ticket__facts .check:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.ticket__facts .check--ref .check__how {
+  margin: 0;
+}
+
+/* A list directly under a section title keeps the reading measure too. */
+.section > .list {
+  max-width: var(--measure);
+}

@@ -23,7 +23,7 @@ Inspect per application/package, not one guessed version for a monorepo. Include
 
 ## Apply guidance without upgrading
 
-Load the common framework module, then inspect version-specific primary documentation for the operation in question. Keep shared principles once; add narrow compatibility notes rather than entire copied rulebooks for every release. React 18 must not receive React 19-only APIs. A Laravel 11 application upgraded from 10 may deliberately retain its earlier structure; the major version alone does not require reorganisation.
+Load the common framework module, then inspect version-specific primary documentation for the operation in question. Keep shared principles once; add narrow compatibility notes rather than entire copied rulebooks for every release. React 18 must not receive React 19-only APIs. A Laravel 11 application upgraded from 10 may deliberately retain its earlier structure; the major version alone does not require reorganization.
 
 When no reviewed guidance covers a required API/version, disclose the gap, research the matching primary source and settle material uncertainty. Do not silently add the researched conclusion to the global library. Unsupported/offline documentation or ambiguous lock resolution is a limit, not a guessed pass.
 

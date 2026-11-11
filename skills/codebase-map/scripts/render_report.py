@@ -31,7 +31,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.8.0-rc.34'
+RENDERER_VERSION = '2.8.0-rc.36'
 
 
 def ui_module():
@@ -592,6 +592,7 @@ def elbow_path(points: list) -> str:
     return result + f' L {points[-1][0]} {points[-1][1]}'
 
 
+FIT_WIDTH = 880  # a task-report diagram this wide or narrower fits the reading column: no zoom, no scroll hint
 FRIENDLY_CAPTIONS = {'proposed': 'Proposed, not built yet', 'current': 'As the code works today', 'delivery': 'Order of the work'}
 
 
@@ -604,7 +605,7 @@ def friendly_tab(graph: dict) -> str:
     return graph['tab']
 
 
-def graph_html(graph: dict, friendly: bool = False, delivered: bool = False) -> str:
+def graph_html(graph: dict, friendly: bool = False, delivered: bool = False, compact: bool = False) -> str:
     key = graph['id']
     start = min(graph['nodes'], key=lambda node: (node['shape'] != 'start', node['y'], node['x']))
     start_id = f'node-{len(key)}-{key}-{start["id"]}'
@@ -652,7 +653,9 @@ def graph_html(graph: dict, friendly: bool = False, delivered: bool = False) -> 
     parts.append('</svg>')
     shapes = {n['shape'] for n in graph['nodes']}
     legend = []
-    for shape, label in (('start', 'Start / result'), ('action', 'Action'), ('decision', 'Decision'), ('group', 'Group')):
+    # Task reports explain only the marks that are not a standard flowchart shape: group, focus and dashed.
+    named = (('group', 'Group'),) if friendly else (('start', 'Start / result'), ('action', 'Action'), ('decision', 'Decision'), ('group', 'Group'))
+    for shape, label in named:
         if shape in shapes or (shape == 'start' and 'result' in shapes):
             legend.append(f'<span><i class="legend-{shape}" aria-hidden="true"></i>{label}</span>')
     if any(n.get('highlight') for n in graph['nodes']):
@@ -665,16 +668,26 @@ def graph_html(graph: dict, friendly: bool = False, delivered: bool = False) -> 
     built_note = 'The proposed flow is what was built. Its checks are below.' if delivered else 'Proposed is not implemented.'
     external_note = f'<p>Other required tasks outside this view: {links(graph["external_dependencies"], "t")}</p>' if graph.get('external_dependencies') else ''
     tag = 'h3' if friendly else 'h2'
+    hint = '' if compact else f'<p class="hint">Scroll sideways to explore. <a href="#{start_id}">Go to start</a>. Fit is an optional overview.</p>'
+    if friendly:
+        # The caption beside the title already says built or not built; say only what the drawing itself needs.
+        dashed = any(item['basis'] in ('inferred', 'unknown') for item in graph['nodes'] + graph['edges'])
+        note = '<span class="muted">Dashed outlines show a guess or an unknown. The evidence is in the reference.</span>' if dashed else ''
+        legend_html = f'<div class="legend">{"".join(legend)}</div>' if legend else ''
+        return (f'<figure class="panel" id="panel-{key}"><div class="figure-head"><h3>{esc(graph["title"])}</h3>'
+                f'<span>{esc(caption)}</span></div><p class="figure-description">{esc(graph["description"])}</p>{hint}'
+                f'<div class="canvas" tabindex="0" role="region" aria-label="{esc(graph["tab"])} diagram" '
+                f'data-start-id="{start_id}" style="--board-width:{graph["width"]}px">{"".join(parts)}</div>'
+                f'<figcaption>{legend_html}{external_note}{note}</figcaption></figure>')
     return (f'<figure class="panel" id="panel-{key}"><div class="figure-head"><{tag}>{esc(graph["title"])}</{tag}>'
-            f'<span>{esc(caption)}</span></div><p class="figure-description">{esc(graph["description"])}</p>'
-            f'<p class="hint">Scroll sideways to explore. <a href="#{start_id}">Go to start</a>. Fit is an optional overview.</p>'
+            f'<span>{esc(caption)}</span></div><p class="figure-description">{esc(graph["description"])}</p>{hint}'
             f'<div class="canvas" tabindex="0" role="region" aria-label="{esc(graph["tab"])} diagram, scroll to explore" '
             f'data-start-id="{start_id}" style="--board-width:{graph["width"]}px">{"".join(parts)}</div>'
             f'<figcaption><div class="legend">{"".join(legend)}</div>'
             f'{external_note}<span class="muted">Dashed outlines show a guess or an unknown. Details and evidence are below. {built_note}</span></figcaption></figure>')
 
 
-def view_controls(graphs: list, default: str, friendly: bool = False) -> tuple[str, str]:
+def view_controls(graphs: list, default: str, friendly: bool = False, compact: bool = False) -> tuple[str, str]:
     inputs, labels, rules = [], [], []
     names = {graph['id']: friendly_tab(graph) if friendly and 'kind' in graph else graph['tab'] for graph in graphs}
     if len(set(names.values())) != len(names):
@@ -688,17 +701,17 @@ def view_controls(graphs: list, default: str, friendly: bool = False) -> tuple[s
                       f'#view-{key}:checked~.viewbar label[for="view-{key}"]{{border-color:var(--accent);color:var(--ink)}}',
                       f'#view-{key}:focus-visible~.viewbar label[for="view-{key}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
     zooms = []
-    for value, label in (('100', '100%'), ('125', '125%'), ('150', '150%'), ('fit', 'Fit')):
+    for value, label in () if compact else (('100', '100%'), ('125', '125%'), ('150', '150%'), ('fit', 'Fit')):
         inputs.append(f'<input class="sr-radio" type="radio" name="diagram-zoom" id="zoom-{value}" '
                       f'aria-label="{label} diagram size" {"checked" if value == "100" else ""}>')
         zooms.append(f'<label for="zoom-{value}">{label}</label>')
         rules.extend([f'#zoom-{value}:checked~.viewbar label[for="zoom-{value}"]{{border-color:var(--ink);color:var(--ink)}}',
                       f'#zoom-{value}:focus-visible~.viewbar label[for="zoom-{value}"]{{outline:2px solid var(--accent);outline-offset:4px}}'])
     if friendly:
+        zoom_group = '' if compact else ('<div class="zoom-tabs labelled" role="group" aria-labelledby="zoom-tabs-name">'
+                                         '<span class="control-name" id="zoom-tabs-name">Zoom</span>' + ''.join(zooms) + '</div>')
         controls = (''.join(inputs) + '<div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name">'
-                    '<span class="control-name" id="view-tabs-name">Show</span>' + ''.join(labels) +
-                    '</div><div class="zoom-tabs labelled" role="group" aria-labelledby="zoom-tabs-name">'
-                    '<span class="control-name" id="zoom-tabs-name">Zoom</span>' + ''.join(zooms) + '</div></div>')
+                    '<span class="control-name" id="view-tabs-name">Show</span>' + ''.join(labels) + '</div>' + zoom_group + '</div>')
         return controls, '\n'.join(rules)
     controls = (''.join(inputs) + '<div class="viewbar"><div class="view-tabs" role="group" aria-label="Diagram views">' +
                 ''.join(labels) + '</div><div class="zoom-tabs" role="group" aria-label="Diagram size">' + ''.join(zooms) + '</div></div>')
@@ -762,7 +775,7 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     if 'ui_review' in data:
         records.extend(ui_module().kit_records(data['ui_review'], root, sources))
     records.append({'id': 'report-input', 'role': 'projection', 'path': input_path.relative_to(root.resolve()).as_posix(), 'sha256': digest(input_path)})
-    manifest = {'schema_version': 1, 'tool_version': RENDERER_VERSION, 'layout_version': 2, 'style': 'workflow-editorial-v1',
+    manifest = {'schema_version': 1, 'tool_version': RENDERER_VERSION, 'layout_version': 3, 'style': 'workflow-editorial-v1',
                 'revision': data['revision'], 'report_kind': data.get('report_kind', 'review'), 'generated_utc': datetime.now(timezone.utc).isoformat(), 'sources': records,
                 **({'write_paths': data['write_paths']} if 'write_paths' in data else {})}
     raw_manifest = json.dumps(manifest, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
@@ -772,10 +785,12 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     # Application UI changes open on their screen diagram unless the input says otherwise (D14 goal).
     default = 'ui-preview' if ui.get('kind') == 'application' or ui.get('open_first') else data['default_view']  # owner: the diagram must be seen
     friendly = 'task_report' in data
-    controls, view_css = view_controls(views, default, friendly)
+    # Every diagram fits the reading column: drop zoom and the scroll hint (FLOWCHART-DESIGN, task reports).
+    compact = friendly and 'ui_review' not in data and all(g['width'] <= FIT_WIDTH for g in data['graphs'])
+    controls, view_css = view_controls(views, default, friendly, compact)
     if friendly:
         # Owner's report design (2026-11-03): report-style.css and report-extra.js; older reports keep report.css.
-        css = '\n'.join((ASSETS/name).read_text(encoding='utf-8') for name in ('report-style.css', 'report-style-compat.css')) + '\n' + view_css
+        css = '\n'.join((ASSETS/name).read_text(encoding='utf-8') for name in ('report-style.css', 'report-style-compat.css', 'report-style-plan.css')) + '\n' + view_css
         js = (ASSETS/'report.js').read_text(encoding='utf-8') + '\n' + (ASSETS/'report-extra.js').read_text(encoding='utf-8')
     else:
         css = (ASSETS/'report.css').read_text(encoding='utf-8') + '\n' + view_css
@@ -877,8 +892,8 @@ def render(data: dict, root: Path, input_path: Path) -> str:
     if 'task_report' in data:
         from types import SimpleNamespace
         parts = SimpleNamespace(
-            controls=controls, figures=''.join(graph_html(g, friendly=True, delivered=(data.get('task_report') or {}).get('phase') == 'delivery') for g in ordered) + ui_html,
-            flow_context=flow_context, checkpoint=checkpoint_html, history=history_html, requirements=req,
+            controls=controls, figures=''.join(graph_html(g, friendly=True, delivered=(data.get('task_report') or {}).get('phase') == 'delivery', compact=compact) for g in ordered) + ui_html,
+            compact=compact, flow_context=flow_context, checkpoint=checkpoint_html, history=history_html, requirements=req,
             task_rows=task_rows, evidence=ev, graph_records=''.join(graph_records(g) for g in data['graphs']),
             snapshot=snapshot_html, uncertainty=uncertainty, outcome=task_outcome_html)
         status_line, facts_html, body = task_module().render(data, renderer_api(), parts)
@@ -891,9 +906,9 @@ def render(data: dict, root: Path, input_path: Path) -> str:
 <div class="page"><header class="masthead"><strong>{esc(data['snapshot']['repository'])}</strong><span>{mast}</span></header>
 <main id="report"><header class="report-header"><h1 class="report-title">{esc(data['title'])}</h1>
 <p class="report-lead">{esc(data["understanding"])}</p>
-<p class="status status--{'approved' if good else esc(state)}"><span class="status__tag">{esc(tag)}</span><span>{esc(status_line)}</span></p>
+<div class="callout"><p class="status status--{'approved' if good else esc(state)}"><span class="status__tag">{esc(tag)}</span><span>{esc(status_line)}</span></p>{task_module().attention_html(data)}</div>
 {facts_html}</header>
-{body}</main><footer class="report-footer"><p>Local HTML and SVG. No external files, uploads or approval actions. A saved snapshot: progress belongs in the task records.</p></footer></div>
+{body}</main><footer class="report-footer"><p>A saved snapshot. Progress belongs in the task records.</p></footer></div>
 <script type="application/json" id="report-manifest">{raw_manifest}</script><script>{js}</script></body></html>'''
     return f'''{head}<p class="status {state}">{esc(status)}</p><p class="lead">{esc(data['understanding'])}</p></header>
 {checkpoint_html}{issues}{flow_context}<section class="review" aria-label="Flowchart review">{controls}<div class="figures">{''.join(graph_html(g) for g in ordered)}{ui_html}</div></section>

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \\\"review since X\\\"."
+description: "Review task-scoped changes or a branch, PR, or uncommitted diff against standards and the agreed spec. Separate Standards and Spec findings; reviewer independence and parallelism depend on host capability."
 ---
 
 > Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/code-review/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
@@ -94,11 +94,11 @@ Reporting them separately stops one axis from masking the other.
 
 ## workflow-axa adaptation
 
-This replaces the upstream fixed-point, tracker and sub-agent assumptions where they conflict:
+This replaces the upstream fixed-point, tracker and subagent assumptions where they conflict:
 
 - **The diff.** Review the task's own changes: staged, unstaged *and untracked*, measured against the starting `git status`/diff in the task records. `git diff <base>...HEAD` alone misses uncommitted work; when the user had edits before the task, separate theirs from yours. Never stage, commit, create a merge-base or fetch an issue just to get a diff.
 - **The spec.** The PLAN `## Agreement` and the approved tickets. A ticket review uses that ticket's acceptance and files; the whole-feature review uses the whole agreement and the whole task diff. No tracker is needed.
 - **Standards sources** include the project's AGENTS.md/CLAUDE.md, applicable workflow-axa shared rules (`../workflow/RULES.md`) and `../workflow/AUDIT.md` categories, plus the smell baseline below.
-- **Sub-agents.** Run the two axes in fresh sub-agents when the host has them. A fresh sub-agent that did not build the change is an **independent** review even when it runs both axes one after the other: label it "independent, axes sequential". "Self-review" means the builder reviewed its own change. Keep the axes separate either way.
+- **Subagents.** Run the two axes in fresh subagents when the host has them. A fresh subagent that did not build the change is an **independent** review even when it runs both axes one after the other: label it "independent, axes sequential". "Self-review" means the builder reviewed its own change. Keep the axes separate either way.
 - **After repairs**, rerun the affected checks and re-review the affected axis.
 - **Identity.** This package's `code-review` (plugin name `workflow-axa:code-review`) is the reviewer the workflow means. A host's built-in command or another installed skill with the same name is a different tool.

@@ -224,7 +224,7 @@ class TicketEvidenceTests(TicketFixture):
 class PermissionPolicyTests(unittest.TestCase):
     """Instruction contracts only. These are not a model obedience or billing test."""
     def test_plain_exception_is_not_an_agent_recommendation(self):
-        design = (ROOT/'skills/rule-maker/rules/design.md').read_text()
+        design = (ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
         skill = (ROOT/'skills/ui-design/SKILL.md').read_text()
         for term in ('Do not recommend', 'Yes to all recommendations', 'whole user answer', 'named element'):
             self.assertIn(term, design)
@@ -232,15 +232,15 @@ class PermissionPolicyTests(unittest.TestCase):
 
     def test_cap_and_total_categories_cannot_be_inferred(self):
         policy = (ROOT/'skills/workflow/VISUAL-REVIEW.md').read_text()
-        prompt = (ROOT/'CLAUDE-TEST-PROMPT.txt').read_text()
+        prompt = (ROOT/'docs/archive/CLAUDE-TEST-PROMPT.txt').read_text()
         for term in ('$[AMOUNT]', 'orchestration', 'retro', 'subtotal', 'does not meter'):
             self.assertIn(term, policy)
         for term in ('NO default cap', 'No real spending/production', 'read-only'):
             self.assertIn(term, prompt)
-        self.assertIn('worker', (ROOT/'RC3-CASES.md').read_text())
+        self.assertIn('worker', (ROOT/'docs/archive/RC3-CASES.md').read_text())
 
     def test_current_protocol_does_not_require_missing_baseline(self):
-        prompt = (ROOT/'CLAUDE-TEST-PROMPT.txt').read_text()
+        prompt = (ROOT/'docs/archive/CLAUDE-TEST-PROMPT.txt').read_text()
         self.assertIn('do not search for it', prompt)
         self.assertIn('No automatic retry', prompt)
         self.assertIn('No fixes', prompt)

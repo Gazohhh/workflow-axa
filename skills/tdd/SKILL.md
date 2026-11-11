@@ -43,7 +43,8 @@ When the shape of that interface is itself in question (how deep the module is, 
 
 ## workflow-axa adaptation
 
-- **Seams are already agreed.** `workflow-specify` records each ticket's test seam and gets it approved at gate two. Use those; ask only for a genuinely new seam.
+- **Seams are already agreed.** `workflow-specify` records each ticket's test seam and gets it approved at implementation approval. Use those; ask only for a genuinely new seam.
 - **Vocabulary.** Read the project's `CONTEXT.md` (or `GLOSSARY.md`) and ADRs if they exist.
 - **References.** Where this text says to call the Skill tool with `codebase-design` or `code-review`, read `../codebase-design/SKILL.md` or `../code-review/SKILL.md` (this package's copies) instead.
 - **Honesty.** Missing test infrastructure is a blocker: never install a runner, weaken a test, or report a red/green cycle that didn't happen. Docs or config tickets check their stated contract instead.
+- **Refactor after green.** For workflow-axa the local loop is red → green → small behavior-preserving refactor → green. This overrides the upstream "Refactoring is not part of the loop" instruction. Review larger design or architecture changes separately; do not treat code review as the first chance to tidy a new implementation.

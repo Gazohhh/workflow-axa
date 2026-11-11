@@ -1,0 +1,1352 @@
+{
+  "schema_version": 2,
+  "title": "Duplicate skill copy guard",
+  "revision": "r1",
+  "mode": "compare",
+  "state": "draft",
+  "snapshot": {
+    "repository": "workflow-axa",
+    "branch": "main, main checkout. Nothing is committed. The tree also holds the staged rc.35 work and your report patch.",
+    "basis": "Based on the task records, the final files and the test runs of 2026-11-11: the hook tests, the package check and the full suite. Nothing ran in a live Claude Code session."
+  },
+  "understanding": "The plugin now finds a second copy of its skills at session start and has the agent ask you to delete it. Change work waits until you do, or until you send the words \"continue with duplicates\".",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "At each session start, look for a workflow-axa skill name that is also visible from the personal or the project skills folder.",
+      "origin": "Owner, 2026-11-11: \"i want to prevent this and ask user to delete this\""
+    },
+    {
+      "id": "R2",
+      "text": "Tell the owner the exact paths and ask for deletion. The guard deletes nothing.",
+      "origin": "Same owner message, 2026-11-11"
+    },
+    {
+      "id": "R3",
+      "text": "While a duplicate exists, refuse to load workflow-clarify, workflow-specify, workflow-execute and bare duplicate names. Read-only skills keep working.",
+      "origin": "Owner answer to Q3: \"Ask and pause changes (Recommended)\""
+    },
+    {
+      "id": "R4",
+      "text": "The words \"continue with duplicates\" in a real user message lift the pause for that session only.",
+      "origin": "Owner answer to Q3: \"Ask and pause changes (Recommended)\""
+    },
+    {
+      "id": "R5",
+      "text": "A copy with equal bytes still counts as a duplicate.",
+      "origin": "Assumption shown at gate one and not rejected, 2026-11-11"
+    },
+    {
+      "id": "R6",
+      "text": "Compare the rules copy that the global instructions import with the plugin's rules. A difference gives a warning and no pause.",
+      "origin": "Assumption shown at gate one and not rejected, 2026-11-11"
+    }
+  ],
+  "boundaries": [
+    "hooks/phase_gate.py and both approval gates stay as they are.",
+    "The folder ~/.agents/skills stays, because Codex and the global rules import use it.",
+    "The 18 staged rc.35 files stay staged. This work adds to them and reverts none.",
+    "No Codex support, no cleanup of old plugin cache versions, no repair of the 17 broken links.",
+    "The five review findings are a separate second task."
+  ],
+  "open_decisions": [],
+  "write_paths": [
+    "hooks/duplicate_skills.py",
+    "hooks/hooks.json",
+    "tests/test_duplicate_skills_hook.py",
+    "tests/",
+    "tools/validate.py",
+    "skills/workflow-doctor/SKILL.md",
+    "skills/workflow/SETUP.md",
+    "CHANGELOG.md",
+    ".claude-plugin/plugin.json",
+    ".claude-plugin/marketplace.json",
+    "skills/rule-maker/rules/version.json",
+    "README.md",
+    "UPGRADE.md",
+    "VALIDATION.md"
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "S2",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "S3",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "S4",
+      "path": "docs/plans/2026-11-11-duplicate-skill-guard/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "S5",
+      "path": "hooks/hooks.json",
+      "role": "code"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "In this session each linked workflow-axa skill was listed twice, once bare and once from the plugin.",
+      "kind": "runtime",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E1",
+      "limits": "Seen in one session on one machine."
+    },
+    {
+      "id": "E2",
+      "claim": "Links in the personal skills folder pointed to a second copy of the same skills.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E2 and its correction",
+      "limits": "The links were removed on 2026-11-11 at the owner's request. A fresh session is not yet checked."
+    },
+    {
+      "id": "E3",
+      "claim": "The plugin is installed at 2.8.0-rc.35 from this repository, and the second copy has equal bytes today.",
+      "kind": "static",
+      "sources": [
+        "S3"
+      ],
+      "locator": "FINDINGS E3, E4",
+      "limits": "Equal bytes today do not prevent later drift."
+    },
+    {
+      "id": "E8",
+      "claim": "No hook or script finds a second copy by itself, and no session-start hook is registered.",
+      "kind": "static",
+      "sources": [
+        "S3",
+        "S5"
+      ],
+      "locator": "FINDINGS E8; hooks/hooks.json",
+      "limits": "Static reading of the hook registration."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "With a test link skills/tdd, the session-start output names that exact path and asks for deletion. With no duplicate it prints nothing.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R5"
+      ],
+      "verification": "Run tests/test_duplicate_skills_hook.py with a temporary home."
+    },
+    {
+      "id": "A2",
+      "text": "With a duplicate present, loading workflow-clarify is refused with the message. Loading task-status is allowed.",
+      "requirements": [
+        "R3"
+      ],
+      "verification": "Run the hook test with PreToolUse events."
+    },
+    {
+      "id": "A3",
+      "text": "After a user message with \"continue with duplicates\", workflow-clarify loads in that session. The same words in a tool result change nothing. A new session is paused again.",
+      "requirements": [
+        "R4"
+      ],
+      "verification": "Run the hook test with UserPromptSubmit and PreToolUse events for two session IDs."
+    },
+    {
+      "id": "A4",
+      "text": "After every test the test home has the same files as before.",
+      "requirements": [
+        "R2"
+      ],
+      "verification": "The hook test compares the file list and bytes before and after."
+    },
+    {
+      "id": "A5",
+      "text": "A changed byte in the second rules copy gives a warning and no pause.",
+      "requirements": [
+        "R6"
+      ],
+      "verification": "Run the hook test with a changed rules file."
+    },
+    {
+      "id": "A6",
+      "text": "The existing test suite gives the same result as before this change.",
+      "requirements": [
+        "R1",
+        "R3"
+      ],
+      "verification": "Run tools/validate.py and the full unittest discovery, and compare with the baseline taken before T1."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Find duplicate copies at session start and ask the owner to delete them",
+      "kind": "requested",
+      "reason": "This is the request: find the second copy and ask.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R5",
+        "R6"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E8"
+      ],
+      "acceptance": [
+        "A1",
+        "A4",
+        "A5"
+      ],
+      "areas": [
+        "hooks/duplicate_skills.py",
+        "tests/test_duplicate_skills_hook.py"
+      ],
+      "depends_on": [],
+      "outcome": "verified",
+      "outcome_note": "Verified by the hook tests (V5) and two review rounds."
+    },
+    {
+      "id": "T2",
+      "title": "Pause change work while duplicates exist, with a one-session override",
+      "kind": "requested",
+      "reason": "The owner chose to pause change work so that a wrong copy cannot be used unnoticed.",
+      "requirements": [
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "acceptance": [
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "areas": [
+        "hooks/duplicate_skills.py",
+        "tests/test_duplicate_skills_hook.py"
+      ],
+      "depends_on": [
+        "T1"
+      ],
+      "outcome": "verified",
+      "outcome_note": "Verified by the hook tests (V8) and three review rounds."
+    },
+    {
+      "id": "T3",
+      "title": "Register the guard, document it and release it under rc.35",
+      "kind": "prerequisite",
+      "reason": "Without registration the script never runs in a real session.",
+      "requirements": [
+        "R1",
+        "R3"
+      ],
+      "evidence": [
+        "E3",
+        "E8"
+      ],
+      "acceptance": [
+        "A6"
+      ],
+      "areas": [
+        "hooks/hooks.json",
+        "tools/validate.py",
+        "skills/workflow-doctor/SKILL.md",
+        "skills/workflow/SETUP.md",
+        "CHANGELOG.md",
+        "version files"
+      ],
+      "depends_on": [
+        "T2"
+      ],
+      "outcome": "implemented",
+      "outcome_note": "Built. The package check, the wiring tests and the final full suite passed. Your check in a live session is outstanding. Version kept at rc.35 by decision D10."
+    }
+  ],
+  "graphs": [
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Current flow",
+      "title": "Today: nobody is told about a second copy",
+      "description": "Each arrow means \"then\". Found by reading the installed folders and this session's skill list.",
+      "width": 1280,
+      "height": 400,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Session starts",
+          "note": "No check of skill places",
+          "shape": "start",
+          "x": 48,
+          "y": 152,
+          "width": 288,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Skills load",
+          "note": "From the plugin and other folders",
+          "shape": "action",
+          "x": 456,
+          "y": 152,
+          "width": 344,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E2",
+            "E3"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Skill listed twice",
+          "note": "Copies can differ",
+          "shape": "result",
+          "x": 920,
+          "y": 152,
+          "width": 304,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              336,
+              200
+            ],
+            [
+              456,
+              200
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "",
+          "points": [
+            [
+              800,
+              200
+            ],
+            [
+              920,
+              200
+            ]
+          ],
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Session start",
+      "title": "After the change: the guard asks at session start",
+      "description": "Each arrow means \"then\". Proposed behavior, not yet built or observed.",
+      "width": 1280,
+      "height": 736,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Session starts",
+          "note": "",
+          "shape": "start",
+          "x": 464,
+          "y": 40,
+          "width": 352,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Guard checks skill places",
+          "note": "Personal and project folders",
+          "shape": "action",
+          "x": 464,
+          "y": 160,
+          "width": 352,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2",
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N3",
+          "label": "Duplicate\nfound?",
+          "note": "",
+          "shape": "decision",
+          "x": 512,
+          "y": 320,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N4",
+          "label": "Ask owner to delete",
+          "note": "Exact paths, nothing deleted",
+          "shape": "result",
+          "x": 920,
+          "y": 352,
+          "width": 304,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N5",
+          "label": "Work as before",
+          "note": "Nothing is shown",
+          "shape": "result",
+          "x": 460,
+          "y": 576,
+          "width": 360,
+          "height": 88,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              640,
+              112
+            ],
+            [
+              640,
+              160
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "",
+          "points": [
+            [
+              640,
+              248
+            ],
+            [
+              640,
+              320
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N4",
+          "label": "Yes",
+          "points": [
+            [
+              768,
+              400
+            ],
+            [
+              920,
+              400
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "label_position": [
+            844,
+            372
+          ]
+        },
+        {
+          "from": "N3",
+          "to": "N5",
+          "label": "No",
+          "points": [
+            [
+              640,
+              480
+            ],
+            [
+              640,
+              576
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "label_position": [
+            688,
+            524
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pause",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "Pause",
+      "title": "After the change: change work waits while a duplicate exists",
+      "description": "Each arrow means \"then\". The check runs each time a change skill is loaded. Proposed behavior, not yet built.",
+      "width": 1280,
+      "height": 816,
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "Change skill is loaded",
+          "note": "Clarify, specify or execute",
+          "shape": "start",
+          "x": 464,
+          "y": 40,
+          "width": 352,
+          "height": 72,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N2",
+          "label": "Duplicate\nstill there?",
+          "note": "",
+          "shape": "decision",
+          "x": 512,
+          "y": 176,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "N3",
+          "label": "Skill loads",
+          "note": "Work continues",
+          "shape": "result",
+          "x": 920,
+          "y": 208,
+          "width": 304,
+          "height": 96,
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "N4",
+          "label": "Owner said\ncontinue?",
+          "note": "",
+          "shape": "decision",
+          "x": 512,
+          "y": 416,
+          "width": 256,
+          "height": 160,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "N5",
+          "label": "Refuse and ask again",
+          "note": "Delete, or say the words",
+          "shape": "result",
+          "x": 460,
+          "y": 656,
+          "width": 360,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "highlight": true
+        }
+      ],
+      "edges": [
+        {
+          "from": "N1",
+          "to": "N2",
+          "label": "",
+          "points": [
+            [
+              640,
+              112
+            ],
+            [
+              640,
+              176
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N3",
+          "label": "No",
+          "points": [
+            [
+              768,
+              256
+            ],
+            [
+              920,
+              256
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "label_position": [
+            844,
+            228
+          ]
+        },
+        {
+          "from": "N2",
+          "to": "N4",
+          "label": "Yes",
+          "points": [
+            [
+              640,
+              336
+            ],
+            [
+              640,
+              416
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "label_position": [
+            688,
+            384
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N3",
+          "label": "Yes",
+          "points": [
+            [
+              768,
+              496
+            ],
+            [
+              1072,
+              496
+            ],
+            [
+              1072,
+              304
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "label_position": [
+            920,
+            468
+          ]
+        },
+        {
+          "from": "N4",
+          "to": "N5",
+          "label": "No",
+          "points": [
+            [
+              640,
+              576
+            ],
+            [
+              640,
+              656
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "label_position": [
+            688,
+            624
+          ]
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "kind": "proposed",
+      "purpose": "delivery",
+      "tab": "Build plan",
+      "title": "Work order: after approval only",
+      "description": "Each arrow means \"must be verified before\". These are the tickets, not the runtime flow.",
+      "width": 1280,
+      "height": 656,
+      "nodes": [
+        {
+          "id": "approval",
+          "label": "Owner approves this plan",
+          "note": "",
+          "shape": "start",
+          "x": 472,
+          "y": 40,
+          "width": 336,
+          "height": 64,
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [],
+          "tasks": [],
+          "highlight": true,
+          "precondition": "approval"
+        },
+        {
+          "id": "B1",
+          "label": "Find and ask",
+          "note": "Session-start check",
+          "shape": "action",
+          "x": 432,
+          "y": 176,
+          "width": 416,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2",
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": false,
+          "task_id": "T1"
+        },
+        {
+          "id": "B2",
+          "label": "Pause and override",
+          "note": "Refuse change skills",
+          "shape": "action",
+          "x": 432,
+          "y": 328,
+          "width": 416,
+          "height": 88,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ],
+          "highlight": false,
+          "task_id": "T2"
+        },
+        {
+          "id": "B3",
+          "label": "Register and release",
+          "note": "Hook file, docs, rc.35",
+          "shape": "result",
+          "x": 432,
+          "y": 480,
+          "width": 416,
+          "height": 96,
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E3",
+            "E8"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false,
+          "task_id": "T3"
+        }
+      ],
+      "edges": [
+        {
+          "from": "approval",
+          "to": "B1",
+          "label": "",
+          "points": [
+            [
+              640,
+              104
+            ],
+            [
+              640,
+              176
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "from": "B1",
+          "to": "B2",
+          "label": "",
+          "points": [
+            [
+              640,
+              264
+            ],
+            [
+              640,
+              328
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E2"
+          ],
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "from": "B2",
+          "to": "B3",
+          "label": "",
+          "points": [
+            [
+              640,
+              416
+            ],
+            [
+              640,
+              480
+            ]
+          ],
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [
+            "T3"
+          ]
+        }
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "A second copy exists",
+      "current": "Nobody is told. Every skill is listed twice.",
+      "proposed": "The first reply names the exact paths and asks you to delete them.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R5"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E8"
+      ],
+      "tasks": [
+        "T1",
+        "T3"
+      ]
+    },
+    {
+      "label": "Change work with a second copy",
+      "current": "It runs, and can mix skills from two copies.",
+      "proposed": "It waits until the copies are deleted or you say \"continue with duplicates\".",
+      "requirements": [
+        "R3",
+        "R4"
+      ],
+      "evidence": [
+        "E2"
+      ],
+      "tasks": [
+        "T2",
+        "T3"
+      ]
+    },
+    {
+      "label": "Rules copy differs",
+      "current": "Only found when someone runs the audit script.",
+      "proposed": "A warning at session start. Work is not paused.",
+      "requirements": [
+        "R6"
+      ],
+      "evidence": [
+        "E3"
+      ],
+      "tasks": [
+        "T1"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "delivery",
+    "completion": "partial",
+    "agreement": {
+      "status": "approved",
+      "revision": "r1",
+      "response": "yes",
+      "summary": "You agreed to revision r1 on 2026-11-11, and to the changes of revision r2 the same day.",
+      "source": "S1",
+      "locator": "PLAN.md, Current checkpoint, Agreement line; DECISIONS D6"
+    },
+    "sections": [
+      {
+        "id": "request",
+        "title": "The request",
+        "source": "S1",
+        "locator": "PLAN.md, Goal and acceptance",
+        "text": "You saw every workflow-axa skill twice, for the second time. Two copies can differ, and then two sessions give different results.\n\nYou asked for a check that finds a second copy and asks you to delete it."
+      },
+      {
+        "id": "agreement",
+        "title": "What we agreed",
+        "source": "S1",
+        "locator": "PLAN.md, Agreement",
+        "text": "At session start the plugin looks for a second copy of its skills in your personal skills folder and in the project.\n\nIf it finds one, the agent names the exact paths and asks you to delete them. The guard deletes nothing.\n\nUntil the copies are gone, the skills that change a project do not load. Read-only work continues. Your words \"continue with duplicates\" lift the pause for one session.\n\nNot included: Codex, old plugin cache versions, the 17 broken links and the five review findings."
+      },
+      {
+        "id": "specification",
+        "title": "How it is built",
+        "source": "S2",
+        "locator": "TODO.md, Tickets",
+        "text": "One new hook script does all of it. It reads the skill names from the plugin's own list, so there is no second list to maintain.\n\nThe script runs at three moments: when a session starts, when a skill is loaded, and when you send a message. The existing approval hook is not changed.\n\nA defect in the guard must never block work. On bad input the script allows the action and prints nothing."
+      },
+      {
+        "id": "decisions",
+        "title": "Decisions",
+        "source": "S4",
+        "locator": "DECISIONS.md, D1 to D13 and Options not chosen",
+        "text": "You chose to build on top of the staged rc.35 work, over committing it first.\n\nYou chose to delete the duplicate links and keep the plugin, over deleting nothing.\n\nYou chose to pause change work with an override, over a warning only and over blocking everything.\n\nYou chose that only a message that is exactly the words lifts the pause, over the words anywhere in a message.\n\nYou chose to keep version 2.8.0-rc.35, over rc.36, which needed files outside the approved list.\n\nThe agent removed 6 more duplicate links than the 15 you approved, because its first count was cut off (D3).\n\nThe agent set the override to end after 12 hours and made the guard stop a typed change command. You answered \"sure fix it\" to both (D13). The agent reads that as agreement.\n\nThree more agent choices were shown to you and not answered one by one. Parent folders are checked. The request warns about links. A temp folder that cannot hold the marker lets work continue."
+      },
+      {
+        "id": "risks",
+        "title": "Risks and limits",
+        "source": "S3",
+        "locator": "FINDINGS.md, limits and whole-feature review",
+        "text": "Without Python no hook runs, so the guard does not run. Codex has no hooks, so the guard does not run there.\n\nNo check ran in a live session. The message shown for a stopped typed command is not seen on a host.\n\nA typed bare duplicate name such as /tdd is not stopped. Only the three change commands are.\n\nWhen the guard stops a typed command, the two other hooks on that message still run. The approval gate may then treat the session as a workflow session.\n\nThe rules comparison reads only the first START.md import in the global CLAUDE.md.\n\nAn agent could create the override marker with a shell command. A wrong WORKFLOW_AXA_GATE_CACHE value switches the pause off.\n\nFour defects remain and need a small plan for revision r2.\n\nDefect 1: one sentence in SETUP.md and in the CHANGELOG says a typed bare duplicate name is stopped. That is untrue.\n\nDefect 2: a read-only temp folder keeps the pause, against ticket T2.\n\nDefect 3: no test asserts that the existing hook registrations are unchanged.\n\nDefect 4: on resume the start message says \"paused\" while an override is active."
+      },
+      {
+        "id": "testing",
+        "title": "How it is tested",
+        "source": "S2",
+        "locator": "TODO.md, How to verify and Bigger checks",
+        "text": "Each behavior got a test first. The tests run the script as a process with a temporary home folder.\n\nThe full suite ran before the first change and after the last one. Final result: 1020 tests, 4 failures, 13 skipped. The failures are the same four as before this work."
+      },
+      {
+        "id": "delivery",
+        "title": "Delivery",
+        "text": "You asked for a check that finds a second copy of a workflow-axa skill and asks you to delete it. All three tickets are built. Tickets T1 and T2 are verified. Ticket T3 waits for your check.\n\nTests show four things working. The session-start message names the exact paths. The three change skills are paused. The exact words lift the pause. A differing rules copy gives a warning.\n\nChanged files: hooks/duplicate_skills.py and tests/test_duplicate_skills_hook.py are new. hooks/hooks.json, tools/validate.py, skills/workflow-doctor/SKILL.md, skills/workflow/SETUP.md and CHANGELOG.md gained the guard. hooks/phase_gate.py is unchanged. Nothing is committed.\n\nThe delivery is partial for two reasons. Nothing was checked in a live Claude Code session, and four small defects remain. They are listed under Cross-cutting concerns.\n\nVersion stays 2.8.0-rc.35 by your decision D10. The four test failures that existed before this work remain. They belong to the staged rc.35 work.",
+        "source": "S1",
+        "locator": "PLAN.md, Outcome"
+      }
+    ],
+    "tickets": [
+      {
+        "task": "T1",
+        "source": "S2",
+        "locator": "TODO.md, T1",
+        "specification": "Add hooks/duplicate_skills.py. At session start it looks in the personal skills folder and in the project's .claude/skills for a name the plugin registers. It also compares the imported rules copy with the plugin's rules.",
+        "expected": "A duplicate is reported with its full path and the request to delete it. Equal bytes are still reported. No duplicate gives no output. A broken link is not reported. The script changes no file."
+      },
+      {
+        "task": "T2",
+        "source": "S2",
+        "locator": "TODO.md, T2",
+        "specification": "Extend the same script. When a change skill is loaded and a duplicate exists, it refuses. A user message with \"continue with duplicates\" stores an override for that session.",
+        "expected": "workflow-clarify, workflow-specify and workflow-execute are refused with the paths and both ways out. task-status and workflow-doctor load. After deletion the next call is allowed without a restart. The override holds for one session only."
+      },
+      {
+        "task": "T3",
+        "source": "S2",
+        "locator": "TODO.md, T3",
+        "specification": "Register the script in hooks/hooks.json for session start, skill loading and user messages. Add it to the package check, describe it in workflow-doctor and SETUP.md, and set version 2.8.0-rc.36.",
+        "expected": "The package check and the full test suite give the baseline result plus the new tests. Existing hook registrations are unchanged."
+      }
+    ],
+    "checks": [
+      {
+        "id": "C1",
+        "title": "Hook tests of the guard",
+        "kind": "test",
+        "status": "passed",
+        "expected": "All tests of tests/test_duplicate_skills_hook.py pass.",
+        "actual": "55 tests, all pass.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S3",
+        "locator": "FINDINGS.md, V8 and the final run",
+        "command": "python -X utf8 -m unittest discover -s tests -p \"test_duplicate_skills_hook.py\""
+      },
+      {
+        "id": "C2",
+        "title": "Full suite against the baseline",
+        "kind": "test",
+        "status": "passed",
+        "expected": "The same result as the baseline, plus the new tests.",
+        "actual": "1020 tests, 4 failures, 13 skipped. Baseline: 956 tests, 4 failures. The four failures have the same names.",
+        "limits": "The suite also holds 9 tests of your separate report patch.",
+        "source": "S3",
+        "locator": "FINDINGS.md, V2, V10 and the final run",
+        "command": "python -X utf8 -m unittest discover -s tests -p \"test_*.py\""
+      },
+      {
+        "id": "C3",
+        "title": "Package check",
+        "kind": "test",
+        "status": "passed",
+        "expected": "tools/validate.py passes.",
+        "actual": "PASS.",
+        "limits": "It checks structure, not behavior.",
+        "source": "S3",
+        "locator": "FINDINGS.md, V9",
+        "command": "python -X utf8 tools/validate.py"
+      },
+      {
+        "id": "C4",
+        "title": "Equal bytes are still reported",
+        "kind": "test",
+        "status": "passed",
+        "expected": "A copy with the same bytes as the plugin skill is named.",
+        "actual": "test_equal_bytes_still_count passed.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C5",
+        "title": "A broken link is not reported",
+        "kind": "test",
+        "status": "passed",
+        "expected": "A link whose target is gone gives no output.",
+        "actual": "test_broken_link_is_not_reported passed.",
+        "limits": "Run with a Windows junction, not a true symbolic link.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C6",
+        "title": "The refusal names both ways out",
+        "kind": "test",
+        "status": "passed",
+        "expected": "The refusal lists the paths, the request to delete and the override words.",
+        "actual": "test_change_skill_is_denied_with_the_paths_and_both_ways_out passed.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C7",
+        "title": "After deletion the next call is allowed without a restart",
+        "kind": "test",
+        "status": "passed",
+        "expected": "The second call loads after the copy is deleted.",
+        "actual": "test_deleting_the_duplicate_allows_the_next_call_without_a_restart passed.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C8",
+        "title": "Existing hook registrations are unchanged",
+        "kind": "test",
+        "status": "passed",
+        "expected": "The wiring tests of the four existing hooks pass, and the gate stays the first tool-call entry.",
+        "actual": "The five hooks_json wiring tests passed. They show that each hook is present and that the gate is first. That nothing else changed rests on the diff. It removes one line only, the description, which gained text.",
+        "limits": "Checked in the file, not on a host.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11",
+        "command": "python -X utf8 -m unittest discover -s tests -p \"test_*hook*.py\" -k hooks_json"
+      },
+      {
+        "id": "C9",
+        "title": "workflow-specify and workflow-execute are refused",
+        "kind": "test",
+        "status": "passed",
+        "expected": "Both are refused, with and without the plugin prefix.",
+        "actual": "test_clarify_specify_and_execute_are_denied_with_and_without_a_prefix passed.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C10",
+        "title": "workflow-doctor still loads",
+        "kind": "test",
+        "status": "passed",
+        "expected": "workflow-doctor, task-status, the router and resume-task load with a duplicate present.",
+        "actual": "test_read_only_skills_other_plugins_and_other_tools_are_allowed_with_a_duplicate passed.",
+        "limits": "Run with test events on Windows. Not seen in a live Claude Code session.",
+        "source": "S4",
+        "locator": "DECISIONS.md, D11"
+      },
+      {
+        "id": "C11",
+        "title": "Independent review of every ticket and of the whole feature",
+        "kind": "review",
+        "status": "passed",
+        "expected": "Standards and Spec findings are closed or recorded as limits.",
+        "actual": "Seven review rounds by one reviewer that did not build the work. Standards: all findings closed. Spec: all findings closed, two settled by your decisions D9 and D13, one left as a named limit.",
+        "limits": "The reviewer could not check a live host either.",
+        "source": "S3",
+        "locator": "FINDINGS.md, reviews of T1, T2 and the whole feature"
+      }
+    ],
+    "acceptance_results": [
+      {
+        "acceptance": "A1",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C4",
+          "C5"
+        ],
+        "note": "The session-start message names the exact path and asks for deletion. No duplicate gives no output.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      },
+      {
+        "acceptance": "A2",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C6",
+          "C9",
+          "C10"
+        ],
+        "note": "The three change skills are refused with the message. Read-only skills load.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      },
+      {
+        "acceptance": "A3",
+        "status": "verified",
+        "checks": [
+          "C1",
+          "C7"
+        ],
+        "note": "The exact words lift the pause for that session only. Other text does not. Changed by your decisions D9 and D13: exact words, and a 12 hour limit.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      },
+      {
+        "acceptance": "A4",
+        "status": "partial",
+        "checks": [
+          "C1"
+        ],
+        "note": "One test compares the test home before and after a full set of runs, and it is byte-identical. The agreement says after every test. That is not checked for each test.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      },
+      {
+        "acceptance": "A5",
+        "status": "verified",
+        "checks": [
+          "C1"
+        ],
+        "note": "A changed byte in the rules copy gives a warning and no pause.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      },
+      {
+        "acceptance": "A6",
+        "status": "verified",
+        "checks": [
+          "C2",
+          "C3",
+          "C8"
+        ],
+        "note": "The suite shows the same four failures as the baseline and no new one.",
+        "source": "S3",
+        "locator": "FINDINGS.md, Check results and Reconciliation"
+      }
+    ]
+  },
+  "report_kind": "task-overview",
+  "checkpoint": {
+    "as_of": "2026-11-11",
+    "source": "S1",
+    "locator": "Current checkpoint",
+    "approval": {
+      "status": "approved",
+      "revision": "r1",
+      "summary": "You approved plan r1 on 2026-11-11 with \"approve\". You confirmed the changes of agreement revision r2 with \"sure fix it\"."
+    },
+    "implementation": {
+      "status": "implemented",
+      "summary": "All three tickets are built: the hook script, its registration, the docs and the changelog entry."
+    },
+    "verification": {
+      "status": "limited",
+      "summary": "All automated checks passed. An independent reviewer closed its findings, and a separate reconciliation found four remaining defects. No check ran in a live Claude Code session. Your own check in a fresh session is still open."
+    },
+    "next_action": "You check the guard in a fresh Claude Code session. Nothing is committed."
+  }
+}

@@ -6,15 +6,15 @@ Owner: “Add notification settings.” The agent searches the kit and the exist
 
 ## Explicit choice
 
-Owner: “Use Settings/Form and Buttons/Primary, default size.” Inspect these exact sources and allowed composition. Record the selection once. Wire supported data/events and slots. Do not add a cosmetic div, spacing classes, a colour prop or an alternative button.
+Owner: “Use Settings/Form and Buttons/Primary, default size.” Inspect these exact sources and allowed composition. Record the selection once. Wire supported data/events and slots. Do not add a cosmetic div, spacing classes, a color prop or an alternative button.
 
-## Existing behaviour repair
+## Existing behavior repair
 
-Fix a selected dialog's save handler and tests without changing its DOM/style. A missing accessible name or focus behaviour that needs markup/style changes is a kit capability issue to report, not authority to author a substitute. No full kit setup is needed for an unchanged interface's logic fix.
+Fix a selected dialog's save handler and tests without changing its DOM/style. A missing accessible name or focus behavior that needs markup/style changes is a kit capability issue to report, not authority to author a substitute. No full kit setup is needed for an unchanged interface's logic fix.
 
 ## Component changed or deleted
 
-Compare selected sources and actual catalogue. A changed appearance becomes needs-review, not approved after refreshing a hash. A deleted story/component is missing, not quietly replaced. Keep historical reviews and inspect consumers before any removal. Removing one usage from a screen does not delete the shared component.
+Compare selected sources and actual catalog. A changed appearance becomes needs-review, not approved after refreshing a hash. A deleted story/component is missing, not quietly replaced. Keep historical reviews and inspect consumers before any removal. Removing one usage from a screen does not delete the shared component.
 
 ## Report
 

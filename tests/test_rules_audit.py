@@ -36,11 +36,11 @@ class InstallationAuditTests(unittest.TestCase):
  def test_mixed_install_detected_even_with_current_label(self):
   with tempfile.TemporaryDirectory() as d:
    new=Path(d)/'skills';shutil.copytree(ROOT/'skills',new,ignore=shutil.ignore_patterns('__pycache__'))
-   (new/'rule-maker/rules/design.md').write_text('older rules')
+   (new/'rule-maker/rules/DESIGN.md').write_text('older rules')
    (new/'ui-design/KIT.md').unlink()
    r=check.inspect([new]);row=r['candidates'][0]
    self.assertEqual(row['state'],'DRIFT')
-   self.assertIn('rule-maker/rules/design.md',row['changed'])
+   self.assertIn('rule-maker/rules/DESIGN.md',row['changed'])
    self.assertIn('ui-design/KIT.md',row['missing'])
  def test_symlink_candidate_rejected(self):
   with tempfile.TemporaryDirectory() as d:
@@ -74,17 +74,17 @@ class NewFrameworkTests(unittest.TestCase):
   self.put('capacitor.config.ts','throw new Error("must never run")')
   r=versions.inspect_versions(self.root,['src']);c=r['contexts'][0]
   modules={p['module'] for p in c['packages']}
-  self.assertEqual(modules,{'angular.md','ionic.md','capacitor.md'})
+  self.assertEqual(modules,{'ANGULAR.md','IONIC.md','CAPACITOR.md'})
   self.assertFalse(c['configuration_evaluated']);self.assertFalse(r['compatibility_verified'])
   self.assertIn('capacitor.config.ts',r['sources'])
  def test_react_capacitor_does_not_require_ionic(self):
   self.put('package.json',{'dependencies':{'react':'18.3.1','@capacitor/core':'8.0.0'}})
   c=versions.inspect_versions(self.root,['.'])['contexts'][0]
-  self.assertEqual({p['module'] for p in c['packages']},{'react.md','capacitor.md'})
+  self.assertEqual({p['module'] for p in c['packages']},{'REACT.md','CAPACITOR.md'})
  def test_ionic_vue_does_not_claim_angular(self):
   self.put('package.json',{'dependencies':{'@ionic/vue':'8.0.0'}})
   c=versions.inspect_versions(self.root,['.'])['contexts'][0]
-  self.assertEqual(c['packages'][0]['module'],'ionic.md')
+  self.assertEqual(c['packages'][0]['module'],'IONIC.md')
  def test_separate_angular_versions_remain_separate(self):
   for name,v in [('old','17.3.0'),('new','20.3.0')]:
    self.put(name+'/package.json',{'dependencies':{'@angular/core':v}})
@@ -100,12 +100,12 @@ class NewFrameworkTests(unittest.TestCase):
  def test_shared_modules_are_routed_and_fingerprinted(self):
   data=json.loads((ROOT/'skills/rule-maker/rules/version.json').read_text())
   start=(ROOT/'skills/rule-maker/rules/START.md').read_text()
-  for name in ('angular.md','ionic.md','capacitor.md','POLICY.md','operations.md'):
+  for name in ('ANGULAR.md','IONIC.md','CAPACITOR.md','POLICY.md','OPERATIONS.md'):
    self.assertIn(name,start);self.assertIn(name,data['sha256'])
  def test_react_compiler_correction_is_not_upgrade_authority(self):
-  text=(ROOT/'skills/rule-maker/rules/react.md').read_text()
+  text=(ROOT/'skills/rule-maker/rules/REACT.md').read_text()
   self.assertIn('not inherently React-19-only',text)
-  self.assertIn('does not authorise',text)
+  self.assertIn('does not authorize',text)
  def test_full_audit_is_not_task_readiness(self):
   text=(ROOT/'skills/rule-maker/AUDIT.md').read_text()
   for term in ('memory','coverage','Installed','readiness'):
@@ -114,7 +114,7 @@ class NewFrameworkTests(unittest.TestCase):
  def test_shared_policy_preserves_intent_and_real_proof(self):
   text=(ROOT/'skills/rule-maker/rules/POLICY.md').read_text()
   self.assertIn('current valid policy',text);self.assertIn('silence',text)
-  ops=(ROOT/'skills/rule-maker/rules/operations.md').read_text()
+  ops=(ROOT/'skills/rule-maker/rules/OPERATIONS.md').read_text()
   self.assertIn('A rule that requires GREEN is not evidence',ops)
   self.assertIn('production mutation',ops);self.assertIn('quiet-host',ops)
  def test_kit_templates_do_not_invent_approved_style(self):

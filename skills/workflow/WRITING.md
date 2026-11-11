@@ -47,10 +47,10 @@ Write chat messages and reports with `../simple-english/SKILL.md` (Plain mode an
 
 ## Cold-reader check
 
-Before presenting an approval report, a substantial plan or a final report, reread it as someone who missed the conversation. Can they explain the goal, what changes, what stays the same, the decision asked of them and how completion is checked? Can a developer find the evidence? Check each claim against it: "the full suite passes" names any failures it already had; "every finding is fixed" counts the open ones; "what works now" lists only what a check showed.
+Before presenting a plan report, a substantial plan or a final report, reread it as someone who missed the conversation. Can they explain the goal, what changes, what stays the same, the decision asked of them and how completion is checked? Can a developer find the evidence? Check each claim against it: "the full suite passes" names any failures it already had; "every finding is fixed" counts the open ones; "what works now" lists only what a check showed.
 
 When you can, give an independent reviewer only the document and its audience, ask them to restate those five things, and compare part by part with the table above. Each mismatch is a writing defect. Without a reviewer, write the restatement yourself before rereading the records, and say it was a self-check.
 
 ## Say which state
 
-Use "before this change" for the old code, "agreed" for gate one, "approved plan" for gate two, and a dated checkpoint for progress. Report agreement, approval, implementation and verification separately: "R3 is agreed and approved, coded, and still needs a phone check" beats "R3 done."
+Use "before this change" for the old code, "agreed" for the agreement, "approved plan" for implementation approval, and a dated checkpoint for progress. Report agreement, approval, implementation and verification separately: "R3 is agreed and approved, coded, and still needs a phone check" beats "R3 done."

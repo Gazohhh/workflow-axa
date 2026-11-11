@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 import sys
 
-UI = ('ui-design/SKILL.md', 'rule-maker/rules/design.md', 'ui-design/VERIFY.md', 'codebase-map/UI-FLOW.md')
+UI = ('ui-design/SKILL.md', 'rule-maker/rules/DESIGN.md', 'ui-design/VERIFY.md', 'codebase-map/UI-FLOW.md')
 TDD = 'tdd/SKILL.md'
 CODE_REVIEW = 'code-review/SKILL.md'
 READS = {

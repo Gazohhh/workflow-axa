@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
+import importlib.util
 import json
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -22,8 +25,8 @@ REQUIRED = (
     "skills/codebase-map/assets/ui-review.css", "skills/codebase-map/assets/ui-review.js",
     "skills/rule-maker/AUDIT.md", "skills/rule-maker/INSTALLATION.md",
     "skills/rule-maker/scripts/audit_installation.py", "skills/rule-maker/rules/POLICY.md",
-    "skills/rule-maker/rules/operations.md", "skills/rule-maker/rules/angular.md",
-    "skills/rule-maker/rules/ionic.md", "skills/rule-maker/rules/capacitor.md",
+    "skills/rule-maker/rules/OPERATIONS.md", "skills/rule-maker/rules/ANGULAR.md",
+    "skills/rule-maker/rules/IONIC.md", "skills/rule-maker/rules/CAPACITOR.md",
     "skills/ui-design/KIT.md", "skills/ui-design/CATALOGUE.md",
     "skills/ui-design/templates/KIT.md", "skills/ui-design/templates/DESIGN.md", "skills/ui-design/templates/design-kit.json",
     "skills/ui-design/scripts/check_design_kit.py", "tests/test_design_kit.py", "tests/test_rules_audit.py",
@@ -55,10 +58,10 @@ REQUIRED = (
     "skills/rule-maker/scripts/activate_rules.py", "skills/rule-maker/scripts/readiness.py",
     "skills/workflow/RULES.md", "skills/rule-maker/scripts/version_facts.py",
     "skills/rule-maker/rules/ENGINEERING.md", "skills/rule-maker/rules/VERSIONS.md",
-    "skills/rule-maker/rules/php.md", "skills/rule-maker/rules/laravel.md", "skills/rule-maker/rules/rust.md",
-    "skills/rule-maker/rules/data-contracts.md", "skills/rule-maker/rules/lifetimes.md",
-    "skills/rule-maker/rules/reliability.md", "skills/rule-maker/rules/testing.md",
-    "skills/rule-maker/rules/security.md", "skills/rule-maker/rules/performance.md", "skills/rule-maker/rules/compatibility.md",
+    "skills/rule-maker/rules/PHP.md", "skills/rule-maker/rules/LARAVEL.md", "skills/rule-maker/rules/RUST.md",
+    "skills/rule-maker/rules/data-contracts.md", "skills/rule-maker/rules/LIFETIMES.md",
+    "skills/rule-maker/rules/RELIABILITY.md", "skills/rule-maker/rules/TESTING.md",
+    "skills/rule-maker/rules/SECURITY.md", "skills/rule-maker/rules/PERFORMANCE.md", "skills/rule-maker/rules/COMPATIBILITY.md",
     "tests/test_version_facts.py", "tests/test_engineering_rules.py", "tests/behavioral/engineering-rules.json",
     "skills/plan-review/SKILL.md", "skills/plan-review/agents/openai.yaml",
     "skills/ui-design/SKILL.md", "skills/ui-design/agents/openai.yaml",
@@ -66,10 +69,49 @@ REQUIRED = (
     "skills/ui-design/scripts/review_ui_diff.py", "tests/test_ui_design.py", "tests/behavioral/ui-design.json",
 )
 REQUIRED += tuple(f"skills/{name}/{file}" for name in REGISTERED_NAMES for file in ("SKILL.md", "agents/openai.yaml"))
-REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "tools/vendor_specialists.py", "tests/test_vendored_specialists.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py")
+REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "tools/vendor_specialists.py", "tests/test_vendored_specialists.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py",
+             "hooks/duplicate_skills.py", "tests/test_duplicate_skills_hook.py")
 REQUIRED += ("skills/codebase-map/assets/report-style.css", "skills/codebase-map/assets/report-style-compat.css", "skills/codebase-map/assets/report-extra.js", "tests/test_simple_english.py", "skills/simple-english/LICENSE")
-REQUIRED += ("skills/workflow/scripts/ticket_records.py", "skills/workflow/examples/readable-todo.md", "RC3-CASES.md", "tests/test_rc3_reliability.py")
+REQUIRED += ("skills/workflow/scripts/ticket_records.py", "skills/workflow/examples/readable-todo.md", "docs/archive/RC3-CASES.md", "tests/test_rc3_reliability.py")
 REQUIRED += ("skills/codebase-map/TASK-REPORT.md", "skills/codebase-map/scripts/task_report.py", "skills/codebase-map/assets/task-report.css", "tests/test_task_report.py")
+REQUIRED += ("CONTEXT.md", "tests/test_validate_budgets.py")
+
+# Word ceilings for the reference .md files under skills/ (path below skills/), excluding SKILL.md files and the
+# upstream copies in vendored skill folders. Each ceiling is the file's final size after the 2026-11-11 wording
+# work plus 5 percent, rounded up to the next ten. Where that came out above the earlier headroom ceiling, the
+# earlier ceiling stays (rule-maker/rules/DESIGN.md, workflow/SETUP.md, workflow/VISUAL-REVIEW.md).
+REFERENCE_BUDGETS = {
+    'codebase-map/DIAGRAM-DESIGN.md': 50, 'codebase-map/examples/FINDINGS.md': 90, 'codebase-map/examples/PLAN.md': 150,
+    'codebase-map/examples/README.md': 230, 'codebase-map/examples/STATUS.md': 270, 'codebase-map/examples/TODO.md': 80,
+    'codebase-map/examples/ui-review/README.md': 320, 'codebase-map/examples/ui-review/UI-FINDINGS.md': 100,
+    'codebase-map/examples/ui-review/UI-PLAN.md': 210, 'codebase-map/examples/ui-review/UI-TODO.md': 90,
+    'codebase-map/FLOWCHART-DESIGN.md': 1460, 'codebase-map/REPORT.md': 2440, 'codebase-map/TASK-REPORT.md': 2160,
+    # AUDIT.md (next line) holds rule additions from the 2026-11-11 V1 review: 929 words, ceiling about 5 percent above.
+    'codebase-map/UI-FLOW.md': 2790, 'rule-maker/AUDIT.md': 970, 'rule-maker/CHECKER.md': 750,
+    # DOCS.md (next line) holds rule additions from the 2026-11-11 V1 review: 1,272 words plus 5 percent.
+    'rule-maker/DOCS.md': 1340, 'rule-maker/INSTALLATION.md': 630, 'rule-maker/rules/ANGULAR.md': 340,
+    # CHANGES.md (next line) is the rules history file and grows each release: 972 words at 1.8.7 plus 5 percent.
+    'rule-maker/rules/CAPACITOR.md': 340, 'rule-maker/rules/CHANGES.md': 1020, 'rule-maker/rules/COMPATIBILITY.md': 330,
+    'rule-maker/rules/CORE.md': 690, 'rule-maker/rules/data-contracts.md': 360, 'rule-maker/rules/DESIGN.md': 1130,
+    'rule-maker/rules/ENGINEERING.md': 490, 'rule-maker/rules/IONIC.md': 310, 'rule-maker/rules/LARAVEL.md': 420,
+    'rule-maker/rules/LIFETIMES.md': 340, 'rule-maker/rules/OPERATIONS.md': 420, 'rule-maker/rules/PERFORMANCE.md': 350,
+    'rule-maker/rules/PHP.md': 340, 'rule-maker/rules/PIXIJS.md': 130, 'rule-maker/rules/POLICY.md': 450,
+    'rule-maker/rules/REACT.md': 260, 'rule-maker/rules/READINESS.md': 1600, 'rule-maker/rules/RELIABILITY.md': 330,
+    'rule-maker/rules/RUST.md': 340, 'rule-maker/rules/SECURITY.md': 350, 'rule-maker/rules/SOURCES.md': 730,
+    'rule-maker/rules/START.md': 600, 'rule-maker/rules/TESTING.md': 390, 'rule-maker/rules/THREEJS.md': 130,
+    'rule-maker/rules/TYPESCRIPT.md': 230, 'rule-maker/rules/UNITY.md': 210, 'rule-maker/rules/VERSIONS.md': 550,
+    'rule-maker/rules/VITE.md': 140, 'rule-maker/SETUP.md': 760, 'ui-design/CATALOGUE.md': 540,
+    'ui-design/CONTRACT.md': 550, 'ui-design/EXAMPLES.md': 450, 'ui-design/KIT.md': 1040, 'ui-design/LIVE-KIT.md': 3010,
+    'ui-design/templates/DESIGN.md': 730, 'ui-design/templates/KIT.md': 260, 'ui-design/VERIFY.md': 1050,
+    'workflow/ARTIFACTS.md': 930, 'workflow/AUDIT.md': 1710, 'workflow/CHATGPT-PROMPTS.md': 230,
+    'workflow/examples/readable-todo.md': 590, 'workflow/GROUNDING.md': 500, 'workflow/OPTIONAL-HELPERS.md': 390,
+    'workflow/PDF-DELIVERABLE.md': 1040, 'workflow/RULES.md': 220, 'workflow/SETUP.md': 2310,
+    'workflow/SPECIALISTS.md': 820, 'workflow/TASK-FOLDER.md': 3290, 'workflow/templates/PROJECT-ROUTING.md': 820,
+    'workflow/VISUAL-REVIEW.md': 2120, 'workflow/WRITING.md': 690,
+}
+SYNONYMS_FAIL = True  # A rejected CONTEXT.md synonym in skill prose fails validation.
+REPEAT_WORDS = 25
+ADAPTATION_HEADING = "## workflow-axa adaptation"
 
 
 _UNITS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
@@ -133,6 +175,142 @@ def doc_fact_errors(root: Path, version: str, rules_version: str, skills: int, v
             if match[1] != rules_version:
                 errors.append(f"{name} states rules {match[1]} ('{match[0]}'); version.json says {rules_version}.")
     return errors
+
+
+@functools.cache
+def _docs_check():
+    """skills/rule-maker/scripts/docs_check.py, loaded by path: its repeated-paragraph function is reused here."""
+    name = "workflow_axa_docs_check"
+    spec = importlib.util.spec_from_file_location(name, ROOT / "skills/rule-maker/scripts/docs_check.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module  # dataclasses look their module up while the file runs
+    spec.loader.exec_module(module)
+    return module
+
+
+def _vendored(root: Path) -> set[str]:
+    # Each vendored skill folder carries its upstream LICENSE (VENDORED-SKILLS.md); our own folders do not.
+    return {name for name in REGISTERED_NAMES if (root / f"skills/{name}/LICENSE").is_file()}
+
+
+def _skill_markdown(root: Path) -> list[tuple[str, Path]]:
+    """(path below skills/, file) of each .md under skills/ except the upstream reference copies of vendored skills.
+    A vendored SKILL.md stays: its adaptation section is ours."""
+    vendored, found = _vendored(root), []
+    for path in sorted((root / "skills").rglob("*.md")):
+        relative = path.relative_to(root / "skills").as_posix()
+        if any(part in IGNORED for part in path.relative_to(root).parts) or (
+                path.name != "SKILL.md" and relative.split("/", 1)[0] in vendored):
+            continue
+        found.append((relative, path))
+    return found
+
+
+def reference_files(root: Path) -> dict[str, int]:
+    """Word count of each reference file: a skill .md that is not SKILL.md and not vendored upstream text."""
+    return {relative: len(path.read_text(encoding="utf-8").split())
+            for relative, path in _skill_markdown(root) if path.name != "SKILL.md"}
+
+
+def reference_budget_errors(root: Path) -> list[str]:
+    errors, files = [], reference_files(root)
+    for relative, words in files.items():
+        budget = REFERENCE_BUDGETS.get(relative)
+        if budget is None:
+            errors.append(f"skills/{relative}: no word budget; add one to REFERENCE_BUDGETS in tools/validate.py.")
+        elif words > budget:
+            errors.append(f"skills/{relative}: {words} words exceed its {budget}-word budget.")
+    for relative in sorted(set(REFERENCE_BUDGETS) - set(files)):
+        errors.append(f"skills/{relative}: has a word budget in tools/validate.py but no file.")
+    return errors
+
+
+def repeat_notes(root: Path) -> list[str]:
+    """Paragraphs of REPEAT_WORDS or more words that appear in two or more skill .md files. Each one fails validation."""
+    files = dict((path, relative) for relative, path in _skill_markdown(root))
+    notes = []
+    for repeat in _docs_check().repeated_paragraphs(list(files), REPEAT_WORDS):
+        places = ", ".join(f"skills/{files[path]}:{line}" for path, line in repeat.places)
+        words = repeat.text.split()
+        notes.append(f"repeated paragraph ({len(words)} words) in {places}: \"{' '.join(words[:8])} ...\"")
+    return notes
+
+
+@dataclass(frozen=True)
+class Vocabulary:
+    terms: list[str]  # case-folded
+    avoid: dict[str, str]  # case-folded rejected synonym -> its term
+    identifiers: list[str]  # exact forms a hook, script, test or record depends on
+    owners: list[tuple[str, str]]  # (rule, owner file)
+
+
+def read_vocabulary(root: Path) -> Vocabulary:
+    """Parse CONTEXT.md: `**Term**:` lines with an `_Avoid_: a, b` line under `## Language`, the backticked list
+    items under `## Identifiers that keep their form`, and the two-column table under `## Rule owners`."""
+    terms, avoid, identifiers, owners = [], {}, [], []
+    section = ""
+    for number, line in enumerate((root / "CONTEXT.md").read_text(encoding="utf-8").splitlines(), 1):
+        if line.startswith("## "):
+            section = line[3:].strip()
+        elif section == "Language" and (term := re.fullmatch(r"\*\*(.+?)\*\*:\s*", line)):
+            terms.append(term[1].casefold())
+        elif section == "Language" and (rejected := re.fullmatch(r"_Avoid_:\s*(.+)", line)):
+            if not terms:
+                raise ValueError(f"CONTEXT.md:{number}: an _Avoid_ line needs a **Term**: line above it")
+            for word in rejected[1].split(","):
+                if word.strip():
+                    avoid[word.strip().casefold()] = terms[-1]
+        elif section == "Identifiers that keep their form" and (item := re.match(r"- `([^`]+)`", line)):
+            identifiers.append(item[1])
+        elif section == "Rule owners" and line.startswith("|"):
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if len(cells) == 2 and re.fullmatch(r"`[^`]+`", cells[1]):
+                owners.append((cells[0], cells[1].strip("`")))
+    return Vocabulary(terms, avoid, identifiers, owners)
+
+
+def vocabulary_errors(root: Path) -> list[str]:
+    vocabulary, errors = read_vocabulary(root), []
+    if not vocabulary.terms or not vocabulary.owners:
+        errors.append("CONTEXT.md needs its ## Language terms and its ## Rule owners table.")
+    for word in sorted(set(vocabulary.avoid) & {identifier.casefold() for identifier in vocabulary.identifiers}):
+        errors.append(f"CONTEXT.md lists '{word}' both as a rejected synonym and as an identifier.")
+    for rule, owner in vocabulary.owners:
+        if not (root / owner).is_file():
+            errors.append(f"CONTEXT.md names a missing owner file for '{rule}': {owner}")
+    return errors
+
+
+def synonym_findings(root: Path) -> list[str]:
+    """Each CONTEXT.md rejected synonym in skill .md prose: outside code, HTML comments, vendored upstream text and
+    the identifiers that keep their form."""
+    vocabulary, docs_check, findings = read_vocabulary(root), _docs_check(), []
+    patterns = {word: re.compile(r"(?<![\w-])" + r"\s+".join(map(re.escape, word.split())) + r"(?![\w-])", re.I)
+                for word in vocabulary.avoid}
+    masked = [re.compile(re.escape(identifier), re.I) for identifier in vocabulary.identifiers
+              if any(pattern.search(identifier) for pattern in patterns.values())]
+    vendored = _vendored(root)
+    for relative, path in _skill_markdown(root):
+        lines = docs_check.prose_lines(path.read_text(encoding="utf-8-sig"))
+        start = 0
+        if relative.split("/", 1)[0] in vendored:  # only the adaptation section of a vendored SKILL.md is ours
+            start = next((i for i, line in enumerate(lines) if line.strip() == ADAPTATION_HEADING), len(lines))
+        for number, line in enumerate(lines[start:], start + 1):
+            for identifier in masked:
+                line = identifier.sub(lambda found: " " * len(found[0]), line)
+            for word, pattern in patterns.items():
+                for _ in pattern.finditer(line):
+                    findings.append(f"synonym '{word}' (use '{vocabulary.avoid[word]}') in skills/{relative}:{number}")
+    return findings
+
+
+def package_notes(root: Path) -> list[str]:
+    """Advisory findings printed as NOTE lines; they never fail validation."""
+    root = root.resolve()
+    notes: list[str] = []
+    if not SYNONYMS_FAIL and (root / "CONTEXT.md").is_file():
+        notes += synonym_findings(root)
+    return notes
 
 
 def validate_package(root: Path) -> list[str]:
@@ -253,6 +431,15 @@ def validate_package(root: Path) -> list[str]:
             elif any(path.is_relative_to(sr) and not resolved.is_relative_to(sr) for sr in skill_roots):
                 errors.append(f"Skill reference escapes the separately installable skill folder: {target}")
 
+    errors += reference_budget_errors(root)
+    errors += repeat_notes(root)  # A8: a paragraph repeated across skill files fails validation
+    try:
+        errors += vocabulary_errors(root)
+        if SYNONYMS_FAIL:
+            errors += synonym_findings(root)
+    except (OSError, ValueError) as exc:
+        errors.append(f"CONTEXT.md error: {exc}")
+
     try:
         rules_version = json.loads((root / "skills/rule-maker/rules/version.json").read_text(encoding="utf-8")).get(
             "rules_version", "")
@@ -274,13 +461,21 @@ def main() -> int:
     except (OSError, UnicodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    try:
+        notes = package_notes(args.root)
+    except (OSError, UnicodeError, ValueError) as exc:
+        notes = [f"advisory reports not produced: {exc}"]
     if errors:
         for error in errors:
             print(f"FAIL: {error}", file=sys.stderr)
+        for note in notes:
+            print(f"NOTE: {note}")
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
     print(f"PASS: package structure, manifest consistency, minimal metadata, twenty-one local skills, relative links, core budget ({words} workflow words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
+    for note in notes:
+        print(f"NOTE: {note}")
     return 0
 
 

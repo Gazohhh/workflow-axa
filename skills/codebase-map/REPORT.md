@@ -16,11 +16,11 @@ python -X utf8 skills/codebase-map/scripts/render_report.py --root skills/codeba
 
 For real work substitute the actual source root, task JSON and authorized artifact path. Quote paths with spaces. CLI paths resolve from the current directory; source paths inside JSON are root-relative POSIX paths. Input must be inside root; output parents must already exist, output must be .html/.htm, and existing files are never overwritten. Source references outside root, symlink escapes and oversized inputs are rejected. Do not claim a listed source path was inspected unless it actually was.
 
-`--validate-input` needs `--root` and `--input`. It uses existing schema, source, geometry, size and wording checks without creating files, directories or Python helper caches, and without opening a browser. It cannot combine with `--output`, `--open`, `--check` or `--replace-unpresented`. Exit 0 means valid, 1 means blocking wording, and 2 means invalid input or arguments. Advisory notes remain successful. This covers renderer-controlled writes, not unrelated host instrumentation, and proves neither meaning nor approval.
+`--validate-input` needs `--root` and `--input`. It uses existing schema, source, geometry, size and wording checks without creating files, directories or Python helper caches, and without opening a browser. It cannot combine with `--output`, `--open`, `--check` or `--replace-unpresented`. Exit 0 means valid, 1 means blocking wording, and 2 means invalid input or arguments. Advisory notes remain successful.
 
-Ordinary render/check behavior is unchanged. Exit 0: rendered/check matched; 1: freshness mismatch/missing sources; 2: invalid input or filesystem error. `--open` requests browser launch, not proof of display. An opener failure leaves the artifact intact and grants no implementation permission.
+For render and check, exit 0: rendered/check matched; 1: freshness mismatch/missing sources; 2: invalid input or filesystem error. `--open` requests browser launch, not proof of display. An opener failure leaves the artifact intact and grants no implementation permission.
 
-Default zoom is 100% native size inside a locally scrollable panel. Native radio inputs select view/100/125/150/Fit, including without JavaScript. Fit may reduce text and is optional, never the mandatory reading size. Progressive script adds mouse drag, centered entry on narrow screens, focused-canvas +/−/F/0 and evidence-detail opening. A native “Go to start” link works without JavaScript. Keyboard arrows and touch use native scrolling. No executable application controls.
+Default zoom is 100% native size inside a locally scrollable panel. A task report whose views are all at most 880px wide has no zoom inputs and no scroll hint (FLOWCHART-DESIGN.md, "Diagrams in a task report"). Native radio inputs select view/100/125/150/Fit, including without JavaScript. Fit may reduce text and is optional, never the mandatory reading size. Progressive script adds mouse drag, centered entry on narrow screens, focused-canvas +/−/F/0 and evidence-detail opening. A native “Go to start” link works without JavaScript. Keyboard arrows and touch use native scrolling. No executable application controls.
 
 ## Schema 2
 
@@ -42,7 +42,7 @@ Default zoom is 100% native size inside a locally scrollable panel. Native radio
 | `comparison` | Array of `label`, `current`, `proposed`, requirement/evidence/task ID arrays. Required for compare. This aligned summary supports, never replaces, the flowchart. |
 | `default_view` | Graph ID. Compare opens a **proposed flow**, not a build checklist, table or settings hierarchy. |
 | `graphs` | Up to six individually scoped views. Compare includes current and proposed kinds; multiple graphs of a kind are allowed. |
-| `approval` | Approved state only: matching revision, real record reference and response. Structure validation is not authentication. |
+| `approval` | Approved state only: matching revision, real record reference and response. |
 
 ### Qualified source tickets
 
@@ -54,9 +54,9 @@ Each graph has `id`, `kind` current/proposed, `purpose` flow/delivery/structure/
 
 Each node has `id`, short `label`, `note` (may be empty), `shape` start/action/decision/result/group, `x`, `y`, `width`, `height`, optional boolean `highlight`, `basis`, `change`, `evidence`, `tasks`. Group nodes may have an `items` array. Start/result are terminators, actions modest rectangles, decisions diamonds. Use explicit `\n` for at most two short label/note lines. The renderer does not auto-shrink text. Diamond labels must fit their interior, not merely their bounding rectangle. Details belong in evidence records.
 
-Each edge has `from`, `to`, `label` (empty only for an unambiguous continuation), explicit `points: [[x,y], ...]`, basis/change/evidence/tasks. Nonempty labels require `label_position: [center_x, baseline_y]`. A decision has 2–3 distinct labelled exits. Each path segment is horizontal or vertical; rounded elbows are generated from the points. Do not substitute two diagonal endpoints and expect automatic layout.
+Each edge has `from`, `to`, `label` (empty only for an unambiguous continuation), explicit `points: [[x,y], ...]`, basis/change/evidence/tasks. Nonempty labels require `label_position: [center_x, baseline_y]`. A decision has 2–3 distinct labeled exits. Each path segment is horizontal or vertical; rounded elbows are generated from the points. Do not substitute two diagonal endpoints and expect automatic layout.
 
-Structural coordinates are integers divisible by four. Nodes stay within the board with padding and do not overlap. Each connector attaches to a distinct permitted boundary port, at least 12px from another port. Diamond ports are its cardinal vertices. Paths leave outward, do not pass through any node or cross/share another route, and labels sit on opaque masks clear of nodes and routes. Crossings/automatic bridge glyphs are intentionally unsupported: reroute or split a view. At most 9 nodes, 12 edges and 2 highlights per view. These are the adopted design budget, not scientific universals.
+Structural coordinates are integers divisible by four. Nodes stay within the board with padding and do not overlap. Each connector attaches to a distinct permitted boundary port, at least 12px from another port. Diamond ports are its cardinal vertices. Paths leave outward, do not pass through any node or cross/share another route, and labels sit on opaque masks clear of nodes and routes. Crossings/automatic bridge glyphs are intentionally unsupported: reroute or split a view. At most 9 nodes, 12 edges and 2 highlights per view.
 
 Example decision fragment (all referenced IDs must exist in the full report):
 
@@ -73,7 +73,7 @@ Basis: observed/inferred/unknown/proposed. Change: unchanged/added/modified/remo
 
 Delivery views use `task_id` on task nodes, matching the single task reference, and `precondition: "approval"` on a prerequisite start node. Delivery edges are checked against dependencies among the shown tasks. For a focused subset, declare omitted prerequisite IDs in graph `external_dependencies`; these are displayed below the diagram. Preserve the task dependency set; an approval node describes a required gate, not a completed approval or additional TODO. Do not infer concurrency from two tasks without a dependency. Shared-file ownership remains governed by the workflow.
 
-## Migration from 2.1 / schema 1
+## Migration from schema 1
 
 Existing HTML remains unchanged and its schema-1 source manifest is still accepted by `--check`. New rendering uses schema 2 only; it does not auto-convert the old component grid into assumed user behavior.
 
@@ -84,9 +84,9 @@ Existing HTML remains unchanged and its schema-1 source manifest is still accept
 
 ## Source of truth, safety and limits
 
-PLAN/TODO/FINDINGS/DECISIONS remain authoritative. Hashes include saved input JSON and all supplied sources, including uncommitted bytes. `--check` detects changes/missing supplied files, not omitted/new files, fabricated evidence, semantic correctness, trustworthy approval or malicious manifest modification. Source paths and report text may be sensitive; sanitize evidence before sharing.
+PLAN/TODO/FINDINGS/DECISIONS remain authoritative. Hashes include saved input JSON and all supplied sources, including uncommitted bytes. `--check` detects changed or missing supplied files only. Source paths and report text may be sensitive; sanitize evidence before sharing.
 
-The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed. Geometry checks catch common defects; actual browser label measurements and review remain required. For that review, `scripts/screenshot_report.py <report.html> <output-folder>` takes desktop and narrow screenshots with the installed Edge or Chrome (nothing is installed; files are never overwritten); look at the images. Print displays all diagrams; expand required technical details before printing. No PDF export or browser installation is implied. A successful structural check is not a complete accessibility/usability audit or proof of agent obedience.
+The input is escaped text, not raw HTML/SVG/CSS. No input script/URL is executed. Geometry checks catch common defects; actual browser label measurements and review remain required. For that review, `scripts/screenshot_report.py <report.html> <output-folder>` takes desktop and narrow screenshots with the installed Edge or Chrome (nothing is installed; files are never overwritten); look at the images. Print displays all diagrams; expand required technical details before printing. No PDF export or browser installation is implied.
 
 
 ## Maintaining the approved presentation
@@ -99,9 +99,7 @@ Review HTML/JSON are requested deliverables, not generic test output. Use the pr
 
 For optional browser/visual verification, apply the active workflow ARTIFACTS.md/global policy. These tools may require a fresh child directory to avoid overwriting evidence; place it under the stable task output parent. After comparing, preserve approved references and necessary failure/proof images, then remove only the current operation's eligible temporary captures. Do not retain every identical successful comparison or create an extra manifest outside what the test tool actually needs.
 
-## Additive record context (2.6; schema 2 stays valid)
-
-Existing schema-2 input requires no migration or new fields. Existing HTML is never rewritten; schema-1 HTML manifests remain checkable. A new render of schema-1 layout still requires the deliberate layout migration documented above. None of these checks interprets arbitrary Markdown, authenticates decisions or proves agent compliance.
+## Task-overview record context
 
 Ordinary approval reviews remain the default. For a specifically requested task-status illustration, set `report_kind: "task-overview"` and supply `checkpoint`. This is a saved projection of the existing task record, not a dashboard to regenerate per checkpoint. It does not ask for new approval or grant implementation authority. Preserve the selected `revision` exactly, even when a legacy review uses another filename/phase alias. The task overview labels the comparison as a historical baseline versus reviewed scope; a flow is not current-implementation evidence just because it is approved. In current-only mode, the inspected flow still needs fresh code evidence.
 
@@ -113,20 +111,20 @@ Ordinary approval reviews remain the default. For a specifically requested task-
 | `checkpoint.implementation` | `status`: not-started/in-progress/implemented/partial/unknown; `summary`: supported work state and evidence/limitations. |
 | `checkpoint.verification` | `status`: not-run/in-progress/blocked/passed/failed/limited/unknown; `summary`: checks and any owner acceptance still outstanding. Passed automated checks alone must not conceal pending owner acceptance. |
 | `revision_log` | Ordered array of `revision`, optional `review` alias, `change`, `reason`, `status` (proposed/presented/approved/superseded/rejected/withdrawn/unknown), `source` and `locator`. One row per agreement, presentation aliases in that row. Keep exact identifiers; no automatic sorting by filename or invented missing history. Review aliases are escaped text, not executable URLs. |
-| Task `outcome` / `outcome_note` | Optional sourced status: planned/in-progress/implemented/verified/blocked/removed/superseded/not-applicable/unknown. A note explaining the evidence or owner decision is required. Removed/superseded work is labelled as not a passed test. Without a status, the task is only a scope description, not a completion claim. |
+| Task `outcome` / `outcome_note` | Optional sourced status: planned/in-progress/implemented/verified/blocked/removed/superseded/not-applicable/unknown. A note explaining the evidence or owner decision is required. Removed/superseded work is labeled as not a passed test. Without a status, the task is only a scope description, not a completion claim. |
 
 Use the existing PLAN checkpoint, or established STATUS.md in a legacy task. Keep the revision log in existing PLAN/DECISIONS (or existing legacy equivalent). Do not create a JSON state file or new Markdown file to feed this feature. Generate the requested report input from those records; no competing task database or duplicate handwritten history.
 
 [The task-overview example](examples/task-overview.json) adds context to the unchanged synthetic flowchart. Its legacy [STATUS.md](examples/STATUS.md) is deliberately separate from the older pending review. It demonstrates a later recorded fixture approval without altering the old HTML. It is not real user approval or runtime evidence.
 
-The renderer continues exclusive creation. Do not bypass an existing-output refusal to edit a presented/approved snapshot, or create retry-named reports automatically. An unpresented draft may be replaced only through explicitly authorised ownership-safe operations; a saved overview remains an as-of snapshot. Normal progress belongs in the task record/chat, not more HTML files.
+Do not create retry-named reports automatically; a saved overview remains an as-of snapshot. Normal progress belongs in the task record/chat, not more HTML files.
 
 A source hash change after a checkpoint update does not by itself invalidate unchanged approved scope. `--check` only reports byte differences; the agent must distinguish expected progress, material changes and missing authority. Keep presented history intact and ask only about genuinely unresolved authority.
 
-## Optional UI screen flow (rc.6)
+## Optional UI screen flow
 
 [UI-FLOW.md](UI-FLOW.md) adds `ui_review` to existing schema 2. It renders connected screen/state previews as another tab inside this full report. Existing JSON, style and sections do not need rewriting. No raw app markup or code is executed. Local PNG captures must be listed as sources and are included in freshness checks. Explicit schematics remain visibly approximate. Every rendering uses the same bundled renderer; do not hand-replace the HTML shell with an independent design page.
 
 ## Optional fast UI style references
 
-The `ui_review` screen flow may include `quick_previews` selecting **existing HTML elements** and **existing compiled CSS** by supplied source IDs. These render in sandboxed, expandable frames inside the existing HTML report. This is a fast, static style reference—not a replacement for Angular/React runtime, not a styled mockup, and not a way to bypass the implementation gate. See [UI-FLOW.md](UI-FLOW.md). No quick preview is required when code-backed sources are unavailable.
+The `ui_review` screen flow may include `quick_previews` selecting **existing HTML elements** and **existing compiled CSS** by supplied source IDs, rendered in sandboxed, expandable frames. See [UI-FLOW.md](UI-FLOW.md) "Fast source-backed styled previews (optional)".

@@ -1,6 +1,6 @@
 ---
 name: implement-spec
-description: "Implement the result of /to-spec and /to-tickets in code."
+description: "Upstream ticket-graph implementation reference only. Workflow AXA does not invoke this directly; use workflow-execute for approved tickets without automatic branches, merges, tracker changes, or commits."
 disable-model-invocation: true
 ---
 

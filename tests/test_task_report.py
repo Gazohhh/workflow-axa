@@ -103,19 +103,166 @@ class TaskReportTests(unittest.TestCase):
         for retired in ("Agreement and authority", "Ticket specifications", "Changes and cleanup", "In this report",
                         "How completion will be checked", "What will not change", "do not authenticate approval"):
             self.assertNotIn(retired, visible)
-        self.assertNotIn('href="#t-', visible.split('id="what-changes"')[1].split("</section>")[0])
+        self.assertNotIn('href="#t-', visible.split('id="before-after"')[1].split("</table>")[0])
 
     def test_sections_follow_the_reader_order(self):
         extended(self.data)
         visible, _ = split(self.render())
-        headings = ["What you approve", "How it works", "What changes", "The work",
-                    "How the work will be checked", "Risks and open questions"]
-        positions = [visible.index('<h2 class="section__title" ' + part) for part in ('id="agreed"', 'id="how-it-works"', 'id="what-changes"',
-                                                              'id="the-work"', 'id="checks"', 'id="risks"')]
+        # Design-doc order: context, goals, design, alternatives, concerns. The implementation plan comes last.
+        headings = ["Context and scope", "Goals and non-goals", "The design", "Alternatives considered",
+                    "Cross-cutting concerns", "The work"]
+        positions = [visible.index('<h2 class="section__title" ' + part) for part in ('id="context"', 'id="goals"', 'id="design"',
+                                                              'id="alternatives"', 'id="concerns"', 'id="the-work"')]
         self.assertEqual(positions, sorted(positions))
         nav = visible.split('<nav class="toc"')[1].split("</nav>")[0]
         for heading in headings:
             self.assertIn(html.escape(heading), nav)
+
+    def test_design_sits_in_one_section_in_reading_order(self):
+        extended(self.data)
+        visible, _ = split(self.render())
+        design = visible.split('id="design"')[1].split('id="alternatives"')[0]
+        marks = [design.index(part) for part in ("<h3>Overview</h3>", 'class="review', 'id="before-after"', 'id="constraints"')]
+        self.assertEqual(marks, sorted(marks))
+        for retired in ("What you approve", "How it works", "How the work will be checked", "<h3>Order of the work</h3>",
+                        "Expected result", "Technical details"):
+            self.assertNotIn(retired, visible)
+
+    def test_goals_and_non_goals_replace_the_agreement_section(self):
+        report = extended(self.data)["task_report"]
+        evidence = {key: report["sections"][0][key] for key in ("source", "locator")}
+        goal = {"id": "goals", "title": "Goals", "text": "Find a second copy.\n\nAsk for deletion.", **evidence}
+        non_goal = {"id": "non-goals", "title": "Non-goals", "text": "Deleting a copy automatically.", **evidence}
+        report["sections"].append(goal)
+        with self.assertRaisesRegex(ValueError, "not both"):
+            self.render()
+        report["sections"] = [row for row in report["sections"] if row["id"] != "agreement"]
+        with self.assertRaisesRegex(ValueError, "come together"):
+            self.render()
+        report["sections"].append(non_goal)
+        visible, technical = split(self.render())
+        goals = visible.split('id="goals"')[1].split('id="design"')[0]
+        self.assertIn("<h3>Goals</h3>", goals)
+        self.assertIn("<li>Ask for deletion.</li>", goals)
+        self.assertIn("<h3>Non-goals</h3>", goals)
+        self.assertIn("<li>Deleting a copy automatically.</li>", goals)
+        self.assertNotIn("What will happen", visible)
+        self.assertIn("<li>Non-goals <small>Source:", technical)
+
+    def test_attention_lines_sit_beside_the_status_and_point_at_the_decisions(self):
+        report = extended(self.data)["task_report"]
+        evidence = {key: report["sections"][0][key] for key in ("source", "locator")}
+        self.assertNotIn("Read first", header(self.render()))
+        report["attention"] = [{"text": "The agent removed 6 more links than you approved.", **evidence}]
+        top = header(self.render())
+        self.assertIn('<span class="status__tag">Read first</span>', top)
+        self.assertEqual(top.count("The agent removed 6 more links than you approved."), 1)
+        self.assertIn('href="#alternatives"', top)
+        self.assertLess(top.index("Waiting for your OK on this plan"), top.index("Read first"))
+        report["attention"] = report["attention"] * 4
+        with self.assertRaisesRegex(ValueError, "three attention lines"):
+            self.render()
+        report["attention"] = [{"text": "No source."}]
+        with self.assertRaises(ValueError):
+            self.render()
+
+    def test_each_check_sits_in_one_ticket_and_the_others_link_to_it(self):
+        extended(self.data)
+        first, second = self.data["tasks"][0], self.data["tasks"][1]
+        shared = first["acceptance"][0]
+        second["acceptance"] = list(dict.fromkeys(second["acceptance"] + [shared]))
+        visible, _ = split(self.render())
+        work = visible.split('id="the-work"')[1]
+        self.assertEqual(work.count('<li class="check" id="a-' + shared + '"'), 1)
+        card = work.split('id="spec-' + second["id"] + '"')[1].split("</article>")[0]
+        self.assertIn("<dt>Done when</dt>", card)
+        self.assertIn('Listed under <a href="#a-' + shared + '">' + first["id"] + "</a>", card)
+        for row in self.data["acceptance"]:
+            self.assertEqual(visible.count('id="a-' + row["id"] + '"'), 1, row["id"])
+        self.assertIn("<dt>Touches</dt>", work)
+
+    def test_depends_on_is_shown_only_when_the_order_is_not_a_straight_line(self):
+        extended(self.data)
+        order = [row["task"] for row in self.data["task_report"]["tickets"]]
+        tasks = {row["id"]: row for row in self.data["tasks"]}
+        for graph in list(self.data["graphs"]):  # the delivery view must mirror the dependencies; it is not under test here
+            if graph["purpose"] == "delivery":
+                self.data["graphs"].remove(graph)
+        for index, key in enumerate(order):
+            tasks[key]["depends_on"] = order[max(index - 1, 0):index]
+        visible, technical = split(self.render())
+        self.assertNotIn("<dt>Depends on</dt>", visible)
+        if len(order) > 1:
+            self.assertIn("Each starts when the one before is verified.", visible)
+            self.assertIn('href="#spec-' + order[0] + '"', technical.split('id="t-' + order[1] + '"')[1].split("</tr>")[0])
+        if len(order) > 2:
+            tasks[order[2]]["depends_on"] = [order[0]]
+            visible, _ = split(self.render())
+            self.assertEqual(visible.count("<dt>Depends on</dt>"), len(order) - 1)  # every ticket that has a dependency
+            self.assertNotIn("Each starts when the one before is verified.", visible)
+
+    def test_tiles_show_no_empty_value_and_do_not_repeat_the_masthead(self):
+        extended(self.data)
+        top = header(self.render())
+        for label in ("Tickets", "Checks"):
+            self.assertIn("<dt>" + label + "</dt>", top)
+        for retired in ("<dt>Revision</dt>", "<dt>Acceptance</dt>", "<dt>Open questions</dt>", ">None<"):
+            self.assertNotIn(retired, top)
+        self.data["state"] = "draft"
+        self.data["open_decisions"] = ["Which colour?"]
+        out = self.render()
+        self.assertIn("<dt>Open questions</dt>", header(out))
+        self.assertIn('id="open-questions"', split(out)[0])
+
+    def test_reference_has_one_requirements_table_with_what_covers_each(self):
+        extended(self.data)
+        _, technical = split(self.render())
+        for retired in ("Tickets: traceability", "What changes: traceability", "Acceptance: traceability"):
+            self.assertNotIn(retired, technical)
+        requirement = self.data["requirements"][0]["id"]
+        row = technical.split('<tr id="r-' + requirement + '"')[1].split("</tr>")[0]
+        for task in self.data["tasks"]:
+            if requirement in task["requirements"]:
+                self.assertIn('href="#spec-' + task["id"] + '"', row)
+        for item in self.data["acceptance"]:
+            if requirement in item["requirements"]:
+                self.assertIn('href="#a-' + item["id"] + '"', row)
+        # The list names each part by the label the page shows, not by the title in the JSON.
+        self.assertIn("<li>Context and scope <small>Source:", technical)
+        self.assertIn("<li>Overview <small>Source:", technical)
+
+    def test_diagrams_that_fit_the_column_have_no_zoom_and_no_scroll_hint(self):
+        extended(self.data)
+        wide = self.render()
+        self.assertIn('name="diagram-zoom"', wide)
+        self.assertIn("Scroll sideways to explore.", wide)
+        self.assertNotIn("review--fit", wide.split("</style>")[1])
+        # One proposed flow, moved to the left edge of a board cut to the column width.
+        self.data["state"], self.data["mode"] = "draft", "proposed"
+        graph = next(g for g in self.data["graphs"] if g["id"] == self.data["default_view"])
+        self.data["graphs"] = [graph]
+        shift = min(node["x"] for node in graph["nodes"]) - 16
+        for node in graph["nodes"]:
+            node["x"] -= shift
+        for edge in graph["edges"]:
+            edge["points"] = [[x - shift, y] for x, y in edge["points"]]
+            if edge["label"]:
+                edge["label_position"] = [edge["label_position"][0] - shift, edge["label_position"][1]]
+        graph["width"] = max(node["x"] + node["width"] for node in graph["nodes"]) + 16
+        self.assertLessEqual(graph["width"], 880)
+        body = self.render().split("</style>")[1]
+        self.assertIn('class="review review--fit"', body)
+        self.assertNotIn('id="zoom-100"', body)
+        self.assertNotIn("Scroll sideways to explore.", body)
+        self.assertNotIn(">Zoom<", body)
+
+    def test_task_report_diagram_caption_says_nothing_twice(self):
+        extended(self.data)
+        body = self.render().split("</style>")[1]
+        self.assertNotIn("Proposed is not implemented.", body)
+        self.assertNotIn("Start / result", body)  # standard shapes need no legend
+        self.assertIn("Focus of the change", body)
+        self.assertIn("Proposed, not built yet", body)
 
     def test_plain_english_check_names_each_problem_and_its_field(self):
         # Round-14 retro: the plan report kept semicolons and an 8-sentence paragraph.
@@ -323,8 +470,8 @@ class TaskReportTests(unittest.TestCase):
         self.assertNotIn("Proposed — not built yet", out)
         self.assertNotIn("Proposed is not implemented.", out)
         self.assertIn("As built. The results are below.", out)
-        self.assertIn("How it was checked", out)  # round 8: plan-time headings in delivery
-        self.assertNotIn("How the work will be checked", out)
+        self.assertIn("How it was tested", out)  # round 8: plan-time headings in delivery
+        self.assertNotIn("How it is tested", out)
         self.assertNotIn("not proof it was implemented", out)
         self.assertTrue(self.data["snapshot"]["basis"].startswith("FILL: "))
         # Round 7: task outcomes were missing and the completeness error named nothing.

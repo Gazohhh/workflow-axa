@@ -12,18 +12,18 @@ from pathlib import Path
 
 MAX_BYTES = 2_000_000
 JS_PACKAGES = {
-    "react": "react.md", "react-dom": "react.md", "react-router": "react.md",
-    "react-router-dom": "react.md", "typescript": "typescript.md", "vite": "vite.md",
-    "three": "threejs.md", "pixi.js": "pixijs.md",
-    "@angular/core": "angular.md", "@angular/cli": "angular.md",
-    "@angular/common": "angular.md", "@angular/router": "angular.md",
-    "@angular/forms": "angular.md", "@angular/compiler-cli": "angular.md",
-    "@angular/platform-browser": "angular.md", "rxjs": "typescript.md",
-    "@ionic/angular": "ionic.md", "@ionic/react": "ionic.md", "@ionic/vue": "ionic.md",
-    "@ionic/core": "ionic.md", "@capacitor/core": "capacitor.md",
-    "@capacitor/cli": "capacitor.md", "@capacitor/android": "capacitor.md",
-    "@capacitor/ios": "capacitor.md", "@capacitor/app": "capacitor.md",
-    "@capacitor/keyboard": "capacitor.md", "@capacitor/preferences": "capacitor.md",
+    "react": "REACT.md", "react-dom": "REACT.md", "react-router": "REACT.md",
+    "react-router-dom": "REACT.md", "typescript": "TYPESCRIPT.md", "vite": "VITE.md",
+    "three": "THREEJS.md", "pixi.js": "PIXIJS.md",
+    "@angular/core": "ANGULAR.md", "@angular/cli": "ANGULAR.md",
+    "@angular/common": "ANGULAR.md", "@angular/router": "ANGULAR.md",
+    "@angular/forms": "ANGULAR.md", "@angular/compiler-cli": "ANGULAR.md",
+    "@angular/platform-browser": "ANGULAR.md", "rxjs": "TYPESCRIPT.md",
+    "@ionic/angular": "IONIC.md", "@ionic/react": "IONIC.md", "@ionic/vue": "IONIC.md",
+    "@ionic/core": "IONIC.md", "@capacitor/core": "CAPACITOR.md",
+    "@capacitor/cli": "CAPACITOR.md", "@capacitor/android": "CAPACITOR.md",
+    "@capacitor/ios": "CAPACITOR.md", "@capacitor/app": "CAPACITOR.md",
+    "@capacitor/keyboard": "CAPACITOR.md", "@capacitor/preferences": "CAPACITOR.md",
 }
 JS_LOCKS = ("npm-shrinkwrap.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb")
 LIMITS = (
@@ -197,7 +197,7 @@ def js_context(inputs: Inputs, manifest: Path, dirs: list[Path]) -> dict:
     else:
         result["warnings"].append("This helper does not parse pnpm/yarn/bun locks; use a compatible read-only resolver or inspect them.")
     for package, declarations in sorted(declared.items()):
-        row = {"name": package, "declared": declarations, "locked": None, "module": JS_PACKAGES.get(package, "capacitor.md")}
+        row = {"name": package, "declared": declarations, "locked": None, "module": JS_PACKAGES.get(package, "CAPACITOR.md")}
         if any(d["constraint"].startswith("[") for d in declarations):
             row["limit"] = "Non-version/alias/local declaration requires explicit resolution."
         elif lock is not None:
@@ -226,7 +226,7 @@ def composer_context(inputs: Inputs, manifest: Path) -> dict:
     platform = field(config, "platform")
     result = {"ecosystem": "php", "manifest": inputs.name(manifest), "requirements": requirements,
               "platform_emulation": {k: (v if type(v) is bool else specification(v)) for k, v in platform.items() if k == "php" or k.startswith("ext-")},
-              "packages": [], "warnings": [], "modules": ["php.md"],
+              "packages": [], "warnings": [], "modules": ["PHP.md"],
               "constraint_compatibility": "NOT_CHECKED: Composer ranges, replacements and runtime compatibility require review."}
     lockpath = manifest.parent / "composer.lock"
     lock = inputs.obj(lockpath)
@@ -253,7 +253,7 @@ def composer_context(inputs: Inputs, manifest: Path) -> dict:
         if lock.get("aliases"):
             result["warnings"].append("Composer aliases exist; inspect alias/replacement semantics before selecting version-specific APIs.")
     if any(k == "laravel/framework" or k.startswith("illuminate/") for k in requirements) or result["packages"]:
-        result["modules"].append("laravel.md")
+        result["modules"].append("LARAVEL.md")
     result["application_structure"] = "NOT_INFERRED: inspect bootstrap/providers/middleware; an upgrade may preserve an older layout."
     result["runtime"] = "NOT_OBSERVED: config.platform and lock platform fields are not the executing PHP/extension versions."
     return result
@@ -263,7 +263,7 @@ def unity_context(inputs: Inputs, editor_file: Path) -> dict:
     text = inputs.raw(editor_file).decode("utf-8-sig")
     match = re.search(r"^m_EditorVersion:\s*(\S+)\s*$", text, re.M)
     result = {"ecosystem": "unity", "manifest": inputs.name(editor_file), "editor_configured": specification(match[1]) if match else None,
-              "packages": [], "modules": ["unity.md"], "warnings": [],
+              "packages": [], "modules": ["UNITY.md"], "warnings": [],
               "runtime": "NOT_OBSERVED: Editor/backend/language support and actual build environment still need verification."}
     base = editor_file.parent.parent
     manifest = inputs.obj(base / "Packages/manifest.json")
@@ -302,7 +302,7 @@ def inspect_versions(root: Path, scopes: list[str]) -> dict:
                 if p is not None:
                     refs.append(p)
             contexts.append({"ecosystem": "rust", "manifest": inputs.name(cargo), "sources": [inputs.name(p) for p in refs],
-                             "modules": ["rust.md"], "versions": "NOT_PARSED: inspect edition, rust-version, toolchain, workspace inheritance and target/features with a compatible reader."})
+                             "modules": ["RUST.md"], "versions": "NOT_PARSED: inspect edition, rust-version, toolchain, workspace inheritance and target/features with a compatible reader."})
     return {"schema_version": 1, "state": "REVIEW_REQUIRED", "root": str(inputs.root), "scopes": sorted(set(scopes)),
             "contexts": contexts, "sources": dict(sorted(inputs.sources.items())), "limits": list(LIMITS),
             "runtime_verified": False, "compatibility_verified": False, "implementation_approved": False}
