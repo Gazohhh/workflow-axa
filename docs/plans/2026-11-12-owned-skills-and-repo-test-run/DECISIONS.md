@@ -33,3 +33,5 @@ All from the owner via the question tool, 2026-11-12, unless marked `by: agent`.
 - D18 (by: agent): T6 adds no description-length check. validate.py already refuses a description over 1024 characters, below the host listing cap of 1536; the total listing budget depends on the host and other plugins, so a package-wide total limit would be an invented number.
 
 - D19 (by: agent, review V17): the name of the design project that inspired the flowchart style (lower-case "diagram-design" in text) is also removed from skills/, extending D15; the compatibility file DIAGRAM-DESIGN.md keeps its name. tests/test_owned_skills.py guards it with a case-sensitive pattern; tests/test_package.py follows the new wording.
+
+- D20: owner answered "yes" (2026-11-12) to both questions shown: accepts the result (T6 fresh-session check and the whole task) and confirms the by: agent decisions D9, D10, D13, D15, D16, D18, D19.

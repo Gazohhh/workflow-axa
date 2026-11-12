@@ -1,14 +1,14 @@
 # Owned skills, rule contracts and repo test run
 
 ## Current checkpoint
-- Updated / phase: 2026-11-12; verifying (delivered, owner checks pending)
+- Updated / phase: 2026-11-12; closed
 - Agreement (gate one): agreed 2026-11-12, agreement 1 (## Agreement below; DECISIONS D1 to D10). Owner's words: "Sure no need for a review codebase mapping design but do document everything in docs so no review.html is needed"
 - Approval (gate two): r1 approved, 2026-11-12, no report: "Approve r1, no report"
-- Implementation: implemented (T1 to T8); T1, T2, T3, T4, T5, T7 verified; T6 and T8 wait on human checks
-- Verification / owner acceptance: V1 baseline; ticket checks and reviews V2-V17; publish and reinstall V19; after-run V20; reconciliation V21; final suite and validate V22 (0 failed). Pending: T6 fresh-session check, owner acceptance
+- Implementation: implemented and verified (T1 to T8)
+- Verification / owner acceptance: passed (V1-V23); owner accepted 2026-11-12: "yes" (D20)
 - Blockers: none (E1/Q9 answered 2026-11-12)
 - Changed files: skills/ (9 merged skills, descriptions, workflow, codebase-map, workflow-doctor, rule-maker rules 1.8.8 and docs_check.py; deleted workflow/specialists.json and scripts/check_specialists.py), tools/validate.py, tools/vendor_specialists.py (deleted), tests/ (test_owned_skills.py new; test_vendored_specialists.py and test_specialists.py deleted; others updated), docs/RULE-CONTRACTS.md (new), AGENTS.md, CONTEXT.md, README.md, CHANGELOG.md, UPGRADE.md, VALIDATION.md, VENDORED-SKILLS.md, docs/ARCHITECTURE.md, docs/DESIGN.md, .claude-plugin/plugin.json, tests/behavioral/*.json; full list: git status
-- Next safe action: owner restarts Claude Code, checks the 6 skill descriptions in a fresh session (T6), accepts or asks for changes; optional: global_policy.py --apply for the missing ARTIFACTS.md, rules reviews for Altinstar and D:\PletrixV2, rules audit 1.8.8 for this repo
+- Next safe action: none for this task. Optional follow-ups: global_policy.py --apply for the missing ARTIFACTS.md (owner OK each time), rules reviews for Altinstar and D:\PletrixV2, rules audit for 1.8.8, the 6 hook candidates in docs/RULE-CONTRACTS.md
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main, main checkout. Existing staged edits in docs/plans/2026-11-11-consistency-review-findings/ (PLAN, FINDINGS, DECISIONS) belong to that task and stay untouched.
@@ -58,3 +58,7 @@ Delivered 2026-11-12, partial until the owner's checks: commit 1c07609 (release)
 - Decisions by: agent for the owner to confirm: D9, D10, D13, D15, D16, D18, D19.
 - Limits: hooks unchanged (D5; 6 hook candidates in docs/RULE-CONTRACTS.md); no live or paid evaluation; the Claude marketplace gazohhh is a local folder source (content equals GitHub, V19); ~/.agents/.skill-lock.json still names the old local source; C:\Users\Cem\.workflow-axa\ARTIFACTS.md is missing (predates this task).
 - Kept evidence: .artifacts/2026-11-12-owned-skills-and-repo-test-run/ (baseline/, after/, validate and suite logs) until owner acceptance; scratchpad backup of the rc.36 Codex skills until acceptance.
+
+- 2026-11-12: the agent saw all 6 descriptions in the fresh session (V23). T6 and A4 wait for the owner's own acceptance of that check.
+
+- 2026-11-12: owner acceptance: "yes" (D20). T6 and T8 verified; all 8 tickets verified. Evidence in .artifacts/2026-11-12-owned-skills-and-repo-test-run/ may be cleaned; the scratchpad backup of the rc.36 Codex skills is no longer needed.

@@ -167,7 +167,8 @@ How to verify:
 - python -X utf8 -I tools/validate.py
 - Human check: the owner opens a fresh session after the reinstall and confirms the 6 descriptions show
 
-Verification: not run (cause found E6; descriptions shortened V12, V15; fresh-session check pending)
+Verification: passed (cause E6; fix V12, V15; fresh-session listing V23)
+Owner acceptance: Gazoh, 2026-11-12, V23: "yes"
 
 References:
 - Supports: A4; D2
@@ -218,7 +219,8 @@ How to verify:
 - python -X utf8 -I tools/validate.py; python -X utf8 -m unittest discover -s tests -p "test_*.py"; git status of each application repo identical before and after.
 - Human check: the T6 fresh-session check; owner acceptance.
 
-Verification: not run (checks passed V18, V22; published and reinstalled V19; after-run V20; human checks pending)
+Verification: passed (V18, V22; published and reinstalled V19; after-run V20; T6 check V23)
+Owner acceptance: Gazoh, 2026-11-12, V23: "yes"
 
 References:
 - Supports: A6; D3, D4, D7, D8
