@@ -1,4 +1,4 @@
-# Upgrade to workflow-axa 2.8.0-rc.38
+# Upgrade to workflow-axa 2.8.0-rc.39
 
 ## Choose the right source
 
@@ -20,6 +20,10 @@ For the observed spinning session, interrupt it and run /goal clear in that sess
 Use a clone of the **Git repository** for review and local/live tests. It contains all 21 registered skills, hooks, tests, tools and retained task history. The install ZIP omits development tests and history and is not a replacement for the editable repository.
 
 The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorized by the testing handoff.
+
+## What changed in 2.8.0-rc.39
+
+Replace all 21 skill folders and the hooks together, as for every release, then restart Claude Code. A typed approval in bold or italics now counts; nothing else about approvals changes. Present a plan in a message that ends the turn: in T3 Code (observed 2026-11-12) the text of a message that also calls a tool is not stored, so the gate cannot see that presentation. `tools/verification_summary.py --run --write` now needs only one run after a version bump.
 
 ## What changed in 2.8.0-rc.38
 

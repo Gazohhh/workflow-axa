@@ -991,6 +991,43 @@ class CheckpointHeadingRegressions(GateCase):
         self.assertEqual(self.decision([ROUTER] + self.approval(A), "Edit", self.code()), "deny")
 
 
+class EmphasisedAnswers(GateCase):
+    """T1 of 2026-11-12-gate-followups (FINDINGS V1): a typed answer in bold or italics is the same message as its plain
+    text; nothing else about the quote rule changes."""
+
+    QUOTED = '- Approval (gate two): r1 approved, 2026-11-12, no report: "Approve r1, no report"'
+
+    def rows(self, answer):
+        present = say(f"**Plan r1** for docs/plans/{A}/TODO.md: one ticket. Approve?")
+        return [ROUTER, self.records(A), present, user(answer)]
+
+    def test_a_bold_or_italic_answer_counts(self):
+        self.task(A, "- Agreement (gate one): agreed 2026-11-12", self.QUOTED, report=None)
+        for answer in ("**Approve r1, no report**", "_Approve r1, no report_", "*Approve r1, no report*",
+                       "**Approve r1**, no report", "***Approve r1, no report***", "Approve r1, no report"):
+            with self.subTest(answer=answer):
+                self.assertIsNone(self.fire(self.rows(answer), "Edit", self.code()))
+
+    def test_other_words_still_do_not_count(self):
+        self.task(A, "- Agreement (gate one): agreed 2026-11-12", self.QUOTED, report=None)
+        for answer in ("**Approve r1, no report, but only src/**", "**Approve r1**"):
+            with self.subTest(answer=answer):
+                self.assertEqual(self.decision(self.rows(answer), "Edit", self.code()), "deny")
+
+    def test_a_quote_written_with_markers_matches_the_plain_answer(self):
+        """Assumption of agreement 1 (review V8): the quoted words may carry the markers too."""
+        self.task(A, "- Agreement (gate one): agreed 2026-11-12",
+                  '- Approval (gate two): r1 approved, 2026-11-12, no report: "**Approve r1, no report**"', report=None)
+        self.assertIsNone(self.fire(self.rows("Approve r1, no report"), "Edit", self.code()))
+
+    def test_emphasis_only_changes_the_quote_comparison(self):
+        """Review V5: the markers are removed only where a quote is compared with the owner's message. The install
+        check keeps reading the plain words, so an italic "_install it_" grants no install, as before."""
+        self.task(A, "- Agreement (gate one): agreed 2026-11-12", self.QUOTED, report=None)
+        rows = self.rows("Approve r1, no report") + [user("_install it_")]
+        self.assertEqual(self.decision(rows, "Bash", {"command": "npm install left-pad"}), "deny")
+
+
 class AgreementGateRegressions(GateCase):
     """T2 of 2026-11-12-approval-gate-false-refusals (owner Q7b a): on the two-gate route a code change waits for a
     recorded agreement (gate one) as well as the plan approval (gate two)."""

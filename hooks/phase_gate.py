@@ -873,6 +873,17 @@ def queued_text(entry: dict) -> str | None:
     return human_words(text)
 
 
+# Markdown bold or italic markers at word edges (`**x**`, `_x_`, `***x***`); markers inside a word (`my__task`) stay.
+EMPHASIS = re.compile(r'(?<![\w*_])(?:\*\*\*|\*\*|__|\*|_)(?=\S)|(?<=\S)(?:\*\*\*|\*\*|__|\*|_)(?![\w*_])')
+
+
+def bare(words: str) -> str:
+    """Cleaned words without emphasis markers, for comparing a quote with the owner's message only (T1 of
+    2026-11-12-gate-followups: the owner typed "**Approve r1, no report**"). Other checks of the owner's words
+    (refusals, installs, commits, pauses) keep the plain cleaned text."""
+    return re.sub(r'[\s.!?,;:]+$', '', EMPHASIS.sub('', words))
+
+
 def clean(text: str) -> str:
     """Case, spacing, curly quotes and trailing punctuation ignored."""
     text = text.replace('’', "'").replace('‘', "'").replace('“', '"').replace('”', '"')
@@ -1457,9 +1468,9 @@ def consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...] = ()
     start = presentation_start(quote, state, task, reports, revisions)
     if start is None:
         return None
-    wanted = clean(quote)
+    wanted = bare(clean(quote))
     for n, words, truncated, _kind in state['users']:
-        if n <= start or words != wanted or truncated:
+        if n <= start or bare(words) != wanted or truncated:
             continue
         if revoked_after(state, task, n):
             if why is not None:
@@ -1559,7 +1570,7 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
                             for _n, w, _t, _k in (current or {}).get('users', [])):
             return False, 'that session was stopped after the approval and nobody has asked to continue since'
         for n, words in later:
-            if RESTRICTS.search(words) and words not in recorded:
+            if RESTRICTS.search(words) and bare(words) not in recorded:
                 return False, f'a later message in that session may restrict it and is not recorded ("{words[:120]}")'
         if used is not None:
             used.extend(names)
@@ -1582,8 +1593,8 @@ RECORD_EXAMPLE = '`- Approval (gate two): r1 approved, <date>, no report: "<the 
 def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...]) -> str | None:
     """Why a quoted answer was not found, when the cause is known: the quote is only part of a real message given after
     the plan was shown (a record fix), or the matching message came before any presentation (missing consent)."""
-    wanted, start = clean(quote), presentation_start(quote, state, task, reports, revisions)
-    users = [(n, words) for n, words, truncated, _kind in state['users'] if not truncated]
+    wanted, start = bare(clean(quote)), presentation_start(quote, state, task, reports, revisions)
+    users = [(n, bare(words)) for n, words, truncated, _kind in state['users'] if not truncated]
     if start is not None:
         longer = [words for n, words in users if n > start and wanted and words.startswith(wanted) and words != wanted]
         if longer and not any(words == wanted for n, words in users if n > start):
@@ -1691,8 +1702,8 @@ def small_yes_problem(quotes: list[str], state: dict, task: str, files: list[str
                 f'({", ".join(files)}) and the same description as the checkpoint line ("{description[:160]}"), so '
                 'the owner was not shown this change')
     for quote in quotes:
-        wanted = clean(quote)
-        if not any(n > start and words == wanted and not truncated and not revoked_after(state, task, n)
+        wanted = bare(clean(quote))
+        if not any(n > start and bare(words) == wanted and not truncated and not revoked_after(state, task, n)
                    for n, words, truncated, _kind in state['users']):
             return (f'it quotes "{quote}", but no real user message after your "Small change:" message is exactly '
                     'those words and still stands')
@@ -1834,7 +1845,7 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
         return 'quotes none of the user\'s words; record their approval in double quotes, exactly as they wrote it'
     if refuses(quotes):
         return 'quotes an explicit refusal or delay, not implementation approval'
-    recorded = frozenset(clean(a or b) for a, b in QUOTE.findall(text))
+    recorded = frozenset(bare(clean(a or b)) for a, b in QUOTE.findall(text))
     notes = []
 
     def holds(quote: str) -> bool:

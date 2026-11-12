@@ -10,7 +10,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 | Procedure | The expected order of steps. The agent records a justified deviation. |
 | Judgment call | The agent decides with a stated criterion. Two good runs can differ. |
 
-"Checked by" names a hook, a test or "instructions only". A hook runs on matching tool calls in Claude Code. `phase_gate.py` is active only after the session typed, loaded or read the `workflow` router or a phase skill (`hooks/phase_gate.py:2358`). Codex runs no hook from this package (`skills/workflow/SETUP.md`). A test runs on this package's scripts and texts, not on a live session.
+"Checked by" names a hook, a test or "instructions only". A hook runs on matching tool calls in Claude Code. `phase_gate.py` is active only after the session typed, loaded or read the `workflow` router or a phase skill (`hooks/phase_gate.py:2369`). Codex runs no hook from this package (`skills/workflow/SETUP.md`). A test runs on this package's scripts and texts, not on a live session.
 
 ## Hard rule contracts
 
@@ -23,7 +23,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Action: summarize, ask the agreement question, stop. Record the answer on the `Agreement` line and in DECISIONS.
 - Exceptions: inspect-only work, docs-only work and PDF deliverables (their own route), lightweight edit, small change, "Both gates in one message", an explicit bounded waiver, legacy single-gate approval.
 - When blocked: wait. Reopened items go back to grilling. Record the blocking question and what can still proceed (`workflow-clarify` "Next").
-- Checked by: hook `phase_gate.py` (since 2.8.0-rc.38), on the two-gate route only. A checkpoint with an `Approval (gate two)` line whose approval is not legacy needs an `Agreement (gate one):` or plain `Agreement:` line that says agreed, waived, legacy or "not required". Until then, project and Git writes are refused after the approval check passes (`agreement_problem` `:1316`, called at `:2061`, patterns `:1311` to `:1313`).
+- Checked by: hook `phase_gate.py` (since 2.8.0-rc.38), on the two-gate route only. A checkpoint with an `Approval (gate two)` line whose approval is not legacy needs an `Agreement (gate one):` or plain `Agreement:` line that says agreed, waived, legacy or "not required". Until then, project and Git writes are refused after the approval check passes (`agreement_problem` `:1327`, called at `:2072`, patterns `:1322` to `:1324`).
   - The first state word decides: "agreed ..., awaiting approval" passes, but a line that starts with a word such as "pending", "proposed", "awaiting" or "not agreed" is refused. Quoted owner words never decide the state.
   - Not checked: single-gate tasks, legacy approvals, lightweight edits and the small change route.
   - Limit: the hook reads the state word, not whether the agreement covers the work.
@@ -40,13 +40,13 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Exceptions: lightweight edit; small change; an explicit "I don't need to see the plan" (the hook does not accept it yet: hook candidate 6); legacy approval.
 - When blocked: wait; only task records and the report change. Fix a hook refusal by recording the owner's real words or through `resume-task`, never by editing or disabling the hook.
 - Checked by: hook `phase_gate.py`:
-  - no `Approval` line: `:1799`; not approving, or "proposed": `:1804`, `:1806`;
-  - no quoted words, or a quoted refusal: `:1834`, `:1835`;
-  - each quote must be a whole user message after the plan was presented: `:1851`, `:1874`;
-  - an `.html` report must exist unless the quote declines one: `:1896`, `:1888`, decline words at `:89`;
-  - a write outside the report's `write_paths`: `:2067`; a stopped or paused task: `:2370`;
-  - the checkpoint is the section under the first heading of any level whose text starts "Current checkpoint", up to the next heading of the same or a higher level (`:1334`); a `# ` line inside a fenced code block also ends it;
-  - task records and `.artifacts` stay writable: `:65`, `:264`, `:2343`; bulk deletes there are refused (Artifact cleanup).
+  - no `Approval` line: `:1810`; not approving, or "proposed": `:1815`, `:1817`;
+  - no quoted words, or a quoted refusal: `:1845`, `:1846`;
+  - each quote must be a whole user message after the plan was presented: `:1862`, `:1885`;
+  - an `.html` report must exist unless the quote declines one: `:1907`, `:1899`, decline words at `:89`;
+  - a write outside the report's `write_paths`: `:2078`; a stopped or paused task: `:2381`;
+  - the checkpoint is the section under the first heading of any level whose text starts "Current checkpoint", up to the next heading of the same or a higher level (`:1345`); a `# ` line inside a fenced code block also ends it;
+  - task records and `.artifacts` stay writable: `:65`, `:264`, `:2354`; bulk deletes there are refused (Artifact cleanup).
 
   Tests: `tests/test_phase_gate_hook.py`, `tests/test_gate_regressions.py`.
 
@@ -59,7 +59,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Action: show that line in one message, ask for a yes, end the turn. Record the whole answer, edit only the listed files, test, review once, deliver in short form.
 - Exceptions: none for the file list. A changed list or description needs a new offer; a later session needs a `Reconfirmed` line.
 - When blocked: growing scope or risk moves to the full route (`workflow-clarify`, then the plan report).
-- Checked by: hook `phase_gate.py`: route only without a report `:2041`; files must exist `:1666`; offer required `:1688`, `:1690`; quote is a whole later message `:1694`, `:1697`; deletes `:1740`, moves `:1742`, other or new files `:1744` refused. Contents (since 2.8.0-rc.38): after an Edit, Write or MultiEdit of a listed file, a note names each tag or class the edit adds (`style_notes` `:2523`). The note never refuses the edit. Limits: code such as `Array<string>` gives a false tag note. When `git show` fails, every existing tag and class in a Write counts as new. Tests: `tests/test_gate_regressions.py` (`SmallChangeRoute`), `tests/test_gate_notes.py` (`StyleNotes`). Whether it qualifies: instructions only.
+- Checked by: hook `phase_gate.py`: route only without a report `:2052`; files must exist `:1677`; offer required `:1699`, `:1701`; quote is a whole later message `:1705`, `:1708`; deletes `:1751`, moves `:1753`, other or new files `:1755` refused. Contents (since 2.8.0-rc.38): after an Edit, Write or MultiEdit of a listed file, a note names each tag or class the edit adds (`style_notes` `:2534`). The note never refuses the edit. Limits: code such as `Array<string>` gives a false tag note. When `git show` fails, every existing tag and class in a Write counts as new. Tests: `tests/test_gate_regressions.py` (`SmallChangeRoute`), `tests/test_gate_notes.py` (`StyleNotes`). Whether it qualifies: instructions only.
 
 ### Never write CSS, and DESIGN.md rule 4's question
 
@@ -70,7 +70,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Action: mirror that element's tag, full class list and context. When nothing matches, stop that element and ask the exact question, listing only same-tag elements. Before finishing, check the diff and name each class's defining file.
 - Exceptions: plain unstyled HTML on the user's explicit instruction for the named element, or when the user answers rule 4's question by confirming that no similar element exists; the report renderer's shell and `quick_previews`; internals of reused components.
 - When blocked: the element is in mode `blocked` and waits for the answer; independent logic and tests continue (DESIGN.md "Modes").
-- Checked by: a hook note that never blocks (`phase_gate.py`, since 2.8.0-rc.38). In an active session, after an Edit, Write or MultiEdit of an application file, the gate adds a note when the edit adds styling (`style_notes` `:2523`, added to the PostToolUse output at `:2611`). The note asks for rule 4's question or the name of the existing class.
+- Checked by: a hook note that never blocks (`phase_gate.py`, since 2.8.0-rc.38). In an active session, after an Edit, Write or MultiEdit of an application file, the gate adds a note when the edit adds styling (`style_notes` `:2534`, added to the PostToolUse output at `:2622`). The note asks for rule 4's question or the name of the existing class.
   - Application file: any project file except Markdown, `docs/plans`, `.artifacts` and test files.
   - Styling: the inline-style and CSS-in-JS cues of `skills/ui-design/scripts/review_ui_diff.py`, and a stylesheet rule in a `.css`, `.scss`, `.sass`, `.less` or `.styl` file. "Adds" means more matches after the edit than before. For Write, the committed file is the before.
   - Limits: the hook reads cues only and cannot see design kit authority. Shell writes get no note. Texts over 4,000,000 characters are skipped. When `git show` fails, every existing style in a Write counts as new.
@@ -86,7 +86,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Action: reuse one stable parent; keep the smallest evidence set; delete only the agent's own disposable output from the current work when every listed condition holds; record what stays and the next cleanup condition.
 - Exceptions: deliverables, approved reports, baselines, rollback data and tool-owned output are protected. Superseded reports follow VISUAL-REVIEW.md "Superseded review cleanup".
 - When blocked: unclear ownership, or older or unknown output: preserve it and ask. No `git clean`, wildcard delete or blanket wipe.
-- Checked by: hook `phase_gate.py` (since 2.8.0-rc.38), bulk forms only, in an active session. The check runs before the `.artifacts` write exemption (`bulk_delete` `:180`, called at `:2341`, refusal at `:2367`).
+- Checked by: hook `phase_gate.py` (since 2.8.0-rc.38), bulk forms only, in an active session. The check runs before the `.artifacts` write exemption (`bulk_delete` `:180`, called at `:2352`, refusal at `:2378`).
   - `git clean` is refused unless it has `-n` or `--dry-run`. It is read from the parsed command words (`git_clean_called` `:154`), also inside `bash -c`, `powershell -Command` and `cmd /c`. The words "git clean" in a commit message, an echo or a heredoc do not count.
   - A delete of `.artifacts` itself, and a wildcard delete under `.artifacts`, are refused.
   - Named files and folders under `.artifacts` stay deletable. Their ownership and consumers stay instructions only.
@@ -124,16 +124,16 @@ Owner file: `skills/<skill>/SKILL.md` unless named.
 
 ## Hook candidates
 
-Hard rules with instructions only, or with a known hook gap. Release 2.8.0-rc.38 built candidates 2 to 5. Candidates 1 and 6 stay unchanged by owner decision (2026-11-12, Q6 c of task 2026-11-12-approval-gate-false-refusals). Candidates 7 and 8 are not built.
+Hard rules with instructions only, or with a known hook gap. Release 2.8.0-rc.38 built candidates 2 to 5. Candidates 1 and 6 stay unchanged by owner decision (2026-11-12, Q6 c of task 2026-11-12-approval-gate-false-refusals). Candidate 7 is partly built in 2.8.0-rc.39; candidate 8 is not built.
 
 1. Report decline words (seen on 2026-11-12). Owner decision: unchanged. The agent asks for "no report" words when needed. `hooks/phase_gate.py:89` `NO_REPORT` matches "no report", "no plan report", "no html report" and "without a report", but not the owner's own "no review.html is needed", so the gate refused an approved task. A hook could also accept a whole quoted answer that declines the report by file name or by "no ... needed". Limit: a wider pattern can read "no code review needed" as a report waiver.
 2. Agreement before approval. Done in 2.8.0-rc.38: the hook refuses project and Git writes, not the `Approval` line itself, while the `Agreement` line of a two-gate task is not agreed, waived, legacy or not required (Agreement contract above). Limit: it checks the state word, not whether the agreement covers the work.
 3. No new CSS. Done in 2.8.0-rc.38 as a note that never blocks (owner Q8 a), because the cues also match legitimate code (contract "Never write CSS" above). Limit: the hook cannot see design kit authority, and shell writes get no note.
 4. Bulk artifact deletes. Done in 2.8.0-rc.38: `git clean`, a delete of `.artifacts` itself and wildcard deletes under it are refused (Artifact cleanup contract above). Limit: it cannot judge ownership or consumers, so it catches only bulk forms.
 5. Small change contents. Done in 2.8.0-rc.38 as a note that never blocks: a new tag or class in a listed file (Small change contract above). Limit: a heuristic; text edits inside markup are hard to separate from new elements.
-6. Plan waiver. Owner decision: unchanged. VISUAL-REVIEW.md accepts an explicit "I don't need to see the plan, go" as a waiver of implementation approval, but the hook still asks for a report or a "no report" quote (`hooks/phase_gate.py:1888`, `:1896`). A hook could accept a recorded `waived` Approval line whose quote declines seeing the plan. Limit: the same wording risk as candidate 1.
-7. Approval answers the gate cannot match (seen on 2026-11-12, E8 and E9 of the task above). The gate refused "Approve r1, no report" chosen in an AskUserQuestion that was in the same assistant message as the plan presentation, and the same words typed in bold (`**Approve r1, no report**`). The cause is not confirmed: suspects are the answer in the presentation message and the Markdown asterisks. A one-word "Approve" cannot be recorded for a task without a report, because the quote must then decline the report ("no report"). A hook could accept those forms. Limit: looser matching can count a reply that is not an approval.
-8. Approvals in linked worktrees (seen on 2026-11-12, E10 and E11). A linked worktree never borrows the main checkout's approval, and a subagent in a linked worktree cannot see the main session's transcript, so its first write is refused. Release 2.8.0-rc.38 only names the two differing PLAN copies in the refusal (`worktree_copy_note` `:2389`). A hook could accept an approval recorded for the same task in the main checkout. Limit: that weakens the rule that approval evidence is bound to its workspace.
+6. Plan waiver. Owner decision: unchanged. VISUAL-REVIEW.md accepts an explicit "I don't need to see the plan, go" as a waiver of implementation approval, but the hook still asks for a report or a "no report" quote (`hooks/phase_gate.py:1899`, `:1907`). A hook could accept a recorded `waived` Approval line whose quote declines seeing the plan. Limit: the same wording risk as candidate 1.
+7. Approval answers the gate cannot match (seen on 2026-11-12). Bold or italic typed answers: done in 2.8.0-rc.39 (`bare` at `:880`; only the quote comparison ignores the markers). Still open: in T3 Code (observed 2026-11-12) the visible text of an assistant message that also calls a tool is not stored in the session log, so a plan presented in such a message, then answered in the question box, does not count; a hook could count an answered question whose own text names the plan, the task path and the revision. A one-word "Approve" cannot be recorded for a task without a report, because the quote must then decline the report ("no report"). A hook could accept those forms. Limit: looser matching can count a reply that is not an approval.
+8. Approvals in linked worktrees (seen on 2026-11-12, E10 and E11). A linked worktree never borrows the main checkout's approval, and a subagent in a linked worktree cannot see the main session's transcript, so its first write is refused. Release 2.8.0-rc.38 only names the two differing PLAN copies in the refusal (`worktree_copy_note` `:2400`). A hook could accept an approval recorded for the same task in the main checkout. Limit: that weakens the rule that approval evidence is bound to its workspace.
 
 ## Known gaps
 
@@ -142,7 +142,7 @@ No check covers these:
 - Whether a change qualifies as a small change or a lightweight edit.
 - What an approval means. The hook matches the owner's whole message after the presentation, not its intent.
 - Whether the built result matches the agreement; `workflow-deliver` reconciles it by review only.
-- Every rule in sessions where neither the router nor a phase skill was typed, loaded or read (`hooks/phase_gate.py:2358`), and on Codex.
+- Every rule in sessions where neither the router nor a phase skill was typed, loaded or read (`hooks/phase_gate.py:2369`), and on Codex.
 - Shell writes the gate cannot parse; its docstring calls command-text filtering advice, not a security boundary.
 - Whether rule 4's question was asked word for word, and whether a plain-HTML exception came from an explicit instruction.
 - Whether a delete of named files or folders under `.artifacts` was authorized. The hook refuses only bulk forms.

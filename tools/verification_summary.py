@@ -172,6 +172,16 @@ def main() -> int:
     parser.add_argument("--write", type=Path, help="update this VALIDATION.md instead of printing")
     args = parser.parse_args()
     root = args.root.resolve()
+    extra = {name: getattr(args, name) for name in EXTRA_CHECKS}
+    facts = gather_facts(root)  # before any write, so the working-tree fact describes the tree that was checked
+    if args.run and args.write:
+        # The checks read VALIDATION.md themselves: refresh its current section first, so they never fail on the old
+        # version line or on a failure message an earlier run copied into it (2026-11-12-gate-followups T2).
+        try:
+            write_section(args.write, render_block(facts, None, None, extra))
+        except (ValueError, OSError) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
     if args.run:
         tests = _execute([sys.executable, "-X", "utf8", "-m", "unittest", "discover", "-s", "tests",
                           "-p", "test_*.py", "-v"], TEST_COMMAND, root)
@@ -179,7 +189,7 @@ def main() -> int:
     else:
         tests = _read_result(args.tests_command, args.tests_log, args.tests_exit)
         validate = _read_result(args.validate_command, args.validate_log, args.validate_exit)
-    block = render_block(gather_facts(root), tests, validate, {name: getattr(args, name) for name in EXTRA_CHECKS})
+    block = render_block(facts, tests, validate, extra)
     if args.write:
         try:
             write_section(args.write, block)

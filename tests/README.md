@@ -57,7 +57,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.38; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.39; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -107,6 +107,10 @@ B15–B24 in the live-host suite cover policy loading outside workflow, safe rer
 
 The old pending example and historic task records are intentionally unchanged. The new task-overview example uses the same graph geometry with an optional sourced checkpoint/revision log. Inspect both desktop and mobile, the closed/open history disclosure and source links. Do not refresh approved visual baselines merely because a status section was added.
 
+
+## Bold approvals and one-run validation (2.8.0-rc.39)
+
+`test_gate_regressions.EmphasisedAnswers` checks that a typed answer in bold or italics matches its quote, that other words still do not, and that the install check still reads the plain words. `test_docs_consistency.test_one_run_brings_validation_to_a_new_version` runs `tools/verification_summary.py` on a stand-in project whose validator fails while VALIDATION.md names the old version.
 
 ## Approval gate checks (2.8.0-rc.38)
 

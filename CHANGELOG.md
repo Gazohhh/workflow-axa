@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0-rc.39 — bold approvals and one-run validation (2026-11-12)
+
+- Approval quotes: a typed answer in bold or italics (`**Approve r1, no report**`, `_..._`, `***...***`) now matches its quote. Only the comparison of a quote with the owner's message ignores these markers; refusals, installs, commits and pauses read the owner's words as before. Markers inside a word (`my__task`) stay.
+- `tools/verification_summary.py --run --write` refreshes VALIDATION.md's current section (new versions, no copied results) before it runs the checks, so one run brings VALIDATION.md to a new version. The working-tree fact is read before that first write.
+- Found, not changed: in T3 Code (observed 2026-11-12), the visible text of an assistant message that also calls a tool is not stored in the session log, so a plan presented in such a message does not count. Present the plan in a message that ends the turn; docs/RULE-CONTRACTS.md hook candidate 7.
+
 ## 2.8.0-rc.38 — approval gate checks (2026-11-12)
 
 Gate (`hooks/phase_gate.py`, Claude Code only, in sessions where the gate is active):

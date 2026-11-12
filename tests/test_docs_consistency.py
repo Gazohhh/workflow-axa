@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -178,6 +180,47 @@ class VerificationSummaryTests(unittest.TestCase):
             vs.write_section(path, "## Current verification\n\nnew\n")
             text = path.read_text(encoding="utf-8")
             self.assertEqual(text, "# Validation\n\n## Current verification\n\nnew\n\n## History — not current evidence\n\nkept\n")
+
+    def test_one_run_brings_validation_to_a_new_version(self):
+        """T2 of 2026-11-12-gate-followups: the tool used to run the checks while VALIDATION.md still named the old
+        version and then copied the validator's failure about it into the table, so every later run failed again. The
+        current section is now refreshed before the checks run."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".claude-plugin").mkdir()
+            (root / ".claude-plugin/plugin.json").write_text('{"version": "9.9.9-new"}', encoding="utf-8")
+            (root / "skills/rule-maker/rules").mkdir(parents=True)
+            (root / "skills/rule-maker/rules/version.json").write_text('{"rules_version": "1.0.0"}', encoding="utf-8")
+            (root / "tests").mkdir()
+            (root / "tools").mkdir()
+            # The stand-in validator fails while VALIDATION.md still mentions the old version anywhere current.
+            (root / "tools/validate.py").write_text(
+                "import pathlib, sys\n"
+                "current = pathlib.Path('VALIDATION.md').read_text(encoding='utf-8').split('## History')[0]\n"
+                "print('FAIL: names 9.9.8-old' if '9.9.8-old' in current else 'PASS: stand-in')\n"
+                "sys.exit(1 if '9.9.8-old' in current else 0)\n", encoding="utf-8")
+            path = root / "VALIDATION.md"
+            path.write_text("# Validation\n\n## Current verification\n\n| Package | workflow-axa 9.9.8-old, rules 1.0.0 |\n"
+                            "| Validator | x | exit 1; FAIL: VALIDATION.md states package 9.9.8-old |\n\n"
+                            "## History - older\n\nkept 9.9.8-old\n", encoding="utf-8")
+            done = subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"),
+                                   "--root", str(root), "--run", "--write", str(path)],
+                                  capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(done.returncode, 0, done.stderr)
+            text = path.read_text(encoding="utf-8")
+            current, history = text.split("## History", 1)
+            self.assertIn("workflow-axa 9.9.9-new", current)
+            self.assertIn("exit 0; PASS: stand-in", current)
+            self.assertNotIn("9.9.8-old", current)
+            self.assertIn("kept 9.9.8-old", history)
+            # Review V5: the facts are read before the tool's own first write. A real clean Git checkout, with the
+            # files committed, must still be reported clean.
+            for args in (["init", "-q"], ["config", "user.email", "t@example.invalid"], ["config", "user.name", "t"],
+                         ["add", "-A"], ["commit", "-q", "-m", "x"]):
+                subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"),
+                            "--root", str(root), "--run", "--write", str(path)], capture_output=True, check=True)
+            self.assertIn("| Working tree | clean |", path.read_text(encoding="utf-8"))
 
     def test_write_refuses_without_history_heading(self):
         with tempfile.TemporaryDirectory() as tmp:
