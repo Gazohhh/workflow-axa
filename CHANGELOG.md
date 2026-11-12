@@ -34,7 +34,7 @@ Version fields: `.claude-plugin/plugin.json`, the rules `version.json` package v
 
 Limits:
 
-- `VALIDATION.md` still holds the results of the 2026-11-10 run; only its version line was changed by hand. A new run replaces it before this release is published.
+- `VALIDATION.md` holds the generated run on the committed rc.37 tree. Browser, visual and host checks were not run.
 - Not verified yet: a fresh Claude Code session that shows the skill descriptions after reinstall.
 
 ## 2.8.0-rc.36 — one language, documentation checks and a small change route (2026-11-11)

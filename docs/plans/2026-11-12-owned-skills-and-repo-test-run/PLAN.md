@@ -1,14 +1,14 @@
 # Owned skills, rule contracts and repo test run
 
 ## Current checkpoint
-- Updated / phase: 2026-11-12; implementing
+- Updated / phase: 2026-11-12; verifying (delivered, owner checks pending)
 - Agreement (gate one): agreed 2026-11-12, agreement 1 (## Agreement below; DECISIONS D1 to D10). Owner's words: "Sure no need for a review codebase mapping design but do document everything in docs so no review.html is needed"
 - Approval (gate two): r1 approved, 2026-11-12, no report: "Approve r1, no report"
-- Implementation: T1 to T7 implemented; T1, T2, T3, T4, T5, T7 verified; T6 waits on the owner's fresh-session check; T8 (publish, reinstall, after-run) next
-- Verification / owner acceptance: V1 baseline; V3-V17 ticket checks and reviews; whole-feature review V17 done; owner acceptance pending; T6 human check pending
+- Implementation: implemented (T1 to T8); T1, T2, T3, T4, T5, T7 verified; T6 and T8 wait on human checks
+- Verification / owner acceptance: V1 baseline; ticket checks and reviews V2-V17; publish and reinstall V19; after-run V20; reconciliation V21; final suite and validate V22 (0 failed). Pending: T6 fresh-session check, owner acceptance
 - Blockers: none (E1/Q9 answered 2026-11-12)
 - Changed files: skills/ (9 merged skills, descriptions, workflow, codebase-map, workflow-doctor, rule-maker rules 1.8.8 and docs_check.py; deleted workflow/specialists.json and scripts/check_specialists.py), tools/validate.py, tools/vendor_specialists.py (deleted), tests/ (test_owned_skills.py new; test_vendored_specialists.py and test_specialists.py deleted; others updated), docs/RULE-CONTRACTS.md (new), AGENTS.md, CONTEXT.md, README.md, CHANGELOG.md, UPGRADE.md, VALIDATION.md, VENDORED-SKILLS.md, docs/ARCHITECTURE.md, docs/DESIGN.md, .claude-plugin/plugin.json, tests/behavioral/*.json; full list: git status
-- Next safe action: T8: commit and push this task's files (staged 2026-11-11 records stay out), reinstall Claude and Codex from Git, after-run on the 7 repos, compare
+- Next safe action: owner restarts Claude Code, checks the 6 skill descriptions in a fresh session (T6), accepts or asks for changes; optional: global_policy.py --apply for the missing ARTIFACTS.md, rules reviews for Altinstar and D:\PletrixV2, rules audit 1.8.8 for this repo
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main, main checkout. Existing staged edits in docs/plans/2026-11-11-consistency-review-findings/ (PLAN, FINDINGS, DECISIONS) belong to that task and stay untouched.
@@ -46,3 +46,15 @@ Excluded: hooks/ (D5), application repos (read-only), paid evaluations, the HTML
 r1 approved 2026-11-12. The owner's first answer "Yes go" (D12) did not carry the report waiver the gate needs (E1); the owner then answered "Approve r1, no report" (D14), which the checkpoint quotes. Includes T1 to T8 as written in TODO.md (r1), including the commit/push of workflow-axa, reinstall of Claude and Codex from Git and verification_summary.py --run --write. Excludes hooks/, application repo writes, paid evaluations, the staged 2026-11-11 records in the commit. Later owner decision inside scope: Q10 a (D17).
 
 ## Outcome
+
+Delivered 2026-11-12, partial until the owner's checks: commit 1c07609 (release) plus a records and docs commit, pushed to origin/main; Claude plugin 2.8.0-rc.37 and Codex ~/.agents/skills replaced from GitHub (V19).
+
+- Asked: the owner's view on UNDERSTANDING.md, skill improvements, no source references in skills/, a test run on 7 repos. Agreed: agreement 1 (D1-D10). Built: T1-T8.
+- Tickets: T1, T2, T3, T4, T5, T7 verified; T6, T8 implemented, waiting on human checks.
+- Acceptance: A1 verified (V2, V9, V15, V17, V21); A2 verified (V3, V4, V6, T1 comparison); A3 verified (V11, V15); A4 unverified (fresh-session check pending; cause E6, fix V12); A5 verified (V5, V10, V14, V20); A6 verified for checks, publish, reinstall and after-run (V19, V20, V22), owner acceptance pending.
+- Changed files: see the checkpoint and commit 1c07609. Documents: AGENTS.md, CONTEXT.md, README.md, CHANGELOG.md, UPGRADE.md, VALIDATION.md, VENDORED-SKILLS.md, docs/ARCHITECTURE.md, docs/DESIGN.md, docs/RULE-CONTRACTS.md (new), tests/README.md, tests/SCENARIOS.md.
+- Checks: validate.py PASS; full suite 1206 ran, 0 failed (V22); docs_check 0 blocking. One unnamed failure in the V18 run was not reproduced.
+- Reviews: T1 V6; T7 V7 and V14; T2, T5, T6 V15; whole feature V17 (Standards and Spec); reconciliation V21.
+- Decisions by: agent for the owner to confirm: D9, D10, D13, D15, D16, D18, D19.
+- Limits: hooks unchanged (D5; 6 hook candidates in docs/RULE-CONTRACTS.md); no live or paid evaluation; the Claude marketplace gazohhh is a local folder source (content equals GitHub, V19); ~/.agents/.skill-lock.json still names the old local source; C:\Users\Cem\.workflow-axa\ARTIFACTS.md is missing (predates this task).
+- Kept evidence: .artifacts/2026-11-12-owned-skills-and-repo-test-run/ (baseline/, after/, validate and suite logs) until owner acceptance; scratchpad backup of the rc.36 Codex skills until acceptance.

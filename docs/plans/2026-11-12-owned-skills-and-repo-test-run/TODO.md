@@ -11,7 +11,7 @@
 | T5 | Write the rule contracts and labels | Verified | T2 |
 | T6 | Find and fix the missing skill descriptions | implemented — verification pending | T1, T2 |
 | T7 | docs_check skips git-ignored and third-party folders | Verified | none |
-| T8 | Verify, publish, reinstall and run the after-test on the 7 repos | Not started | T4 |
+| T8 | Verify, publish, reinstall and run the after-test on the 7 repos | implemented — verification pending | T4 |
 
 ## Tickets
 
@@ -167,7 +167,7 @@ How to verify:
 - python -X utf8 -I tools/validate.py
 - Human check: the owner opens a fresh session after the reinstall and confirms the 6 descriptions show
 
-Verification: not run
+Verification: not run (cause found E6; descriptions shortened V12, V15; fresh-session check pending)
 
 References:
 - Supports: A4; D2
@@ -201,7 +201,7 @@ References:
 - Depends on: none
 
 ### T8 — Verify, publish, reinstall and run the after-test on the 7 repos
-Status: Not started
+Status: implemented — verification pending
 
 What needs to happen: run validate.py and the full suite; code review of the whole change (code-review skill, fresh context); commit and push workflow-axa (only this task's files; the staged 2026-11-11 records stay out unless the owner says otherwise); reinstall Claude and Codex from Git with README's install commands; run rules_stamp, docs_check and readiness inspect with the installed copy on the 7 repos into .artifacts/2026-11-12-owned-skills-and-repo-test-run/after/; write the before/after comparison and the Altinstar and D:\PletrixV2 rule gaps to FINDINGS; offer the rules reviews.
 
@@ -218,7 +218,7 @@ How to verify:
 - python -X utf8 -I tools/validate.py; python -X utf8 -m unittest discover -s tests -p "test_*.py"; git status of each application repo identical before and after.
 - Human check: the T6 fresh-session check; owner acceptance.
 
-Verification: not run
+Verification: not run (checks passed V18, V22; published and reinstalled V19; after-run V20; human checks pending)
 
 References:
 - Supports: A6; D3, D4, D7, D8
