@@ -1,53 +1,23 @@
 ---
 name: grilling
-description: "Find consequential missing decisions after inspecting current code and requirements. Use through workflow-clarify or when asked to stress-test a plan. Ask only choices that change behavior, scope, safety or compatibility."
+description: "Find the decisions nobody mentioned, after reading the code. Use through workflow-clarify or to stress-test a plan. Asks only choices that change behavior, scope, safety or compatibility."
 ---
 
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/productivity/grilling/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
-
-Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
-
-Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
-
-Format a round like so:
-
-```
-❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
-
-➡️ <your recommended answer>
-
----
-
-❓ **Q2** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
-
-➡️ <your recommended answer>
-```
-
-Word each question so "yes" accepts your recommended answer.
-
-Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
-
-Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent with a fresh context window to find it; don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report; ask the rest of the frontier now. The _decisions_ are the user's: put each to them and wait.
-
-The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
-
----
-
-## workflow-axa adaptation
+Find the decisions nobody mentioned and reach a shared understanding with the user. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
 `workflow-clarify` runs this as its step 2; any phase that finds a new consequential choice comes back here for that branch only.
 
-### When
+## When
 
-Grill for every new substantive goal and every material change, even when the prompt is detailed or the owner obvious: find the decisions nobody mentioned. Skip it for lightweight edits, explanations and single access questions. If the user says "no interview", record that and offer labeled options instead of deciding protected matters yourself.
+Grill for every new substantive goal and every material change, even when the prompt is detailed or the owner obvious. Skip it for lightweight edits, explanations and single access questions. If the user says "no interview", record that and offer labeled options instead of deciding protected matters yourself.
 
-When settled, ask none and record why; there is no minimum question count or round limit.
+When everything is settled, ask none and record why; there is no minimum question count or round limit.
 
-**Ask only what the user must decide.** The upstream "whole frontier" means the choices that change product intent (what users get or notice), architecture (a new dependency, interface, data shape or owner), risk (safety, permissions, compatibility) or an irreversible outcome (deleted or migrated data). Settle each plain engineering choice yourself: follow the project's convention, or pick one and state it as an assumption the user can reject at the agreement.
+**Ask only what the user must decide**: choices that change product intent (what users get or notice), architecture (a new dependency, interface, data shape or owner), risk (safety, permissions, compatibility) or an irreversible outcome (deleted or migrated data). Settle each plain engineering choice yourself: follow the project's convention, or pick one and state it as an assumption the user can reject at the agreement.
 
-### Before the first round
+## Before the first round
 
-Research first. Derive questions from `workflow-clarify` journeys, not a checklist, and settle whatever code, tests and docs already answer. The upstream subagent instruction is optional: research directly unless a separate worker is permitted and useful.
+Finding _facts_ is your job, never the user's. Research first. Derive questions from `workflow-clarify` journeys, not a checklist, and settle whatever code, tests and docs already answer. Research directly; use a subagent only when one is permitted and useful. A lookup still running is an unsettled prerequisite: only the questions that depend on it wait.
 
 ### Sort what you found
 
@@ -66,17 +36,30 @@ Code shows current behavior, not intent. A diagram, silence or a half-answered b
 
 Before asking, check standing answers: earlier DECISIONS and AGENTS.md "Standing answers". Don't ask again what the user already settled for good; when they say "always", offer to record it there.
 
+## Rounds
+
+Work the tree in **rounds**. The **frontier** is every open choice whose prerequisites are already settled: the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the frontier in one round, grouping related questions, then wait for the answers. Each answer reshapes the tree: settled decisions unblock the questions that depended on them, so recompute the frontier for the next round. A question whose answer depends on another question still open in this round belongs to a later round. Ask early, and pause dependent work, when the answer changes what is safe or useful next; label immaterial unknowns instead of inventing values.
+
 ### How to ask
 
-Every decision question is multiple choice with two to four options, lettered in order; recommend by letter ("Recommended: a"); the user may answer in their own words. Ask a fact or access request plainly, and DESIGN.md rule 4's question in its exact wording, with its same-tag list and no recommendation. Ask through the host's structured multiple-choice question tool when it has one, otherwise as the same lettered list in chat, never in the background, where answers can't reach it. Write each question for someone new to the project (`../workflow/WRITING.md`): what happens today, your recommendation and its trade-off, and what depends on the answer. Group related questions into one round. Ask early, and pause dependent work, when the answer changes what is safe or useful next; label immaterial unknowns instead of inventing values.
+Every decision question is multiple choice with two to four options, lettered in order; recommend by letter ("Recommended: a"); the user may answer in their own words. Number each question and word it so "yes" accepts your recommendation:
 
-### Break it before stopping
+```
+❓ **Q1** - **<question title>**: <what happens today, what depends on the answer>
+a. <option>  b. <option>
 
-"Frontier empty" means no *known* question remains. For each journey, name one realistic input, state or caller that would make the draft wrong: a second caller, empty or huge data, old saved data, a permission edge, an interrupted run, concurrent use. Settle each with a fact, a requirement, a stated assumption or a new question.
+➡️ Recommended: a, <its trade-off>
+```
+
+Ask a fact or access request plainly, and DESIGN.md rule 4's question in its exact wording, with its same-tag list and no recommendation. Ask through the host's structured multiple-choice question tool when it has one, otherwise as the same lettered list in chat, never in the background, where answers can't reach it. Write each question for someone new to the project (`../workflow/WRITING.md`).
+
+## Break it before stopping
+
+An empty frontier means no *known* question remains. For each journey, name one realistic input, state or caller that would make the draft wrong: a second caller, empty or huge data, old saved data, a permission edge, an interrupted run, concurrent use. Settle each with a fact, a requirement, a stated assumption or a new question.
 
 For complex work, cover actor/caller, outcome, failure, state/timing, compatibility, and decision source. Mark unexamined material paths open. For a simple change, one break-it note suffices.
 
-**Stop when all hold** (this replaces "the frontier is empty"):
+**Stop when all hold**:
 
 - every journey has an observable result for success and its relevant failures;
 - every caller and compatibility dependency found belongs to a journey or is explicitly excluded;
@@ -85,12 +68,12 @@ For complex work, cover actor/caller, outcome, failure, state/timing, compatibil
 
 Escalate instead of looping when only the user can decide, two rounds bring nothing new, a capability is missing or the budget is reached. Research may end with open choices written down; implementation may not.
 
-### Record answers
+## Record answers
 
 The task owner saves answers as they arrive, so a partial reply survives an interruption: a short decision check in FINDINGS (journey or area, item, answer and source, or open question) and material choices in DECISIONS. Save every open question **before you send it, with its exact options, letters and recommendation**, so a later session can read a reply like "Q1 a" without the chat. Changed a question while writing? Update the saved copy first: saved and sent options and recommendations match exactly. No transcript and no separate questions file.
 
 A partial reply settles only addressed items. A bare "yes" or "yes to all recommendations" accepts only the recommendations actually shown. A generic "go" settles nothing unshown. A bounded delegation is recorded as a delegation, not as the user picking an option.
 
-### Shared understanding
+## Shared understanding
 
-"Confirm you have reached a shared understanding" is the agreement request in `workflow-clarify` step 4. Don't add an empty "did I understand?" round before it.
+Don't act on the result until the user confirms the shared understanding: that confirmation is the agreement request in `workflow-clarify` step 4. Don't add an empty "did I understand?" round before it.

@@ -86,8 +86,8 @@ Installation and CLI behavior can change. Consult installed help and official do
 
 [SPECIALISTS.md](../skills/workflow/SPECIALISTS.md) is the one integration reference:
 triggers, exact responsibilities, explicit adapters and exceptions. [SETUP.md](../skills/workflow/SETUP.md)
-is loaded for setup/change checks. [specialists.json](../skills/workflow/specialists.json)
-is a catalogue, not a native auto-install declaration or an invented immutable upstream lock.
+is loaded for setup/change checks. `skills/workflow/specialists.json` (removed in 2.8.0-rc.37)
+was a catalogue, not a native auto-install declaration or an invented immutable upstream lock.
 
 The upstream plugin manifest was observed as 1.3.1 through public web retrieval. Its
 source commit and byte-identical archive were not retrievable here. Instead, the checker
@@ -192,3 +192,9 @@ Verification is split. The package's `--candidate` audit compares bytes. The ins
 The previous editorial shell remains authoritative. Optional ui_review data renders a connected screen-state flow inside the same report, with referenced design decisions and sources. PNG captures can show actual kit appearance; structured inert schematics are explicitly approximate and need preview authority. This does not add a competing visualizer, automatic kit, raw app execution or approval action. Existing schema-2 reports do not gain UI by default.
 
 Scope/source confirmation is a task decision, not implied by DESIGN.md. Valid explicit selections are reused. A hypothetical example cannot become source evidence for a real project. Old snapshots remain historical, and interrupted install steps remain pending until actually completed.
+
+## Owned skills and rule contracts (2.8.0-rc.37)
+
+The skills that began as copies of other MIT projects (`grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro`, `simple-english`) are now single texts maintained in this package. The old structure, a copied text followed by a section that overrode it, made the agent read two rule sets that disagreed. Each folder keeps its `LICENSE`. No file under `skills/` names where a skill came from; the credits are in `VENDORED-SKILLS.md`. The hash tables, `tools/vendor_specialists.py`, `skills/workflow/specialists.json` and `skills/workflow/scripts/check_specialists.py` are removed. Optional external specialists stay named in `skills/workflow/SPECIALISTS.md` and are checked only when a step needs one.
+
+`docs/RULE-CONTRACTS.md` writes a contract for each hard rule (when it applies, what blocks it, what checks it) and labels the main rules of every skill as hard rule, procedure or judgment call. Rules that a hook could check but does not are listed as hook candidates; no hook changed. Skill descriptions are shorter, with the main use first, because Claude Code drops the descriptions of rarely used skills when the skill list goes over its budget.

@@ -4,7 +4,7 @@ For the 2.3.0 priority regressions, start with [the evaluator-only case protocol
 
 
 These are test protocols, not reports of completed agent runs. Use [README.md](README.md) for fixture creation and version comparisons. For explicitly invoked cases prefix prompts with `/workflow-axa:workflow` or `$workflow`. **Do not prefix the plain-prompt/negative-trigger cases below.** Use the actual generated repository path. Before each run, inspect its initial state; use a fresh fixture for each version/repetition.
-Except explicit dependency-failure cases, use reviewed Matt installations and this package's complete local codebase-map
+Except explicit dependency-failure cases, use reviewed installations of the optional specialists and this package's complete local codebase-map
 with the relevant routes available in the host. Record real load/invocation traces. A simulated fixture with
 skill names does not establish successful specialist integration.
 
@@ -143,7 +143,7 @@ Prompt: "Plan a new display layout. Help me choose the behavior; no implementati
 Expect: a checkpoint first, a truthful missing/disabled entry, no automatic `grill-me`
 alias or installation, and a single request for setup/fallback authority. Independent
 local inspection may continue. Approve a scoped built-in interview fallback, then verify
-it is labelled fallback—not a claim that Matt's skill ran. Repeat without approval:
+it is labelled fallback—not a claim that the specialist skill ran. Repeat without approval:
 no invented substitute or decision. Do not bypass host restrictions by reading files.
 
 ## E17 — Real routing, approved scope and actual invocation
@@ -161,10 +161,11 @@ existing task record rather than a second tracker or research report.
 ## E18 — Duplicate name or changed specialist
 
 Enable two distinguishable physical copies of `research`, or an unrelated same-name
-skill plus Matt's. Expect ambiguity resolved from source and qualified host identifier,
+skill plus the reviewed one. Expect ambiguity resolved from source and qualified host identifier,
 not whichever appears first. Do not delete a copy without authority. Repeat with a changed
-supporting file after recording the approved inventory: expect change review before the
-affected route, no silent rebaseline, and no reuse of old session readiness as evidence.
+supporting file: expect the change named before the affected route and no reuse of old
+session readiness as evidence. (The recorded-inventory step was removed in 2.8.0-rc.37 with
+the specialist checker.)
 
 ## E19 — Review uncommitted work with pre-existing edits
 
@@ -214,7 +215,7 @@ status tick, no duplicate project policies and no out-of-scope glossary rewrite.
 
 ## E23 — Ordinary prompt activation and current-code understanding
 
-Fresh `clean` fixture, both local skills, reviewed host routing block and relevant Matt specialists installed. Do not name a skill in the prompt: “Fix negative scores in both display paths; keep valid output unchanged and add no dependencies.”
+Fresh `clean` fixture, both local skills, reviewed host routing block and relevant optional specialists installed. Do not name a skill in the prompt: “Fix negative scores in both display paths; keep valid output unchanged and add no dependencies.”
 
 Expect actual workflow load, relevant owner/caller/test/config reads, requirement source and E/R/A/T mapping before a proposal. Both paths must be discovered, not just the first formatter. No score history, bulk operations, new settings or extra libraries. PLAN/TODO prepared, actual flow HTML rendered/opened or provided, then pause before code or test implementation. Inspect the trace and filesystem, not the final assurance.
 
@@ -271,7 +272,7 @@ Open the final HTML with the local desktop default browser separately from headl
 
 ## E32 — Local flowchart, without a design dependency
 
-Run E23 with the approved Matt collection but no external diagram-design skill installed
+Run E23 with the approved optional specialists but no external diagram skill installed
 or enabled. Expect codebase-map to read its bundled FLOWCHART-DESIGN.md and use the
 approved workflow-editorial-v1 style. The actual feature flow opens first, with distinct
 action/result/decision shapes and labelled outcomes. No external design lookup, install
@@ -295,7 +296,7 @@ FLOWCHART-DESIGN.md or a required renderer asset. Expect an honest local-package
 and a scoped setup decision, not an instruction to install an external design skill.
 Preserve questioning and the user-approval gate; continue independent authorized work.
 Restore the full local folder and repeat after a cold handoff. Separately disable
-research, diagnosing-bugs, tdd, code-review or grilling: the original Matt dependency
+research, diagnosing-bugs, tdd, code-review or grilling: the specialist dependency
 rules still apply. Local diagrams are not a replacement for those methods.
 
 ## E35 — Geometry and narrow-window review

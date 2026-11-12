@@ -7,7 +7,6 @@ Reviewed 2026-10-29. These primary sources inform loading/verification boundarie
 - [Codex instruction discovery](https://developers.openai.com/codex/guides/agents-md): global/profile overrides, directory discovery and context limits.
 - [Codex hooks](https://developers.openai.com/codex/hooks): trust and event-specific behavior. No hook is installed by this package's rules activation.
 - [Agent Skills specification](https://agentskills.io/specification): conditional references versus automatically loaded instruction text.
-- [Matt's codebase-design](https://github.com/mattpocock/skills/blob/main/skills/engineering/codebase-design/SKILL.md): retained external discipline for scoped design review. Existing workflow adapter still controls scope, approvals and terminology compatibility.
 
 Unknown action semantics or incomplete prerequisites stop affected work under the policy; host permissions remain the actual boundary.
 
@@ -41,7 +40,7 @@ The UI policy in DESIGN.md is team policy, not a framework standard. W3C's [HTML
 - Host loading: https://code.claude.com/docs/en/memory ; https://developers.openai.com/codex/guides/agents-md . Observe actual installed versions/settings; references are not runtime proof.
 - Component catalog concepts: https://storybook.js.org/docs/get-started/whats-a-story/ ; https://design-system.service.gov.uk/community/contribution-criteria/ . Borrow source-backed component states and review, not those products' visual style or a requirement to install Storybook.
 
-Audit modes, policy-conflict handling, catalog schema, human approval and operation boundaries are team policy. They are not claims that these sources prescribe this workflow. No upstream files or third-party design kit were bundled.
+Audit modes, policy-conflict handling, catalog schema, human approval and operation boundaries are team policy. They are not claims that these sources prescribe this workflow. No source files or third-party design kit were bundled.
 
 ## Source-backed kit references
 

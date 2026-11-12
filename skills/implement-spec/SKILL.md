@@ -1,16 +1,14 @@
 ---
 name: implement-spec
-description: "Upstream ticket-graph implementation reference only. Workflow AXA does not invoke this directly; use workflow-execute for approved tickets without automatic branches, merges, tracker changes, or commits."
+description: "Ticket-graph implementation reference only; the workflow never runs it. Use workflow-execute for approved tickets."
 disable-model-invocation: true
 ---
 
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/implement-spec/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
+**Reference only.** This describes the ticket-graph method for implementing a spec. workflow-axa never runs it as written: `workflow-execute` owns the local version, with tickets in the task's TODO.md and no tracker changes, branches, merges or commits. Use `/workflow` for implementation.
 
-You have been provided a spec. This spec should have tickets associated with it, describing how to implement the spec.
+## The method
 
-The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
-
-The goal is the entire spec implemented on a single **integration branch**, with every ticket resolved the way the issue tracker closes work.
+A spec has tickets that describe how to implement it. The goal is the entire spec implemented on a single **integration branch**, with every ticket resolved the way the issue tracker closes work.
 
 The tickets are not a list of steps. They are a **task graph** with blocking relationships between them. This means there is always a **frontier** of tickets which are ready to be grabbed.
 
@@ -30,21 +28,15 @@ Communication to and from subagents should be sparse. Communicate primarily thro
 
 4. Use a fresh **implementer subagent** for each ticket, each in its own worktree on its own branch. Each implementer subagent:
    - confirms its worktree is based on the integration branch before starting, and resets onto it if not;
-   - calls the Skill tool with `tdd` to build the ticket;
+   - reads `../tdd/SKILL.md` to build the ticket;
    - merges the integration branch tip into its own branch before reporting done
 
 5. Once an **implementer subagent** completes, merge its work to the integration branch with a **merger subagent**.
 
 6. If this changes the **frontier** of available tickets, kick off more **implementer subagents** to work on the new tickets. This allows for maximum concurrency.
 
-7. Once all tickets are complete, call the Skill tool with `code-review` on the integration branch. Fix all issues raised by the code review in a single fresh **implementer subagent**.
+7. Once all tickets are complete, review the integration branch with `../code-review/SKILL.md`. Fix all issues raised by the code review in a single fresh **implementer subagent**.
 
 8. If a draft PR exists, mark it ready for review. Otherwise, resolve each ticket the way the issue tracker closes work, and report the integration branch.
 
 9. Clean up all **implementer subagent** worktrees.
-
----
-
-## workflow-axa adaptation
-
-**Reference only.** This package never runs this skill as written; `workflow-execute` owns the local adaptation (no tracker, branches, merges or commits). Use `/workflow` for implementation.

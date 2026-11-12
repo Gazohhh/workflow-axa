@@ -1,41 +1,41 @@
 ---
 name: code-review
-description: "Review task-scoped changes or a branch, PR, or uncommitted diff against standards and the agreed spec. Separate Standards and Spec findings; reviewer independence and parallelism depend on host capability."
+description: "Review a diff on two separate axes, Standards and Spec. Use for a task's changes, a branch, a pull request or uncommitted work."
 ---
 
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/code-review/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
-
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Two-axis review of a diff:
 
 - **Standards**: does the code conform to this repo's documented coding standards?
-- **Spec**: does the code faithfully implement the originating issue / spec?
+- **Spec**: does the code faithfully implement the agreed spec?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. Start every sub-agent with a fresh context window.
+The axes stay separate so one axis's findings don't mask the other's; then this skill aggregates their findings.
 
-The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
+This package's `code-review` (plugin name `workflow-axa:code-review`) is the reviewer the workflow means. A host's built-in command or another installed skill with the same name is a different tool.
 
 ## Process
 
-### 1. Pin the fixed point
+### 1. Pin the diff
 
-Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.). If they didn't specify one, ask for it.
+In a task, review the task's own changes: staged, unstaged *and untracked*, measured against the starting `git status`/diff in the task records. `git diff <base>...HEAD` alone misses uncommitted work; when the user had edits before the task, separate theirs from yours. Never stage, commit, create a merge-base or fetch an issue just to get a diff.
 
-Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
+For a branch or PR review outside a task, the fixed point is whatever the user said (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.); if they didn't specify one, ask. Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base), and the commits via `git log <fixed-point>..HEAD --oneline`.
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
+Before going further, confirm any ref resolves (`git rev-parse <ref>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside the reviewers.
 
 ### 2. Identify the spec source
 
-Look for the originating spec, in this order:
+In a task, the spec is the PLAN `## Agreement` and the approved tickets. A ticket review uses that ticket's acceptance and files; the whole-feature review uses the whole agreement and the whole task diff. No issue tracker is needed.
 
-1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), fetched via the workflow in the tracker doc.
+Outside a task, look in this order:
+
+1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), when the tracker is reachable.
 2. A path the user passed as an argument.
 3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** axis skips and reports "no spec available".
 
 ### 3. Identify the standards sources
 
-Search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list.
+Search the repo for every file that documents how code should be written, including AGENTS.md/CLAUDE.md. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list. Add the applicable workflow-axa shared rules (`../workflow/RULES.md`) and the `../workflow/AUDIT.md` categories.
 
 On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
@@ -57,23 +57,23 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-### 4. Spawn both sub-agents in parallel
+### 4. Run both axes
 
-Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+Run each axis in a fresh subagent when the host has them: issue both calls together, in the foreground, and aggregate the reports they return. A fresh subagent that did not build the change is an **independent** review even when it runs both axes one after the other: label it "independent, axes sequential". When the builder reviews its own change, label it "self-review". Keep the axes separate either way.
 
-**Standards sub-agent prompt** should include:
+**Standards prompt** should include:
 
-- The full diff command and commit list.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
+- The diff (in a task: the changed and untracked files) and any commits.
+- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the subagent has no other access to it).
 - The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
-**Spec sub-agent prompt** should include:
+**Spec prompt** should include:
 
-- The diff command and commit list.
+- The diff (in a task: the changed and untracked files) and any commits.
 - The path or fetched contents of the spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
 
-If the spec is missing, skip the Spec sub-agent and note this in the final report.
+If the spec is missing, skip the Spec axis and note this in the final report.
 
 ### 5. Aggregate
 
@@ -81,24 +81,15 @@ Present the two reports under `## Standards` and `## Spec` headings, verbatim or
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
 
+### 6. After repairs
+
+Rerun the affected checks and re-review the affected axis.
+
 ## Why two axes
 
 A change can pass one axis and fail the other:
 
 - Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
-- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
+- Code that does exactly what the spec asked but breaks the project's conventions → **Spec pass, Standards fail.**
 
 Reporting them separately stops one axis from masking the other.
-
----
-
-## workflow-axa adaptation
-
-This replaces the upstream fixed-point, tracker and subagent assumptions where they conflict:
-
-- **The diff.** Review the task's own changes: staged, unstaged *and untracked*, measured against the starting `git status`/diff in the task records. `git diff <base>...HEAD` alone misses uncommitted work; when the user had edits before the task, separate theirs from yours. Never stage, commit, create a merge-base or fetch an issue just to get a diff.
-- **The spec.** The PLAN `## Agreement` and the approved tickets. A ticket review uses that ticket's acceptance and files; the whole-feature review uses the whole agreement and the whole task diff. No tracker is needed.
-- **Standards sources** include the project's AGENTS.md/CLAUDE.md, applicable workflow-axa shared rules (`../workflow/RULES.md`) and `../workflow/AUDIT.md` categories, plus the smell baseline below.
-- **Subagents.** Run the two axes in fresh subagents when the host has them. A fresh subagent that did not build the change is an **independent** review even when it runs both axes one after the other: label it "independent, axes sequential". "Self-review" means the builder reviewed its own change. Keep the axes separate either way.
-- **After repairs**, rerun the affected checks and re-review the affected axis.
-- **Identity.** This package's `code-review` (plugin name `workflow-axa:code-review`) is the reviewer the workflow means. A host's built-in command or another installed skill with the same name is a different tool.

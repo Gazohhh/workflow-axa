@@ -80,8 +80,23 @@ class DocFactsTests(unittest.TestCase):
 
     def test_vendored_count_must_match_the_list(self):
         root = self.candidate()
-        edit(root / "VENDORED-SKILLS.md", "Nine skills", "Eight skills")
+        with (root / "VENDORED-SKILLS.md").open("a", encoding="utf-8", newline="") as stream:
+            stream.write("\nEight skills are credited here.\n")
         self.assertTrue(any("VENDORED-SKILLS.md states 8 skills" in e and "9" in e for e in validate_package(root)))
+
+    def test_short_credits_note_without_counts_passes(self):
+        # D1: VENDORED-SKILLS.md may shrink to a credits and licence note with no hash tables and no counts.
+        root = self.candidate()
+        (root / "VENDORED-SKILLS.md").write_text(
+            "# Credits\n\nSome skills began as copies of MIT-licensed projects. "
+            "Each such skill folder keeps its LICENSE file.\n", encoding="utf-8", newline="")
+        self.assertEqual([e for e in validate_package(root) if "VENDORED-SKILLS" in e], [])
+
+    def test_each_formerly_copied_skill_must_keep_its_licence(self):
+        # D9: the LICENSE file replaces the hash tables as the check on these folders.
+        root = self.candidate()
+        (root / "skills/grilling/LICENSE").unlink()
+        self.assertIn("Missing required file: skills/grilling/LICENSE", validate_package(root))
 
     def test_vendored_count_in_readme_must_match(self):
         root = self.candidate()

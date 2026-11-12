@@ -1,6 +1,6 @@
 # Workflow AXA
 
-The words this package uses in its skills, references and reports, and the one file that owns each repeated rule. `tools/validate.py` reads the `_Avoid_:` lines, the identifier list and the owner table, and reports each rejected synonym it finds in `skills/**/*.md` outside code spans and vendored upstream text.
+The words this package uses in its skills, references and reports, and the one file that owns each repeated rule. `tools/validate.py` reads the `_Avoid_:` lines, the identifier list and the owner table, and reports each rejected synonym it finds in `skills/**/*.md` outside code, HTML comments and the identifiers listed below. The formerly copied skills are checked like every other skill.
 
 ## Language
 
@@ -63,6 +63,19 @@ The route for a visible edit to text, order or visibility of existing elements o
 **Limited exception**:
 A rules-readiness exception the user grants for one named piece of work while project rules are missing.
 _Avoid_: scoped exception
+
+### Rules
+
+`docs/RULE-CONTRACTS.md` labels each main rule of a skill with one of these three kinds.
+
+**Hard rule**:
+A rule that must always hold. A break is a defect, even when the result looks right.
+
+**Procedure**:
+The expected order of steps. The agent records a justified deviation.
+
+**Judgment call**:
+A decision the agent makes with a stated criterion. Two good runs can differ.
 
 ### People and helpers
 

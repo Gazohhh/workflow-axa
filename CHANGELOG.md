@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.8.0-rc.37 — owned skills, rule contracts and docs check (2026-11-12)
+
+Owned skills:
+
+- The skills that began as copies of other MIT projects (`grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro`, `simple-english`) are now single texts maintained in this package. The banner and the "workflow-axa adaptation" section are gone: each rule of the old adaptation is part of the text, or a task decision records why it was dropped. Each folder keeps its `LICENSE`.
+- No file under `skills/` names where a skill came from. The new `tests/test_owned_skills.py` checks this and checks that each of the nine folders keeps its `LICENSE`. `skills/codebase-map/FLOWCHART-DESIGN.md` no longer names the design project that inspired it.
+- `VENDORED-SKILLS.md` is now a short credits and license note: mattpocock/skills (MIT, Matt Pocock), AminBlg/SimpleEnglish (MIT) and the diagram-design inspiration for the flowchart style.
+- `tools/vendor_specialists.py` and `tests/test_vendored_specialists.py` are removed. `tools/validate.py` checks the whole text of these skills like any other skill: rejected words, repeated paragraphs, word budgets, and a required `LICENSE`.
+
+Specialists:
+
+- `skills/workflow/specialists.json`, `skills/workflow/scripts/check_specialists.py` and `tests/test_specialists.py` are removed. Optional external specialists stay named in `skills/workflow/SPECIALISTS.md` and are checked only when a step needs one. The disk inventory and the baseline comparison of external copies are dropped.
+
+Rule contracts:
+
+- New `docs/RULE-CONTRACTS.md`. For each hard rule (agreement, implementation approval, small change, never write CSS, artifact cleanup) it states when the rule applies, what blocks it, what to do when blocked and what checks it. It labels the main rules of every skill as hard rule, procedure or judgment call, and lists hook candidates. No hook changed.
+- `CONTEXT.md` defines "hard rule", "procedure" and "judgment call".
+
+Skill descriptions:
+
+- Skill descriptions are shorter, with the main use first (about 30 percent shorter in total). Claude Code gives the skill list a budget of about 1% of the context window and drops the descriptions of the least-used skills when the list is over it. README.md names the two settings that help: `skillListingBudgetFraction` and `skillOverrides`.
+
+Docs check:
+
+- `skills/rule-maker/scripts/docs_check.py` skips folders that Git ignores at any depth. A folder that nothing links and that has its own `LICENSE` is reported once, as a `third-party-folder` note, instead of once per file. A folder with a `SKILL.md` is not a third-party folder.
+
+Rules library 1.8.8:
+
+- `SOURCES.md`, `TESTING.md` and `RUST.md` no longer name source projects. `skills/rule-maker/rules/CHANGES.md` lists the change.
+
+Version fields: `.claude-plugin/plugin.json`, the rules `version.json` package version, `RENDERER_VERSION` in `skills/codebase-map/scripts/render_report.py` and the `candidate_version` of the four live-case files under `tests/behavioral/` are 2.8.0-rc.37.
+
+Limits:
+
+- `VALIDATION.md` still holds the results of the 2026-11-10 run; only its version line was changed by hand. A new run replaces it before this release is published.
+- Not verified yet: a fresh Claude Code session that shows the skill descriptions after reinstall.
+
 ## 2.8.0-rc.36 — one language, documentation checks and a small change route (2026-11-11)
 
 Gate and hooks:

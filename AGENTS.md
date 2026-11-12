@@ -17,8 +17,8 @@ current session.
 - Inspect Git status and relevant diffs before edits. Preserve existing
   changes, including UI-lite work. Resolve overlapping writers before
   changing their files.
-- Preserve vendored upstream content and licences according to
-  VENDORED-SKILLS.md.
+- Keep the LICENSE file in each of the nine formerly copied skill folders
+  and the credits in VENDORED-SKILLS.md. These skills are our own text now.
 - Read package versions from .claude-plugin/plugin.json and the rules
   version from skills/rule-maker/rules/version.json; distinguish candidate
   files, installed copies and observed session registrations.
@@ -43,8 +43,6 @@ current session.
   `skills/workflow/scripts/global_policy.py --apply` (merge blocks into the
   user's global ~/.claude/CLAUDE.md and ~/.codex/AGENTS.md; global_policy.py
   also writes ~/.workflow-axa/ARTIFACTS.md),
-  `tools/vendor_specialists.py` (rewrites vendored skills/ and
-  VENDORED-SKILLS.md; it has no read-only mode),
   `tools/verification_summary.py --run --write` (runs the suite and rewrites
   VALIDATION.md). The first two with `--check` or no mode, and
   verification_summary.py without `--write`, only read.
@@ -78,8 +76,12 @@ current session.
   Covers: tests/, tools/
 - [docs/EVALUATION.md](docs/EVALUATION.md): what offline tests do not prove
   and how fresh host runs are prepared. Read before a live or paid run.
-- [VENDORED-SKILLS.md](VENDORED-SKILLS.md): pinned upstream skills, licences
-  and regeneration. Read when touching a vendored skill.
+- [docs/RULE-CONTRACTS.md](docs/RULE-CONTRACTS.md): contracts for the hard
+  rules, what checks each rule, labels per skill and hook candidates. Read
+  when changing a gate, a hook or a hard rule.
+- [VENDORED-SKILLS.md](VENDORED-SKILLS.md): credits and licences of the
+  formerly copied skills. Read when touching one of those skills or its
+  LICENSE.
   Covers: skills/grilling/, skills/tdd/, skills/code-review/, skills/writing-for-agents/, skills/codebase-design/, skills/domain-modeling/, skills/implement-spec/, skills/retro/, skills/simple-english/
 - [README.md](README.md): user-facing overview, entry points, install and
   release commands. Read when a user-visible behavior, command or count changes.

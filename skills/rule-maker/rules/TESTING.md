@@ -1,6 +1,6 @@
 # Meaningful tests and final-state evidence
 
-**Applies to:** behavior changes, bug fixes, refactors and modifications to checks. Keep the existing Matt `tdd`/review routes and project gates; this module sharpens their evidence requirements.
+**Applies to:** behavior changes, bug fixes, refactors and modifications to checks. Keep the existing `tdd`/review routes and project gates; this module sharpens their evidence requirements.
 
 ## Required
 

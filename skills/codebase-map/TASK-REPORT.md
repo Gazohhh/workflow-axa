@@ -19,7 +19,7 @@ Use the new JSON for normal renderer validation and presentation. The tool chang
 
 `task_report` has `phase` (planning/progress/delivery), `agreement`, `sections`, `tickets`, `checks` and `acceptance_results`, and optional `attention`. Delivery also requires `completion` (complete/partial/blocked). An awaiting-approval or approved plan requires `screen_change`: `visible` when users see any change on screen (order, text, which rows show, layout), which also requires an application `ui_review` screen diagram ([UI-FLOW.md](UI-FLOW.md)), otherwise `none`. Never copy a sibling task's report without checking this. Unknown keys inside these new objects fail validation; older top-level extension behavior is unchanged.
 
-Every sourced object uses `source` (an existing supplied source ID) and `locator` (the specific record heading, line or result). Text is escaped; no Markdown, raw HTML, scripts or executable commands are evaluated. Paragraph breaks and line breaks remain readable. Write every prose field with the `simple-english` skill (`../simple-english/SKILL.md`, Plain mode and its workflow-axa adaptation) and run its self-check before rendering; keep exact commands, identifiers and contractual terms.
+Every sourced object uses `source` (an existing supplied source ID) and `locator` (the specific record heading, line or result). Text is escaped; no Markdown, raw HTML, scripts or executable commands are evaluated. Paragraph breaks and line breaks remain readable. Write every prose field with the `simple-english` skill (`../simple-english/SKILL.md`, Plain mode) and run its self-check before rendering; keep exact commands, identifiers and contractual terms.
 
 | Object | Fields and meaning |
 |---|---|

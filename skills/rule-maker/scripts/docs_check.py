@@ -8,8 +8,10 @@ indexes they reach. An index document is a file named AGENTS.md, CLAUDE.md, READ
 document that links at least two different .md documents with a .md link on at least half of its non-empty
 lines (headings, code and comments aside). Only index documents add a level and only they form an index cycle.
 Each finding has a severity: blocking, warning or note. Exits 1 when any finding is blocking, 2 on bad usage,
-otherwise 0. Never writes a file; dependency, build and output folders and nested repositories (a folder with
-its own .git) are not searched. Without an AGENTS.md, the root CLAUDE.md is the entry point. The plain run also
+otherwise 0. Never writes a file; dependency, build and output folders, folders Git ignores at any depth (asked
+read-only; without Git only the top-level .gitignore is read) and nested repositories (a folder with its own .git)
+are not searched. A folder with its own LICENSE that nothing reached links into is one third-party note. Without
+an AGENTS.md, the root CLAUDE.md is the entry point. The plain run also
 asks Git, read-only, which reached documents it does not track (a note each); without Git that check is skipped.
 
 With --changed (or --changed-from-git, which asks Git read-only), it also lists the documents related to each
@@ -251,7 +253,7 @@ class Scan:
         self.by_name: dict[str, list[str]] | None = None  # every repository path by its last name, built on use
         self.listings: dict[Path, dict[str, str] | None] = {}
         self.index_cache: dict[str, bool] = {}
-        self.ignore: tuple[set[str], set[str]] | None = None  # ignored_folders(), read on first use
+        self.ignore: Ignored | None = None  # ignored_folders(), read on first use
         self.copies: set[str] = set()  # CLAUDE.md files that are a full copy of the AGENTS.md beside them
         self.packages: dict[str, set[str]] = {}  # each skill's SKILL.md -> the Markdown it reaches
         # The file a session starts from: AGENTS.md, or CLAUDE.md when the repository has no AGENTS.md.
@@ -298,22 +300,26 @@ class Scan:
             return None, backslash
         return '/'.join(parts) or '.', case or backslash
 
-    def ignored(self, path: str) -> bool:
-        """A root-relative path inside a folder the walk prunes: the fixed list, or a plain .gitignore folder name."""
+    def ignore_rules(self) -> Ignored:
         if self.ignore is None:
             self.ignore = ignored_folders(self.root)
-        anywhere, at_root = self.ignore
+        return self.ignore
+
+    def ignored(self, path: str) -> bool:
+        """A root-relative path inside a folder the walk prunes: the fixed list, a plain top-level .gitignore folder
+        name, or a folder Git reports as ignored."""
         parts = path.rstrip('/').split('/')
         # The folders on the path: every part but the last, and the last too when the path names a folder (`out/`).
         folders = parts if path.endswith('/') else parts[:-1]
-        return any(folder in anywhere for folder in folders) or bool(folders and folders[0] in at_root)
+        rules = self.ignore_rules()
+        return any(rules.prunes('/'.join(folders[:end])) for end in range(1, len(folders) + 1))
 
     def ending_with(self, claim: str) -> list[str]:
         """Real files and folders whose path ends with `claim` on whole segments, exact letter case. The repository
         is listed once, on first use, with the same pruned folders as the document walk."""
         if self.by_name is None:
             self.by_name = {}
-            for path in repository_paths(self.root):
+            for path in repository_paths(self.root, ignore=self.ignore_rules()):
                 path = path.rstrip('/')
                 self.by_name.setdefault(posixpath.basename(path), []).append(path)
         return [path for path in self.by_name.get(posixpath.basename(claim), [])
@@ -450,9 +456,22 @@ class Scan:
                     stack.append(iter(children(child)))
 
 
-def ignored_folders(root: Path) -> tuple[set[str], set[str]]:
-    """(names ignored at any depth, names ignored only at the root): the fixed list plus top-level .gitignore
-    lines that are plain folder names. Globs, negations and lines with an inner slash are left alone."""
+@dataclass(frozen=True)
+class Ignored:
+    """The folders the walk prunes."""
+    anywhere: frozenset[str]  # folder names pruned at any depth
+    at_root: frozenset[str]  # folder names pruned only directly under the root
+    paths: frozenset[str]  # root-relative folders Git reports as ignored, at any depth
+
+    def prunes(self, folder: str) -> bool:
+        """The root-relative folder (no trailing slash) is itself pruned; its parents are not checked."""
+        return posixpath.basename(folder) in self.anywhere or folder in self.at_root or folder in self.paths
+
+
+def ignored_folders(root: Path) -> Ignored:
+    """The fixed list plus top-level .gitignore lines that are plain folder names (globs, negations and lines with
+    an inner slash are left alone), plus the folders Git itself reports as ignored, from any .gitignore or exclude
+    file. The .gitignore names also cover folders that do not exist yet, which Git cannot report."""
     anywhere, at_root = set(IGNORED_FOLDERS), set()
     try:
         lines = (root / '.gitignore').read_text(encoding='utf-8-sig').splitlines()
@@ -464,14 +483,30 @@ def ignored_folders(root: Path) -> tuple[set[str], set[str]]:
         name = name.strip('/')
         if name and not line.lstrip().startswith(('#', '!')) and re.fullmatch(r'[\w.-]+', name):
             (at_root if anchored else anywhere).add(name)
-    return anywhere, at_root
+    return Ignored(frozenset(anywhere), frozenset(at_root), git_ignored_folders(root))
 
 
-def repository_paths(root: Path, keep=lambda name: True) -> list[str]:
+def git_ignored_folders(root: Path) -> frozenset[str]:
+    """Root-relative folders that Git ignores, asked read-only in one command. `--directory` names a wholly
+    ignored folder once instead of listing what is inside it, so a large ignored folder costs one line. Empty
+    without Git or outside a repository (the caller keeps the fixed list and top-level .gitignore). When an outer
+    repository ignores the root itself, Git answers only `./`; that names no folder below the root, so the check
+    falls back to the same rules."""
+    try:
+        result = run_git(root, ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory'])
+    except (OSError, subprocess.TimeoutExpired):
+        return frozenset()
+    if result.returncode:
+        return frozenset()
+    return frozenset(path.rstrip('/') for path in result.stdout.split('\0')
+                     if path.endswith('/') and path.rstrip('/') not in ('', '.'))
+
+
+def repository_paths(root: Path, keep=lambda name: True, ignore: Ignored | None = None) -> list[str]:
     """Root-relative paths of the files (and, with folders, `name/`) under the root whose name `keep` accepts,
-    sorted. Ignored folders are pruned by name before anything inside them is read; symlinked folders are not
-    entered, and a symlinked file is kept only when it stays inside the root."""
-    anywhere, at_root = ignored_folders(root)
+    sorted. Ignored folders (`ignore`, read from the root when not given) are pruned before anything inside them
+    is read; symlinked folders are not entered, and a symlinked file is kept only when it stays inside the root."""
+    ignore = ignore or ignored_folders(root)
     found, folders = [], [(root, '')]
     while folders:
         folder, prefix = folders.pop()
@@ -483,7 +518,7 @@ def repository_paths(root: Path, keep=lambda name: True) -> list[str]:
             try:
                 if entry.is_dir(follow_symlinks=False):
                     output = entry.name in OUTPUT_FOLDERS and 'docs' not in prefix.split('/')
-                    if entry.name not in anywhere and not output and not (prefix == '' and entry.name in at_root) \
+                    if not output and not ignore.prunes(prefix + entry.name) \
                             and not nested_repository(Path(entry.path)):
                         folders.append((Path(entry.path), f'{prefix}{entry.name}/'))
                         if keep(entry.name + '/'):
@@ -501,8 +536,8 @@ def nested_repository(folder: Path) -> bool:
     return os.path.lexists(folder / '.git')
 
 
-def markdown_files(root: Path) -> list[str]:
-    return repository_paths(root, lambda name: name.lower().endswith('.md'))
+def markdown_files(root: Path, ignore: Ignored | None = None) -> list[str]:
+    return repository_paths(root, lambda name: name.lower().endswith('.md'), ignore)
 
 
 def inside(root: Path, path: str) -> bool:
@@ -595,8 +630,12 @@ def unreachable(scan: Scan, files: list[str]) -> None:
     CHANGELOG, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY), CLAUDE.md files (loaded by location), a README.md
     beside code (see code_readme) and folders whose name starts with a dot (tool state). A skill package (the
     nearest folder above with its own SKILL.md) is reached through that SKILL.md instead of the project index: its
-    Markdown is noted when the package's SKILL.md does not reach it. Ignored folders and nested repositories are
-    never listed."""
+    Markdown is noted when the package's SKILL.md does not reach it. Outside a skill package, a third-party folder
+    (see third_party_folder) gets one note instead of one per document. Ignored folders and nested repositories
+    are never listed."""
+    unlisted: dict[str, list[str]] = {}  # third-party folder -> its unreached documents
+    licences: dict[str, str | None] = {}  # folder -> its LICENSE file name, None for none or a skill package
+    linked: set[str] | None = None  # reached_folders(), built on first use
     for name in files:
         folders = name.split('/')[:-1]
         if exempt(name) or name in scan.depth or name in scan.required or posixpath.basename(name) == 'CLAUDE.md' \
@@ -609,7 +648,49 @@ def unreachable(scan: Scan, files: list[str]) -> None:
         start = f'{package}/SKILL.md' if package else scan.entry
         if package and name in package_reach(scan, start):
             continue
+        if not package:
+            linked = reached_folders(scan) if linked is None else linked
+            third_party = third_party_folder(scan, folders, licences, linked)
+            if third_party:
+                unlisted.setdefault(third_party, []).append(name)
+                continue
         scan.add('unreachable-doc', 'note', name, 0, f'no document reached from {start} links to it')
+    for folder, names in unlisted.items():
+        count = f'{len(names)} document is' if len(names) == 1 else f'{len(names)} documents are'
+        scan.add('third-party-folder', 'note', folder + '/', 0,
+                 f'third-party folder (it has its own {licences[folder]}); no document reached from {scan.entry} '
+                 f'links into it, so its {count} not listed one by one')
+
+
+LICENSE_FILES = ('LICENSE', 'LICENSE.md', 'LICENSE.txt')  # exact names; LICENCE, COPYING and the like do not count
+
+
+def third_party_folder(scan: Scan, folders: list[str], licences: dict[str, str | None],
+                       linked: set[str]) -> str | None:
+    """The outermost folder on the path (never the root) that holds its own LICENSE, LICENSE.md or LICENSE.txt and
+    is not a skill package (a folder with a SKILL.md, D13), when it is not in `linked` (see reached_folders). None
+    otherwise. Whether Git tracks the folder is not checked: any folder the walk did not prune counts. `licences`
+    caches each folder's answer across the documents of one run."""
+    for end in range(1, len(folders) + 1):
+        folder = '/'.join(folders[:end])
+        if folder not in licences:
+            path = scan.root / folder
+            licences[folder] = None if (path / 'SKILL.md').is_file() \
+                else next((name for name in LICENSE_FILES if (path / name).is_file()), None)
+        if licences[folder]:
+            return None if folder in linked else folder
+    return None
+
+
+def reached_folders(scan: Scan) -> set[str]:
+    """Every folder that holds a reached document or required-read file, or that a link from a reached document
+    names or points inside. The paths themselves are included, which is harmless for files."""
+    found: set[str] = set()
+    targets = (target for pairs in scan.targets.values() for target, _ in pairs)
+    for path in (*scan.depth, *scan.required, *targets):
+        parts = path.rstrip('/').split('/')
+        found.update('/'.join(parts[:end]) for end in range(1, len(parts) + 1))
+    return found
 
 
 def package_reach(scan: Scan, skill: str) -> set[str]:
@@ -672,7 +753,7 @@ def check(root: Path) -> Scan:
             scan.add('index-depth', 'note', name, 0,
                      f'reached only at level {depth}; more than {MAX_DEPTH} index levels below {scan.entry}')
     untracked(scan)
-    files = markdown_files(root)
+    files = markdown_files(root, scan.ignore_rules())
     imports(scan, files)
     unreachable(scan, files)
     repeats(scan, [name for name in files if posixpath.basename(name) in INSTRUCTION_FILES and not exempt(name)])
@@ -875,7 +956,7 @@ ABSENT = re.compile(r'\b(does not exist|doesn\'t exist|no longer (?:exists?|ship
                     r'|never existed|is gone)\b', re.I)
 # A template rather than a real path: `...`, `<name>`, a glob, or a date pattern.
 PLACEHOLDER = re.compile(r'\.\.\.|<[^<>\s]*>|\*|(?<![A-Za-z])(?:YYYY|MM|DD)(?![A-Za-z])')
-# Text ending in an external link, then optionally "at": "from [upstream](https://...) `skills/x/SKILL.md`".
+# Text ending in an external link, then optionally "at": "from [source](https://...) `skills/x/SKILL.md`".
 AFTER_LINK = re.compile(r'\]\(\s*<?[A-Za-z][\w+.-]*://[^)\s>]*>?(?:\s+"[^"]*")?\s*\)\s*(?:at\s+)?$', re.I)
 FOREIGN ='first folder not found here; may belong to another repository or not be a path'
 

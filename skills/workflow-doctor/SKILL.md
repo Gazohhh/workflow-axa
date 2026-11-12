@@ -1,11 +1,11 @@
 ---
 name: workflow-doctor
-description: "Diagnose workflow-axa installation, global routing, rule coverage, duplicate copies and local kit/report assets. Read-only; no automatic repair or installation."
+description: "Diagnose the workflow-axa installation: version, routing, rule coverage, duplicate copies and report assets. Read-only; repairs nothing."
 ---
 
 # Workflow doctor
 
-Inspect without changing the environment. Check package/version, host profile/registrations, global/project routing, duplicate copies, local assets and selected Matt specialists. Return PASS / WARNING / BLOCKED / NOT VERIFIED with evidence and the next step in chat, not a new artifact folder.
+Inspect without changing the environment. Check package/version, host profile/registrations, global/project routing, duplicate copies, local assets and the optional specialists a step needs. Return PASS / WARNING / BLOCKED / NOT VERIFIED with evidence and the next step in chat, not a new artifact folder.
 
 Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Do not install, enable, delete, overwrite or repair anything automatically.
 

@@ -217,9 +217,8 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('Cold-reader check',self.text('WRITING.md'))
 
     def test_optional_helpers_not_required_inventory(self):
-        data=json.loads((ROOT/'skills/workflow/specialists.json').read_text())
         for name in ('skill-creator','webapp-testing','diagram-design'):
-            self.assertNotIn(name,data['skills'])
+            self.assertFalse((ROOT/'skills'/name).exists(),name)
         self.assertIn('Missing optional helpers never block',self.text('OPTIONAL-HELPERS.md'))
 
 if __name__=='__main__':unittest.main()

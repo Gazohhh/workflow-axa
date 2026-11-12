@@ -1,6 +1,6 @@
 # Optional maintenance and browser helpers
 
-These are evaluated candidates, not required dependencies. Keep Matt's research, diagnosing-bugs, tdd, code-review, grilling and other routes. Keep the flowchart procedure local. Missing optional helpers never block normal work; use the established checks and report coverage honestly. Do not install, enable or download anything from this document automatically.
+These are evaluated candidates, not required dependencies. Keep the research, diagnosing-bugs, tdd, code-review, grilling and other routes. Keep the flowchart procedure local. Missing optional helpers never block normal work; use the established checks and report coverage honestly. Do not install, enable or download anything from this document automatically.
 
 ## skill-creator — maintaining this workflow
 
@@ -20,4 +20,4 @@ Reference: [Playwright page readiness](https://playwright.dev/python/docs/api/cl
 
 ## Both helpers
 
-Supply existing plan/approval, allowed writes, evidence destination and relevant local adapters. Verify actual outputs. Incompatibility means skip/resolve this optional integration, not bypass permissions or replace the main workflow. Log “evaluated”, “available”, “used” and “verified” distinctly. These sources were reviewed on 16 October 2026; check the installed revision before use rather than silently following upstream main.
+Supply existing plan/approval, allowed writes, evidence destination and relevant local adapters. Verify actual outputs. Incompatibility means skip/resolve this optional integration, not bypass permissions or replace the main workflow. Log “evaluated”, “available”, “used” and “verified” distinctly. These sources were reviewed on 16 October 2026; check the installed revision before use rather than silently following the provider's latest main branch.

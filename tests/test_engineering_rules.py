@@ -16,7 +16,7 @@ class EngineeringRulesTests(unittest.TestCase):
         data=json.loads((RULES/'version.json').read_text())
         for name in ('ENGINEERING.md','VERSIONS.md','data-contracts.md','LIFETIMES.md','RELIABILITY.md','TESTING.md','SECURITY.md','PERFORMANCE.md','COMPATIBILITY.md','PHP.md','LARAVEL.md','RUST.md'):
             self.assertIn(name,data['files']);self.assertIn(name,data['sha256'])
-        self.assertEqual(data['rules_version'],'1.8.7')
+        self.assertEqual(data['rules_version'],'1.8.8')
 
     def test_core_has_no_universal_nesting_or_comment_quota(self):
         text=(RULES/'CORE.md').read_text()
@@ -55,10 +55,7 @@ class EngineeringRulesTests(unittest.TestCase):
     def test_review_routes_use_local_modules_not_new_dependencies(self):
         for name in ('skills/workflow/RULES.md','skills/workflow/AUDIT.md','skills/plan-review/SKILL.md'):
             self.assertIn('ENGINEERING.md',(ROOT/name).read_text())
-        data=json.loads((ROOT/'skills/workflow/specialists.json').read_text())
-        self.assertEqual(len(data['skills']),27)
-        self.assertIn('grilling',data['skills'])
-        self.assertNotIn('diagram-design',data['skills'])
+        self.assertTrue((ROOT/'skills/grilling/SKILL.md').exists())
 
     def test_version_input_freshness_includes_composer_and_cargo(self):
         with tempfile.TemporaryDirectory() as tmp:

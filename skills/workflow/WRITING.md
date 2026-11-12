@@ -43,7 +43,7 @@ If plain words cannot carry a part, keep the precise wording and explain it. Sho
 
 Words that carry uncertainty, permission or a proposal (may, might, could, should, would) are part of the meaning. "The cause could be the cache" is not "The cause is the cache". Keep them, rewrite only empty hedging, and never just delete one.
 
-Write chat messages and reports with `../simple-english/SKILL.md` (Plain mode and its workflow-axa adaptation).
+Write chat messages and reports with `../simple-english/SKILL.md` (Plain mode).
 
 ## Cold-reader check
 

@@ -49,7 +49,7 @@ The source-of-truth is the existing task folder: `PLAN.md` (scope/authority), `T
 | Rules and host readiness | `rule-maker` / `workflow-doctor` | Missing or changed rules, installation and duplicate-copy diagnosis |
 | Status after interruption | `resume-task` / `task-status` | Existing work, never an invented clean slate |
 
-Pinned vendored specialists live with the plugin; optional external specialists may block only their dependent phase. `implement-spec` is an upstream reference, not a second executable orchestration flow. No skill may grant tool/file permissions by describing them.
+The bundled specialists are skills of this package and live with the plugin. Optional external specialists are named in `skills/workflow/SPECIALISTS.md`; they are checked only when a step needs one and may block only that step. `implement-spec` is a reference, not a second executable orchestration flow. No skill may grant tool/file permissions by describing them.
 
 ## Keep it proportional
 

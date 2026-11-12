@@ -10,7 +10,7 @@ Use Option, Result, assertions and panic according to the contract. External inp
 
 Keep unsafe blocks narrow, with explicit safety obligations and a reviewed safe-facing contract. Do not add unsafe code or thread synchronization for speculative speed. Respect runtime cancellation, blocking and lock ownership; Rust memory safety does not remove logic races, deadlocks or stale-result bugs.
 
-Public documentation explains meaningful usage, failure/safety conditions and examples. Do not embed agent compliance essays or design diaries in API docs. Preserve required compatibility exports until their removal is approved; do not copy an upstream rule that would break consumers automatically.
+Public documentation explains meaningful usage, failure/safety conditions and examples. Do not embed agent compliance essays or design diaries in API docs. Preserve required compatibility exports until their removal is approved; do not copy a rule from another project that would break consumers automatically.
 
 **Do not transplant project-specific rules:** Google's Chromium-only async/thread restrictions are not universal Rust bans. Microsoft library throughput preferences are not automatically the goal of a latency-sensitive application. Apply the reason behind the advice to this project.
 

@@ -270,10 +270,7 @@ class UiPolicyContractTests(unittest.TestCase):
         self.assertIn('untracked',text)
 
     def test_no_new_external_provider(self):
-        data=json.loads((ROOT/'skills/workflow/specialists.json').read_text())
-        self.assertEqual(len(data['skills']),27)
-        self.assertNotIn('ui-design',data['skills'])
-        self.assertNotIn('diagram-design',data['skills'])
+        self.assertFalse((ROOT/'skills/diagram-design').exists())
 
     def test_live_cases_are_not_claimed_results(self):
         data=json.loads((ROOT/'tests/behavioral/ui-design.json').read_text())

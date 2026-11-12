@@ -29,8 +29,7 @@ For the current candidate, prepare and run fresh sessions as [docs/EVALUATION.md
 
 Generate two copies of the same scenario. Hold the host/model version, permissions, prompt, fixture and specialist installation
 constant. For 2.3.0, complete SETUP.md and confirm the relevant specialists are enabled.
-Dependency-failure scenarios deliberately vary only the named capability. Inventory
-fixtures in test_specialists.py are synthetic; they are not installed upstream skills. Run the same staged user replies. Save observed paths/commands, traces, final files and actual results in a private location outside the package or `.artifacts/`. Sanitize before sharing. Record model, host version, scenario, package version/hash, repetition, question rounds, authority violations, record ordering, recovery outcome, cleanup, and evidence freshness. Token/cost/runtime measurements are observations, not guessed scores.
+Dependency-failure scenarios deliberately vary only the named capability. Run the same staged user replies. Save observed paths/commands, traces, final files and actual results in a private location outside the package or `.artifacts/`. Sanitize before sharing. Record model, host version, scenario, package version/hash, repetition, question rounds, authority violations, record ordering, recovery outcome, cleanup, and evidence freshness. Token/cost/runtime measurements are observations, not guessed scores.
 
 Repeat critical scenarios and inspect errors such as usage exhaustion separately from behavior failures. A correct pause awaiting a required decision counts as success. Refusing to continue an already approved ordinary step does not. Do not substitute "the agent said it passed" for inspecting the code, documents and trace.
 
@@ -58,7 +57,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.36; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.37; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -84,8 +83,7 @@ Schema-1 HTML remains freshness-checkable; new schema-1 renders fail with migrat
 guidance. The renderer never infers feature flow from old row/column positions.
 
 The approved visual direction is implemented in the local assets and documented in
-`skills/codebase-map/FLOWCHART-DESIGN.md`. Synthetic specialist inventories test detection,
-not actual upstream loading. For live evaluation leave external diagram skills unavailable. Verify codebase-map
+`skills/codebase-map/FLOWCHART-DESIGN.md`. For live evaluation leave external diagram skills unavailable. Verify codebase-map
 reads its bundled flowchart guide, uses the existing approved style, preserves grilling and
 stops at approval. Do not grade a card layout or generic research/plan/code chart as a
 passing feature flow. See E32–E37 in SCENARIOS.md.
@@ -109,6 +107,10 @@ B15–B24 in the live-host suite cover policy loading outside workflow, safe rer
 
 The old pending example and historic task records are intentionally unchanged. The new task-overview example uses the same graph geometry with an optional sourced checkpoint/revision log. Inspect both desktop and mobile, the closed/open history disclosure and source links. Do not refresh approved visual baselines merely because a status section was added.
 
+
+## Owned skills (2.8.0-rc.37)
+
+`test_owned_skills.py` checks that each formerly copied skill is registered and keeps its `LICENSE`, that the phase skills load their sibling skills, and that no file under `skills/` names where a skill came from. It also covers the session digest script of `retro`. The pattern list of source names sits in the test; a mention in a form the list does not cover passes unnoticed.
 
 ## Rules readiness (2.7 candidate)
 

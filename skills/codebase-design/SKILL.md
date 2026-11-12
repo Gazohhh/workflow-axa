@@ -1,17 +1,17 @@
 ---
 name: codebase-design
-description: "Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary."
+description: "Deep-module vocabulary for interface and seam decisions. Use when designing or improving a module's interface, choosing where a seam goes or making code easier to test."
 ---
-
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/codebase-design/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
 
 # Codebase Design
 
 Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface. Use this language and these principles wherever code is being designed or restructured. The aim is leverage for callers, locality for maintainers, and testability for everyone.
 
+Use it for a bounded design choice inside an agreed task (an interface, a seam, a module boundary); when the design is settled, it doesn't start a new architecture interview. The project's ownership, interfaces and approved rules win over this file's preferred patterns.
+
 ## Glossary
 
-Use these terms exactly: don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point.
+Use these terms exactly: don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point. Where the project already has an established name for a concept and it is clearer, keep the project's name.
 
 **Module**: anything with an interface and an implementation. Deliberately scale-agnostic: a function, class, package, or tier-spanning slice. _Avoid_: unit, component, service.
 
@@ -113,11 +113,5 @@ Good interfaces make testing natural:
 ## Going deeper
 
 - **Deepening a cluster given its dependencies**, see [DEEPENING.md](DEEPENING.md): dependency categories, seam discipline, and replace-don't-layer testing.
-- **Exploring alternative interfaces**, see [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md): spin up parallel sub-agents to design the interface several radically different ways, then compare on depth, locality, and seam placement.
+- **Exploring alternative interfaces**, see [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md): spin up parallel subagents to design the interface several radically different ways, then compare on depth, locality, and seam placement.
 
----
-
-## workflow-axa adaptation
-
-- Use it for a bounded design choice inside an agreed task (an interface, a seam, a module boundary). It doesn't start a new architecture interview when the design is settled.
-- Project vocabulary, ownership, interfaces and approved rules win over this file's preferred patterns.

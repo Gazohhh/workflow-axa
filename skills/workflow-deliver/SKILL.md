@@ -1,6 +1,6 @@
 ---
 name: workflow-deliver
-description: "Reconcile a finished or stopped workflow task against its evidence: map every agreed requirement, check, changed file and review finding to current proof, then write the delivery record and report. Use when implementation ends or someone asks whether the task is really finished."
+description: "Check a finished or stopped task against its evidence and write the delivery record. Use when implementation ends or someone asks whether a task is really done."
 ---
 
 # Workflow deliver

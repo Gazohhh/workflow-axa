@@ -81,7 +81,7 @@ class PackageTests(unittest.TestCase):
         core = (ROOT / "skills/codebase-map/SKILL.md").read_text(encoding="utf-8")
         guide = (ROOT / "skills/codebase-map/FLOWCHART-DESIGN.md").read_text(encoding="utf-8")
         self.assertIn("[FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md)", core)
-        self.assertIn("no external diagram-design installation, lookup or invocation is required", core)
+        self.assertIn("no external diagram skill installation, lookup or invocation is required", core)
         for term in ("workflow-editorial-v1", "#f5f5f5", "#2d3142", "#bf4520",
                      "18px", "13px", "diamond", "grilling", "user approval"):
             self.assertIn(term, guide)

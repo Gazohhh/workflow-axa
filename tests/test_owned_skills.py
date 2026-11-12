@@ -1,7 +1,6 @@
-"""Vendored Matt Pocock skills: separate skills with provenance, license and adaptation, loaded by the phases."""
+"""Formerly copied skills are owned single texts: no source mentions under skills/, licences kept."""
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -11,40 +10,35 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-NAMES = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling", "implement-spec", "retro")
+FORMERLY_COPIED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design",
+                   "domain-modeling", "implement-spec", "retro", "simple-english")
 USER_ONLY = {"implement-spec", "retro"}
+# The owner asked (2026-11-12) for no reference to where these skills came from anywhere under skills/.
+# LICENSE files are exempt: the MIT licence requires its copyright notice to stay with the copied text.
+SOURCE_MENTIONS = re.compile(
+    r"mattpocock|matt-pocock|Matt Pocock|\bMatt's\b|\bMatt\b|AminBlg|SimpleEnglish|Bundled with workflow-axa"
+    r"|workflow-axa adaptation|\bupstream\b|cathrynlavery|\bLavery\b",
+    re.IGNORECASE,
+)
+# Lower-case only: the compatibility file DIAGRAM-DESIGN.md keeps its name.
+SOURCE_NAMES_EXACT = re.compile(r"diagram-design")
+TEXT_SUFFIXES = {".md", ".json", ".py", ".txt", ".html", ".css", ".js", ".yaml", ".yml"}
 
 
-class VendoredSkillTests(unittest.TestCase):
-    def test_each_is_a_registered_separate_skill_with_license(self):
+class OwnedSkillTests(unittest.TestCase):
+    def test_each_formerly_copied_skill_is_registered_and_keeps_its_licence(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        for name in NAMES:
+        for name in FORMERLY_COPIED:
             folder = ROOT / "skills" / name
             self.assertIn(f"./skills/{name}", plugin["skills"])
             self.assertIn("MIT License", (folder / "LICENSE").read_text(encoding="utf-8"), name)
             text = (folder / "SKILL.md").read_text(encoding="utf-8")
             self.assertTrue(text.startswith(f"---\nname: {name}\n"), name)
             self.assertEqual("disable-model-invocation: true" in text.split("---", 2)[1], name in USER_ONLY, name)
-            self.assertIn("## workflow-axa adaptation", text, name)
-            self.assertIn("Bundled with workflow-axa from [mattpocock/skills]", text, name)
         self.assertFalse((ROOT / "skills/workflow/specialists").exists(), "old bundled folder must be gone")
+        self.assertFalse((ROOT / "skills/workflow/specialists.json").exists(), "D17: no catalogue of external providers")
 
-    def test_provenance_records_every_upstream_file(self):
-        readme = (ROOT / "VENDORED-SKILLS.md").read_text(encoding="utf-8")
-        self.assertRegex(readme, r"commit `[0-9a-f]{40}`")
-        rows = re.findall(r"^\| ([\w-]+) \| `([^`]+)` \| `([0-9a-f]{16})` \| (`[0-9a-f]{16}`|—) \|$", readme, re.M)
-        self.assertEqual({r[0] for r in rows}, set(NAMES))
-        copied = [p for name in NAMES for p in (ROOT / "skills" / name).glob("*.md")]
-        self.assertEqual(len(rows), len(copied))
-        # The upstream text inside each SKILL.md must stay byte-identical to what was vendored.
-        for name, path, _, body_hash in rows:
-            if not path.endswith("/SKILL.md"):
-                continue
-            text = (ROOT / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
-            body = text.split("overrides it where they conflict.\n\n", 1)[1].split("\n---\n\n## workflow-axa adaptation\n", 1)[0]
-            self.assertEqual("`" + hashlib.sha256(body.encode("utf-8")).hexdigest()[:16] + "`", body_hash, name)
-
-    def test_phase_skills_load_their_sibling_copies(self):
+    def test_phase_skills_load_their_sibling_skills(self):
         uses = {"workflow-clarify": ["../grilling/SKILL.md"],
                 "workflow-execute": ["../tdd/SKILL.md", "../code-review/SKILL.md"],
                 "workflow-specify": ["../codebase-design/SKILL.md"]}
@@ -53,6 +47,23 @@ class VendoredSkillTests(unittest.TestCase):
             for path in paths:
                 self.assertIn(path, text, skill)
             self.assertNotRegex(text, r"installed `(grilling|tdd|code-review)`", skill)
+
+    def test_no_file_under_skills_names_where_a_skill_came_from(self):
+        hits = []
+        for path in sorted((ROOT / "skills").rglob("*")):
+            if not path.is_file() or path.name == "LICENSE" or path.suffix.lower() not in TEXT_SUFFIXES:
+                continue
+            if "__pycache__" in path.parts:
+                continue
+            for number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                match = SOURCE_MENTIONS.search(line) or SOURCE_NAMES_EXACT.search(line)
+                if match:
+                    hits.append(f"{path.relative_to(ROOT).as_posix()}:{number}: {match.group(0)}")
+        self.assertEqual([], hits)
+
+
+class SessionDigestTests(unittest.TestCase):
+    """retro's scripts/digest_sessions.py."""
 
     def test_session_digest_lists_human_messages_and_skills(self):
         with tempfile.TemporaryDirectory() as tmp:

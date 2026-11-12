@@ -8,7 +8,7 @@ Choose one installation route per host. The Claude plugin includes `hooks/hooks.
 
 For a candidate, prefer an isolated source copy and a temporary Claude `--plugin-dir` session after checking the installed CLI's help. Keep the current installation as baseline. Do not install the candidate globally merely to test it. A full source bundle includes tests/tools; the smaller installable ZIP does not. Use the source bundle for this validation, then install only after the pilot is accepted.
 
-Bundled specialists are pinned in the package. Do not additionally install duplicate copies of grilling, tdd, code-review or the other bundled names. `SPECIALISTS.md` owns the routes; `specialists.json` lists optional external providers. A missing optional dependency blocks only its dependent work. Do not fetch it automatically.
+Bundled specialists are pinned in the package. Do not additionally install duplicate copies of grilling, tdd, code-review or the other bundled names. `SPECIALISTS.md` owns the routes and names the optional external specialists. A missing optional dependency blocks only its dependent work. Do not fetch it automatically.
 
 ## 2. Activate shared instructions once, with approval
 
@@ -16,11 +16,11 @@ From the final stable package location, preview the rule-maker's `scripts/activa
 
 The rule activation references the central START/CORE library, not copied framework rulebooks. The artifact helper maintains one shared output policy. Neither grants tool access, configures a remote updater or changes application files. Claude imports and Codex read instructions differ: validate actual loading in the host, including global overrides. Apply setup separately in each real machine/profile environment.
 
-Merge the small [project routing block](templates/PROJECT-ROUTING.md) into existing instructions only when authorized; preserve local constraints. Shared readiness is owned by rule-maker's READINESS.md, not a marker claiming setup ran. The local `ui-design` and `codebase-map` must be siblings from the same package. No external diagram-design dependency or automatic preview app is required.
+Merge the small [project routing block](templates/PROJECT-ROUTING.md) into existing instructions only when authorized; preserve local constraints. Shared readiness is owned by rule-maker's READINESS.md, not a marker claiming setup ran. The local `ui-design` and `codebase-map` must be siblings from the same package. No external diagram skill dependency or automatic preview app is required.
 
 ## 3. Check installation, then behavior
 
-Use `workflow-doctor` and rule-maker's read-only `scripts/audit_installation.py --check-global`; supply known candidate roots to compare duplicate installations. Use `scripts/check_specialists.py --help` for optional external specialists. Check files, paths, fingerprints and actual invocation separately. Missing `python`, an unsupported hook host or a stale installation is a reported limit, not a claimed pass.
+Use `workflow-doctor` and rule-maker's read-only `scripts/audit_installation.py --check-global`; supply known candidate roots to compare duplicate installations. Check an optional external specialist only when a step needs it (SPECIALISTS.md). Check files, paths, fingerprints and actual invocation separately. Missing `python`, an unsupported hook host or a stale installation is a reported limit, not a claimed pass.
 
 A fresh ordinary task without a slash command must load the shared core and applicable modules. Also test missing project rules, a resumed task, a backend-only task and a UI task without styling authority. Inspect tool traces and results, not only the agent's claim that rules loaded. Keep the same host/model/effort and fixtures for comparisons.
 
@@ -64,7 +64,7 @@ The guard caches transcript state under the system temp folder and prunes unused
 
 ## 5. Optional updates and release
 
-Review provider revisions and compatibility before updating dependencies. Do not edit managed plugin caches, silently change invocation policy or replace existing project design decisions. Keep the source of a provider and its reviewed contents together; no assumption that an upstream main branch is immutable.
+Review provider revisions and compatibility before updating dependencies. Do not edit managed plugin caches, silently change invocation policy or replace existing project design decisions. Keep the source of a provider and its reviewed contents together; no assumption that a provider's main branch is immutable.
 
 Use UPGRADE.md in the package root for historical installation changes. Do not reread install history during routine tasks. The candidate test handoff records the allowed budget and stopping condition. A retro can recommend no change; it must not mutate global policy after every run.
 

@@ -44,6 +44,10 @@ class ReleaseFromCheckoutTests(unittest.TestCase):
                      "docs/DESIGN.md", "docs/ARCHITECTURE.md", "docs/EVALUATION.md", ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "hooks/hooks.json"):
             self.assertIn(name, self.names)
         self.assertIn("MIT License", (ROOT / "LICENSE").read_text(encoding="utf-8"))
+        # D1: each formerly copied skill ships with its own MIT LICENSE.
+        for name in ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
+                     "implement-spec", "retro", "simple-english"):
+            self.assertIn(f"skills/{name}/LICENSE", self.names)
 
     def test_archived_evaluation_records_are_not_shipped(self):
         for name in ("CANDIDATE-REVIEW.md", "RC3-CASES.md", "CLAUDE-TEST-PROMPT.txt"):

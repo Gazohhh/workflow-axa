@@ -1,4 +1,4 @@
-# Upgrade to workflow-axa 2.8.0-rc.36
+# Upgrade to workflow-axa 2.8.0-rc.37
 
 ## Choose the right source
 
@@ -21,7 +21,15 @@ Use a clone of the **Git repository** for review and local/live tests. It contai
 
 The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorized by the testing handoff.
 
-## What changed
+## What changed in 2.8.0-rc.37
+
+Replace the whole plugin, or all 21 skill folders together. Do not copy the new files over an old installation. The formerly copied skills have new text, and an overlay can keep files that this release removed. The installation checker reports such a file as unexpected; delete it after review.
+
+`skills/workflow/scripts/check_specialists.py` and `skills/workflow/specialists.json` are removed. Optional external specialists are named in `skills/workflow/SPECIALISTS.md` and checked only when a step needs one. If you used the old inventory commands, keep your old baseline file in its private location. Nothing in the package reads it any more.
+
+Rules 1.8.8 changes only wording in `SOURCES.md`, `TESTING.md` and `RUST.md`; no rule changed and no project action is needed. Replace the whole `skills/rule-maker/rules/` folder. Until the owner updates the shared rules copy that the global CLAUDE.md imports, the duplicate guard warns at session start.
+
+## What changed in 2.8.0-rc.36
 
 ### Tickets, not another tracker
 
@@ -283,6 +291,8 @@ tracker-related skill or rewrite an existing project glossary layout.
 
 #### 3. Check files without changing them
 
+Historical: removed in 2.8.0-rc.37.
+
 Python 3.10+ is sufficient; no Python dependencies, network, credentials or Git are used
 by the checker. Supply the actual collection root or installed skill roots discovered
 in your host. It supports a nested collection and flat skill directories. Include all
@@ -320,6 +330,8 @@ origin with the host/install record. The checker cannot certify source authentic
 access to tools, correct invocation or model obedience. Record these distinctions.
 
 #### 4. Review and freeze the local baseline
+
+Historical: removed in 2.8.0-rc.37.
 
 At approved setup, capture a report to a private local path. PowerShell example:
 

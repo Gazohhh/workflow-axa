@@ -46,9 +46,12 @@ class ValidateBudgetTests(unittest.TestCase):
         self.assertEqual(sorted(validate.reference_files(ROOT)), sorted(validate.REFERENCE_BUDGETS))
         self.assertEqual(validate.reference_budget_errors(ROOT), [])
 
-    def test_vendored_upstream_files_have_no_budget(self):
+    def test_formerly_copied_reference_files_have_budgets(self):
+        # D1: these skills are our own text now, so their reference files are budgeted like every other skill's.
+        files = validate.reference_files(ROOT)
         for name in ("tdd/tests.md", "simple-english/references/rule-catalog.md", "domain-modeling/GLOSSARY-FORMAT.md"):
-            self.assertNotIn(name, validate.REFERENCE_BUDGETS)
+            self.assertIn(name, validate.REFERENCE_BUDGETS)
+            self.assertIn(name, files)
 
     def test_a_reference_file_at_its_ceiling_passes_and_one_word_more_fails(self):
         for extra, fails in ((0, False), (1, True)):
@@ -121,23 +124,23 @@ class ValidateBudgetTests(unittest.TestCase):
             errors = validate.validate_package(root)
         self.assertTrue(any("'sub-agent'" in e for e in errors), errors)
 
-    def test_code_spans_identifiers_and_vendored_text_are_skipped(self):
+    def test_code_spans_and_identifiers_are_skipped(self):
         root = self.candidate()
-        before = validate.synonym_findings(root)
         append(root / "skills/workflow/RULES.md", "The label `sub-agent` stays. The record line Approval (gate two) stays.")
-        append(root / "skills/tdd/tests.md", "Upstream text may say sub-agent.")
+        self.assertFalse(any("skills/workflow/RULES.md" in n for n in validate.synonym_findings(root)))
+
+    def test_formerly_copied_skills_are_checked_in_full(self):
+        # D1: the whole SKILL.md and each reference file of a formerly copied skill is ours, not only a closing section.
+        root = self.candidate()
         skill = root / "skills/tdd/SKILL.md"
-        text = skill.read_text(encoding="utf-8")
-        head, tail = text.split("## workflow-axa adaptation", 1)
-        skill.write_text(head + "Upstream sub-agent.\n\n## workflow-axa adaptation" + tail + "\n- Ask a sub-agent.\n",
-                         encoding="utf-8")
-        def planted(notes):  # line numbers shift, so compare the 'sub-agent' findings per file
-            return sorted(n.rsplit(":", 1)[0] for n in notes if "'sub-agent'" in n
-                          and ("skills/workflow/RULES.md" in n or "skills/tdd/" in n))
-        added = planted(validate.synonym_findings(root))
-        for note in planted(before):
-            added.remove(note)
-        self.assertEqual(added, ["synonym 'sub-agent' (use 'subagent') in skills/tdd/SKILL.md"])
+        lines = skill.read_text(encoding="utf-8").splitlines(keepends=True)
+        body = next(i for i, line in enumerate(lines) if line.startswith("# "))
+        skill.write_text("".join(lines[:body + 1]) + "\nAsk a sub-agent.\n" + "".join(lines[body + 1:]),
+                         encoding="utf-8", newline="")
+        append(root / "skills/tdd/tests.md", "Ask a sub-agent.")
+        findings = [n.rsplit(":", 1)[0] for n in validate.synonym_findings(root) if "skills/tdd/" in n]
+        self.assertEqual(sorted(findings), ["synonym 'sub-agent' (use 'subagent') in skills/tdd/SKILL.md",
+                                            "synonym 'sub-agent' (use 'subagent') in skills/tdd/tests.md"])
 
     def test_command_line_fails_on_a_synonym_and_prints_notes(self):
         root = self.candidate()

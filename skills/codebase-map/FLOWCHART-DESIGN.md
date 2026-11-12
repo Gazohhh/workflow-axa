@@ -3,13 +3,13 @@
 ## Scope and local files
 
 This is codebase-map's own design procedure. Read it directly; do not resolve, invoke,
-install, fetch or require an external diagram-design skill. Its absence is expected,
+install, fetch or require an external diagram skill. Its absence is expected,
 not a blocker and not a fallback exception.
 
 The complete codebase-map folder contains this guide, [REPORT.md](REPORT.md),
 [scripts/render_report.py](scripts/render_report.py),
 [assets/report.css](assets/report.css), [assets/report.js](assets/report.js), and
-[the synthetic example](examples/review.json). No upstream references, scripts,
+[the synthetic example](examples/review.json). No external references, scripts,
 font files or network calls are needed to design or render a report. Preserve the full
 folder when installing it. Python 3.10+ is the renderer runtime; browser QA uses existing
 local tools when available, never an automatic dependency install.
@@ -76,23 +76,9 @@ Necessary questions still use `grilling`; research and plan/task preparation pre
 Validate schema, task/evidence references, current/proposed basis, explicit geometry, decision labels and source fingerprints. In a browser inspect actual font fit (including diamond interiors), branch fidelity, native size/Fit, alternate views, keyboard controls, evidence links, offline/no-script display and narrow-window scrolling. List unavailable checks in the task record.
 
 
-## Provenance, not a dependency
+## Own design contract
 
-The owner approved the flowchart sample inspired by Cathryn Lavery's diagram-design
-repository. This guide is the workflow's own design contract, not a vendored copy or
-complete reimplementation of that upstream skill. The approved renderer/style remain
-local and versioned with workflow-axa. No upstream scripts, font files or complete
-skill tree are redistributed, and no installed upstream invocation is claimed.
-
-Design references:
-[skill](https://github.com/cathrynlavery/diagram-design/blob/main/skills/diagram-design/SKILL.md),
-[flowchart grammar](https://github.com/cathrynlavery/diagram-design/blob/main/skills/diagram-design/references/type-flowchart.md),
-[style](https://github.com/cathrynlavery/diagram-design/blob/main/skills/diagram-design/references/style-guide.md),
-[connector primitives](https://github.com/cathrynlavery/diagram-design/blob/main/skills/diagram-design/references/primitives-core.md),
-[output sizing](https://github.com/cathrynlavery/diagram-design/blob/main/skills/diagram-design/references/output-spec.md).
-These are attribution only, not required reading during a task or an instruction to
-follow upstream changes. Review changes to this local contract through the team's
-normal versioned workflow.
+This guide is the workflow's own design contract, versioned with workflow-axa. Review changes to it through the team's normal versioned workflow.
 
 
 ## Explain and preserve the approved view

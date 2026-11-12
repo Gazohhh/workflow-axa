@@ -1,6 +1,6 @@
 ---
 name: workflow-clarify
-description: "Clarify a task's behavior: trace journeys, callers, failure and compatibility paths, grill only for open user decisions, and record the behavior agreement. Use for a new substantive goal, a material scope change, or a contradictory or partial answer."
+description: "Agree a task's behavior before planning: trace journeys, callers and failure paths, and grill only for open user decisions. Use for a new goal, a scope change or a contradictory answer."
 ---
 
 # Workflow clarify

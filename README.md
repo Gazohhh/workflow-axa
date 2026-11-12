@@ -1,4 +1,4 @@
-# Workflow AXA — 2.8.0-rc.36
+# Workflow AXA — 2.8.0-rc.37
 
 **One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, shows a plan report for approval, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or asking for implementation approval.
 
@@ -13,7 +13,7 @@ Understand the system: [one-page architecture](docs/ARCHITECTURE.md). Test in ne
 
 ## Current candidate: simpler routing and reproducible evaluation
 
-This release keeps 21 registered skills and the same two substantive approval gates. The router now separates read-only inspection from plans, changes and resumes. Grilling prioritizes material choices; a fully settled request may need no questions. Vendored skills identify their executable vs reference role. The report has optional record-backed text projection for **unapproved drafts**, so agents can stop copying the same ticket prose by hand. These changes have offline tests; live Claude/Codex behavior needs host runs and a separately approved paid usage cap.
+This release keeps 21 registered skills and the same two substantive approval gates. The router now separates read-only inspection from plans, changes and resumes. Grilling prioritizes material choices; a fully settled request may need no questions. Each bundled skill names whether the workflow runs it or only reads it as a reference. The report has optional record-backed text projection for **unapproved drafts**, so agents can stop copying the same ticket prose by hand. These changes have offline tests; live Claude/Codex behavior needs host runs and a separately approved paid usage cap.
 
 This repository has no CI workflow; run the checks below from a clone. Nothing here automatically installs a skill, launches a paid model or changes your real projects.
 
@@ -21,7 +21,7 @@ This repository has no CI workflow; run the checks below from a clone. Nothing h
 
 The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`task-status` for where things stand, `retro` for a look back at past sessions).
 
-Full replacement package: **21 skills** (12 workflow-axa skills plus 9 vendored: eight of Matt Pocock's and `simple-english`; the list is in `.claude-plugin/plugin.json`), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+Full replacement package: **21 skills** (12 workflow-axa skills plus 9 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
 
 ## This update: `/workflow` routes to four phase skills
 
@@ -40,7 +40,7 @@ Full replacement package: **21 skills** (12 workflow-axa skills plus 9 vendored:
 
 **Central report (optional).** A schema-2 report may carry an additive `task_report` object: request, agreement, specification, per-ticket specifications, decisions, risks, checks, acceptance results and delivery, each citing its source record. PLAN/TODO/FINDINGS/DECISIONS stay authoritative; the report is a dated projection, not approval. For new drafts, `skills/codebase-map/scripts/record_projection.py` can freeze exact headings and labeled tickets into report text and check drift without overwriting a snapshot. Reports without `task_report` render as before. Contract: [TASK-REPORT.md](skills/codebase-map/TASK-REPORT.md).
 
-`workflow-execute` adapts Implement Spec's ticket-graph method locally. It never branches, commits, merges or touches a tracker, and it does not invoke or alter the upstream skill. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** Matt Pocock's `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` (plus `implement-spec` and `retro` as references) ship as separate skills in this package (plugin names `workflow-axa:<name>`), copied at a pinned commit under their MIT license ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)). `simple-english` (AminBlg/SimpleEnglish, MIT) ships the same way; the workflow uses it for every HTML report and delivery message. Each keeps the upstream text and ends with a workflow-axa adaptation. The phases load these sibling skills, so an upstream change, a removed skill or a host's same-named command can't change the workflow; `tools/vendor_specialists.py` regenerates them after a reviewed upstream update. Optional installed specialists (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them. This candidate also contains rc.8's Windows verification fixes.
+`workflow-execute` uses the ticket-graph method that the bundled `implement-spec` reference describes. It never branches, commits, merges or touches a tracker. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` (plus `implement-spec` and `retro` as references) ship as separate skills in this package (plugin names `workflow-axa:<name>`). `simple-english` ships the same way; the workflow uses it for every HTML report and delivery message. Each is one text maintained in this package, and each folder keeps its MIT `LICENSE`. The phases load these sibling skills, so a removed skill or a host's same-named command cannot change the workflow. Optional installed specialists named in `skills/workflow/SPECIALISTS.md` (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them, and are checked only when that step runs. This candidate also contains rc.8's Windows verification fixes.
 
 ## UI policy (2.8, owner decision D14): never write CSS; reuse existing classes
 
@@ -78,7 +78,7 @@ Plugin syntax is shown; standalone names depend on the host. The main sequence i
 
 ## Install and check
 
-Replace the complete plugin or all **21 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the vendored `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro` and `simple-english`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed Matt skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
+Replace the complete plugin or all **21 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro` and `simple-english`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global
@@ -86,6 +86,8 @@ python -X utf8 skills/rule-maker/scripts/activate_rules.py --check
 ```
 
 These read-only checks do not repair settings. What these checks do not prove: [docs/EVALUATION.md](docs/EVALUATION.md). Existing correct references remain valid when the install path stays fixed. For missing references, use the activation helper's preview/apply procedure after reviewing it. These check commands install no hook, auto-updater or tool sandbox; the plugin's own hooks stay registered through `hooks/hooks.json`.
+
+**Skill descriptions missing from the skill list.** Claude Code gives the skill list a total budget of about 1% of the context window. When many plugins are installed, it drops the descriptions of the least-used skills and shows only their names. A workflow-axa skill then still loads by name, but the agent may not pick it on its own. To fix this, raise `skillListingBudgetFraction` in your Claude Code settings, or use the `skillOverrides` setting with `"name-only"` for plugins you rarely use. Both are your own settings; this package does not change them.
 
 ## Checks and release (source checkout)
 
@@ -98,7 +100,7 @@ python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md
 python -X utf8 -I tools/build_release.py
 ```
 
-`validate.py` also fails when this README, the current CHANGELOG entry, UPGRADE or VENDORED-SKILLS state a skill count or a package or rules version that differs from the manifests. `verification_summary.py` rewrites only VALIDATION's current section; browser, visual and host checks stay NOT_RUN unless you pass their results. `build_release.py` writes the installable `workflow-axa-<version>.zip` with sorted entries, fixed timestamps and filename-based secret checks (not a content scan). The project's own code is MIT licensed ([LICENSE](LICENSE)); vendored skills keep their own license files.
+`validate.py` also fails when this README, the current CHANGELOG entry, UPGRADE or VENDORED-SKILLS state a skill count or a package or rules version that differs from the manifests. `verification_summary.py` rewrites only VALIDATION's current section; browser, visual and host checks stay NOT_RUN unless you pass their results. `build_release.py` writes the installable `workflow-axa-<version>.zip` with sorted entries, fixed timestamps and filename-based secret checks (not a content scan). The project's own code is MIT licensed ([LICENSE](LICENSE)); the formerly copied skills keep their own license files. Credits: [VENDORED-SKILLS.md](VENDORED-SKILLS.md).
 
 [Upgrade guide](UPGRADE.md) · [Validation](VALIDATION.md) · [Central report contract](skills/codebase-map/TASK-REPORT.md) · [Strict reuse scenarios](tests/behavioral/STRICT-KIT.md) · [UI report contract](skills/codebase-map/UI-FLOW.md).
 

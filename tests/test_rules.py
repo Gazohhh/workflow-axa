@@ -278,8 +278,7 @@ class ReadinessContractTests(unittest.TestCase):
             self.assertTrue('rules' in t,name)
         self.assertEqual(len(list((ROOT/'skills').rglob('READINESS.md'))),1)
     def test_no_external_diagram_dependency_added(self):
-        c=json.loads((ROOT/'skills/workflow/specialists.json').read_text())
-        self.assertNotIn('diagram-design',c['skills'])
-        self.assertIn('grilling',c['skills'])
+        self.assertTrue((ROOT/'skills/grilling/SKILL.md').exists())
+        self.assertFalse((ROOT/'skills/diagram-design').exists())
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.8.7')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.8.8')

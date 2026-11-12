@@ -1,6 +1,6 @@
 ---
 name: rule-maker
-description: "Audit, apply or check a project's agent instructions and documentation structure. Use when a rules-readiness check finds gaps, or the user asks to set up, update, audit or check project rules, AGENTS.md or CLAUDE.md. Reuse valid existing instructions. Never rewrite a project without an approved proposal, change application code, silently install tools, or require setup just because this skill never ran."
+description: "Audit, set up or check a project's agent rules (AGENTS.md, CLAUDE.md) and documentation structure. Use when a readiness check finds gaps, or the user asks to set up, update, audit or check them. Changes a project only after an approved proposal."
 ---
 
 # Rule maker

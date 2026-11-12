@@ -1,6 +1,6 @@
 ---
 name: ui-design
-description: "Use automatically for application UI in workflow or ordinary requests, and to build, set up or check a project design kit (/design-kit page, DESIGN.md). Never write CSS: reuse only classes and IDs that already exist in the design kit or the existing code, mirroring class and tag; when nothing matches, ask which existing element to mimic; plain unstyled HTML only on the user's explicit instruction. Every UI-visible change outside the small change route gets a screen diagram in the plan report."
+description: "Use for any application UI work (behavior-only included), in workflow or ordinary requests, and to build or check a design kit or DESIGN.md. Never write CSS: reuse existing classes and IDs; when nothing matches, ask which existing element to mimic."
 ---
 
 # UI: reuse, do not invent

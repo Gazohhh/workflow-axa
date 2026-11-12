@@ -1,6 +1,6 @@
 ---
 name: codebase-map
-description: "Create an evidence-linked local flowchart or codebase map when the user requests one, or workflow requests its plan report. Use the bundled flowchart design guide for the approved editorial diagrams; inspect current code and preserve tasks/evidence. Visualization only: never implement, approve work or launch an architecture-refactoring workflow."
+description: "Draw an evidence-linked flowchart or codebase map, or the workflow's plan report, with the bundled design guide. Visualization only: never implements or approves work."
 ---
 
 # Codebase map
@@ -19,7 +19,7 @@ Identify and reuse the current/named task and its requirements, answers, PLAN, T
 
 ## 2. Apply the local flowchart design
 
-Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md): no external diagram-design installation, lookup or invocation is required. Use local assets/renderer, not Matt's architecture command. Missing files/runtime require repair, not waived approval.
+Read [FLOWCHART-DESIGN.md](FLOWCHART-DESIGN.md): no external diagram skill installation, lookup or invocation is required. Use local assets/renderer, not an architecture-refactoring command. Missing files/runtime require repair, not waived approval.
 
 Use the inspected evidence, approved answers, type, audience, revision and allowed artifact paths. Choose the geometry, not new product behavior. Main flow: start/actions/real decisions/results, short domain labels and labeled branches. Structural containment, runtime steps and delivery dependencies belong in separate focused views when needed. Preserve independent controls as independent; do not invent an exclusive decision or sequence. Unknowns and conditional/error paths needed for approval stay visible.
 

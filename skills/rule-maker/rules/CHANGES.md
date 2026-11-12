@@ -2,6 +2,10 @@
 
 Newest first. Each entry says what changed and what a project's own rules must be checked for. `scripts/rules_stamp.py` prints the entries newer than a project's `workflow-axa rules checked` line, so an audit after an update looks only at these.
 
+## 1.8.8 (2026-11-12)
+
+- SOURCES.md, TESTING.md and RUST.md: source-project names and wording that pointed to a source project are removed; the skills that came from other projects are now the package's own. No rule changed. **Project action:** none.
+
 ## 1.8.7 (2026-11-11)
 
 - The one-word modules are renamed to capitals: DESIGN.md, REACT.md, PHP.md, OPERATIONS.md and the other sixteen. Their rules did not change. A one-word Markdown document name is written in capitals (rule-maker DOCS.md). **Project action:** update project links to a module, such as design.md, to its new name; rename a project's own one-word documents with `git mv` at the next audit.

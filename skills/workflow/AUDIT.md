@@ -2,7 +2,7 @@
 
 `workflow-execute` applies these categories to each ticket and to the integrated whole; `workflow-deliver` checks that those reviews happened and their findings closed, without repeating them as its own audit. Review the task-attributable changes against the approved goal, scope, project rules, and actual final files. Include relevant untracked files, callers, and documentation outside the edited set. Inspect adjacent code to understand impact, but do not turn pre-existing unrelated issues into an unauthorized refactor. Record those separately when material.
 
-For code changes, use this package's `code-review` skill (`../code-review/SKILL.md`) (its adaptation section covers the diff, spec and attribution). Its Standards and Spec reviews complement this workflow audit; neither is a reason to stage, commit, publish a tracker issue or ignore uncommitted work. For agent-document design, apply `writing-for-agents`; do not force a code diff review onto a docs-only task.
+For code changes, use this package's `code-review` skill (`../code-review/SKILL.md`) (its steps 1 and 2 cover the task diff and the spec). Its Standards and Spec reviews complement this workflow audit; neither is a reason to stage, commit, publish a tracker issue or ignore uncommitted work. For agent-document design, apply `writing-for-agents`; do not force a code diff review onto a docs-only task.
 
 Prefer a reviewer who did not implement the change. Give them the task record, approval, repository rules, relevant diff/files, and observed verification—not a claim that everything passed. Without an independent reviewer, perform a distinct self-review and identify it as such.
 

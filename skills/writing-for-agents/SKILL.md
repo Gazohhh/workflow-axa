@@ -1,11 +1,9 @@
 ---
 name: writing-for-agents
-description: "Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md."
+description: "Write and review instructions for agents. Use when creating or editing a skill, AGENTS.md or CLAUDE.md."
 ---
 
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/productivity/writing-for-agents/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
-
-Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output.
+Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output. Human-facing text (plans, reports, questions) follows `../workflow/WRITING.md` instead.
 
 When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
 
@@ -18,6 +16,8 @@ A pointer does two jobs: state what the material is, and list the **branches** t
 - **Front-load the leading word**: the pointer is where it does its triggering work.
 - **One trigger per branch.** Synonyms that rename a single branch are one branch written twice; collapse them and keep only genuinely distinct branches.
 - **Cut identity the body already carries.**
+
+A skill in this package points to another skill by its path, `../<skill>/SKILL.md`.
 
 ## The two loads
 
@@ -82,9 +82,3 @@ You win twice: fewer tokens, and a sharper hook for the agent to hang its thinki
 - Check every line for **relevance**: does it still bear on what the document does? A line loses relevance by never bearing on the task (mere exposition, or a branch that should be disclosed) or by going stale as the behaviour or world it describes changes. Shorter documents are easier to keep relevant. Without a pruning discipline the default fate is **sediment**: stale layers that settle because adding feels safe and removing feels risky, until you must core down through them to find what is still live.
 - Hunt **no-ops** sentence by sentence: an instruction the model already obeys by default pays load to say nothing. The test (does it change behaviour versus the default?) is model-relative, not reader-relative: two people disagreeing about a no-op disagree about the default, and settle it by running the document, not by debate. When a sentence fails, delete the whole sentence rather than trim words from it. The test also grades leading words: a word too weak to beat the default (_be thorough_ when the agent is already thorough-ish) is a no-op, and the fix is a stronger word (_relentless_), not a different technique.
 
----
-
-## workflow-axa adaptation
-
-- Use it for skills, AGENTS.md/CLAUDE.md and other agent instructions. Human-facing text (plans, reports, questions) follows `../workflow/WRITING.md`.
-- Where this text says to call the Skill tool with another skill, use this package's copy: `../<skill>/SKILL.md`.

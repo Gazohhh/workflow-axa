@@ -34,16 +34,37 @@ class Fixture(unittest.TestCase):
             path.write_text(text, encoding="utf-8")
         return self.root
 
-    def run_script(self, *args: str) -> subprocess.CompletedProcess:
+    def run_script(self, *args: str, env: dict | None = None) -> subprocess.CompletedProcess:
         return subprocess.run([sys.executable, "-X", "utf8", "-I", str(SCRIPT), *args],
-                              capture_output=True, text=True, encoding="utf-8")
+                              capture_output=True, text=True, encoding="utf-8", env=env)
 
-    def check(self, files: dict[str, str] | None = None, exit_code: int = 0) -> dict:
+    def check(self, files: dict[str, str] | None = None, exit_code: int = 0, root: Path | None = None,
+              env: dict | None = None) -> dict:
         if files:
             self.write(files)
-        result = self.run_script(str(self.root), "--json")
+        result = self.run_script(str(root or self.root), "--json", env=env)
         self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
         return json.loads(result.stdout)
+
+    def git_repository(self, files: dict[str, str]):
+        """A throwaway repository holding `files` in one commit (plumbing only, so no hooks run); returns a runner."""
+        git = shutil.which("git")
+        if git is None:
+            self.skipTest("git is not installed")
+
+        def run(*args: str, cwd: Path | None = None) -> str:
+            result = subprocess.run([git, "-C", str(cwd or self.root), *args], capture_output=True, text=True,
+                                    encoding="utf-8")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return result.stdout.strip()
+
+        self.write(files)
+        run("init", "-q")
+        run("config", "user.name", "docs-check test")
+        run("config", "user.email", "docs-check@example.invalid")
+        run("add", *files)
+        run("update-ref", "HEAD", run("commit-tree", run("write-tree"), "-m", "fixture"))
+        return run
 
     def codes(self, report: dict) -> list[str]:
         return [f["code"] for f in report["findings"]]
@@ -626,6 +647,88 @@ class DocsCheckTests(Fixture):
         (self.root / "vendor-clone/.git").mkdir()
         report = self.check()
         self.assertEqual(report["findings"], [])
+
+    NESTED_IGNORE = {"AGENTS.md": "# Rules\n", "CLAUDE.md": "@AGENTS.md\n", "game/.gitignore": "/Library/\n",
+                     "game/Assets/notes.md": "# Real notes nothing links\n"}
+    IGNORED_DOCS = {"game/Library/PackageCache/pkg/README.md": "# Package\n",
+                    "game/Library/PackageCache/pkg/CHANGELOG.md": "# Changes\n"}
+
+    def unreached(self, report: dict) -> list[str]:
+        return sorted(f["path"] for f in report["findings"] if f["code"] == "unreachable-doc")
+
+    def test_folders_git_ignores_at_any_depth_are_not_searched(self):
+        # Only a nested .gitignore ignores game/Library; Git's own answer prunes it.
+        self.git_repository(self.NESTED_IGNORE)
+        self.write(self.IGNORED_DOCS)
+        report = self.check()
+        self.assertEqual(self.unreached(report), ["game/Assets/notes.md"])
+
+    TODAY = ["game/Assets/notes.md", "game/Library/PackageCache/pkg/CHANGELOG.md",
+             "game/Library/PackageCache/pkg/README.md"]
+
+    def test_without_a_repository_only_the_top_level_gitignore_is_read(self):
+        # Not a Git work tree: today's fixed list and top-level .gitignore apply. The ceiling keeps a repository
+        # above the temporary folder from changing the answer.
+        env = dict(os.environ, GIT_CEILING_DIRECTORIES=str(self.root.parent))
+        report = self.check({**self.NESTED_IGNORE, **self.IGNORED_DOCS}, env=env)
+        self.assertEqual(self.unreached(report), self.TODAY)
+
+    def test_when_git_cannot_run_only_the_top_level_gitignore_is_read(self):
+        self.git_repository(self.NESTED_IGNORE)
+        self.write(self.IGNORED_DOCS)
+        env = {key: value for key, value in os.environ.items() if key.upper() != "PATH"}
+        env["PATH"] = str(self.root)  # no git here
+        self.assertEqual(self.unreached(self.check(env=env)), self.TODAY)
+
+    def test_a_root_below_the_repository_top_prunes_what_git_ignores(self):
+        self.git_repository({f"app/{name}": text for name, text in self.NESTED_IGNORE.items()})
+        self.write({f"app/{name}": text for name, text in self.IGNORED_DOCS.items()})
+        report = self.check(root=self.root / "app")
+        self.assertEqual(self.unreached(report), ["game/Assets/notes.md"])
+
+    def third_party(self, report: dict) -> list[tuple[str, str]]:
+        return sorted((f["severity"], f["path"]) for f in report["findings"] if f["code"] == "third-party-folder")
+
+    def test_a_licensed_folder_nothing_links_to_is_one_third_party_note(self):
+        report = self.check({
+            "AGENTS.md": "# Rules\n", "CLAUDE.md": "@AGENTS.md\n", "LICENSE": "MIT\n",
+            "public/js/editor/LICENSE.md": "# Licence\n", "public/js/editor/CHANGES.md": "# Changes\n",
+            "public/js/editor/plugins/spell/LICENSE.md": "# Licence\n",
+            "public/js/editor/plugins/spell/README.md": "# Plugin\n",
+            "resources/editor/LICENSE.txt": "MIT\n", "resources/editor/guide.md": "# Guide\n",
+            "docs/orphan.md": "# A real unreachable document\n",
+        })
+        # The root LICENSE does not make the whole repository a third-party folder.
+        self.assertEqual(self.unreached(report), ["docs/orphan.md"])
+        self.assertEqual(self.third_party(report), [("note", "public/js/editor/"), ("note", "resources/editor/")])
+        editor = [f for f in report["findings"] if f["path"] == "public/js/editor/"][0]
+        self.assertIn("LICENSE.md", editor["message"])
+        self.assertIn("its 4 documents are not listed", editor["message"])
+        single = [f for f in report["findings"] if f["path"] == "resources/editor/"][0]
+        self.assertIn("its 1 document is not listed", single["message"])
+
+    def test_a_licensed_folder_reached_from_the_index_keeps_per_document_notes(self):
+        report = self.check({
+            "AGENTS.md": "# Rules\n\nEditor: [guide](lib/editor/GUIDE.md). Charts: [folder](lib/chart/).\n",
+            "CLAUDE.md": "@AGENTS.md\n",
+            "lib/editor/LICENSE": "MIT\n", "lib/editor/GUIDE.md": "# Guide\n", "lib/editor/OTHER.md": "# Other\n",
+            "lib/chart/LICENSE.md": "# Licence\n", "lib/chart/NOTES.md": "# Notes\n",
+        })
+        self.assertEqual(self.third_party(report), [])
+        self.assertEqual(self.unreached(report), ["lib/chart/LICENSE.md", "lib/chart/NOTES.md",
+                                                  "lib/editor/OTHER.md"])
+
+    def test_a_skill_package_with_a_license_is_not_a_third_party_folder(self):
+        # D13: a folder holding a SKILL.md is a skill package even with its own LICENSE.
+        report = self.check({
+            "AGENTS.md": "# Rules\n", "CLAUDE.md": "@AGENTS.md\n",
+            "skills/tdd/SKILL.md": "# Skill\n", "skills/tdd/LICENSE": "MIT\n",
+            "skills/tdd/refs/deep.md": "# Nothing in the package links this\n",
+        })
+        self.assertEqual(self.third_party(report), [])
+        deep = [f for f in report["findings"] if f["code"] == "unreachable-doc"]
+        self.assertEqual([(f["path"], f["message"]) for f in deep],
+                         [("skills/tdd/refs/deep.md", "no document reached from skills/tdd/SKILL.md links to it")])
 
 
 class ChangedFilesTests(Fixture):
@@ -1247,25 +1350,14 @@ class ChangedFilesTests(Fixture):
         self.assertEqual(self.facts(report, "path"), [("README.md", 3, "tools/build.py", "matched"),
                                                       ("README.md", 3, "tools/missing.py", "contradicted")])
 
-    def git_repository(self, files: dict[str, str]):
-        """A throwaway repository holding `files` in one commit (plumbing only, so no hooks run); returns a runner."""
-        git = shutil.which("git")
-        if git is None:
-            self.skipTest("git is not installed")
-
-        def run(*args: str, cwd: Path | None = None) -> str:
-            result = subprocess.run([git, "-C", str(cwd or self.root), *args], capture_output=True, text=True,
-                                    encoding="utf-8")
-            self.assertEqual(result.returncode, 0, result.stderr)
-            return result.stdout.strip()
-
-        self.write(files)
-        run("init", "-q")
-        run("config", "user.name", "docs-check test")
-        run("config", "user.email", "docs-check@example.invalid")
-        run("add", *files)
-        run("update-ref", "HEAD", run("commit-tree", run("write-tree"), "-m", "fixture"))
-        return run
+    def test_a_fact_inside_a_folder_a_nested_gitignore_ignores_is_not_checkable(self):
+        self.git_repository({**DocsCheckTests.NESTED_IGNORE,
+                             "AGENTS.md": "# Rules\n\nUnity writes `game/Library/Bee/out.txt` on import.\n"})
+        self.write(DocsCheckTests.IGNORED_DOCS)
+        report = self.changed("game/Assets/notes.md")
+        facts = {f["claim"]: (f["status"], f["evidence"]) for f in report["facts"] if f["kind"] == "path"}
+        self.assertEqual(facts["game/Library/Bee/out.txt"],
+                         ("not-checkable", "under a git-ignored folder (generated output)"))
 
     def from_git_report(self) -> dict:
         result = self.run_script(str(self.root), "--json", "--changed-from-git")

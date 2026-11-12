@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rules_version": "1.8.7",
-  "package_version": "2.8.0-rc.36",
+  "rules_version": "1.8.8",
+  "package_version": "2.8.0-rc.37",
   "entrypoint": "START.md",
   "files": [
     "ANGULAR.md",
@@ -37,7 +37,7 @@
   "sha256": {
     "ANGULAR.md": "fcb9d86836640d125c489e1e66bc48d8eab1bfb80090d75c8137a7f9757ba0b5",
     "CAPACITOR.md": "4aa9ed169abd36d001888a2328f49745f44975fc9a7c32c03d79ed66601c0549",
-    "CHANGES.md": "1ee8043d800a2ff346e9421e78b9412b4cce9d25a13a586594abcd0011eb9cee",
+    "CHANGES.md": "0a2ab36f6619f4a4187a2b29d5fb912def1771a6089526dd9f451dae00b9e5c7",
     "COMPATIBILITY.md": "fa91efb4a0244b5eaac192152406ea15acddc10cc992facad6031bac8e2a00c0",
     "CORE.md": "5995cbc0b1e7118f8116fa39be1dc74de5f41e0ff1c6b05d9b975a52c897326a",
     "DESIGN.md": "94772391b76e9e28b7365b8809c721b7afffe986bf2ffe4cb79acedcc5f44786",
@@ -53,11 +53,11 @@
     "REACT.md": "7fd5a1464c69f1feb57f37bdb22464e0a7020527222b14b7503a46755c30c0dd",
     "READINESS.md": "8e71dfce40033af3c2033598d1bb3ae492c40d0de884bb7c2370229536bdfce3",
     "RELIABILITY.md": "1ad9387c1e2af1f7e1508d14bcd080b8d9dc21669839eeb7def2ea47f7611a57",
-    "RUST.md": "b196e672efa2b8a85bb410f269bc000d57f3629c0b3896238a9a07621db77212",
+    "RUST.md": "6901bb75069f8829294e18bf55931471f932cb93e124bafb0bff1205a5e6f904",
     "SECURITY.md": "1ea020e7f301f05405c066c077d67a8d77521ef63043bdc14e45b1d53bf25b27",
-    "SOURCES.md": "271a06eb2b8ae16f0c873d21a839e0813dcc20323f55fe3de965bb0e46103033",
+    "SOURCES.md": "6ebbefd658a097a2fa048668c05bdf5c1e0e4ce421f9b0d411df3fad4e2b14cf",
     "START.md": "7361cb8af5c0287ac793d0c714361664d6c684f0701fe4efeee72104b521f4ca",
-    "TESTING.md": "41a4780a10176c151fe921a473647d4903b57437537e2bb31632990db1eb775c",
+    "TESTING.md": "3592ce860bd3c09ac6edbfaadbe9f34343e4a3fa4c33721e4521cebea8e54065",
     "THREEJS.md": "61c60377ffb63b7651f9b8bec9e738fd9e2ddf1f7cacdc395a664d177741b8b6",
     "TYPESCRIPT.md": "8e42c68530713d4e0e6e4f8262bb34b69eb6b8aa922cfe565d1e9181a0a2bc25",
     "UNITY.md": "59b2bb29df4b6668d2ca76cab62f31288949044e220c944ad8e0eea5153f3a95",

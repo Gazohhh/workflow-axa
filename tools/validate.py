@@ -41,8 +41,7 @@ REQUIRED = (
     "skills/workflow/PDF-DELIVERABLE.md", "skills/workflow/CHATGPT-PROMPTS.md",
     "skills/workflow/agents/openai.yaml", "tests/README.md", "tests/SCENARIOS.md",
     "tools/create_fixture.py", "skills/workflow/SPECIALISTS.md", "skills/workflow/SETUP.md",
-    "skills/workflow/specialists.json", "skills/workflow/scripts/check_specialists.py",
-    "tests/test_specialists.py", "tests/test_reports.py", "tools/browser_smoke.py",
+    "tests/test_reports.py", "tools/browser_smoke.py",
     "skills/workflow/GROUNDING.md", "skills/workflow/VISUAL-REVIEW.md",
     "skills/workflow/templates/PROJECT-ROUTING.md", "skills/codebase-map/SKILL.md",
     "skills/codebase-map/REPORT.md", "skills/codebase-map/FLOWCHART-DESIGN.md", "skills/codebase-map/agents/openai.yaml",
@@ -69,16 +68,21 @@ REQUIRED = (
     "skills/ui-design/scripts/review_ui_diff.py", "tests/test_ui_design.py", "tests/behavioral/ui-design.json",
 )
 REQUIRED += tuple(f"skills/{name}/{file}" for name in REGISTERED_NAMES for file in ("SKILL.md", "agents/openai.yaml"))
-REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "tools/vendor_specialists.py", "tests/test_vendored_specialists.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py",
+REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py",
              "hooks/duplicate_skills.py", "tests/test_duplicate_skills_hook.py")
 REQUIRED += ("skills/codebase-map/assets/report-style.css", "skills/codebase-map/assets/report-style-compat.css", "skills/codebase-map/assets/report-extra.js", "tests/test_simple_english.py", "skills/simple-english/LICENSE")
 REQUIRED += ("skills/workflow/scripts/ticket_records.py", "skills/workflow/examples/readable-todo.md", "docs/archive/RC3-CASES.md", "tests/test_rc3_reliability.py")
 REQUIRED += ("skills/codebase-map/TASK-REPORT.md", "skills/codebase-map/scripts/task_report.py", "skills/codebase-map/assets/task-report.css", "tests/test_task_report.py")
-REQUIRED += ("CONTEXT.md", "tests/test_validate_budgets.py")
+REQUIRED += ("CONTEXT.md", "tests/test_validate_budgets.py", "tests/test_owned_skills.py")
+# Skills that began as copies of MIT-licensed projects (VENDORED-SKILLS.md credits them). They are our own text now;
+# each folder keeps its LICENSE because the licence requires the copyright notice to travel with the text.
+FORMERLY_COPIED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
+                   "implement-spec", "retro", "simple-english")
+REQUIRED += tuple(f"skills/{name}/LICENSE" for name in FORMERLY_COPIED)
 
-# Word ceilings for the reference .md files under skills/ (path below skills/), excluding SKILL.md files and the
-# upstream copies in vendored skill folders. Each ceiling is the file's final size after the 2026-11-11 wording
-# work plus 5 percent, rounded up to the next ten. Where that came out above the earlier headroom ceiling, the
+# Word ceilings for the reference .md files under skills/ (path below skills/), excluding SKILL.md files. Each
+# ceiling is the file's final size after the 2026-11-11 wording work plus 5 percent, rounded up to the next ten
+# (the formerly copied skills' files: their 2026-11-12 size, when they became our own text, plus 5 percent). Where that came out above the earlier headroom ceiling, the
 # earlier ceiling stays (rule-maker/rules/DESIGN.md, workflow/SETUP.md, workflow/VISUAL-REVIEW.md).
 REFERENCE_BUDGETS = {
     'codebase-map/DIAGRAM-DESIGN.md': 50, 'codebase-map/examples/FINDINGS.md': 90, 'codebase-map/examples/PLAN.md': 150,
@@ -108,10 +112,14 @@ REFERENCE_BUDGETS = {
     'workflow/PDF-DELIVERABLE.md': 1040, 'workflow/RULES.md': 220, 'workflow/SETUP.md': 2310,
     'workflow/SPECIALISTS.md': 820, 'workflow/TASK-FOLDER.md': 3290, 'workflow/templates/PROJECT-ROUTING.md': 820,
     'workflow/VISUAL-REVIEW.md': 2120, 'workflow/WRITING.md': 690,
+    'codebase-design/DEEPENING.md': 410, 'codebase-design/DESIGN-IT-TWICE.md': 430,
+    'domain-modeling/ADR-FORMAT.md': 460, 'domain-modeling/GLOSSARY-FORMAT.md': 360,
+    'simple-english/references/rule-catalog.md': 1820, 'simple-english/references/strict-vocabulary.md': 960,
+    'simple-english/references/use-cases.md': 620, 'simple-english/references/word-swaps.md': 520,
+    'tdd/mocking.md': 220, 'tdd/tests.md': 310, 'writing-for-agents/SKILL-MECHANICS.md': 440,
 }
 SYNONYMS_FAIL = True  # A rejected CONTEXT.md synonym in skill prose fails validation.
 REPEAT_WORDS = 25
-ADAPTATION_HEADING = "## workflow-axa adaptation"
 
 
 _UNITS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
@@ -188,26 +196,18 @@ def _docs_check():
     return module
 
 
-def _vendored(root: Path) -> set[str]:
-    # Each vendored skill folder carries its upstream LICENSE (VENDORED-SKILLS.md); our own folders do not.
-    return {name for name in REGISTERED_NAMES if (root / f"skills/{name}/LICENSE").is_file()}
-
-
 def _skill_markdown(root: Path) -> list[tuple[str, Path]]:
-    """(path below skills/, file) of each .md under skills/ except the upstream reference copies of vendored skills.
-    A vendored SKILL.md stays: its adaptation section is ours."""
-    vendored, found = _vendored(root), []
+    """(path below skills/, file) of each .md under skills/."""
+    found = []
     for path in sorted((root / "skills").rglob("*.md")):
-        relative = path.relative_to(root / "skills").as_posix()
-        if any(part in IGNORED for part in path.relative_to(root).parts) or (
-                path.name != "SKILL.md" and relative.split("/", 1)[0] in vendored):
+        if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
-        found.append((relative, path))
+        found.append((path.relative_to(root / "skills").as_posix(), path))
     return found
 
 
 def reference_files(root: Path) -> dict[str, int]:
-    """Word count of each reference file: a skill .md that is not SKILL.md and not vendored upstream text."""
+    """Word count of each reference file: a skill .md that is not SKILL.md."""
     return {relative: len(path.read_text(encoding="utf-8").split())
             for relative, path in _skill_markdown(root) if path.name != "SKILL.md"}
 
@@ -282,20 +282,16 @@ def vocabulary_errors(root: Path) -> list[str]:
 
 
 def synonym_findings(root: Path) -> list[str]:
-    """Each CONTEXT.md rejected synonym in skill .md prose: outside code, HTML comments, vendored upstream text and
-    the identifiers that keep their form."""
+    """Each CONTEXT.md rejected synonym in skill .md prose: outside code, HTML comments and the identifiers that keep
+    their form."""
     vocabulary, docs_check, findings = read_vocabulary(root), _docs_check(), []
     patterns = {word: re.compile(r"(?<![\w-])" + r"\s+".join(map(re.escape, word.split())) + r"(?![\w-])", re.I)
                 for word in vocabulary.avoid}
     masked = [re.compile(re.escape(identifier), re.I) for identifier in vocabulary.identifiers
               if any(pattern.search(identifier) for pattern in patterns.values())]
-    vendored = _vendored(root)
     for relative, path in _skill_markdown(root):
         lines = docs_check.prose_lines(path.read_text(encoding="utf-8-sig"))
-        start = 0
-        if relative.split("/", 1)[0] in vendored:  # only the adaptation section of a vendored SKILL.md is ours
-            start = next((i for i, line in enumerate(lines) if line.strip() == ADAPTATION_HEADING), len(lines))
-        for number, line in enumerate(lines[start:], start + 1):
+        for number, line in enumerate(lines, 1):
             for identifier in masked:
                 line = identifier.sub(lambda found: " " * len(found[0]), line)
             for word, pattern in patterns.items():
@@ -341,26 +337,6 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Marketplace must point to this one local plugin.")
     except (ValueError, TypeError, AttributeError, OSError) as exc:
         errors.append(f"Manifest error: {exc}")
-
-    try:
-        catalogue = json.loads((root / "skills/workflow/specialists.json").read_text(encoding="utf-8"))
-        if catalogue.get("workflow_version") != plugin.get("version"):
-            errors.append("Specialist catalogue version must match plugin version.")
-        if catalogue.get("schema_version") != 1 or not catalogue.get("skills"):
-            errors.append("Specialist catalogue schema/skills are missing.")
-        routes = (root / "skills/workflow/SPECIALISTS.md").read_text(encoding="utf-8")
-        for name, row in catalogue["skills"].items():
-            if row.get("invocation") not in {"model", "manual"}:
-                errors.append(f"Unknown specialist invocation policy: {name}")
-            if row.get("invocation") == "model" and f"`{name}`" not in routes:
-                errors.append(f"Missing explicit specialist route: {name}")
-            if not row.get("required_files") or "SKILL.md" not in row["required_files"]:
-                errors.append(f"Specialist entrypoint not required: {name}")
-            for relative in row.get("required_files", []):
-                if Path(relative).is_absolute() or ".." in Path(relative).parts:
-                    errors.append(f"Unsafe specialist reference: {name}/{relative}")
-    except (ValueError, TypeError, AttributeError, KeyError, OSError) as exc:
-        errors.append(f"Specialist catalogue error: {exc}")
 
     try:
         library = root / "skills/rule-maker/rules"
@@ -443,10 +419,8 @@ def validate_package(root: Path) -> list[str]:
     try:
         rules_version = json.loads((root / "skills/rule-maker/rules/version.json").read_text(encoding="utf-8")).get(
             "rules_version", "")
-        # Each vendored skill folder carries its upstream LICENSE (VENDORED-SKILLS.md); our own folders do not.
-        vendored = sum((root / f"skills/{name}/LICENSE").is_file() for name in REGISTERED_NAMES)
         errors += doc_fact_errors(root, str(plugin.get("version", "")), str(rules_version),
-                                  len(REGISTERED_NAMES), vendored)
+                                  len(REGISTERED_NAMES), len(FORMERLY_COPIED))
     except (OSError, ValueError, AttributeError) as exc:
         errors.append(f"Documentation facts error: {exc}")
     return errors

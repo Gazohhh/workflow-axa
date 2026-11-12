@@ -624,10 +624,10 @@ class WordingTests(unittest.TestCase):
             renderer.unpresented(output, self.root, self.data)
 
     def test_wording_docs_agree_on_uncertainty_words_and_replacing_drafts(self):
-        adaptation = (ROOT / "skills/simple-english/SKILL.md").read_text(encoding="utf-8").split("## workflow-axa adaptation", 1)[1]
+        simple = (ROOT / "skills/simple-english/SKILL.md").read_text(encoding="utf-8")
         writing = (ROOT / "skills/workflow/WRITING.md").read_text(encoding="utf-8")
-        self.assertIn("uncertainty, permission or a proposal", adaptation)
-        self.assertIn("never just delete", adaptation)
+        self.assertIn("uncertainty, permission or a proposal", simple)
+        self.assertIn("never just delete", simple)
         self.assertIn("must, may, must not", writing.lower())
         self.assertIn("uncertainty, permission or a proposal", writing)
         self.assertIsNone(helper_contraction(writing), "WRITING.md uses a contraction")

@@ -1,18 +1,16 @@
 ---
 name: retro
-description: "Conduct a retrospective on a coding session."
+description: "Run a retrospective over one or many coding sessions."
 disable-model-invocation: true
 ---
 
-> Bundled with workflow-axa from [mattpocock/skills](https://github.com/mattpocock/skills) `skills/engineering/retro/SKILL.md` at `4ae2317`, MIT ([LICENSE](LICENSE)). The upstream text below is unchanged; the **workflow-axa adaptation** at the end overrides it where they conflict.
-
-The user has asked for a **retrospective**. You are suggesting improvements to the coding agent's **environment** to improve future runs.
+The user has asked for a **retrospective**, usually after a delivery or across many sessions. You are finding what slows the user down and suggesting improvements to the coding agent's **environment** to improve future runs. Only the user starts a retrospective; the workflow never runs one on its own.
 
 ## Steps
 
-1. Call the Skill tool with `writing-for-agents` for the writing style guide.
+1. Read `../writing-for-agents/SKILL.md` for the writing style guide.
 
-2. Read the primary sources for the session the user specifies. This may mean searching through session logs on this machine. If the user doesn't specify a session, default to the current one.
+2. Read the primary sources for the sessions the user specifies. If the user doesn't specify a session, default to the current one. Claude Code keeps transcripts in `~/.claude/projects/<path-with-dashes>/<session-id>.jsonl` (subagent work in a sibling folder); they can be hundreds of MB. Don't read them whole. First run `python -X utf8 -I scripts/digest_sessions.py <project-log-folder> <out.md>` from this skill's folder: it lists, per session, every human message, skills used, questions asked, tool mix, compactions and errors. Then grep the raw transcript for the moments that matter.
 
 3. Look for candidates for improvement in these categories.
 
@@ -23,8 +21,9 @@ The user has asked for a **retrospective**. You are suggesting improvements to t
 - **Tool economy**: did the agent make expensive tool calls that could be streamlined? Is there any custom tooling (CLI's, MCP's) that is particularly token-inefficient? _Use when_ the agent made an expensive tool call.
 - **No-ops**: look for instructions in steering files that don't modify the agent's behavior. _Use when_ the steering files are large and unwieldy.
 - **Information access**: look for opportunities to increase the agent's access to information. Teeing dev server logs, readonly access to third-party services. _Use when_ a crucial piece of information was not available to the agent.
+- **Back-and-forth**: count where the user had to repeat, correct, re-ask status ("is it done?", "what's left?") or push past a stop, and which workflow step caused it. _Use when_ the user had to steer the agent more than once.
 
-4. Present these candidates to the user, in order of severity.
+4. Present these candidates to the user, in order of severity, each with where its fix goes: a workflow problem becomes a change to this package (a phase skill, a reference file, a test); a project problem goes to the project's AGENTS.md, checks or `CODING_STANDARDS.md` as the categories above say. Apply a fix only with the user's approval.
 
 ## Reference
 
@@ -44,13 +43,3 @@ You have access to several files in the repo:
 - `CODING_STANDARDS.md`: this file is read during review, not implementation. Add **navigation pointers** to docs folders if the standards file gets more than 1,000 lines long.
 - Docs: use docs as references files, pointed to by other files. Look for existing docs before writing new ones.
 - Skills: use skills for docs (since their description goes into the agent's context window), or for user-invoked commands. Follow the advice in the `writing-for-agents` skill.
-
----
-
-## workflow-axa adaptation
-
-Use after a delivery, or across many sessions, to find what slows the user down. The user invokes it; the workflow doesn't run it on its own.
-
-- **Session logs.** Claude Code keeps transcripts in `~/.claude/projects/<path-with-dashes>/<session-id>.jsonl` (subagent work in a sibling folder); they can be hundreds of MB. Don't read them whole. First run `python -X utf8 -I scripts/digest_sessions.py <project-log-folder> <out.md>` from this skill's folder: it lists, per session, every human message, skills used, questions asked, tool mix, compactions and errors. Then grep the raw transcript for the moments that matter.
-- **Extra category: back-and-forth.** Count where the user had to repeat, correct, re-ask status ("is it done?", "what's left?") or push past a stop, and which workflow step caused it.
-- **Where fixes go.** Workflow problems become changes to this package (a phase skill, a reference file, a test); project problems go to the project's AGENTS.md, checks or CODING_STANDARDS.md as the steps above say. Present them; apply only with the user's approval.
