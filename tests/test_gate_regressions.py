@@ -1023,8 +1023,7 @@ class AgreementGateRegressions(GateCase):
     def test_a_legacy_two_gate_approval_needs_no_agreement_line(self):
         """Assumption A1 of agreement 1 (delivery reconciliation): a legacy Approval line passes without one."""
         self.task(A, '- Approval (gate two): legacy single-gate approval, revision r1: "Yes to both"')
-        out = self.fire([ROUTER] + self.approval(A), "Edit", self.code())
-        self.assertNotIn("Agreement (gate one)", (out or {}).get("permissionDecisionReason", ""))
+        self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
 
 
 class BulkArtifactDeletes(GateCase):

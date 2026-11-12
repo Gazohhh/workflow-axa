@@ -133,3 +133,5 @@ Q9 Bulk deletes of test output (candidate 4):
 - Two tests for A1/A2 were drafted but the gate stopped the edits ("current task changed" after the owner's last message named the fixture task 2026-11-12-gate-check); they and the CHANGELOG fix wait for the owner's next reply.
 
 - V19 after owner acceptance (2026-11-12): added AgreementGateRegressions.test_a_legacy_two_gate_approval_needs_no_agreement_line (A1) and the docs/plans and .artifacts exclusions in test_gate_notes (A2); both pass against the live gate (AgreementGate OK, test_gate_notes OK). CHANGELOG rc.38 limit now states the observed refusal and that the allowed case is covered by tests only. validate.py PASS.
+
+- V20 review of the V19 additions (2026-11-12, fresh subagent, code-review, independent, axes sequential): A1 test distinguishes legacy from non-legacy; A2 note tests fail if the is_record exclusion breaks; CHANGELOG line accurate to V17. Two low findings fixed (legacy test now assertIsNone; new src/a.spec.ts case for the *.spec.* exclusion) and re-checked by the same reviewer: fixed, no new issue. test_gate_notes OK, AgreementGate OK. Delivery unchanged otherwise (Outcome above).

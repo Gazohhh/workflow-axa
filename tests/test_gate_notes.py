@@ -46,6 +46,7 @@ class StyleNotes(GateCase):
         self.assertNotIn("DESIGN.md", self.after("Edit", self.edit("tests/test_a.py", "x", 'style="a"')))
         self.assertNotIn("DESIGN.md", self.after("Edit", self.edit(f"docs/plans/{A}/x.html", "x", 'style="a"')))
         self.assertNotIn("DESIGN.md", self.after("Edit", self.edit(".artifacts/run/a.html", "x", 'style="a"')))
+        self.assertNotIn("DESIGN.md", self.after("Edit", self.edit("src/a.spec.ts", "x", 'style="a"')))
         self.assertNotIn("DESIGN.md", self.after("Edit", self.edit("src/a.html", '<p style="a">x</p>',
                                                                     '<p style="a">y</p>')))
         self.assertNotIn("DESIGN.md", self.after("Edit", self.edit("src/a.scss", "", ".b { color: red; }"),
