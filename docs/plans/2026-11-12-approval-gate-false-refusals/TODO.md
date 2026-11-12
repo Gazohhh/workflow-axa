@@ -14,7 +14,7 @@ Historical (r1 as approved): the hook tickets were planned in a Git worktree can
 | T5 | A clear message when a linked worktree's PLAN copy differs | Verified | T4 |
 | T6 | Regression pins for the reproduced Altinstar cases | Verified | T5 |
 | T7 | Documents and version 2.8.0-rc.38 | Verified | T6 |
-| T8 | Verify, publish, reinstall and check in a fresh session | Not started | T7 |
+| T8 | Verify, publish, reinstall and check in a fresh session | Verified | T7 |
 
 ## Tickets
 
@@ -217,7 +217,8 @@ References:
 - Depends on: T6
 
 ### T8 — Verify, publish, reinstall and check in a fresh session
-Status: Not started
+Status: Verified
+Evidence: V14, V15, V17, V19
 
 What needs to happen (revised by D1/D2: no merge or worktree removal): whole-feature review (done, V13); `verification_summary.py --run --write VALIDATION.md`; commit by explicit paths (the staged 2026-11-11 records stay staged) and push workflow-axa; update the Claude plugin from the gazohhh marketplace and replace the 21 Codex skill folders from a fresh GitHub clone; then the fresh-session fixture check.
 
@@ -236,7 +237,8 @@ How to verify:
 - python -X utf8 -I tools/validate.py; python -X utf8 -m unittest discover -s tests -p "test_*.py"
 - Human check: the fresh-session fixture check, after the reinstall.
 
-Verification: not run
+Verification: passed (V14 VALIDATION 1223 ran with no failures, V15 publish and reinstall, V16-V17 fresh-session fixture check)
+Owner acceptance: Gazoh, 2026-11-12, V17: "yes accepting it"
 
 References:
 - Supports: agreement 1 release line; plan review finding T8

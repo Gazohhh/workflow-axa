@@ -1020,6 +1020,12 @@ class AgreementGateRegressions(GateCase):
         self.task(A, APPROVED)  # `- Approval:` without "(gate two)": an older single-gate task
         self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
 
+    def test_a_legacy_two_gate_approval_needs_no_agreement_line(self):
+        """Assumption A1 of agreement 1 (delivery reconciliation): a legacy Approval line passes without one."""
+        self.task(A, '- Approval (gate two): legacy single-gate approval, revision r1: "Yes to both"')
+        out = self.fire([ROUTER] + self.approval(A), "Edit", self.code())
+        self.assertNotIn("Agreement (gate one)", (out or {}).get("permissionDecisionReason", ""))
+
 
 class BulkArtifactDeletes(GateCase):
     """T3 of 2026-11-12-approval-gate-false-refusals (owner Q9 a): git clean, deleting .artifacts itself and wildcard

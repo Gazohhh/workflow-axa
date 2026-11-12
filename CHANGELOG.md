@@ -26,7 +26,7 @@ Version fields: `.claude-plugin/plugin.json`, the rules `version.json` package v
 
 Limits:
 
-- Not verified yet: a fresh Claude Code session after reinstall, with a write refused while a fixture task's Agreement line is pending and allowed once it says agreed.
+- Observed in a fresh Claude Code session after reinstall: a write refused while a fixture task's Agreement line was pending. The allowed case after "agreed" is covered by tests only.
 
 ## 2.8.0-rc.37 — owned skills, rule contracts and docs check (2026-11-12)
 

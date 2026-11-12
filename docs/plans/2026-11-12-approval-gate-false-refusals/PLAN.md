@@ -1,14 +1,14 @@
 # Approval gate: false refusals and new hook checks
 
 ## Current checkpoint
-- Updated / phase: 2026-11-12; implementing
+- Updated / phase: 2026-11-12; closed
 - Agreement (gate one): agreed 2026-11-12, agreement 1: "a) Agree (Recommended)"
 - Approval (gate two): r1 approved, 2026-11-12, no report: "Approve r1, no report"
-- Implementation: T1 to T7 implemented and verified; T0 superseded (D1, D2); the new hooks/phase_gate.py is in this checkout's hooks/ folder (which this machine's live hook loads, E12); T8 next
-- Verification / owner acceptance: tests and reviews V2-V13 (full suite 1223 OK at V11); not yet run: VALIDATION.md regeneration, publish, reinstall and the fresh-session fixture check (T8); owner acceptance pending
+- Implementation: implemented and verified (T1-T8); T0 superseded (D1, D2)
+- Verification / owner acceptance: passed (V2-V19); owner accepted 2026-11-12: "yes accepting it" (D3)
 - Blockers: none
 - Changed files: hooks/phase_gate.py, hooks/hooks.json (description), tests/test_gate_regressions.py, tests/test_phase_gate_hook.py, tests/test_gate_notes.py (new), docs/RULE-CONTRACTS.md, docs/ARCHITECTURE.md, skills/workflow/SETUP.md, CHANGELOG.md, UPGRADE.md, README.md, tests/README.md, version fields (plugin.json, rules version.json package_version, render_report.py, tests/behavioral/*.json); records; also the renamed audit record altinstar-proposed-AGENTS.txt
-- Next safe action: T8: verification_summary.py --run --write, commit by path, push, reinstall Claude and Codex, fresh-session fixture check
+- Next safe action: none for this task. Later hook candidates 7 and 8 (docs/RULE-CONTRACTS.md)
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main. Staged 2026-11-11 records stay untouched.
@@ -50,3 +50,14 @@ Tickets in TODO.md (r1). T0 (worktree) superseded by D1 and D2: hook code was bu
 r1 approved 2026-11-12 (owner via question tool): "Approve r1, no report". Includes T0 to T8 as in TODO.md r1, and the owner's OK for: worktree and branch creation, commits in the candidate and on main, the merge into main, verification_summary.py --run --write, the push and the reinstall. Excludes waiver wording (Q6 c), Codex hooks, application repositories.
 
 ## Outcome
+
+Delivered 2026-11-12 as release 2.8.0-rc.38 (commit c7147e8, pushed; Claude plugin and Codex skills reinstalled from GitHub, V15). Partial until owner acceptance.
+- Asked: follow-up 3 "do all the follow-ups"; agreed: agreement 1 (items 1-6); approved: r1, no report.
+- Built: T1 checkpoint heading; T2 agreement check; T3 bulk-delete refusal; T4 styling and small-change notes; T5 worktree copy note; T6 pins; T7 docs and rc.38. T0 superseded (D1, D2) after the worktree could not carry the approval (E11) and a half-written live hook broke every write (E12, restored by the owner).
+- Checks: full suite 1223 ran, 0 failed (V14, VALIDATION.md); validate.py PASS; fresh-session refusal while the agreement is pending observed by the owner (V17). Not observed live: the allowed case after "agreed" (tests only).
+- Reviews: V8/V10 code review of T1-T6 (independent, both axes, findings fixed or documented); V13 whole feature (fixed); V18 reconciliation.
+- Verdicts: items 1-6 verified; assumptions A1 and A2 partial (one untested case each); release line partial (allowed case live, owner acceptance).
+- Not changed by owner decision: waiver wording (Q6 c). New hook candidates: 7 (E8/E9 approval wording in the same message, bold answers) and 8 (E10/E11 worktree and subagent approvals) in docs/RULE-CONTRACTS.md.
+- Kept until acceptance: the fixture C:\Users\Cem\gate-fixture-rc38, the working copy .artifacts/2026-11-12-approval-gate-false-refusals/work, logs in that folder, the scratchpad backup of the rc.37 Codex skills.
+
+- 2026-11-12: owner acceptance: "yes accepting it" (D3). A1/A2 tests added (V19). Fixture and working copy removed after acceptance.
