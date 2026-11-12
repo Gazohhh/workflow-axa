@@ -57,7 +57,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.37; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.38; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -107,6 +107,10 @@ B15–B24 in the live-host suite cover policy loading outside workflow, safe rer
 
 The old pending example and historic task records are intentionally unchanged. The new task-overview example uses the same graph geometry with an optional sourced checkpoint/revision log. Inspect both desktop and mobile, the closed/open history disclosure and source links. Do not refresh approved visual baselines merely because a status section was added.
 
+
+## Approval gate checks (2.8.0-rc.38)
+
+`test_gate_notes.py` (`StyleNotes`) feeds `hooks/phase_gate.py` a PostToolUse event and checks the styling and small-change notes: a note when an edit adds a style cue or stylesheet rule to an application file, none for Markdown, test files or unchanged styles, and a timing case for very long texts. New classes in `test_gate_regressions.py`: `CheckpointHeadingRegressions` (any "Current checkpoint" heading), `AgreementGateRegressions` (writes wait for the Agreement line on two-gate tasks), `BulkArtifactDeletes` (`git clean` and bulk deletes of `.artifacts`, also inside `bash -c` and `powershell -Command`) and `LinkedWorktreeCopies` (the refusal names a differing PLAN copy). `AltinstarRegressions` gains two pins: requirement IDs such as "D4-R6" are not revisions, and a report named only in an answered approval question counts as presented. The `task` helper in `test_phase_gate_hook.py` adds a default `Agreement (gate one): agreed` line to a two-gate task without one. These tests use synthetic transcripts. They do not show how a live host records a session.
 
 ## Owned skills (2.8.0-rc.37)
 

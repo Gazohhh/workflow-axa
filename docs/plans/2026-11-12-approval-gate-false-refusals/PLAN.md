@@ -4,11 +4,11 @@
 - Updated / phase: 2026-11-12; implementing
 - Agreement (gate one): agreed 2026-11-12, agreement 1: "a) Agree (Recommended)"
 - Approval (gate two): r1 approved, 2026-11-12, no report: "Approve r1, no report"
-- Implementation: not started
-- Verification / owner acceptance: reproduction done (FINDINGS E1-E7); nothing built
+- Implementation: T1 to T7 implemented and verified; T0 superseded (D1, D2); the new hooks/phase_gate.py is in this checkout's hooks/ folder (which this machine's live hook loads, E12); T8 next
+- Verification / owner acceptance: tests and reviews V2-V13 (full suite 1223 OK at V11); not yet run: VALIDATION.md regeneration, publish, reinstall and the fresh-session fixture check (T8); owner acceptance pending
 - Blockers: none
-- Changed files: docs/plans/2026-11-12-approval-gate-false-refusals/ (task records only)
-- Next safe action: T0: commit task records on main by path, create the candidate worktree, run the baseline
+- Changed files: hooks/phase_gate.py, hooks/hooks.json (description), tests/test_gate_regressions.py, tests/test_phase_gate_hook.py, tests/test_gate_notes.py (new), docs/RULE-CONTRACTS.md, docs/ARCHITECTURE.md, skills/workflow/SETUP.md, CHANGELOG.md, UPGRADE.md, README.md, tests/README.md, version fields (plugin.json, rules version.json package_version, render_report.py, tests/behavioral/*.json); records; also the renamed audit record altinstar-proposed-AGENTS.txt
+- Next safe action: T8: verification_summary.py --run --write, commit by path, push, reinstall Claude and Codex, fresh-session fixture check
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main. Staged 2026-11-11 records stay untouched.
@@ -43,7 +43,7 @@ Assumptions (owner may reject):
 
 ## Approach and scope
 
-Tickets in TODO.md (r1): T0 candidate worktree, T1 checkpoint heading, T2 agreement check, T3 bulk delete refusal, T4 CSS and small-change notes, T5 stale worktree message, T6 regression pins, T7 docs and rc.38, T8 merge, publish, reinstall, fresh-session check. T1 to T6 all change hooks/phase_gate.py and tests/test_gate_regressions.py, so they run one after another. Excluded: waiver wording (Q6 c), Codex hooks, application repos.
+Tickets in TODO.md (r1). T0 (worktree) superseded by D1 and D2: hook code was built in a plain copy under .artifacts and written into hooks/ as a finished file; T8 has no merge. Excluded: waiver wording (Q6 c), Codex hooks, application repos.
 
 ## Approval
 

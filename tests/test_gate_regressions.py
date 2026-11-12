@@ -925,6 +925,30 @@ class AltinstarRegressions(GateCase):
         self.task(A, APPROVED, "- Status: revision R7 drafted")
         self.assertEqual(self.decision([ROUTER] + self.approval(A), "Edit", self.code()), "deny")
 
+    def test_qualified_requirement_ids_are_not_revisions_either(self):
+        """T6 of 2026-11-12-approval-gate-false-refusals (FINDINGS E1): "R6 (FSR)" and "D4-R6" were read as
+        revision r6 before rc.4. Pin (passes today)."""
+        self.task(A, APPROVED, "- Requirements: R6 (FSR) and D4-R6 covered")
+        self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
+
+    def test_a_report_named_only_inside_the_approval_question_counts_as_presented(self):
+        """T6 of 2026-11-12-approval-gate-false-refusals (FINDINGS E3a): on 2026-11-05 the owner answered "Approve D5
+        plan and D5-A7" to a question whose text named the plan report; the chat text did not. Since rc.4 an answered
+        question that names the report presents it. Pin (passes today)."""
+        folder = self.task(A, APPROVED)
+        report = folder / "reviews" / "plan-r1.html"
+        rel = f"docs/plans/{A}/reviews/plan-r1.html"
+        question = f"Approve the plan in {report}?"
+        ask = {"type": "assistant", "message": {"content": [{"type": "tool_use", "id": "q1", "name": "AskUserQuestion",
+               "input": {"questions": [{"question": question, "options": [{"label": "Yes to both"}]}]}}]}}
+        answer = user([{"type": "tool_result", "tool_use_id": "q1", "content": "answered"}],
+                      toolUseResult={"answers": {question: "Yes to both"}})
+        # The fingerprints the host records: the agent read the report before asking, and the gate marks the answer.
+        read = hook_context("PostToolUse", f"workflow-axa report fingerprint: {rel} sha256={sha(report)}")
+        reply = hook_context("PostToolUse", f"workflow-axa report at owner reply: {rel} sha256={sha(report)}")
+        rows = [ROUTER, self.records(A), read, ask, answer, reply]
+        self.assertIsNone(self.fire(rows, "Edit", self.code(), hooks=False))
+
     def test_the_stop_hook_never_adds_a_turn_while_waiting_or_on_its_own_retry(self):
         """Altinstar, repeated goal stops. Evidence: the repeated stops in the Altinstar sessions were the host's
         session-scoped /goal Stop hook ("A session-scoped Stop hook is now active with condition ..."), not a
@@ -937,6 +961,135 @@ class AltinstarRegressions(GateCase):
         rows[-1] = say("Questions are ready.")
         write_rows(self.path, rows)
         self.assertEqual(run_reply({"transcript_path": str(self.path), "stop_hook_active": True}), (0, ""))
+
+
+class CheckpointHeadingRegressions(GateCase):
+    """T1 of 2026-11-12-approval-gate-false-refusals (FINDINGS E2). The Altinstar PLAN used the heading
+    `### Current checkpoint (D4)`; the gate only knew `## Current checkpoint`, read the whole PLAN and let an old
+    revision elsewhere outrank the current approval."""
+
+    def plan(self, text):
+        folder = self.task(A, APPROVED)
+        (folder / "PLAN.md").write_text(text, encoding="utf-8")
+
+    def test_a_deeper_or_suffixed_checkpoint_heading_is_the_checkpoint(self):
+        self.plan(f"# Task\n\n### Current checkpoint (D4)\n- Status: x\n{APPROVED}\n\n"
+                  "### Revision log\n- r7 drafted earlier\n")
+        self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
+        self.plan(f"# Task\n\n## Current checkpoint (2026-10-09)\n- Status: x\n{APPROVED}\n\n"
+                  "## History\n- r7 drafted earlier\n")
+        self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
+
+    def test_the_section_ends_only_at_a_heading_of_the_same_or_higher_level(self):
+        self.plan(f"# Task\n\n### Current checkpoint (D4)\n- Status: x\n{APPROVED}\n#### Detail\n- r7 drafted\n")
+        out = self.fire([ROUTER] + self.approval(A), "Edit", self.code())
+        self.assertEqual(out and out["permissionDecision"], "deny")
+        self.assertIn("r7", out["permissionDecisionReason"])
+
+    def test_without_a_checkpoint_heading_the_whole_plan_is_read(self):
+        self.plan(f"# Task\n\n## Status\n{APPROVED}\n\n## History\n- r7 drafted earlier\n")
+        self.assertEqual(self.decision([ROUTER] + self.approval(A), "Edit", self.code()), "deny")
+
+
+class AgreementGateRegressions(GateCase):
+    """T2 of 2026-11-12-approval-gate-false-refusals (owner Q7b a): on the two-gate route a code change waits for a
+    recorded agreement (gate one) as well as the plan approval (gate two)."""
+
+    TWO_GATE = '- Approval (gate two): r1 approved by the owner 2026-11-12: "Yes to both" (report `reviews/plan-r1.html`)'
+
+    def test_a_missing_or_pending_agreement_refuses_the_write(self):
+        for agreement in ("- Agreement (gate one): pending, agreement 1 proposed",
+                          "- Agreement (gate one): not agreed yet", None):
+            with self.subTest(agreement=agreement):
+                self.task(A, *([agreement] if agreement else []), self.TWO_GATE)
+                out = self.fire([ROUTER] + self.approval(A), "Edit", self.code())
+                self.assertEqual(out and out["permissionDecision"], "deny")
+                self.assertIn("Agreement (gate one)", out["permissionDecisionReason"])
+
+    def test_a_recorded_agreement_allows_the_write(self):
+        for agreement in ('- Agreement (gate one): agreed 2026-11-12, agreement 1: "a) Agree (Recommended)"',
+                          "- Agreement (gate one): agreed per the delegated task; the plan keeps its status awaiting "
+                          "approval",
+                          "- Agreement: agreed 2026-11-12", "- Agreement (gate one): waived by the owner",
+                          "- Agreement (gate one): legacy", "- Agreement (gate one): not required - lightweight"):
+            with self.subTest(agreement=agreement):
+                self.task(A, agreement, self.TWO_GATE)
+                self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
+
+    def test_single_gate_and_legacy_tasks_are_not_checked(self):
+        self.task(A, APPROVED)  # `- Approval:` without "(gate two)": an older single-gate task
+        self.assertIsNone(self.fire([ROUTER] + self.approval(A), "Edit", self.code()))
+
+
+class BulkArtifactDeletes(GateCase):
+    """T3 of 2026-11-12-approval-gate-false-refusals (owner Q9 a): git clean, deleting .artifacts itself and wildcard
+    deletes under it are refused in an active session; named files and folders stay deletable (ARTIFACTS.md)."""
+
+    def run_shell(self, command, tool_name="Bash"):
+        self.task(A, APPROVED)
+        return self.fire([ROUTER] + self.approval(A), tool_name, {"command": command})
+
+    def test_bulk_deletes_are_refused(self):
+        for tool_name, command in (("Bash", "git clean -fdx"), ("Bash", "git -C . clean -fd"),
+                                   ("Bash", 'bash -c "git clean -fdx"'), ("PowerShell", 'powershell -Command "git clean -fdx"'),
+                                   ("Bash", "rm -rf .artifacts"),
+                                   ("Bash", "rm -rf ./.artifacts/"), ("Bash", f"rm -rf {self.repo / '.artifacts'}"),
+                                   ("Bash", "rm .artifacts/*"), ("Bash", "rm -rf .artifacts/task/*.png"), ("Bash", "cd .artifacts && rm *"),
+                                   ("PowerShell", "Remove-Item .artifacts\\* -Recurse")):
+            with self.subTest(command=command):
+                out = self.run_shell(command, tool_name)
+                self.assertEqual(out and out["permissionDecision"], "deny")
+                self.assertIn(".artifacts", out["permissionDecisionReason"])
+
+    def test_named_items_and_a_dry_run_stay_allowed(self):
+        for command in ("rm .artifacts/task/a.txt", "rm -rf .artifacts/task/old-run", "git clean -n",
+                        'git commit -m "never run git clean here"', "echo 'run git clean -fdx'",
+                        "git commit -F - <<'EOF'\nRefuse git clean in bulk\nEOF"):
+            with self.subTest(command=command):
+                out = self.run_shell(command)
+                self.assertNotIn("bulk", (out or {}).get("permissionDecisionReason", ""))
+        self.assertIsNone(self.run_shell("rm .artifacts/task/a.txt"))
+
+
+class LinkedWorktreeCopies(GateCase):
+    """T5 of 2026-11-12-approval-gate-false-refusals (FINDINGS E4, E10, E11): a write refused in a linked worktree whose
+    PLAN copy differs from the main checkout's says so, instead of only asking for approval again."""
+
+    def linked(self):
+        main_git = self.repo / ".git" / "worktrees" / "wt"
+        main_git.mkdir(parents=True)
+        wt = self.base / "wt"
+        wt.mkdir()
+        (wt / ".git").write_text(f"gitdir: {main_git}\n", encoding="utf-8")
+        return wt
+
+    def plan_in(self, root, *lines):
+        folder = root / "docs" / "plans" / A
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "PLAN.md").write_text("# Task\n\n## Current checkpoint\n" + "\n".join(lines) + "\n", encoding="utf-8")
+
+    def fire_in(self, root, rows):
+        write_rows(self.path, hooked(rows, root))
+        return run_gate({"tool_name": "Edit", "tool_input": {"file_path": str(root / "src/a.ts")},
+                         "transcript_path": str(self.path), "cwd": str(root)})
+
+    def test_a_differing_plan_copy_is_named(self):
+        wt = self.linked()
+        self.plan_in(self.repo, APPROVED, "- Status: main copy")
+        self.plan_in(wt, "- Approval: not approved")
+        rows = [ROUTER, tool("Write", file_path=str(wt / "docs/plans" / A / "TODO.md"), content="x")]
+        out = self.fire_in(wt, rows)
+        self.assertEqual(out and out["permissionDecision"], "deny")
+        self.assertIn("differs from the main checkout", out["permissionDecisionReason"])
+
+    def test_identical_copies_keep_the_usual_message(self):
+        wt = self.linked()
+        self.plan_in(self.repo, "- Approval: not approved")
+        self.plan_in(wt, "- Approval: not approved")
+        rows = [ROUTER, tool("Write", file_path=str(wt / "docs/plans" / A / "TODO.md"), content="x")]
+        out = self.fire_in(wt, rows)
+        self.assertEqual(out and out["permissionDecision"], "deny")
+        self.assertNotIn("differs from the main checkout", out["permissionDecisionReason"])
 
 
 # Adversarial cases the gate already blocks (all pass today and must keep passing)

@@ -1,4 +1,4 @@
-# Upgrade to workflow-axa 2.8.0-rc.37
+# Upgrade to workflow-axa 2.8.0-rc.38
 
 ## Choose the right source
 
@@ -20,6 +20,18 @@ For the observed spinning session, interrupt it and run /goal clear in that sess
 Use a clone of the **Git repository** for review and local/live tests. It contains all 21 registered skills, hooks, tests, tools and retained task history. The install ZIP omits development tests and history and is not a replacement for the editable repository.
 
 The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorized by the testing handoff.
+
+## What changed in 2.8.0-rc.38
+
+Replace the whole plugin, as for rc.37. Restart Claude Code after the update so that every session loads the new `hooks/phase_gate.py`. No task record changes by itself, and Codex has no hook, so nothing changes there.
+
+Two-gate tasks now need a recorded agreement before code. When a task's checkpoint has an `Approval (gate two)` line and the approval is not legacy, the gate refuses project and Git writes until the `Agreement (gate one):` line, or a plain `Agreement:` line, says agreed, waived, legacy or "not required". The first state word on the line decides. Tasks with an old single-gate `Approval:` line, legacy approvals, lightweight edits and small changes are not checked.
+
+Before you continue an open two-gate task, read its `Agreement` line. If the line has no state word, or says pending or proposed while the owner did agree, record the owner's real agreement answer with `record.py`, for example `- Agreement (gate one): agreed <date>: "<the owner's words>"`. Do not write "agreed" without an owner answer. Some existing tasks record their agreement without a state word; they are refused until their `Agreement` line says agreed.
+
+In workflow sessions, `git clean` (except `git clean -n`), a delete of `.artifacts` itself and a wildcard delete under `.artifacts` are refused. Delete named files or folders instead, after the ownership checks in ARTIFACTS.md.
+
+If your plugin source is a local directory marketplace that points at a source checkout, the running sessions load `hooks/` from that checkout. A hook edit there is live at once. Build hook changes in a copy and write the finished file once (skills/workflow/SETUP.md, "Updating sessions safely").
 
 ## What changed in 2.8.0-rc.37
 

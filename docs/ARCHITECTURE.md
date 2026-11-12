@@ -66,6 +66,6 @@ The installable package includes `skills/codebase-map/scripts/record_projection.
 
 ## What enforces the contract?
 
-Claude Code's installed hooks check several approval and write patterns after activation, with known gaps for indirect shell/MCP writes. Codex currently relies on its host permissions and the instructions; this repo has no equivalent Codex hook. Keep application Git permissions, CI, code review and human approval in the engineering process; don't claim an instruction is a security sandbox.
+Claude Code's installed hooks check several approval and write patterns after activation, with known gaps for indirect shell/MCP writes. Since 2.8.0-rc.38 the phase gate also refuses writes on a two-gate task until its Agreement line says agreed, refuses `git clean` and bulk deletes of `.artifacts`, and adds a note (never a refusal) when an edit adds styling or a small change adds a tag or class. [RULE-CONTRACTS.md](RULE-CONTRACTS.md) lists what checks each hard rule and the remaining hook candidates. Codex currently relies on its host permissions and the instructions; this repo has no equivalent Codex hook. Keep application Git permissions, CI, code review and human approval in the engineering process; don't claim an instruction is a security sandbox.
 
 For release quality, see [EVALUATION.md](EVALUATION.md). For a quick start, see the repository [README](../README.md); long upgrade history lives in CHANGELOG and UPGRADE.

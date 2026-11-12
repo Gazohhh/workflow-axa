@@ -320,6 +320,9 @@ class ApprovalGateTests(unittest.TestCase):
     def task(self, name=TASK, *lines, root=None, report="plan-r1.html"):
         folder = (root or self.repo) / "docs" / "plans" / name
         folder.mkdir(parents=True, exist_ok=True)
+        if any("Approval (gate two)" in line for line in lines) and not any("Agreement" in line for line in lines):
+            # Two-gate tasks record gate one first (T2 of 2026-11-12-approval-gate-false-refusals).
+            lines = ("- Agreement (gate one): agreed 2026-11-03, agreement 1",) + lines
         checkpoint = "\n".join(lines)
         (folder / "PLAN.md").write_text(f"# Task\n\n## Current checkpoint\n- Status: x\n{checkpoint}\n\n## Goal\nx\n",
                                         encoding="utf-8")

@@ -1,25 +1,27 @@
 # Tickets (r1)
 
-All hook tickets are built in an isolated candidate: a Git worktree of this repository at `.artifacts/2026-11-12-approval-gate-false-refusals/candidate` on branch `gate-rc38` (created by T0). Running sessions load hooks from the plugin cache, but AGENTS.md asks for a separate candidate location before hook changes. The candidate is merged into main only in T8.
+Historical (r1 as approved): the hook tickets were planned in a Git worktree candidate created by T0 and merged in T8. Superseded by D1 and D2 after E11 and E12: the worktree was removed; hook code was built and tested in a plain copy at `.artifacts/2026-11-12-approval-gate-false-refusals/work` and written into hooks/ as a finished file. T8 has no merge step.
 
 ## Overview
 
 | Ticket | What needs to happen | Status | Dependencies |
 |---|---|---|---|
-| T0 | Prerequisite: create the isolated candidate worktree and record its baseline | Not started | none |
-| T1 | The gate finds the checkpoint under any "Current checkpoint" heading | Not started | T0 |
-| T2 | Code changes wait for a recorded agreement | Not started | T1 |
-| T3 | Bulk deletes of test output are refused | Not started | T2 |
-| T4 | Notes on new CSS and on new tags or classes in a small change | Not started | T3 |
-| T5 | A clear message when a linked worktree's PLAN copy differs | Not started | T4 |
-| T6 | Regression pins for the reproduced Altinstar cases | Not started | T5 |
-| T7 | Documents and version 2.8.0-rc.38 | Not started | T6 |
-| T8 | Merge, verify, publish, reinstall and check in a fresh session | Not started | T7 |
+| T0 | Prerequisite: create the isolated candidate worktree and record its baseline | superseded | none |
+| T1 | The gate finds the checkpoint under any "Current checkpoint" heading | Verified | T0 |
+| T2 | Code changes wait for a recorded agreement | Verified | T1 |
+| T3 | Bulk deletes of test output are refused | Verified | T2 |
+| T4 | Notes on new CSS and on new tags or classes in a small change | Verified | T3 |
+| T5 | A clear message when a linked worktree's PLAN copy differs | Verified | T4 |
+| T6 | Regression pins for the reproduced Altinstar cases | Verified | T5 |
+| T7 | Documents and version 2.8.0-rc.38 | Verified | T6 |
+| T8 | Verify, publish, reinstall and check in a fresh session | Not started | T7 |
 
 ## Tickets
 
 ### T0 — Prerequisite: create the isolated candidate worktree and record its baseline
-Status: Not started
+Status: superseded
+Decision: D1, D2 (the worktree could not carry the approval, E11; replaced by a plain working copy)
+Evidence: V1
 
 What needs to happen: after approval, commit this task's records on main by explicit paths (never the staged 2026-11-11 records), then `git worktree add .artifacts/2026-11-12-approval-gate-false-refusals/candidate -b gate-rc38` from that commit, so the candidate holds the task's PLAN with its Approval line. Records are updated only on main; the candidate never edits or commits files under docs/plans/. Run validate.py and the full suite in the candidate as the baseline. Enables T1-T7.
 
@@ -36,14 +38,15 @@ Documents: none
 How to verify:
 - `git worktree list`; `git -C <candidate> log -1`; baseline logs in .artifacts/2026-11-12-approval-gate-false-refusals/
 
-Verification: not run
+Verification: passed (V1; one known baseline failure from a record file, fixed on main). Superseded by D1 and D2 after E11 and E12: the worktree was removed; hook code was built in a plain copy instead.
 
 References:
 - Supports: agreement 1 "built in a separate copy"; plan review finding T0/T8
 - Depends on: none
 
 ### T1 — The gate finds the checkpoint under any "Current checkpoint" heading
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: `checkpoint()` in hooks/phase_gate.py accepts a Markdown heading of any level whose text starts with "Current checkpoint" (`### Current checkpoint (D4)`, `## Current checkpoint (2026-10-09)`) and stops at the next heading of the same or higher level. Without such a heading it behaves as today.
 
@@ -62,14 +65,15 @@ Documents: none
 How to verify:
 - `python -X utf8 -m unittest discover -s tests -p "test_gate_regressions.py"` in the candidate, red then green.
 
-Verification: not run
+Verification: passed (red and green V2, V3; review V8, V10; live full suite V11)
 
 References:
 - Supports: agreement 1 item 4; FINDINGS E2
 - Depends on: T0
 
 ### T2 — Code changes wait for a recorded agreement
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: on the full route, after the approval check passes, the gate refuses the writes it already checks (project files and git writes) when the task uses the two-gate checkpoint (an `Approval (gate two)` line) and its Agreement line (`Agreement (gate one):` or plain `Agreement:`) is missing or does not say agreed, waived, legacy or "not required". "pending", "proposed", "not agreed" and "not approved" count as missing. Tasks with an old single-gate `Approval:` line or a legacy approval are not checked. Lightweight edits and the small change route are not checked. A combined "yes to both" answer is recorded on both lines by workflow-clarify; the check reads the Agreement line only. The refusal names the missing line and says to record the owner's agreement answer (workflow-clarify step 4).
 
@@ -89,14 +93,15 @@ Documents: docs/RULE-CONTRACTS.md (in T7)
 How to verify:
 - test_gate_regressions.py, test_phase_gate_hook.py, test_followup_boundaries.py, test_rc3_reliability.py, test_session_recovery.py: red for the new cases first, then all green.
 
-Verification: not run
+Verification: passed (red and green V3; review V8, V9, V10; live full suite V11)
 
 References:
 - Supports: agreement 1 item 1; Q7b a; plan review findings T2
 - Depends on: T1
 
 ### T3 — Bulk deletes of test output are refused
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: in an active gate session (after the transcript scan and the active check in `judge`, using all targets before the `.artifacts` exemption filter), the gate refuses `git clean` (except `git clean -n` / `--dry-run`), a delete of the `.artifacts` folder itself, and a delete with a wildcard under `.artifacts`. A delete of named files or named folders under `.artifacts` stays allowed (ARTIFACTS.md cleanup). The message says to delete named items and follow ARTIFACTS.md.
 
@@ -114,14 +119,15 @@ Documents: skills/workflow/SETUP.md hook table (in T7)
 How to verify:
 - test_gate_regressions.py new cases, red then green.
 
-Verification: not run
+Verification: passed (red and green V4, V9, V10; review V8, V10; live full suite V11)
 
 References:
 - Supports: agreement 1 item 3; Q9 a
 - Depends on: T2
 
 ### T4 — Notes on new CSS and on new tags or classes in a small change
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: in an active session, the existing PostToolUse output of phase_gate.py (the `additionalContext` note it already prints) adds one line when an Edit, Write or MultiEdit of an application file adds a style cue from `skills/ui-design/scripts/review_ui_diff.py` PATTERNS (stylesheet rule, `<style>`, `style=`): ask DESIGN.md rule 4's question or name the existing class. On the small change route it also notes a new tag or class attribute in a listed file. "Adds" means present in the new text and absent from the replaced text (Edit/MultiEdit: old_string vs new_string; Write: the file's committed version, or none if new). Application file: any project file except Markdown, docs/plans, .artifacts and test files (tests/, test/, *.test.*, *.spec.*). It never refuses.
 
@@ -139,14 +145,15 @@ Documents: docs/RULE-CONTRACTS.md, skills/workflow/SETUP.md (in T7)
 How to verify:
 - The new tests red then green.
 
-Verification: not run
+Verification: passed (red and green V5, V9; timing test; review V8, V10; live full suite V11)
 
 References:
 - Supports: agreement 1 item 2; Q8 a
 - Depends on: T3
 
 ### T5 — A clear message when a linked worktree's PLAN copy differs
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: when a write in a linked worktree is refused and the main checkout's PLAN.md for the same task differs from the worktree's copy, the refusal says the two copies differ and that approval is read from this worktree's own records, instead of asking the owner to approve again. The refusal itself is unchanged.
 
@@ -163,14 +170,15 @@ Documents: none
 How to verify:
 - test_gate_regressions.py new case, red then green.
 
-Verification: not run
+Verification: passed (red and green V6, V9; review V8, V10; live full suite V11)
 
 References:
 - Supports: agreement 1 item 5; FINDINGS E4
 - Depends on: T4
 
 ### T6 — Regression pins for the reproduced Altinstar cases
-Status: Not started
+Status: Verified
+Evidence: see Verification line
 
 What needs to happen: tests only. Pin today's behaviour for E3a (a report named only inside an answered approval question counts as presented, rc.4) and E1 ("R7" in a requirements table and "D4-R6" are not revisions). If a pin fails, stop and report it to the owner as a new defect.
 
@@ -182,14 +190,15 @@ Documents: none
 How to verify:
 - test_gate_regressions.py.
 
-Verification: not run
+Verification: passed (pins V7; live full suite V11)
 
 References:
 - Supports: agreement 1 item 6; FINDINGS E1, E3
 - Depends on: T5
 
 ### T7 — Documents and version 2.8.0-rc.38
-Status: Not started
+Status: Verified
+Evidence: V12, V13
 
 What needs to happen: docs/RULE-CONTRACTS.md (agreement check, delete refusal and CSS notes now have hooks; candidates 1 and 6 stay instructions only by owner decision; known gaps), the `description` in hooks/hooks.json, skills/workflow/SETUP.md hook table, docs/ARCHITECTURE.md if it lists hook checks, CHANGELOG.md rc.38, UPGRADE.md, README.md version, tests/README.md, version fields (plugin.json, rules version.json package_version, render_report.py RENDERER_VERSION, tests/behavioral/*.json candidate_version). Rules stay 1.8.8 unless a rules file changes.
 
@@ -201,16 +210,16 @@ Documents: listed above
 How to verify:
 - validate.py PASS; docs_check . 0 blocking.
 
-Verification: not run
+Verification: passed (V12, review V13 and its fixes; validate.py's only failure is VALIDATION.md still rc.37, which T8 regenerates)
 
 References:
 - Supports: agreement 1 release line; plan review finding T7
 - Depends on: T6
 
-### T8 — Merge, verify, publish, reinstall and check in a fresh session
+### T8 — Verify, publish, reinstall and check in a fresh session
 Status: Not started
 
-What needs to happen: full suite and validate.py in the candidate; whole-feature review (code-review, fresh subagent); commit the candidate's code on gate-rc38; merge gate-rc38 into main (fast-forward when possible, else a merge commit; the candidate never touched docs/plans, so records do not conflict; the staged 2026-11-11 records stay staged); `verification_summary.py --run --write VALIDATION.md`; commit by explicit paths and push workflow-axa; update the Claude plugin from the gazohhh marketplace and replace the 21 Codex skill folders from a fresh GitHub clone; remove the candidate worktree and branch after acceptance.
+What needs to happen (revised by D1/D2: no merge or worktree removal): whole-feature review (done, V13); `verification_summary.py --run --write VALIDATION.md`; commit by explicit paths (the staged 2026-11-11 records stay staged) and push workflow-axa; update the Claude plugin from the gazohhh marketplace and replace the 21 Codex skill folders from a fresh GitHub clone; then the fresh-session fixture check.
 
 What should work:
 - All checks pass on main; the installed plugin equals GitHub.

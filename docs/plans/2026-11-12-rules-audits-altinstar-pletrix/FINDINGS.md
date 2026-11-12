@@ -35,7 +35,7 @@ Q3 What should the PletrixV2 proposal cover?
 
 
 ## Altinstar-react audit proposal (2026-11-12, read-only rule-maker audit by a subagent; branch development/unity-native-mobile @ ace3b60d3)
-Runs: rules_stamp NONE; docs_check 0 blocking, 3 warnings, 12 notes (231 documents reached); --changed on rule files 0 blocking, 15 warnings; readiness inspect REVIEW_REQUIRED. Nothing in Altinstar was written. Full proposed AGENTS.md (3161 words): altinstar-proposed-AGENTS.md in this folder (copy of .artifacts/2026-11-12-rules-audits-altinstar-pletrix/altinstar-proposed-AGENTS.md).
+Runs: rules_stamp NONE; docs_check 0 blocking, 3 warnings, 12 notes (231 documents reached); --changed on rule files 0 blocking, 15 warnings; readiness inspect REVIEW_REQUIRED. Nothing in Altinstar was written. Full proposed AGENTS.md (3161 words): altinstar-proposed-AGENTS.txt in this folder (renamed from .md 2026-11-12: its links are relative to the Altinstar repository and broke validate.py here) (copy of .artifacts/2026-11-12-rules-audits-altinstar-pletrix/altinstar-proposed-AGENTS.md).
 
 Problems:
 - P1 confirmed defect: AGENTS.md:11-14 and DESIGN_KIT.md:9 name the shared modules in lower case (typescript.md, design.md...); rules 1.8.8 files are upper case.

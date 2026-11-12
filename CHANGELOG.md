@@ -1,5 +1,33 @@
 # Changelog
 
+## 2.8.0-rc.38 — approval gate checks (2026-11-12)
+
+Gate (`hooks/phase_gate.py`, Claude Code only, in sessions where the gate is active):
+
+- Checkpoint heading: the gate finds the checkpoint under any heading level whose text starts "Current checkpoint", for example `### Current checkpoint (D4)`. The section ends at the next heading of the same or a higher level. Before this change, only an exact `## Current checkpoint` heading counted, and the gate read the whole PLAN, so an old "approved r7" could outrank the current approval. Limit: a `# ` line inside a fenced code block also ends the section.
+- Agreement before code: on the two-gate route (the checkpoint has an `Approval (gate two)` line and the approval is not legacy), a project or Git write is refused until the `Agreement (gate one):` line, or a plain `Agreement:` line, says agreed, waived, legacy or "not required". The first state word decides: "agreed ..., awaiting approval" passes, but a line that starts with a word such as "pending", "proposed", "awaiting" or "not agreed" is refused. Single-gate tasks, lightweight edits and the small change route are not checked. The refusal names the line and says to record the owner's agreement answer.
+- Bulk deletes: in an active session the gate refuses `git clean` (except `-n` or `--dry-run`), a delete of `.artifacts` itself and a wildcard delete under `.artifacts`. It reads `git clean` from the parsed command words, also inside `bash -c`, `powershell -Command` and `cmd /c`. The words in a commit message, an echo or a heredoc do not count. Named files and folders stay deletable. Limits: `find -delete`, `shutil.rmtree`, `rm -rf .art*` and combined flags such as `zsh -lc` are not seen, and a `[` in a folder name counts as a wildcard.
+- Notes, never refusals: after an Edit, Write or MultiEdit of an application file, the gate adds a note when the edit adds styling. Styling means the style cues of `skills/ui-design/scripts/review_ui_diff.py`, or a stylesheet rule in a `.css`, `.scss`, `.sass`, `.less` or `.styl` file. On the small change route it also notes a new tag or class in a listed file. Markdown, `docs/plans`, `.artifacts` and test files are excluded, and texts over 4,000,000 characters are skipped. Limits: code such as `Array<string>` gives false tag notes, and when `git show` fails every existing style in a Write counts as new.
+- Linked worktrees: when the gate refuses a write in a linked worktree for a missing approval and the worktree's copy of the task's PLAN.md differs from the main checkout's copy, the refusal names both copies. The refusal itself is unchanged.
+
+Not changed (owner decision): the report and plan waiver wording (hook candidates 1 and 6).
+
+Found, not fixed (new hook candidates 7 and 8 in `docs/RULE-CONTRACTS.md`):
+
+- An approval chosen in a question in the same assistant message as the presentation, an approval typed in bold, and a one-word approval were refused. The cause is not confirmed.
+- Approvals are not shared with linked worktrees. A subagent in a linked worktree cannot see the main session's approval.
+- A local directory marketplace can load `hooks/` from a source checkout. There, a hook edit is live at once, and a half-written hooks file breaks the gate in every session. `skills/workflow/SETUP.md` now says to build hook changes in a copy first.
+
+Documents: `docs/RULE-CONTRACTS.md` names the new checks with line references, marks candidates 2 to 5 done and adds candidates 7 and 8. `skills/workflow/SETUP.md`, `docs/ARCHITECTURE.md`, the `hooks/hooks.json` description and `tests/README.md` describe the new checks.
+
+Tests: new `tests/test_gate_notes.py` (`StyleNotes`). New classes in `tests/test_gate_regressions.py`: `CheckpointHeadingRegressions`, `AgreementGateRegressions`, `BulkArtifactDeletes`, `LinkedWorktreeCopies`. Two new pins in `AltinstarRegressions`: "R6 (FSR)" and "D4-R6" are not revisions, and a report named only in an answered approval question counts as presented. The `task` helper in `tests/test_phase_gate_hook.py` adds a default `Agreement (gate one): agreed` line to a two-gate task without one.
+
+Version fields: `.claude-plugin/plugin.json`, the rules `version.json` package version, `RENDERER_VERSION` in `skills/codebase-map/scripts/render_report.py` and the `candidate_version` of the four live-case files under `tests/behavioral/` are 2.8.0-rc.38. Rules library stays 1.8.8.
+
+Limits:
+
+- Not verified yet: a fresh Claude Code session after reinstall, with a write refused while a fixture task's Agreement line is pending and allowed once it says agreed.
+
 ## 2.8.0-rc.37 — owned skills, rule contracts and docs check (2026-11-12)
 
 Owned skills:

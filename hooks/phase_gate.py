@@ -40,10 +40,12 @@ Shell commands are read best effort; command-text filtering is advice, not a sec
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import posixpath
 import re
+import subprocess
 import sys
 import tempfile
 import time
@@ -147,6 +149,49 @@ def under(path: str, root: str) -> bool:
 
 def relative(path: str, root: str | None) -> str:
     return path[len(root.rstrip('/')):].lstrip('/') if root and under(path, root) else path
+
+
+def git_clean_called(command: str, powershell: bool) -> bool:
+    """A `git clean` that deletes (not `-n`/`--dry-run`), read from the parsed command words, so the words "git clean"
+    inside a commit message, an echo or a heredoc body never count."""
+    text, _ = split_bodies(command)
+    for words, _ in segments(lex(text, powershell)):
+        while words and (re.match(r'^[A-Za-z_]\w*=', words[0]) or words[0] in ('sudo', 'command', 'env', 'time')):
+            words = words[1:]
+        name = re.sub(r'\.exe$', '', slash(words[0]).rsplit('/', 1)[-1].lower()) if words else ''
+        if name in ('bash', 'sh', 'zsh', 'powershell', 'pwsh', 'cmd'):
+            # A subshell's command text (`bash -c "..."`, `powershell -Command "..."`, `cmd /c ...`) is read as well.
+            flag = next((i for i, arg in enumerate(words[1:-1], 1) if arg.lower() in ('-c', '-command', '/c')), None)
+            if flag is not None and git_clean_called(' '.join(words[flag + 1:]), name in ('powershell', 'pwsh')):
+                return True  # only the first flag is read: the rest is its command text (review V10)
+            continue
+        if name != 'git':
+            continue
+        args, i = words[1:], 0
+        while i < len(args) and args[i].startswith('-'):
+            i += 2 if args[i] in ('-C', '-c', '--git-dir', '--work-tree', '--namespace') else 1
+        if i < len(args) and args[i] == 'clean':
+            rest = args[i + 1:]
+            if not any(a in ('-n', '--dry-run') or re.fullmatch(r'-[A-Za-z]*n[A-Za-z]*', a) for a in rest):
+                return True
+    return False
+
+
+def bulk_delete(event: dict, targets: list[tuple[str, str, str]], project) -> str | None:
+    """T3 of 2026-11-12 (owner Q9 a): git clean, deleting the .artifacts folder itself and wildcard deletes under it.
+    Named files and folders under .artifacts stay deletable (ARTIFACTS.md cleanup)."""
+    command = str((event.get('tool_input') or {}).get('command', '')) if event.get('tool_name') in SHELLS else ''
+    if command and git_clean_called(command, event.get('tool_name') == 'PowerShell'):
+        return ('workflow-axa: `git clean` deletes untracked and ignored output in bulk, including .artifacts. '
+                'Delete named files instead (ARTIFACTS.md); `git clean -n` only lists them.')
+    for kind, where, label in targets:
+        if kind != 'path' or DELETING not in label:
+            continue
+        rel = relative(where, project.root_of(where)).rstrip('/')
+        if key(rel) == '.artifacts' or (key(rel).startswith('.artifacts/') and re.search(r'[*?\[]', rel)):
+            return (f'workflow-axa: {label} deletes the .artifacts folder or a wildcard set of files in it. Delete named '
+                    'files or folders instead, after the ownership checks in ARTIFACTS.md.')
+    return None
 
 
 def is_absolute(path: str) -> bool:
@@ -1263,9 +1308,37 @@ def scan(path: Path, cwd: str) -> dict:
     return state
 
 
+AGREEMENT = re.compile(r'^\s*[-*]\s*Agreement\b[^:\n]*:(.*)$', re.M)
+AGREED = re.compile(r'\b(?:agreed|waived|legacy|not required)\b', re.I)
+NOT_AGREED = re.compile(r'\b(?:not|never|no)\s+(?:yet\s+)?agreed\b|\bpending\b|\bproposed\b|\bawaiting\b', re.I)
+
+
+def agreement_problem(text: str) -> str | None:
+    """Gate one on the two-gate route (T2 of 2026-11-12, owner Q7b a). Only checkpoints with an `Approval (gate two)`
+    line are checked; older single-gate tasks and legacy approvals are not."""
+    approval = next(iter(APPROVAL.findall(text)), None)
+    if not re.search(r'^\s*[-*]\s*Approval\s*\(gate two\)', text, re.M | re.I) or (
+            approval and re.search(r'\blegacy\b', QUOTE.sub('', approval), re.I)):
+        return None
+    found = AGREEMENT.search(text)
+    if not found:
+        return 'has no `- Agreement (gate one):` line'
+    words = QUOTE.sub('', found.group(1))  # the owner's quoted words never decide the state
+    agreed, negative = AGREED.search(words), NOT_AGREED.search(words)
+    # The first state word decides: "agreed ..., awaiting approval" is agreed; "not agreed yet" is not.
+    if not agreed or (negative and negative.start() <= agreed.start()):
+        return f'records the agreement as "{found.group(1).strip()[:80]}", which is not agreed, waived, legacy or not required'
+    return None
+
+
 def checkpoint(plan: str) -> str:
-    found = re.search(r'^##\s+Current checkpoint\s*$(.*?)(?=^##\s|\Z)', plan, re.M | re.S | re.I)
-    return found.group(1) if found else plan
+    # Any heading level and suffix: Altinstar used `### Current checkpoint (D4)` (E2 of 2026-11-12). The section ends
+    # at the next heading of the same or a higher level.
+    found = re.search(r'^(#{1,6})[ \t]+Current checkpoint\b[^\n]*$', plan, re.M | re.I)
+    if not found:
+        return plan
+    end = re.compile(r'^#{1,%d}[ \t]' % len(found.group(1)), re.M).search(plan, found.end())
+    return plan[found.end():end.start() if end else len(plan)]
 
 
 def lightweight_files(text: str, root: str) -> set[str]:
@@ -1985,6 +2058,12 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
     used: list[str] = []
     problem = approval_problem(text, state, task, transcript, project.cwd, plan.parent, used)
     if not problem:
+        missing = agreement_problem(text)
+        if missing:
+            return (f"workflow-axa: {label} needs the recorded agreement (gate one) as well as the plan approval, but "
+                    f"the current task {task} {missing}. Record the owner's agreement answer on the `- Agreement (gate "
+                    "one):` line of its checkpoint (workflow-clarify step 4); a single answer that says yes to both "
+                    "gates is recorded on both lines. Do not edit or disable the hook to bypass this block.")
         outside = scope_problem(target, root, plan.parent, used)
         return outside + ignored if outside else outside
     if isinstance(problem, RecordFix):
@@ -2259,9 +2338,10 @@ def judge(event: dict) -> int:
                         'Use new for initial creation in an existing directory, or append, batch, set-line or '
                         'replace-section for updates. The helper stays available for planning and stopped-task '
                         'handoff, subject to normal permissions. Do not use Write/Edit/MultiEdit for these records.')
+    bulk = bulk_delete(event, all_targets, project)
     targets = [t for t in all_targets
                if t[0] != 'path' or (project.contains(t[1]) and not project.is_record(t[1]))]
-    if not targets or not transcript:
+    if (not targets and not bulk) or not transcript:
         return 0  # nothing gated, or no transcript to judge by (documented in SETUP.md)
     path = Path(transcript)
     try:
@@ -2284,6 +2364,8 @@ def judge(event: dict) -> int:
                     f'{HOOK_PROTOCOL}. Restart Claude Code with one complete verified plugin version. '
                     'Do not retry approval in this mixed session or disable the gate. Read-only work and '
                     'task records remain available.')
+    if bulk:
+        return deny(bulk)
     task = state['tasks'][-1][0] if state['tasks'] else '*'
     if task in state.get('paused_tasks', {}) or '*' in state.get('paused_tasks', {}):
         return deny("workflow-axa: the user stopped, paused or cancelled this task. Do not start another write. "
@@ -2299,8 +2381,35 @@ def judge(event: dict) -> int:
                         "variable in the same command) and retry.")
         problem = authority_problem(target, state, project, path)
         if problem:
-            return deny(problem)
+            about_approval = 'approval' in problem and 'current task changed' not in problem
+            return deny(problem + (worktree_copy_note(target, state, project) if about_approval else ''))
     return 0
+
+
+def worktree_copy_note(target: tuple[str, str, str], state: dict, project) -> str:
+    """T5 of 2026-11-12 (E4, E10, E11): in a linked worktree, say when its copy of the task's PLAN.md differs from the
+    main checkout's. The refusal itself is unchanged: a linked worktree never borrows another worktree's records."""
+    root = project.root_of(target[1]) if target[1] else project.root
+    if not root or not state['tasks']:
+        return ''
+    try:
+        found = re.match(r'\s*gitdir:\s*(.+?)\s*$', (Path(root) / '.git').read_text(encoding='utf-8', errors='replace'))
+    except OSError:
+        return ''  # no .git file: the main checkout or no repository
+    parts = re.split(r'/\.git/worktrees/', absolute(found.group(1), root), maxsplit=1) if found else []
+    if len(parts) != 2:
+        return ''
+    task = state['tasks'][-1][0]
+    mine, theirs = (Path(r) / 'docs' / 'plans' / task / 'PLAN.md' for r in (root, parts[0]))
+    try:
+        if not theirs.is_file() or (mine.is_file() and mine.read_bytes() == theirs.read_bytes()):
+            return ''
+    except OSError:
+        return ''
+    return (f" Note: this linked worktree's copy {slash(str(mine))} differs from the main checkout's copy at "
+            f"{slash(str(theirs))}. The gate reads approval only from this worktree's own records, so an approval "
+            "recorded in the main checkout does not count here: work in the main checkout, or record and present the "
+            "approval in this worktree.")
 
 
 INSTALL = re.compile(r'(?:^|[;&|(]\s*)(?:npm\s+(?:i|install|ci|add)\b|yarn\s+(?:add|install|dlx)\b'
@@ -2358,6 +2467,107 @@ def install_problem(event: dict) -> str | None:
             "worktree has no installed dependencies).")
 
 
+STYLE_FILE = re.compile(r'\.(?:css|scss|sass|less|styl)$', re.I)
+STYLE_RULE = re.compile(r'^[^{}\n]*\{[^}\n:]*:[^}\n]*\}|^\s*[\w-]+\s*:\s*[^;{}\n]+;\s*$', re.M)
+NOTE_LIMIT = 4_000_000  # characters of old plus new text the style note reads
+STYLE_CUES = ('inline-or-runtime-style', 'style-injection-or-css-in-js')
+
+
+def ui_cues() -> dict[str, re.Pattern]:
+    """The review cues of ui-design's review_ui_diff.py, loaded from this package; none when it is missing."""
+    script = Path(__file__).resolve().parents[1] / 'skills' / 'ui-design' / 'scripts' / 'review_ui_diff.py'
+    try:
+        spec = importlib.util.spec_from_file_location('workflow_axa_review_ui_diff', script)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module  # its dataclasses look their module up while it loads
+        try:
+            spec.loader.exec_module(module)
+        finally:
+            sys.modules.pop(spec.name, None)
+        return dict(module.COMPILED)
+    except (OSError, ImportError, AttributeError, SyntaxError):
+        return {}
+
+
+def edit_texts(event: dict, path: str) -> tuple[str, str]:
+    """The text an edit replaces and the text it writes (for Write: the committed file and the new content)."""
+    data = event.get('tool_input') or {}
+    pairs = []
+    if event.get('tool_name') == 'Edit':
+        pairs = [(str(data.get('old_string') or ''), str(data.get('new_string') or ''))]
+    elif event.get('tool_name') == 'MultiEdit':
+        pairs = [(str(e.get('old_string') or ''), str(e.get('new_string') or ''))
+                 for e in data.get('edits') or [] if isinstance(e, dict)]
+    elif event.get('tool_name') == 'Write':
+        old = ''
+        root = worktree(path)
+        if root:
+            try:
+                done = subprocess.run(['git', '-C', root, 'show', f'HEAD:{relative(path, root)}'], capture_output=True,
+                                      text=True, encoding='utf-8', errors='replace', timeout=2)
+                old = done.stdout if done.returncode == 0 else ''
+            except (OSError, subprocess.SubprocessError):
+                old = ''
+        pairs = [(old, str(data.get('content') or ''))]
+    return '\n'.join(o for o, _ in pairs), '\n'.join(n for _, n in pairs)
+
+
+def markup_names(text: str) -> set[str]:
+    """Tag names and class names in markup, to tell a new element or class from reworded text."""
+    names = {f'<{m.lower()}' for m in re.findall(r'<\s*([A-Za-z][\w.:-]*)', text)}
+    for value in re.findall(r"""\b(?:class|className)\s*=\s*["'{]([^"'}]*)""", text):
+        names.update(f'.{c}' for c in value.split())
+    return names
+
+
+def style_notes(event: dict, project, cwd: str) -> list[str]:
+    """T4 of 2026-11-12 (owner Q8 a): a note, never a refusal, when an edit adds styling to an application file, or a
+    new tag or class to a file of the task's small change. "Adds" means more matches after the edit than before."""
+    data = event.get('tool_input') or {}
+    if not isinstance(data, dict) or not data.get('file_path') or not event.get('transcript_path'):
+        return []
+    path = absolute(str(data['file_path']), cwd)
+    if not project.contains(path) or project.is_record(path):
+        return []
+    root = project.root_of(path)
+    rel = relative(path, root)
+    low = rel.lower()
+    if low.endswith(('.md', '.markdown')) or re.search(r'(?:^|/)(?:tests?|__tests__)/', low) \
+            or re.search(r'\.(?:test|spec)\.', low):
+        return []
+    state = scan(Path(str(event['transcript_path'])), cwd)  # first: sessions without the workflow pay nothing more
+    if not state['active']:
+        return []
+    old, new = edit_texts(event, path)
+    if old == new or len(old) + len(new) > NOTE_LIMIT:
+        return []  # very large texts: no note, rather than a PostToolUse timeout that would drop the fingerprints
+    cues = ui_cues()
+    styling = [code for code in STYLE_CUES if code in cues
+               and len(cues[code].findall(new)) > len(cues[code].findall(old))]
+    if STYLE_FILE.search(low) and len(STYLE_RULE.findall(new)) > len(STYLE_RULE.findall(old)):
+        styling.insert(0, 'stylesheet rule')
+    added_markup = markup_names(new) - markup_names(old)
+    if not styling and not added_markup:
+        return []
+    notes = []
+    if styling:
+        notes.append(f'workflow-axa note: the edit adds styling to {rel} ({", ".join(dict.fromkeys(styling))}). '
+                     'DESIGN.md rule 4: reuse an existing class and name it, or ask the owner "I couldn\'t find a '
+                     'matching style for [element]. Is there an existing element I should mimic?". This note does '
+                     'not block the edit.')
+    if added_markup and state['tasks']:
+        plan = task_plan(state['tasks'][-1][0], state, root)
+        try:
+            files, _ = small_change(checkpoint(plan.read_text(encoding='utf-8', errors='replace')), root)
+        except OSError:
+            files = None
+        if files and key(rel) in files:
+            notes.append(f'workflow-axa note: the edit adds {", ".join(sorted(added_markup))} to {rel}, a file of this '
+                         "task's small change. A small change only rewords, reorders or hides existing elements; a "
+                         'new element or class needs the full route. This note does not block the edit.')
+    return notes
+
+
 def fingerprints(event: dict) -> int:
     """Leave report fingerprints in the transcript as hook context (the host records it; the agent cannot write it):
     after a tool call that names a task report (read, written or rendered), and when the owner answers (a typed message
@@ -2396,6 +2606,11 @@ def fingerprints(event: dict) -> int:
             out.append(f'{mark}: {shown} sha256={hashlib.sha256(path.read_bytes()).hexdigest()}')
         except OSError:
             continue
+    if kind == 'PostToolUse' and event.get('tool_name') in ('Edit', 'Write', 'MultiEdit'):
+        try:
+            out.extend(style_notes(event, project, cwd))
+        except Exception:  # a missing note never costs the report fingerprints collected above
+            pass
     if out:
         print(json.dumps({'hookSpecificOutput': {'hookEventName': kind, 'additionalContext': '\n'.join(dict.fromkeys(out))}}))
     return 0
