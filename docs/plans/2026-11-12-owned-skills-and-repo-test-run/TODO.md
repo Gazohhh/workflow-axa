@@ -9,9 +9,9 @@
 | T3 | Replace the hash checks with LICENSE and no-mention checks; retire the copy tool | Verified | T1 |
 | T4 | Update repository docs and the version | Verified | T2, T3, T5, T6, T7 |
 | T5 | Write the rule contracts and labels | Verified | T2 |
-| T6 | Find and fix the missing skill descriptions | implemented — verification pending | T1, T2 |
+| T6 | Find and fix the missing skill descriptions | Verified | T1, T2 |
 | T7 | docs_check skips git-ignored and third-party folders | Verified | none |
-| T8 | Verify, publish, reinstall and run the after-test on the 7 repos | implemented — verification pending | T4 |
+| T8 | Verify, publish, reinstall and run the after-test on the 7 repos | Verified | T4 |
 
 ## Tickets
 
@@ -148,7 +148,8 @@ References:
 - Depends on: T2
 
 ### T6 — Find and fix the missing skill descriptions
-Status: implemented — verification pending
+Status: Verified
+Evidence: E6, V12, V15, V23
 
 What needs to happen: find why code-review, codebase-design, domain-modeling, simple-english, tdd and workflow-doctor show without a description in the Claude Code skill list. Check the host's documented skill-listing limits (primary docs) and measure our description lengths against them. Fix in our files (shorter or front-loaded descriptions). If the cause is outside the package (other plugins' share of the budget), document it in docs and tell the owner.
 
@@ -202,7 +203,8 @@ References:
 - Depends on: none
 
 ### T8 — Verify, publish, reinstall and run the after-test on the 7 repos
-Status: implemented — verification pending
+Status: Verified
+Evidence: V18, V19, V20, V22, V23
 
 What needs to happen: run validate.py and the full suite; code review of the whole change (code-review skill, fresh context); commit and push workflow-axa (only this task's files; the staged 2026-11-11 records stay out unless the owner says otherwise); reinstall Claude and Codex from Git with README's install commands; run rules_stamp, docs_check and readiness inspect with the installed copy on the 7 repos into .artifacts/2026-11-12-owned-skills-and-repo-test-run/after/; write the before/after comparison and the Altinstar and D:\PletrixV2 rule gaps to FINDINGS; offer the rules reviews.
 
