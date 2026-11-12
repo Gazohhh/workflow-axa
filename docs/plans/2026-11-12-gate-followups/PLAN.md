@@ -1,14 +1,14 @@
 # Gate and tool follow-ups after rc.38
 
 ## Current checkpoint
-- Updated / phase: 2026-11-12; implementing
+- Updated / phase: 2026-11-12; delivered, owner acceptance pending
 - Agreement (gate one): agreed 2026-11-12, agreement 1: "Yes to both, no report"
 - Approval (gate two): r1 approved, 2026-11-12, no report: "Yes to both, no report"
-- Implementation: T1 and T2 implemented, reviewed, live and verified; T3 docs done; release commit next
+- Implementation: implemented and verified (T1-T3), released as 2.8.0-rc.39
 - Verification / owner acceptance: V1-V9 (full suite 1228 OK at V7; VALIDATION one-run V8); owner acceptance pending
 - Blockers: none
 - Changed files: hooks/phase_gate.py, tools/verification_summary.py, tests/test_gate_regressions.py, tests/test_docs_consistency.py, CHANGELOG.md, UPGRADE.md, README.md, tests/README.md, docs/RULE-CONTRACTS.md, VALIDATION.md, version fields (plugin.json, rules version.json package_version, render_report.py, tests/behavioral/*.json); records
-- Next safe action: T3 docs and rc.39
+- Next safe action: owner acceptance; restart Claude Code to load rc.39
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main. The staged 2026-11-11 records stay untouched.
@@ -38,3 +38,10 @@ Tickets in TODO.md (r1).
 r1 approved 2026-11-12 (both gates in one answer, typed after an end-of-turn presentation): "Yes to both, no report". Includes T1-T3 and the owner's OK for commit, push, VALIDATION.md regeneration and reinstall.
 
 ## Outcome
+
+Delivered 2026-11-12 as 2.8.0-rc.39 (commit 434e9c7, pushed, Claude and Codex reinstalled from GitHub, V10). Owner acceptance pending.
+- A1 verified (EmphasisedAnswers: bold, italic, triple, partial emphasis match; other words, a different message and an italic install word do not; quote written with markers matches): V3, V6, V7, V9.
+- A2 verified: one-run regeneration proved by test (V4, V6) and on this repository (V8: rc.38 -> rc.39 in one run).
+- Reviews: V5 and V6 (code, independent, both axes, all fixed), V9 (whole feature, fixed).
+- Found, not changed: the host does not store the visible text of a message that also calls a tool (V2); candidate 7 stays open for that part.
+- By: agent decision for the owner: D3 (the tool refreshes the whole current section, not only the Package line).
