@@ -878,12 +878,17 @@ def user_text(entry: dict) -> str | None:
     return human_words(text)
 
 
+DELEGATE_REPORT = re.compile(r'\A\s*Delegated task node:delegated-task:\S+ \(.*\) \[[^\]\n]+\]:')
+
+
 def human_words(text: str) -> str | None:
-    """The typed text without host notes and IDE context, or None for command output and notifications."""
+    """The typed text without host notes and IDE context, or None for command output and notifications. T3 Code hands
+    a finished delegate's result back as a plain user message with no origin field; only its opening line tells it
+    from the owner, so the match is anchored at the start and an owner quoting one later in a message still speaks."""
     if re.search(r'<(?:local-command-std\w+|bash-std\w+|bash-input|user-prompt-submit-hook|task-notification)>', text):
         return None
-    text = re.sub(r'<system-reminder>.*?</system-reminder>', ' ', text, flags=re.S)
-    return IDE_TEXT.sub(' ', text)
+    text = IDE_TEXT.sub(' ', re.sub(r'<system-reminder>.*?</system-reminder>', ' ', text, flags=re.S))
+    return None if DELEGATE_REPORT.match(text) else text
 
 
 def queued_text(entry: dict) -> str | None:

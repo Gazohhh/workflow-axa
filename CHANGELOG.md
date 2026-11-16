@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.9.0-rc.2 — readable offers, a visible recipe and a delegate-report fix (2026-11-16)
+
+Fixes from the first live use of 2.9.0-rc.1 (a long T3 Code session on the workflow-paperclip quotations task):
+
+- **T3 delegate reports are not the owner.** T3 Code hands a finished delegated task's report back as a plain user message. The hook read it as the owner speaking: it took the place of the answer to an open offer, and its words read as a narrowing, so the owner's `/approve 1` was refused. A message that starts with `Delegated task node:delegated-task:<id> (<title>) [<status>]:` (after host notes) is now never owner text.
+- **Readable offers (format 2).** `record.py offer present` prints the offer as an ordinary message: what will change, the files, protected actions, exclusions, conditions and checks as bullets, then the one question, the answer forms and a footer naming the offer, its hash, its task and its workspace. Values are escaped so they render as written. The agent copies it as the end of its reply (`--question` for the question tool). The hook accepts it only as the visible end of the agent's text since its last tool call, with no `<`, `$$` or fenced block before it and nothing after it. New offers count only in this format; offers recorded before rc.2 keep their format 1 block.
+- **Which task the session is on** now follows only real, visible presentations: an offer moves the session only when it is a recorded offer of that task shown exactly as approval needs, and a text presentation only once the owner answers it. A made-up, hidden or later-undone offer no longer redirects a later stop or withdrawal.
+- **An offer shown and then another asked by question:** a typed answer no longer counts for the first.
+- **The report choice is visible.** The answer line reads "Reply **approve** …, **show report** to see review.html first, or tell me what to change"; typed "show report" counts like `/report <N>`; a button may end in "(Recommended)". workflow-specify step 5 uses the question tool whenever the host offers one and writes "**I recommend the report first**, because …" when the change touches saved data, auth, a public interface, a migration, deletion, money, more than one owner or visible UI. An offer's presentation ends the reply: no state line after it.
+- **The recipe pick is visible.** The router shows `Recipe: <name> (<plain meaning>) — <reason>. Say so if you meant something else.` at task entry, revision entry and resume; workflow-clarify and resume point to it, so a new request in a long session gets it too. The classification question may come once per task and once more for a revision that changes the kind of work; the checkpoint records the pick and the question. New `routing_cases` in tests/behavioral/flows.json (live-host, NOT_RUN).
+
+Reviewed by GPT-6 Astra and Claude Opus in rounds until both agreed. Task records: docs/plans/2026-11-15-workflow-redesign (FINDINGS V17).
+
 ## 2.9.0-rc.1 — the offer model and a smaller package (2026-11-16)
 
 The offer model:

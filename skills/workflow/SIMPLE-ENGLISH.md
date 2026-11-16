@@ -40,7 +40,7 @@ After (procedural, headed, numbered):
 
 Every chat reply, in every mode, follows these rules:
 
-1. Answer in prose. No headers, no bullet lists, no bold, no tables. A code block is legal when the reader must copy it. The workflow's required formats are the exception: numbered questions with options, short lists of three or more items, and the closing state line ("**Waiting on you:**", "**Running:**", "**Done.**").
+1. Answer in prose. No headers, no bullet lists, no bold, no tables. A code block is legal when the reader must copy it. The workflow's required formats are the exception: numbered questions with options, short lists of three or more items, and the closing state line ("**Waiting on you:**", "**Running:**", "**Done.**"), which an offer's presentation replaces: nothing follows it.
 2. The first sentence gives the answer or the result. Do not restate the question.
 3. No em-dashes and no semicolons. Name the relation ("because", "but", "for example") or write two sentences.
 4. Define a concept term in a few words the first time you use it: "idempotent (safe to run twice)". Do not define product names.

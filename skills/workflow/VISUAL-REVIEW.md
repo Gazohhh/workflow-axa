@@ -30,7 +30,7 @@ Only on *Show review.html first* or when the owner asks. Keep descriptive titles
    Before recording the final report path, use the renderer's `--validate-input` mode. Fix schema and wording errors in the same JSON. Then record the destination and awaiting-approval checkpoint, check the final sources again and render once. The preflight writes no report or Python cache and opens no browser.
 
 3. Read the rendered report whole by its `docs/plans/<task>/...` path, then give the user that path.
-4. The owner asked for this report with *Show review.html first*: ask the one question again without that answer (*Approve from this summary* · *Change something*). **STOP.** Until the answer, the proposed scope gets no code, tests, dependencies, migrations or Git actions; only task records and the report change. Unaffected approved work, authorized baseline checks and separately approved diagnostics continue within their limits.
+4. The owner asked for this report with *Show review.html first*: present the offer again as `workflow-specify` step 5 says, so the owner can now answer *Approve from this summary* or *Change something* (with the question tool, offer only those two). **STOP.** Until the answer, the proposed scope gets no code, tests, dependencies, migrations or Git actions; only task records and the report change. Unaffected approved work, authorized baseline checks and separately approved diagnostics continue within their limits.
 
 ## Read the answer
 

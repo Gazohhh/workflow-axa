@@ -98,8 +98,8 @@ class NoComments(unittest.TestCase):
                        "Remove one only when the offer justifies its replacement and the type check or lint passes without it",
                        "Reject an edit outside the scope or a verdict with the wrong reason",
                        "until a revised offer names that exact removal",
-                       "Make one offer through `workflow-specify` step 5 (`record.py offer create`)", "end with the one question",
-                       "An offer in your own words can't be approved", "Show its canonical block",
+                       "Make one offer through `workflow-specify` step 5 (`record.py offer create`)", "it ends with the one question",
+                       "An offer in your own words can't be approved", "Show the presentation `record.py offer present` prints",
                        "Change nothing before it is approved",
                        "**Removing a comment must not change behavior.**",
                        "Report a reshape that would change behavior instead of making it"):
@@ -123,14 +123,14 @@ class WaitWhat(unittest.TestCase):
                        "one idea per sentence", "the actor first, in the active voice",
                        "the same word for the same thing", "`CONTEXT.md` keeps its name and gets a short definition",
                        "concrete names, numbers and file paths",
-                       "repeat its canonical block from the conversation byte for byte, with no tool call",
-                       "present it again", "Never rebuild, shorten or change an offer",
+                       "present the same offer again exactly as `workflow-specify` step 5 says",
+                       "If that offer was superseded or revoked, say so instead", "Never rebuild, shorten or change an offer",
                        "Repeat any other pending question word for word",
                        "only reading `CONTEXT.md` and `../workflow/SIMPLE-ENGLISH.md`",
                        "No new work, no edits, no records", "`/wait-what` is not an answer"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, body)
-        self.assertNotIn("record.py", body)
+        self.assertNotRegex(body, r"record\.py (?!offer present)")
 
     def test_short(self):
         self.assertLess(len(text("wait-what").split()), 400)

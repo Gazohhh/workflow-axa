@@ -5,7 +5,7 @@ description: "Use for repository features, fixes, refactors, research, plans, au
 
 # Workflow
 
-Route by intent and authority. **Pick the recipe (§3), then invoke the phase skill §4 selects for changes; inspection stays read-only.** Ask only readiness blockers here. Write for someone new to the project ([WRITING.md](WRITING.md)).
+Route by intent and authority. **Pick the recipe (§3), then invoke the phase skill §4 selects for changes; inspection stays read-only.** Ask readiness blockers first, then §2's identity question and §3's classification question only when they are needed; behaviour questions belong to `workflow-clarify`. Write for someone new to the project ([WRITING.md](WRITING.md)).
 
 ## 1. Check rules readiness
 
@@ -21,11 +21,13 @@ Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rul
 
 ## 3. Pick the recipe
 
-1. From the request and the code, settle three things: the outcome wanted, whether a change is requested, and whether existing behaviour is preserved, corrected or replaced.
-2. Match them to one row of [flows/INDEX.md](flows/INDEX.md), add its modifiers (UI, Security, Compatibility) and read only that recipe. Say it in one line: "Recipe: bug, plus Compatibility." Load `ui-design` only for the ui recipe or the UI modifier.
-3. **Not sure** means two recipes fit that need different behaviour, permissions or acceptance, or the outcome (or whether a change is wanted) isn't stated. Needing several references is not uncertainty. Then ask once, with the question tool: *Fix something broken · Add or change a feature · Start a new project · Only investigate*, plus Other, recommended answer first with one line why. Never ask small versus complex bug; at most one such question per task.
-4. **Other** with a clear outcome: build the steps from the phases. A vague Other: Inspect first, then ask through `grilling`.
-5. Evidence that points to another recipe midway: say so in one line with the evidence, keep the work done, and add only the steps the new recipe adds.
+1. At task entry and for each new request on existing work, use the request, the relevant code and the recorded decisions to settle three things: the outcome wanted, whether a change is requested, and whether existing behaviour is preserved, corrected or replaced. Reuse a pick already made for this same request; a phase transition is not a new request.
+2. Match the work to one row of [flows/INDEX.md](flows/INDEX.md), add its modifiers (UI, Security, Compatibility) and read only that recipe. Load `ui-design` only for the ui recipe or the UI modifier. Inspect is a read-only route with no recipe file.
+3. **Not sure** means two routes fit that need different behaviour, permissions or acceptance, or the outcome (or whether a change is wanted) isn't stated. Needing several references is not uncertainty. Then ask with the question tool: *Fix something broken · Add or change a feature · Start a new project · Only investigate*, plus Other, recommended answer first with one line why. Ask at most once for the task, and once more for each later revision that changes, or may change, the kind of work. Never ask small versus complex bug. An unanswered classification question stays pending, and a new session does not reset it; until it is answered, only read-only work continues.
+4. **Other** with a clear outcome: build the steps from the phases. A vague Other: Inspect first, then ask through `grilling`; never repeat the classification menu.
+5. Once the route is settled, show one line before substantive work: `Recipe: <name> (<plain meaning>) — <reason tied to this request>. Say so if you meant something else.` Name modifiers by their effect here, for example `plus Compatibility: saved quotations keep working`. For Inspect: `Route: Inspect — <reason>. Say so if you meant something else.` Show it at task entry, revision entry and resume, lightweight edits included; once per entry, even when the router and clarify both run. Text written before tool calls may reach the owner only as a summary: when the line came before tool calls, repeat it at the top of that turn's final message or first question round. It is a notice, not a question: continue within the current authority. Record the pick and the classification-question reference in the checkpoint ([TASK-FOLDER.md](TASK-FOLDER.md)); Inspect creates no records.
+6. On resume, reconcile the recorded pick with the current scope and show it again. An unchanged scope keeps its pick and question history. An older task with no recorded pick: infer it from the records and code; a missing line alone is not uncertainty. A status-only resume stays read-only.
+7. When later evidence or the owner's correction changes the pick, show the new line with the evidence, keep the work done and the question history, and add only the steps the new recipe adds. A changed pick grants no new authority; changed scope follows the revision and approval rules.
 
 When something a recipe needs is missing, use [FALLBACKS.md](FALLBACKS.md).
 
@@ -45,7 +47,7 @@ Inspect with read-only tools and relevant available specialists: `code-review`, 
 
 Invoke with the skill tool (`workflow-axa:<name>`) or read its SKILL.md whole. The table routes; it does not replace a phase. Missing skills block only their phase.
 
-**Every change** gets an offer and the one question (`workflow-specify` step 5). Make and present it only through `workflow-specify`: it records the offer with `record.py offer create` and shows its canonical block. An offer in your own words, or any other question, can't be approved: the hook refuses the edit that follows. The plan report is built only on *Show review.html first* or when the owner asks for it. One-ticket work, a small visible change included, gets one ticket and its offer.
+**Every change** gets an offer and the one question (`workflow-specify` step 5). Make and present it only through `workflow-specify`: it records the offer with `record.py offer create` and shows the presentation `record.py offer present` prints. An offer in your own words, or any other question, can't be approved: the hook refuses the edit that follows. The plan report is built only on *Show review.html first* or when the owner asks for it. One-ticket work, a small visible change included, gets one ticket and its offer.
 
 **Lightweight edit**: exact, low-risk, no observable behavior, architecture, interface, dependency or security change. A visible behavior change, however small and fully specified, is not lightweight: it gets the one-ticket offer. A lightweight edit gets the minimal offer (its files, its check and a one-line why) through `workflow-specify` step 5, and is still asked the one question. After the answer, verify, review once per [AUDIT.md](AUDIT.md), then short `workflow-deliver`.
 
@@ -55,9 +57,9 @@ Agreement, then the offer and the one question: [VISUAL-REVIEW.md](VISUAL-REVIEW
 
 ## Always
 
-- Questions: `grilling`. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md) ([SETUP.md](SETUP.md)). Reviews and necessity check: [AUDIT.md](AUDIT.md). Output: [ARTIFACTS.md](ARTIFACTS.md).
+- Behaviour questions: `grilling`; classification: §3. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md) ([SETUP.md](SETUP.md)). Reviews and necessity check: [AUDIT.md](AUDIT.md). Output: [ARTIFACTS.md](ARTIFACTS.md).
 - Never stage, commit, push, branch, reset, deploy or publish unasked.
 - Pass workers the output folder, write scope, rules and UI authority. Read applicable instructions whole; do not load unrelated references.
-- Approval waits: present once, end the turn; no polling. Host goals: TASK-FOLDER.md "Approval waits and host goals". End with **Running**, **Waiting on you** or **Done**; do not end running work unless the host will wake you.
+- Approval waits: present once, end the turn; no polling. Host goals: TASK-FOLDER.md "Approval waits and host goals". End with **Running**, **Waiting on you** or **Done**; do not end running work unless the host will wake you. When an offer waits for the answer, its presentation ends the reply and its question is the state line: put nothing after it.
 - Write requested handoffs from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md)).
 - When needed: PDF-DELIVERABLE.md, OPTIONAL-HELPERS.md.

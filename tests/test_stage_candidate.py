@@ -41,6 +41,9 @@ SUPERSEDED_BY_T24 = {
                                              "revised offer"),
     ("skills/workflow/VISUAL-REVIEW.md", "The hook enforces the offer's paths and the owner'"):
         ("skills/workflow/VISUAL-REVIEW.md", "The hook enforces the offer's paths, operations and the owner's answer."),
+    ("skills/workflow/VISUAL-REVIEW.md", "4. The owner asked for this report with *Show revi"):
+        ("skills/workflow/VISUAL-REVIEW.md", "present the offer again as `workflow-specify` step 5 says, so the owner "
+                                             "can now answer *Approve from this summary* or *Change something*"),
 }
 
 
@@ -48,7 +51,7 @@ class CandidateBlocks(unittest.TestCase):
 
     def test_the_cutover_applied_every_block(self):
         """T17: the package carries the new text; a block whose new text contains its old text only needs the new.
-        A block T24 rewrote carries its T24 replacement instead (SUPERSEDED_BY_T24)."""
+        A block T24 (or 2.9.0-rc.2) rewrote carries its replacement instead (SUPERSEDED_BY_T24)."""
         found = set()
         for rel, old, new in stage.blocks(stage.CANDIDATES.read_text(encoding="utf-8")):
             with self.subTest(rel=rel, new=new[:50]):

@@ -30,7 +30,7 @@ A fresh ordinary task without a slash command must load the shared core and appl
 
 `hooks/approval.py` is the PreToolUse hook. After /workflow, a project write needs an **approved offer** that lists it:
 
-- The agent creates the offer with `record.py offer create`, presents the block `record.py offer present` prints, and asks the one question: Show review.html first · Approve from this summary · Change something.
+- The agent creates the offer with `record.py offer create`, presents the offer `record.py offer present` prints as `workflow-specify` step 5 says, and asks the one question: Show review.html first · Approve from this summary · Change something.
 - The owner's answer in the conversation approves the offer: the button, `/approve <id>`, or one of approve, approved, yes, ok, okay, go, ja, akkoord, doe maar. Nothing else does, and no record line grants it.
 - The approval holds in later sessions until a withdrawal, a narrowing message or a stop. The project's transcripts are the history.
 - Git writes and MCP write tools need their operation named in the offer.

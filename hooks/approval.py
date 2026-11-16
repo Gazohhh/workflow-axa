@@ -4,13 +4,16 @@ C-RULES-1, C-SAFE-1). It replaces the approval forensics of phase_gate.py at the
 A project write is allowed when an **approved offer** (skills/workflow/scripts/offers.py) covers it. Approval is
 proven from the host transcript, never from a stored flag:
 
-- **Presentation** of offer #N is its canonical rendering (`record.py offer present`) byte for byte: it names the
-  offer, its hash, its task and its workspace, so identical offers in two tasks or checkouts never share consent. It
-  counts in visible assistant text, or in one question of a question-tool call; then only that question's answer
-  counts. An edited or stale block is no presentation. The display-only CSS line is outside the rendering.
+- **Presentation** of offer #N is the exact text `record.py offer present` prints (offers.presentation, format 2):
+  it names the offer, its hash, its task and its workspace, so identical offers in two tasks or checkouts never
+  share consent. It counts as the end of a visible assistant message (nothing that could hide it before it), or as
+  the text of one question of a question-tool call (`--question`); then only that question's answer counts. The
+  frozen format 1 block (offers.rendering) still counts anywhere in a message, for offers shown before format 2.
+  An edited or stale presentation is none. The display-only CSS line is outside it.
 - **The answer** is the first real owner turn after the latest presentation: the question's "Approve from this
-  summary" (or "Approve"), `/approve <N>`, or a whole message that is one of: approve, approved, yes, ok, okay, go,
-  ja, akkoord, doe maar. "Show review.html first" or `/report <N>` approves nothing yet: the next approval counts only
+  summary" (or "Approve"; a button may end in "(Recommended)"), `/approve <N>`, or a whole message that is one of:
+  approve, approved, yes, ok, okay, go, ja, akkoord, doe maar. "Show review.html first", "show report" or `/report <N>`
+  approves nothing yet: the next approval counts only
   after a message names the task's existing report, in a later session too. Anything else, a qualified "yes but ..."
   included, approves nothing: the agent writes a narrowed offer.
 - **After approval:** a later owner message that withdraws it ("revoke", "not approved") ends it; one that may narrow
@@ -47,7 +50,8 @@ SCRIPTS = HERE.parent / "skills" / "workflow" / "scripts"
 APPROVE_WORDS = {"approve", "approved", "yes", "ok", "okay", "go", "ja", "akkoord", "doe maar"}
 YES_WORDS = {"yes", "ja", "y", "ok", "okay"}
 APPROVE_BUTTONS = {"approve from this summary", "approve"}
-REPORT_BUTTONS = {"show review.html first", "show review.html before i decide"}
+REPORT_BUTTONS = {"show review.html first", "show review.html before i decide", "show report", "show the report"}
+RECOMMENDED = re.compile(r"\s*\(recommended\)$")
 SLASH = re.compile(r"^/(approve|report)\s+#?(\d+)$")
 SETTINGS_QUESTION = re.compile(r"\bturn\s+css\s+(on|off)\b", re.I)
 SETTINGS_RUN = re.compile(r"settings\.py[\"']?\s+(?:--file\s+\S+\s+)?css\s+(on|off)\b", re.I)
@@ -100,15 +104,87 @@ class Event:
     time: str = ""  # the host's timestamp, to order events across sessions
 
 
-OFFER_TASK = re.compile(r"--- workflow-axa offer #\d+ \([0-9a-f]+\) · task (\S+) · ")
+OFFER_TASK = re.compile(r"--- workflow-axa offer #(\d+) \([0-9a-f]+\) · task (\S+) · ")
+OFFER_FOOTER = re.compile(r"\n`+ ?Offer #(\d+) · [0-9a-f]+ · task (\S+)(?: · [^\n]*)? ?`+[ \t\n]*\Z")
+ANY_FOOTER = re.compile(r"Offer #\d+ · [0-9a-f]+ · task ")
 
 
-def read_events(path: Path) -> list[Event]:
+@dataclass(frozen=True)
+class Shown:
+    """The accepted presentations of one offer: the format 2 message (offers.presentation), whose text variant counts
+    as the end of the assistant's text and whose question variant counts only as a question's own text, and, for an
+    offer recorded before format 2 only, the frozen format 1 block anywhere in a message, as before."""
+    legacy: str
+    text: str
+    question: str
+
+    def in_text(self, message: str, before: str = "") -> bool:
+        return bool(self.legacy) and self.legacy in message or ends_with(before + message, self.text)
+
+    def in_question(self, question: dict) -> bool:
+        return bool(self.legacy) and self.legacy in strings(question) \
+            or ends_with(str(question.get("question", "")), self.question)
+
+
+def ends_with(message: str, presentation: str) -> bool:
+    """Format 2 counts only as the end of a message: at its start or after a blank line, nothing but whitespace after
+    it, and nothing before it that could hide or garble it (any `<`, `$$`, or a run of three backticks or tildes)."""
+    message = message.replace("\r\n", "\n")
+    start = message.find(presentation)
+    while start >= 0:
+        before, after = message[:start], message[start + len(presentation):]
+        if (not before or before.endswith("\n\n")) and not after.strip(" \t\n") and "<" not in before \
+                and not re.search(r"`{3,}|~{3,}|\$\$", before):
+            return True
+        start = message.find(presentation, start + 1)
+    return False
+
+
+def shown(folder: Path, offer: dict) -> Shown:
+    o = offers()
+    legacy = o.rendering(offer, folder) if offer.get("presentation_format", 1) == 1 else ""
+    return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True))
+
+
+def offer_tasks(text: str, root: Path | None, before: str = "", question: dict | None = None) -> list[tuple[str, bool]]:
+    """The tasks a presentation moves the session to, each with whether it was format 2: only an offer recorded in
+    that task of this project, shown exactly as its approval needs (format 2 visibly at the end of its block, after
+    `before`, or as a question's own text; format 1 only for an offer recorded before format 2), so a made-up or
+    hidden offer never moves the session. `question` is the question-tool question whose strings are `text`."""
+    if root is None:
+        return []
+    named = [(int(i), t, False) for i, t in OFFER_TASK.findall(text)]
+    own = str(question.get("question", "")) if question is not None else text
+    footer = OFFER_FOOTER.search(own.replace("\r\n", "\n"))
+    named += [(int(footer[1]), footer[2], True)] if footer else []
+    tasks = []
+    for offer_id, task, format_2 in named:
+        folder = root / "docs" / "plans" / task
+        try:
+            view = shown(folder, offers().load(folder, offer_id))
+        except (offers().OfferError, OSError, ValueError):
+            continue
+        if not format_2:
+            ok = bool(view.legacy) and view.legacy in text
+        elif question is not None:
+            ok = ends_with(own, view.question)
+        else:
+            ok = ends_with(before + text, view.text)
+        if ok:
+            tasks.append((task, format_2))
+    return tasks
+
+
+def read_events(path: Path, root: Path | None = None) -> list[Event]:
     """The events of a main transcript. Task transitions are the owner naming a task and a presentation of one of the
-    task's offers (in visible text or a question). The agent's own record writes never move the session (REDESIGN
-    §3.4, N4): bookkeeping must not decide which offer a later withdrawal, narrowing, stop or resume applies to."""
+    task's offers (in visible text or a question, as offer_tasks validates it). A format 2 presentation in text moves
+    the session only when the owner's next turn answers it with no assistant text after it, as approval requires. The
+    agent's own record writes never move the session (REDESIGN §3.4, N4): bookkeeping must not decide which offer a
+    later withdrawal, narrowing, stop or resume applies to."""
     g = gate()
     events: list[Event] = []
+    visible_block: list[str] = []
+    awaiting_answer: list[Event] = []
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             entry = json.loads(line)
@@ -121,28 +197,47 @@ def read_events(path: Path) -> list[Event]:
         content = (entry.get("message") or {}).get("content")
         typed = g.queued_text(entry) if entry.get("type") == "attachment" else g.user_text(entry)
         if typed is not None:
+            events += awaiting_answer
+            awaiting_answer = []
             for a, b in g.TASK_NAMED.findall(g.slash(typed)):
                 events.append(Event("task", uuid, a or b, time=time))
             events.append(Event("user", uuid, typed, time=time))
+            visible_block = []
             continue
         result = entry.get("toolUseResult")
         if entry.get("type") == "user" and isinstance(result, dict) and isinstance(result.get("answers"), dict) \
                 and isinstance(content, list) and not entry.get("isMeta"):
+            events += awaiting_answer
+            awaiting_answer = []
             for block in content:
                 if isinstance(block, dict) and block.get("type") == "tool_result" and not block.get("is_error"):
                     events.append(Event("answer", uuid, tool_id=str(block.get("tool_use_id")), answers=result["answers"], time=time))
+            visible_block = []
             continue
         if entry.get("type") == "assistant" and isinstance(content, list):
             visible = "\n".join(str(b.get("text", "")) for b in content if isinstance(b, dict) and b.get("type") == "text")
-            for task in OFFER_TASK.findall(visible):
-                events.append(Event("task", uuid, task, time=time))
+            found = offer_tasks(visible, root, "".join(text + "\n\n" for text in visible_block))
+            if visible.strip():
+                awaiting_answer = []
+            if any(not format_2 for _, format_2 in found):
+                awaiting_answer = []
+            for task, format_2 in found:
+                (awaiting_answer if format_2 else events).append(Event("task", uuid, task, time=time))
             if visible.strip():
                 events.append(Event("text", uuid, visible, time=time))
+                visible_block.append(visible)
+            if any(isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") != "AskUserQuestion"
+                   for b in content):
+                events.append(Event("tool", uuid, time=time))
+                visible_block = []
             for block in content:
                 if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "AskUserQuestion":
                     data = block.get("input") or {}
                     questions = [q for q in data.get("questions", []) if isinstance(q, dict)] if isinstance(data, dict) else []
-                    for task in OFFER_TASK.findall(strings(questions)):
+                    asked_tasks = [t for q in questions for t, _ in offer_tasks(strings(q), root, question=q)]
+                    if asked_tasks:
+                        awaiting_answer = []
+                    for task in asked_tasks:
                         events.append(Event("task", uuid, task, time=time))
                     events.append(Event("question", uuid, tool_id=str(block.get("id")), questions=questions, time=time))
     return events
@@ -186,7 +281,7 @@ class Facts:
     end: float | None = None
 
 
-def decide(events: list[Event], rendering: str, offer_id: int, report_shown, task: str, here: bool = False) -> Facts:
+def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, task: str, here: bool = False) -> Facts:
     """Pair each presentation of the offer with its answer, and collect the owner's withdrawals, narrowings, stops and
     continues while the session is on the offer's task (task transitions follow the session through switches). In the
     current session (`here`) a message before any task transition counts too: this write ties it to the offer.
@@ -198,28 +293,43 @@ def decide(events: list[Event], rendering: str, offer_id: int, report_shown, tas
     presented = None  # uuid of the open visible presentation
     asked: dict[str, tuple[str, str]] = {}  # question tool id -> (event uuid, the question text that carries it)
     last_presented = None  # the offer the latest rendering in visible text belongs to (typed answers go to it)
+    visible_block: list[str] = []
+    open_is_format_2 = False
     for index, event in enumerate(events):
         if len(at_event) < len(out.facts):
             at_event += [index - 1] * (len(out.facts) - len(at_event))
+        if event.kind in ("tool", "user", "answer"):
+            visible_block = []
         if event.kind == "task":
             on = event.text
         elif event.kind == "text":
-            if rendering in event.text:
+            before = "".join(text + "\n\n" for text in visible_block)
+            if rendering.in_text(event.text, before):
                 presented, last_presented = event.uuid, offer_id
+                open_is_format_2 = not (rendering.legacy and rendering.legacy in event.text)
                 out.reason = "it was presented, but no owner answer came after it yet"
-            elif "--- workflow-axa offer #" in event.text:
+            elif "--- workflow-axa offer #" in event.text or ANY_FOOTER.search(event.text):
                 last_presented = None
+                if rendering.text in event.text:
+                    out.reason = ("its presentation was not the end of the agent's text, or something before it could "
+                                  "hide it (`<`, `$$` or a fenced block); after a tool call, present it again")
+            elif presented is not None and open_is_format_2:
+                presented, last_presented = None, None
+                out.reason = "more text followed its presentation; present it again as the end of the reply"
+            visible_block.append(event.text)
             if report_shown(event.text):
                 out.facts.append([event.time, "shown", ""])
         elif event.kind == "question":
-            carrier = next((q.get("question", "") for q in event.questions if rendering in strings(q)), None)
+            carrier = next((q.get("question", "") for q in event.questions if rendering.in_question(q)), None)
             if carrier is not None:
                 asked[event.tool_id] = (event.uuid, str(carrier))
                 presented, last_presented = None, None
                 out.reason = "it was asked, but the question has no answer yet"
+            elif "--- workflow-axa offer #" in strings(event.questions) or ANY_FOOTER.search(strings(event.questions)):
+                last_presented = None
         elif event.kind == "answer" and event.tool_id in asked:
             at, question = asked.pop(event.tool_id)
-            value = str(event.answers.get(question, "")).strip().lower()
+            value = RECOMMENDED.sub("", str(event.answers.get(question, "")).strip().lower())
             kind = "approve" if value in APPROVE_BUTTONS else "report" if value in REPORT_BUTTONS else "other"
             out.facts.append([event.time, kind, [event.uuid, at] if kind == "approve" else
                               f"the answer \"{value[:60]}\" to its question is not an approval; write a narrowed offer"])
@@ -367,7 +477,7 @@ def report_check(folder: Path):
     return shown
 
 
-def other_sessions(folder: Path, offer: dict, rendering: str, transcript: Path) -> dict[str, Facts]:
+def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path) -> dict[str, Facts]:
     """This offer through every other main transcript of the project (the host keeps one folder per project) changed
     since the offer was made. Nothing is recorded for this: the transcripts are the history, so a session that
     wrote nothing, or whose hook failed, still counts. Each result is cached by file size and time; any read
@@ -382,14 +492,15 @@ def other_sessions(folder: Path, offer: dict, rendering: str, transcript: Path) 
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-3|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering}".encode("utf-8"))
+        key = g.digest(f"facts-5|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+                       f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:
             found[path.stem] = Facts(**json.loads(cache.read_text(encoding="utf-8")))
             continue
         except (OSError, ValueError, TypeError):
             pass
-        found[path.stem] = decide(read_events(path), rendering, offer["id"], report_check(folder), folder.name)
+        found[path.stem] = decide(read_events(path, folder.resolve().parents[2]), rendering, offer["id"], report_check(folder), folder.name)
         found[path.stem].end = stat.st_mtime  # no fact in it is later than its last change
         try:
             cache.parent.mkdir(parents=True, exist_ok=True)
@@ -419,7 +530,7 @@ def validated(folder: Path, offer: dict, transcript: Path, current: list[Event])
         if offer["canonical"].get("parent_provenance") != offers().load(folder, parent_id).get("decision"):
             return False, f"it was derived from an earlier approval of offer #{parent_id}, not the current one"
         return True, ""
-    rendering = offers().rendering(offer, folder)
+    rendering = shown(folder, offer)
     try:
         others = other_sessions(folder, offer, rendering, transcript)
     except OSError as exc:
@@ -698,7 +809,7 @@ def problem_for(event: dict) -> str | None:
     install = g.install_problem(event)
     if install:
         return install
-    current = read_events(transcript)
+    current = read_events(transcript, Path(project.root or project.cwd))
     targets = offer_command_targets(event, g.targets_of(event))
     parent = derive_problem(event, project, transcript, current)
     if parent:
@@ -882,7 +993,7 @@ def no_offer(label: str, rel: str, why: list[str], usable: list[dict]) -> str:
         first = f" Offers here: {'; '.join(parts)}. Present the offer that should cover it (`record.py offer present`),"
     else:
         first = (" This project has no offers yet. Create one through `workflow-specify` step 5 (`record.py offer "
-                 "create`), present its block (`record.py offer present`),")
+                 "create`), present it (`record.py offer present`, as the end of your reply),")
     return (f"workflow-axa: {label} needs an approved offer that lists {rel}.{first} ask the one question (Show "
             "review.html first · Approve from this summary · Change something), and retry after the owner's answer. "
             "An offer in your own words can't be approved. Task records stay writable.")

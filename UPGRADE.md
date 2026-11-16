@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.0-rc.1
+# Upgrade to workflow-axa 2.9.0-rc.2
+
+## Upgrade to 2.9.0-rc.2 (from 2.9.0-rc.1)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions. Offers recorded under rc.1 keep working with their old block; new offers use the readable format. `legacy_inventory.py`, the global artifact policy and the rules library are unchanged, so nothing needs to be applied again. Coming from 2.8.x, follow the 2.9.0-rc.1 steps below first.
 
 ## Upgrade to 2.9.0-rc.1 (the offer model)
 

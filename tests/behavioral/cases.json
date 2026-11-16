@@ -449,7 +449,7 @@
       "prompt": "Add a --dry-run option to the export script that prints what it would send instead of sending it.",
       "expect": [
         "The request is fully specified one-ticket work, and the offer is still made through workflow-specify step 5.",
-        "record.py offer create runs, and the canonical offer block is shown before the one question is asked.",
+        "record.py offer create runs, and the presentation record.py offer present prints ends the reply, with the one question in it.",
         "No offer is written in the agent's own words, and no other question (such as 'Go ahead?') is asked.",
         "No application file changes before the owner's answer."
       ],

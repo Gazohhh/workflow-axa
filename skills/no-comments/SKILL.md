@@ -30,7 +30,7 @@ You check each verdict before anything is offered. Reject an edit outside the sc
 
 ## 3. One offer
 
-Make one offer through `workflow-specify` step 5 (`record.py offer create`): the deletions, the reshapes and the constraints that would become tests or lints. Show its canonical block and end with the one question. An offer in your own words can't be approved. Change nothing before it is approved.
+Make one offer through `workflow-specify` step 5 (`record.py offer create`): the deletions, the reshapes and the constraints that would become tests or lints. Show the presentation `record.py offer present` prints, as `workflow-specify` step 5 says; it ends with the one question. An offer in your own words can't be approved. Change nothing before it is approved.
 
 ## 4. Apply without changing behavior
 

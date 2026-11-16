@@ -245,3 +245,19 @@ Unmet, for the owner before T17:
   - Checks: audit_installation --check-global DISK_MATCH 2.9.0-rc.1 (host loading NOT_VERIFIED until a fresh session); the installed approval.py refuses an edit with no offer and names workflow-specify step 5.
   - Rollback data, under the redesign worktree's .artifacts/release/: codex-skills-rc39-backup/, global-backup-rc39/, and the release ZIP (SHA-256 a08fd1a9…).
   - Observation: 5 files of other tasks that were staged in this checkout no longer show as staged after the fast-forward. Their content equals the committed versions, and no other version exists in the object store, so no content difference was lost (most likely a mode or metadata-only staged entry).
+
+## 2.9.0-rc.2 (2026-11-16, D12)
+
+- Trigger: the owner's live T3 thread on D:\workflow-paperclip (session 5ed6485d, task 2026-11-12-offerte-improvements). The session started at 14:15 on the 2.8 router; the hooks switched to rc.1 at the 15:48 merge.
+  - F5 (bug): T3 Code returns a finished delegate's report as a plain `type: user` message with the same metadata as the owner's (`promptSource: sdk`, `entrypoint: t3-code`, no `origin`). The hook read it as the owner: at 17:13 and 17:21 it consumed the open presentation and matched the narrowing pattern, so `/approve 1` was refused twice. Only the text tells it apart.
+  - F6: the format-1 offer block (JSON-encoded fields in a code block) was unreadable for the owner.
+  - F7: no "Recipe:" line ever appeared. The router ran once (14:15, old text); the new request at 16:46 (revision 7) entered workflow-clarify directly, so §3 was never reached.
+  - F8: the review.html choice was offered nine times, only inside the long answer line, never as buttons and never recommended, although the task touches money and a visible document.
+- Design spars with Astra (two rounds each on the offer format and on the recipe pick) until both agreed; then code reviews by Astra and Opus with re-checks until both agreed. Findings fixed during review:
+  - format 1 accepted for every offer (hidden in an HTML comment) → new offers carry `presentation_format: 2`;
+  - delegate statuses beyond the observed ones, and a host note before the report;
+  - "end of message" per transcript entry → per visible block (text since the last tool call), `$$` added;
+  - another offer asked by question left the text offer open;
+  - task transitions: regex-only footers, hidden offers in the block, question footers searched in the options, presentations undone by later text, and a held text transition overtaking a newer question transition. offer_tasks() now validates transitions exactly like approval; format-2 text transitions are released at the owner's answer.
+- V17 (rc.2 gate): full suite 1419 ran, 1 failure = the known intermittent record_safety parallel-append test (passed 5 of 5 alone; record.py and its test unchanged); validate PASS apart from VALIDATION.md, regenerated at release. Evidence: .artifacts/2026-11-15-workflow-redesign/rc2/ (all.diff, suite-final.log) in the redesign worktree.
+- Not verified live: the format-2 presentation, the question-tool variant in T3's dialog, and the Recipe line on a real host (routing_cases stay NOT_RUN).

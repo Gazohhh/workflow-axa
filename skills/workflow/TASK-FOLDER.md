@@ -33,15 +33,16 @@ A lightweight edit uses only PLAN with short Work and Evidence sections; if it g
 
 ## PLAN.md
 
-Leave out what doesn't apply; write `unknown` rather than inventing.
+Leave out what doesn't apply; write `unknown` rather than inventing. `workflow/SKILL.md` §3 owns the recipe pick. Store each classification question and answer in FINDINGS (PLAN for lightweight work), linked from the Recipe line, and record the question before sending it so a resume can't reset its allowance; with no task folder yet, record both once the folder exists. Keep earlier references when the pick changes. Inspect and status-only requests write no records; an *Only investigate* answer to a recorded question is recorded as its answer, and nothing else.
 
 ```markdown
 # <Task>
 
 ## Current checkpoint
 - Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, paused, stopped, cancelled, closed>
+- Recipe: <name; modifiers or none> — <reason>; scope: <the task, or the revision it belongs to; proposed when not yet agreed>; classification question: <not asked / pending at <reference> / answered at <reference> / unknown — legacy record>
 - Agreement (gate one): <agreed/waived/legacy/not required — lightweight or one-ticket offer/pending; revision ("agreement N") and record>
-- Offer: #<id> <draft/approved/superseded/revoked>, the states `offers.py` stores. "Pending" is not stored: the hook derives it from a verified presentation. Approval binds to the offer id and its canonical rendering; the hook reads the owner's answer from the conversation, so never write an approval yourself. There is no approval waiver: a non-interactive session, a request for a finished result or "don't ask me" is never one; stop and ask. Legacy tasks the owner listed at the upgrade keep their `- Approval (gate two):` line unchanged
+- Offer: #<id> <draft/approved/superseded/revoked>, the states `offers.py` stores. "Pending" is not stored: the hook derives it from a verified presentation. Approval binds to the offer id and its generated presentation; the hook reads the owner's answer from the conversation, so never write an approval yourself. There is no approval waiver: a non-interactive session, a request for a finished result or "don't ask me" is never one; stop and ask. Legacy tasks the owner listed at the upgrade keep their `- Approval (gate two):` line unchanged
 - Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; its minimal offer lists those files. `git commit` of only those files only when the offer names that operation, and no other git write
 - Implementation: <not started/in progress/implemented/partial>
 - Verification / owner acceptance: <not run/passed/limited/blocked; evidence and what is outstanding>

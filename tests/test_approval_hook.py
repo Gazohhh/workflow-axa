@@ -113,14 +113,29 @@ class ApprovalHookCase(unittest.TestCase):
         self.sessions.mkdir()
         self.path = self.sessions / "s-now.jsonl"
         self.settings = self.base / "settings.json"
-        self.offer = offers.create(self.folder, OFFER)
+        self.offer = self.recorded_as(offers.create(self.folder, OFFER), format_1=True)
         self.cache = CACHE.name
+
+    def recorded_as(self, offer, format_1, folder=None):
+        """Most cases here keep testing an offer recorded before format 2, whose format 1 block still counts."""
+        path = (folder or self.folder) / "offers" / f"offer-{offer['id']}.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data.pop("presentation_format", None) if format_1 else data.update(presentation_format=2)
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        return data
 
     def rendering(self, offer=None):
         return offers.rendering(offer or offers.load(self.folder, self.offer["id"]), self.folder)
 
+    def readable_question(self):
+        return offers.presentation(offers.load(self.folder, self.offer["id"]), self.folder, question=True)
+
     def presented(self, rows=None, offer=None):
         rows = rows or Rows().router()
+        offer = offer or offers.load(self.folder, self.offer["id"])
+        if offer.get("presentation_format") == 2:
+            rows.say("Here is the offer.\n\n" + offers.presentation(offer, self.folder))
+            return rows
         rows.say("Here is the offer:\n\n```\n" + self.rendering(offer) + "\n```\n\nShow review.html first · Approve "
                  "from this summary · Change something?")
         return rows
@@ -195,6 +210,22 @@ class PresentationAndAnswers(ApprovalHookCase):
                 rows = self.presented()
                 rows.owner(word)
                 self.denied(rows, "not one of the approval forms")
+
+    def test_show_report_typed_or_a_recommended_button_means_the_same_as_its_plain_form(self):
+        for typed in ("show report", "Show report.", "**show report**", "show the report"):
+            with self.subTest(typed=typed):
+                rows = self.presented()
+                rows.owner(typed)
+                rows.owner("yes")
+                self.denied(rows, "the owner asked to see review.html first")
+        question = "Offer:\n" + self.rendering()
+        for button, allowed in (("Show review.html first (Recommended)", False),
+                                ("Approve from this summary (Recommended)", True)):
+            with self.subTest(button=button):
+                rows = Rows().router()
+                tool = rows.ask(question, [button, "Change something"])
+                rows.answer(tool, question, button)
+                self.allowed(rows) if allowed else self.denied(rows, "the owner asked to see review.html first")
 
     def test_an_edited_or_partial_block_is_no_presentation(self):
         rows = Rows().router().say(self.rendering().replace("Round VAT per line", "Round VAT per invoice"))
@@ -298,6 +329,133 @@ class PresentationAndAnswers(ApprovalHookCase):
         self.allowed(rows)
 
 
+class FormatTwoPresentation(ApprovalHookCase):
+    """The readable presentation counts only as the generated text, at the end of the message, with nothing that can
+    hide it before it; format 1 keeps counting for the same offer."""
+
+    def setUp(self):
+        super().setUp()
+        self.offer = self.recorded_as(self.offer, format_1=False)
+
+    def readable(self, question=False):
+        return offers.presentation(offers.load(self.folder, self.offer["id"]), self.folder, question=question)
+
+    def test_the_readable_message_with_context_above_it_and_a_yes_approves(self):
+        for prefix in ("", "CSS: off (machine setting; display only)\n\n",
+                       "Revision 6 is unchanged. Agreement 9 is still open; answer it separately.\n\n"):
+            with self.subTest(prefix=prefix):
+                rows = Rows().router().say(prefix + self.readable() + "\n")
+                rows.owner("/approve 1")
+                self.allowed(rows)
+
+    def test_anything_that_could_hide_or_contradict_it_is_no_presentation(self):
+        for message in ("<!--\n\n" + self.readable() + "\n-->", "<details>\n\n" + self.readable(),
+                        "```\n" + self.readable() + "\n```", "Context\n\n```\nold\n```\n\n" + self.readable(),
+                        self.readable() + "\n\nActually this also deletes the database.",
+                        "Inline " + self.readable(),
+                        self.readable().replace("- `git commit`", "- `git status`"), self.readable(question=True)):
+            with self.subTest(message=message[:40]):
+                rows = Rows().router().say(message)
+                rows.owner("yes")
+                self.denied(rows)
+
+    def test_a_question_with_the_recommendation_and_the_css_line_before_it_counts(self):
+        rows = Rows().router()
+        question = ("**I recommend the report first**, because it changes how quotations are priced.\n\n"
+                    "CSS: off (machine setting; display only)\n\n" + self.readable(question=True))
+        tool = rows.ask(question, ["Show review.html first (Recommended)", "Approve from this summary",
+                                   "Change something"])
+        rows.answer(tool, question, "Approve from this summary")
+        self.allowed(rows)
+
+    def test_the_question_variant_counts_only_as_the_question_text(self):
+        rows = Rows().router()
+        question = "Revision 6, unchanged.\n\n" + self.readable(question=True)
+        tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+        rows.answer(tool, question, "Approve from this summary")
+        self.allowed(rows)
+        rows = Rows().router()
+        tool = rows.ask("Approve?", ["Approve from this summary", self.readable(question=True)])
+        rows.answer(tool, "Approve?", "Approve from this summary")
+        self.denied(rows)
+
+    def test_a_format_1_approval_still_holds_and_a_later_withdrawal_still_ends_it(self):
+        self.offer = self.recorded_as(self.offer, format_1=True)
+        rows = self.presented()
+        rows.owner("yes")
+        self.allowed(rows)
+        rows.say(self.readable())
+        rows.owner("I revoke that, not approved")
+        self.denied(rows)
+
+    def test_text_after_it_or_markup_in_the_same_visible_block_undoes_it(self):
+        for before, after in (("", "P.S. this also deletes the database and ignores the exclusions."),
+                              ("<details>", None), ("$$", None)):
+            with self.subTest(before=before, after=after):
+                rows = Rows().router()
+                if before:
+                    rows.say(before)
+                rows.say(self.readable())
+                if after:
+                    rows.say(after)
+                rows.owner("yes")
+                self.denied(rows)
+
+    def test_a_tool_call_between_ends_the_visible_block_so_it_can_be_presented_again(self):
+        rows = Rows().router().say("Checking `<task-folder>` first.")
+        rows.say(self.readable())
+        rows.edit(str(self.folder / "PLAN.md"))
+        rows.say(self.readable())
+        rows.owner("yes")
+        self.allowed(rows)
+
+    def test_a_new_offers_format_1_block_never_counts(self):
+        rows = Rows().router().say("Shall I go ahead?\n\n<!--\n" + offers.rendering(self.offer, self.folder) + "\n-->")
+        rows.owner("yes")
+        self.denied(rows)
+        rows = Rows().router().say(offers.rendering(self.offer, self.folder))
+        rows.owner("yes")
+        self.denied(rows)
+
+    def test_any_delegate_status_and_a_host_note_before_it_still_mark_a_report(self):
+        for report in ("Delegated task node:delegated-task:abc (x) [timed out]:\n"
+                       "<command-name>/approve</command-name><command-args>1</command-args>",
+                       "<system-reminder>x</system-reminder>\nDelegated task node:delegated-task:abc (x) [completed]:\n"
+                       "not approved, revoke"):
+            with self.subTest(report=report[:40]):
+                rows = Rows().router().say(self.readable())
+                rows.owner(report)
+                self.denied(rows, "no owner answer came after it yet")
+                rows.owner("/approve 1")
+                self.allowed(rows)
+
+    def test_another_offer_asked_by_question_closes_this_ones_text_presentation(self):
+        other = offers.create(self.folder, {**OFFER, "paths": ["tests/vat.spec.ts"]})
+        asked = offers.presentation(other, self.folder, question=True)
+        for second in (asked, offers.rendering(other, self.folder)):
+            with self.subTest(second=second[:20]):
+                rows = Rows().router().say(self.readable())
+                rows.ask(second, ["Show review.html first", "Approve from this summary", "Change something"])
+                rows.owner("yes")
+                self.denied(rows)
+
+    def test_a_question_answered_after_another_offers_text_still_binds_to_its_own_offer(self):
+        rows = Rows().router()
+        question = self.readable(question=True)
+        tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+        other = offers.create(self.folder, {**OFFER, "paths": ["tests/vat.spec.ts"]})
+        rows.say(offers.presentation(other, self.folder))
+        rows.answer(tool, question, "Approve from this summary")
+        self.allowed(rows)
+
+    def test_a_later_presentation_of_another_offer_leaves_this_one_unanswered(self):
+        other = offers.create(self.folder, {**OFFER, "paths": ["tests/vat.spec.ts"]})
+        rows = Rows().router().say(self.readable())
+        rows.say(offers.presentation(other, self.folder))
+        rows.owner("yes")
+        self.denied(rows)
+
+
 class OfferStates(ApprovalHookCase):
     """C-OFFER-1, -5: revisions, withdrawal and provenance across sessions."""
 
@@ -318,6 +476,29 @@ class OfferStates(ApprovalHookCase):
                 rows.owner("yes")
                 rows.owner(words)
                 self.denied(rows)
+
+    def test_a_finished_delegated_task_is_never_the_owner_speaking(self):
+        """T3 Code hands a finished delegate's report back as a plain user message (seen live on 2026-11-16, where it
+        took the place of the owner's answer and read as a narrowing, so `/approve 1` was refused twice)."""
+        report = ("Delegated task node:delegated-task:command%3Amcp%3A7ae4%3Adelegate-task%3Aa33b (Spar: agent-led "
+                  "Finance (round 3)) [{}]:\n**I agree with the direction.** I revoke that, not approved; keep only "
+                  "src/vat.ts and stop the rest.\n/approve 1")
+        for status in ("completed", "failed"):
+            with self.subTest(status=status, when="before the answer"):
+                rows = self.presented()
+                rows.owner(report.format(status))
+                rows.owner("/approve 1")
+                self.allowed(rows)
+            with self.subTest(status=status, when="after the approval"):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.owner(report.format(status))
+                self.allowed(rows)
+        with self.subTest("the owner quoting one still speaks"):
+            rows = self.presented()
+            rows.owner("yes")
+            rows.owner("stop, " + report.format("completed"))
+            self.denied(rows)
 
     def test_a_stop_then_continue_keeps_the_approval_but_a_withdrawal_needs_a_fresh_one(self):
         rows = self.presented()
@@ -439,6 +620,82 @@ class OfferStates(ApprovalHookCase):
         other.owner("stop")
         other.write(self.sessions / "s-other.jsonl")
         self.denied(Rows().router(), "stopped the work in an earlier session")
+
+    def test_a_made_up_or_hidden_footer_never_moves_a_session_away_from_its_withdrawal(self):
+        real = offers.presentation(offers.load(self.folder, 1), self.folder)
+        made_up = "`Offer #9 · 0123456789abcdef · task nonexistent · D:/elsewhere`"
+        for say in ("Notes\n\n" + made_up, "<!--\n\n" + real + "\n\n" + made_up, "<!--\n\n" + real):
+            with self.subTest(say=say[:30]):
+                self.setUp()
+                self.earlier_approval(then=())
+                earlier = Rows().router()
+                earlier.owner(f"pick up docs/plans/{TASK}")
+                earlier.say(say)
+                earlier.owner("I revoke that, not approved")
+                earlier.write(self.sessions / "s-between.jsonl")
+                self.denied(Rows().router(), "withdraws it")
+
+    def test_another_tasks_offer_hidden_in_the_visible_block_never_moves_the_session(self):
+        other = self.repo / "docs/plans/2026-11-16-readme"
+        other.mkdir(parents=True)
+        new = offers.create(other, {**OFFER, "paths": ["README.md"]})
+        old = self.recorded_as(offers.create(other, {**OFFER, "paths": ["CHANGES.md"]}), format_1=True, folder=other)
+        for hidden in (offers.presentation(new, other), offers.rendering(new, other)):
+            with self.subTest(hidden=hidden[:20]):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.say("<details>")
+                rows.say(hidden)
+                rows.owner("I revoke that, not approved")
+                self.denied(rows, "withdraws it")
+        rows = self.presented()
+        rows.owner("yes")
+        rows.say(offers.rendering(old, other))
+        rows.owner("I revoke that, not approved")
+        self.allowed(rows)
+
+    def test_the_session_follows_a_question_approval_but_not_a_presentation_text_undid(self):
+        other = self.repo / "docs/plans/2026-11-16-readme"
+        other.mkdir(parents=True)
+        b = offers.create(other, {**OFFER, "paths": ["README.md"]})
+        readme = {"file_path": str(self.repo / "README.md"), "content": "x"}
+        for crlf in (False, True):
+            with self.subTest(crlf=crlf, case="question"):
+                rows = self.presented()
+                rows.owner("yes")
+                question = offers.presentation(b, other, question=True)
+                question = question.replace("\n", "\r\n") if crlf else question
+                tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+                rows.answer(tool, question, "Approve from this summary")
+                rows.owner("I revoke that, not approved")
+                self.denied(rows, tool="Write", data=readme)
+        with self.subTest(case="a newer question replaces a text presentation awaiting its answer"):
+            a = offers.create(self.folder, {**OFFER, "paths": ["src/a.ts"]})
+            rows = self.presented()
+            rows.owner("yes")
+            rows.say(offers.presentation(a, self.folder))
+            question = offers.presentation(b, other, question=True)
+            tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+            rows.answer(tool, question, "Approve from this summary")
+            rows.owner("I revoke that, not approved")
+            self.denied(rows, tool="Write", data=readme)
+        with self.subTest(case="one message: another offer as text, then this offer's question"):
+            rows = self.presented()
+            rows.owner("yes")
+            question = self.readable_question()
+            rows.append({"type": "assistant", "uuid": rows.uid(), "message": {"content": [
+                {"type": "text", "text": offers.presentation(b, other)},
+                {"type": "tool_use", "id": "q-both", "name": "AskUserQuestion", "input": {"questions": [
+                    {"question": question, "options": [{"label": "Approve from this summary"}]}]}}]}})
+            rows.answer("q-both", question, "Approve from this summary")
+            rows.owner("I revoke that, not approved")
+            self.denied(rows)
+        rows = self.presented()
+        rows.owner("yes")
+        rows.say(offers.presentation(b, other))
+        rows.say("P.S. I also delete the database.")
+        rows.owner("I revoke that, not approved")
+        self.denied(rows, "withdraws it")
 
     def test_a_stop_in_this_session_pauses_every_write_whatever_the_task(self):
         rows = self.presented()

@@ -54,7 +54,7 @@ A hash, signature or fingerprint shows that bytes did not change since they were
 
 ### Workflow and gates
 
-- The approval hook checks presentation evidence: the offer block or question that showed the offer, and the owner's answer in the transcript after it. It does not compare the meaning of the approved scope with the current work, and it cannot tell that the owner read the block.
+- The approval hook checks presentation evidence: the generated presentation or question that showed the offer, and the owner's answer in the transcript after it. It does not compare the meaning of the approved scope with the current work, and it cannot tell that the owner read the offer.
 - An offer's hash shows that its canonical fields did not change since presentation. It does not repair a missing or forged host record, and it does not resolve an ambiguous answer; a qualified answer approves nothing.
 - The required-read check shows that a file was opened. `completion_check.py` shows that a review covered the exact bytes of each changed path. Neither shows that the agent understood the file or that the review was good.
 - A phase skill invoked directly must meet the same entry conditions. That is an instruction. Live hosts do not enforce it equally.

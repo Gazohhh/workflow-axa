@@ -13,7 +13,7 @@ usage (via record.py):
   record.py offer create    <task-folder> <offer.json | ->     new draft offer; prints its id and hash
   record.py offer revise    <task-folder> <id> <offer.json | -> new offer replacing <id>, which becomes superseded
   record.py offer derive    <task-folder> <parent-id> <child.json | ->   child offer, checked against the parent
-  record.py offer present   <task-folder> <id> [--root PROJECT] print the canonical rendering to show the owner
+  record.py offer present   <task-folder> <id> [--root PROJECT] [--question]   print the presentation to show the owner
   record.py offer presentation <task-folder> <id> asked|html-first|chat   the owner's choice of the one question
   record.py offer approve   <task-folder> <id> --session S --turn T --presentation P   record the decision reference
   record.py offer revoke    <task-folder> <id>
@@ -30,6 +30,7 @@ import json
 import pathlib
 import re
 import sys
+import unicodedata
 
 LISTS = ("paths", "operations", "delegable_paths", "delegable_operations", "exclusions", "conditions", "checks")
 CANONICAL = ("behaviour",) + LISTS + ("parent", "parent_provenance")
@@ -147,7 +148,7 @@ def now() -> str:
 
 def new_offer(folder: pathlib.Path, canonical: dict, display: str, supersedes: int | None = None) -> dict:
     ids = [o["id"] for o in all_offers(folder)]
-    offer = {"schema": 1, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
+    offer = {"schema": 1, "presentation_format": 2, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
              "canonical": canonical, "hash": offer_hash(canonical), "display": display, "state": "draft",
              "presentation_decision": None, "decision": None, "supersedes": supersedes, "superseded_by": None}
     save(folder, offer, new=True)
@@ -241,7 +242,7 @@ def workspace_of(folder: pathlib.Path) -> str:
 
 
 def rendering(offer: dict, folder: pathlib.Path | None = None) -> str:
-    """The canonical rendering the owner sees: every canonical field, in a fixed order, with the hash, the task and
+    """Format 1, frozen: the hook still accepts it for offers shown before format 2 (presentation). Every canonical field, in a fixed order, with the hash, the task and
     the workspace (so identical offers in two tasks or two checkouts are different presentations). Each value is
     JSON-encoded, so supplied text (a newline, a field label, the delimiter) can never pose as another field or end
     the block. The hook compares a shown block byte for byte with this text."""
@@ -260,6 +261,81 @@ def rendering(offer: dict, folder: pathlib.Path | None = None) -> str:
              f"Parent: {value(c['parent'])}",
              f"Parent provenance: {value(c['parent_provenance'])}",
              f"--- end offer #{offer['id']} ---"]
+    return "\n".join(lines)
+
+
+MARKDOWN_SPECIAL = set("\\`*_[]<>&|~")
+LINK_LIKE = re.compile(r"://|www\.|@", re.IGNORECASE)
+ANSWER_LINE = ("Reply **approve** to approve from this summary, **show report** to see review.html first, or tell me "
+               "what to change. (`/approve {id}`, `/report {id}`, yes, ok, go, ja, akkoord and doe maar work too.)")
+QUESTION_LINE = "How would you like to proceed: Show review.html first, Approve from this summary, or Change something?"
+
+
+def _visible(value: str) -> str:
+    """One line in which every control, format or separator character, and every backslash, is spelled out, so nothing
+    in a value can break the line, hide text or pose as an escape the renderer made."""
+    out = []
+    for ch in value:
+        if ch == "\\":
+            out.append("\\\\")
+        elif ch in "\n\r\t":
+            out.append({"\n": "\\n", "\r": "\\r", "\t": "\\t"}[ch])
+        elif unicodedata.category(ch) in ("Cc", "Cf", "Cs", "Zl", "Zp"):
+            out.append(f"\\u{ord(ch):04x}" if ord(ch) <= 0xFFFF else f"\\U{ord(ch):08x}")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _code(value: str) -> str:
+    """A code span that shows `value` literally, whatever backticks it contains (CommonMark code spans)."""
+    text = _visible(value)
+    longest = max((len(run) for run in re.findall(r"`+", text)), default=0)
+    fence = "`" * (longest + 1)
+    pad = " " if text[:1] in ("`", " ") or text[-1:] in ("`", " ") else ""
+    return f"{fence}{pad}{text}{pad}{fence}"
+
+
+def _prose(value: str) -> str:
+    """Plain text that renders as itself: Markdown punctuation escaped, a link-like value shown as code instead."""
+    text = _visible(value)
+    if LINK_LIKE.search(text):
+        return _code(value)
+    escaped = "".join("\\" + ch if ch in MARKDOWN_SPECIAL else ch for ch in text)
+    if escaped[:1] in ("#", "+", "-", "="):
+        return "\\" + escaped
+    return re.sub(r"^(\d+)([.)])", r"\1\\\2", escaped)
+
+
+def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool = False) -> str:
+    """Format 2: the offer as a readable message, generated so the agent only copies it. Every canonical field is shown
+    (empty lists as "None."; delegation and parent sections only when set), values escaped so they render as written,
+    then the one question, the answer forms (not in the question tool's variant) and a footer that names the offer,
+    its hash, its task and its workspace. The hook compares it exactly; `rendering()` stays the frozen format 1."""
+    c = offer["canonical"]
+
+    def section(title: str, items: list[str]) -> list[str]:
+        return [f"### {title}", ""] + ([f"- {item}" for item in items] or ["- None."]) + [""]
+
+    lines = [f"## Offer #{offer['id']}", ""]
+    lines += section("What will change", [_prose(c["behaviour"])])
+    lines += section("Files allowed to change", [_code(p) for p in c["paths"]])
+    lines += section("Protected actions", [_code(o) for o in c["operations"]])
+    if c["delegable_paths"]:
+        lines += section("Delegable files", [_code(p) for p in c["delegable_paths"]])
+    if c["delegable_operations"]:
+        lines += section("Delegable protected actions", [_code(o) for o in c["delegable_operations"]])
+    lines += section("Excluded", [_prose(e) for e in c["exclusions"]])
+    lines += section("Conditions", [_prose(e) for e in c["conditions"]])
+    lines += section("Required checks", [_prose(e) for e in c["checks"]])
+    for key, title in (("parent", "Parent offer"), ("parent_provenance", "Parent approval provenance")):
+        if c[key] is not None:
+            lines += section(title, [_code(json.dumps(c[key], ensure_ascii=False, sort_keys=True, separators=(",", ":")))])
+    lines += [QUESTION_LINE, ""]
+    if not question:
+        lines += [ANSWER_LINE.format(id=offer["id"]), ""]
+    where = f" · {workspace_of(folder)}" if folder is not None else ""
+    lines.append(_code(f"Offer #{offer['id']} · {offer['hash']} · task {offer['task']}{where}"))
     return "\n".join(lines)
 
 
@@ -351,6 +427,7 @@ def main(argv: list[str]) -> int:
         p.add_argument("id", type=int)
         if name == "present":
             p.add_argument("--root", type=pathlib.Path)
+            p.add_argument("--question", action="store_true", help="the variant for the question tool's text")
     p = sub.add_parser("presentation")
     p.add_argument("task")
     p.add_argument("id", type=int)
@@ -375,8 +452,9 @@ def main(argv: list[str]) -> int:
             offer = load(folder, args.id)
             if offer["state"] in ("superseded", "revoked"):
                 raise OfferError(f"offer #{args.id} is {offer['state']}; present the current offer")
-            print(rendering(offer, folder))
             print(css_line(args.root))
+            print()
+            print(presentation(offer, folder, question=args.question))
             return 0
         elif args.command == "presentation":
             offer = set_presentation(folder, args.id, args.decision)

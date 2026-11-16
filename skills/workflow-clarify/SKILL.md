@@ -13,6 +13,8 @@ Read shared policies from sibling `../workflow/`, including its "Always" list. S
 
 ## 1. Trace the journeys
 
+For a new task or a new request on existing work, apply `../workflow/SKILL.md` §3 before tracing: pick the recipe and show its `Recipe:` line, then record it in the checkpoint (while identity is pending, with that round); reuse a pick already shown for this same request.
+
 A **journey** is one actor getting one outcome: trigger → steps → what they see. For each actor the request touches, trace in code and record in FINDINGS (J-IDs, E-IDs):
 
 1. **Owner and callers**: the code that owns the behavior, every other caller or entry point that reaches it, and the data and settings it reads. A caller no journey explains is a question.

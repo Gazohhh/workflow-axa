@@ -118,7 +118,21 @@ class FallbackAndRouterTests(unittest.TestCase):
     def test_the_router_asks_one_question_only_when_not_sure(self):
         self.assertIn("*Fix something broken · Add or change a feature · Start a new project · Only investigate*",
                       self.router)
-        self.assertIn("at most one such question per task", self.router)
+        self.assertIn("Ask at most once for the task, and once more for each later revision that changes, or may "
+                      "change, the kind of work.", self.router)
+        self.assertIn("`Recipe: <name> (<plain meaning>) — <reason tied to this request>. Say so if you meant "
+                      "something else.`", self.router)
+        clarify = (ROOT / "skills/workflow-clarify/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("apply `../workflow/SKILL.md` §3 before tracing: pick the recipe and show its `Recipe:` line", clarify)
+        resume = (ROOT / "skills/resume/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Reconcile and show the task's recipe as `../workflow/SKILL.md` §3 says", resume)
+        self.assertIn("repeat it at the top of that turn's final message or first question round", self.router)
+        self.assertIn("until it is answered, only read-only work continues", self.router)
+        self.assertIn("its presentation ends the reply and its question is the state line: put nothing after it",
+                      self.router)
+        folder = (ROOT / "skills/workflow/TASK-FOLDER.md").read_text(encoding="utf-8")
+        self.assertIn("- Recipe: <name; modifiers or none>", folder)
+        self.assertIn("with no task folder yet, record both once the folder exists", folder)
         self.assertIn("Never ask small versus complex bug", self.router)
         self.assertIn("[flows/INDEX.md](flows/INDEX.md)", self.router)
         self.assertIn("[FALLBACKS.md](FALLBACKS.md)", self.router)
@@ -136,6 +150,16 @@ class FlowPromptTests(unittest.TestCase):
                 cases = [c for c in self.data["cases"] if c["recipe"] == name]
                 self.assertEqual(len(cases), 1)
                 self.assertTrue(cases[0]["expect"])
+
+    def test_routing_cases_cover_the_visible_pick_and_none_counts_as_run(self):
+        ids = [c["id"] for c in self.data["routing_cases"]]
+        self.assertEqual(len(ids), len(set(ids)))
+        for required in ("R-direct-clarify", "R-changed-kind-question", "R-resume-pending", "R-legacy-resume"):
+            self.assertIn(required, ids)
+        for case in self.data["routing_cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertEqual((case["mode"], case["result"]), ("live-host", "NOT_RUN"))
+                self.assertTrue(case["scenario"] and case["expect"])
 
     def test_labels_name_a_recipe_or_a_router_mode_and_nothing_counts_as_run(self):
         allowed = set(RECIPES) | {"inspect", "ask"}

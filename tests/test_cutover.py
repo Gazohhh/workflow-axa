@@ -101,7 +101,7 @@ class OfferModelText(unittest.TestCase):
         # never approve that, because no recorded offer was presented.
         router = " ".join(self.read("skills/workflow/SKILL.md").split())
         self.assertIn("Make and present it only through `workflow-specify`: it records the offer with "
-                      "`record.py offer create` and shows its canonical block.", router)
+                      "`record.py offer create` and shows the presentation `record.py offer present` prints.", router)
         self.assertIn("An offer in your own words, or any other question, can't be approved", router)
 
     def test_a_stop_pauses_and_continue_keeps_the_approval(self):
@@ -175,17 +175,17 @@ class OfferModelText(unittest.TestCase):
 
 
 class ReleaseNotes(unittest.TestCase):
-    """T25: the current CHANGELOG entry names what the redesign removed and added, and those facts hold."""
+    """T25: the redesign's CHANGELOG entry (2.9.0-rc.1) names what it removed and added, and those facts hold."""
 
-    def current_entry(self) -> str:
-        version = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))["version"]
+    def redesign_entry(self) -> str:
+        version = "2.9.0-rc.1"
         text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
         start = text.index(f"\n## {version} — ")
         end = text.find("\n## ", start + 1)
         return text[start:end if end != -1 else len(text)]
 
     def test_the_entry_names_the_removed_hooks_and_the_three_new_skills(self):
-        entry = self.current_entry()
+        entry = self.redesign_entry()
         for hook in ("plain_reply.py", "phase_reads.py", "truncated_read.py"):
             with self.subTest(hook=hook):
                 self.assertIn(f"`{hook}`", entry)

@@ -19,3 +19,5 @@
   - update the Codex skill copies (~/.agents/skills), run global_policy.py --apply and activate_rules.py --apply;
   - switch the running sessions now.
   Commit and push only for workflow-axa (main fast-forward from bfc18fd). The owner's 5 staged task-record files in the main checkout stay uncommitted.
+
+- D12 (by: user, 2026-11-16) Fix the T3 delegate-report bug and spar with Astra on a readable offer and on the visible recipe pick ("spar with astra to find the best solution for this and bug needs fixing"; "Do a sparring session with astra untill both of you agree about this"). Include the review.html wording in rc.2 and release it as rc.1 was (answers: "Include in rc.2 (Recommended)", "Yes, release (Recommended)"): regenerate VALIDATION.md, commit and push workflow-axa only, update the Claude plugin and the Codex copies; global_policy and activate_rules are not rerun (policy and rules unchanged).
