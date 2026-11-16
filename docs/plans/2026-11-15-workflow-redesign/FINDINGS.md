@@ -233,3 +233,15 @@ Unmet, for the owner before T17:
 - ~~Codex~~: run 17 instead of an isolated run (D6). The way the package deals with stale installed or project rules is an open design question for a spar with Astra; it doesn't block.
 - **Codex instruction isolation:** CODEX_HOME holds the ChatGPT login; an isolated one needs `codex login`. Not run.
 - Retention: the stream logs are evidence; the sandboxes and the staged copy became disposable when T16 was agreed. They are not removed yet; the T26 pilot reuses the staging tool, and their removal goes under TODO "Cleanup" after T26. Host transcripts under ~/.claude/projects/ are host-owned and stay.
+
+- Release 2.9.0-rc.1 (2026-11-16, D11):
+  - Commit 0c2a764 "Release 2.9.0-rc.1: the offer model"; main fast-forwarded from bfc18fd and pushed to origin.
+  - VALIDATION.md was regenerated just before the commit: CURRENT for that tree, 1399 ran, 0 failed, validate PASS.
+  - Install on the owner's machine, in this order:
+    1. legacy_inventory.py --apply for 7 workspaces (49 tasks; the redesign task itself included);
+    2. `claude plugin marketplace update gazohhh` and `claude plugin update workflow-axa@gazohhh` (2.8.0-rc.39 → 2.9.0-rc.1; restart needed);
+    3. the Codex copies in ~/.agents/skills replaced from the release ZIP (19 folders; the 6 retired folders removed);
+    4. global_policy.py --apply and activate_rules.py --apply, run from the installed copy so the global references keep pointing at ~/.agents/skills (both --check: MATCH). settings.json was created with css off.
+  - Checks: audit_installation --check-global DISK_MATCH 2.9.0-rc.1 (host loading NOT_VERIFIED until a fresh session); the installed approval.py refuses an edit with no offer and names workflow-specify step 5.
+  - Rollback data, under the redesign worktree's .artifacts/release/: codex-skills-rc39-backup/, global-backup-rc39/, and the release ZIP (SHA-256 a08fd1a9…).
+  - Observation: 5 files of other tasks that were staged in this checkout no longer show as staged after the fast-forward. Their content equals the committed versions, and no other version exists in the object store, so no content difference was lost (most likely a mode or metadata-only staged entry).
