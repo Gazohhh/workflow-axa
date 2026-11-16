@@ -1,9 +1,41 @@
-# Upgrade to workflow-axa 2.8.0-rc.39
+# Upgrade to workflow-axa 2.9.0-rc.1
+
+## Upgrade to 2.9.0-rc.1 (the offer model)
+
+Approvals become **offers**: the agent presents one offer block and asks one question, and the hook reads your answer from the conversation. In this order:
+
+1. Finish or stop running sessions; no writes happen during the switch.
+2. Preview, with the new version's script and before installing it: `python -X utf8 -I <new>/skills/workflow/scripts/legacy_inventory.py <workspace>...`. It lists each task whose PLAN.md checkpoint has an `Approval:` line and no offers.
+3. Run it again with `--apply` for each workspace whose listed tasks should keep their approval. A workspace you skip uses offers only.
+4. Install 2.9.0 and restart the host.
+
+The CSS switch starts off on every machine: `python -X utf8 -I <workflow>/scripts/settings.py css on` (only after you say so) turns it on for every project.
+
+**Legacy tasks over time.** The legacy checker (phase_gate.py) is retired only after at least two releases and diagnostics showing no active task depends on a legacy approval (docs/RULE-CONTRACTS.md "Where each check lives after the cutover").
+
+**Renamed skills (2.9.0).** No redirect skills are kept; use the new names:
+
+| Old name | Now |
+|---|---|
+| `task-status` | `resume` (status mode) |
+| `resume-task` | `resume` (continue mode; also `handoff`) |
+| `workflow-doctor` | `rule-maker`, diagnose mode |
+| `implement-spec` | `workflow-execute` (the copy is archived in `docs/archive/skills/`) |
+| `retro` | archived; `tools/digest_sessions.py` stays in the source checkout (not in the release ZIP) |
+| `simple-english` | reference text `skills/workflow/SIMPLE-ENGLISH.md`, used by deliver and `/wait-what` |
+
+New user-invoked skills: `interrogate`, `no-comments` and `wait-what` (`/wait-what` takes simple-english's registered slot). The package registers 19 skills.
+
+**Rules 1.9.0.** Replace the whole `skills/rule-maker/rules/` folder. A project that requires doc comments (for example PHPDoc) says so in its own rules, because new code now carries no comments by default. A project that must never get new CSS adds `css: never` to its DESIGN.md. A rule that names an `Approval:` line or the small change route should name the offer instead. The other changes need no project action (rules CHANGES.md 1.9.0). Run a rules assessment after the update; the stamp lists only the entries newer than the project's last check, and old task history stays as it is.
+
+**Global copy (artifact policy 2.9.0).** `python -X utf8 skills/workflow/scripts/global_policy.py --check` shows whether your global copy is current. `--apply` updates `~/.workflow-axa/ARTIFACTS.md` and the block in the global CLAUDE.md and Codex AGENTS.md, adds the line that tells agents to read the machine settings, and creates `~/.workflow-axa/settings.json` with CSS off only when that file is missing. An existing settings file, and its switch, is left unchanged; upgrading never resets the switch. `--apply` needs the owner's OK each time.
+
+**Back to rc.39.** Reinstall rc.39. Offer records (`docs/plans/<task>/offers/`) and the work done under them stay on disk. rc.39 doesn't read offers, so it refuses writes for a task that only has offers. Re-approve such a task through rc.39's plan presentation and your own answer, which records a real Approval line; nothing converts offers into Approval lines.
 
 ## Choose the right source
 
 - The **Git repository** is the editable source, with tests, docs, scripts and retained plans. Update it through Git; back up your branch, inspect `git status` and preserve local changes.
-- `workflow-axa-<version>.zip`, built by `tools/build_release.py`, contains the **runtime plugin and 21 skills**. Use it to test or install a complete host plugin, not as a source-repository replacement. Hooks apply only where the host loads them.
+- `workflow-axa-<version>.zip`, built by `tools/build_release.py`, contains the **runtime plugin and its registered skills** (the list in `.claude-plugin/plugin.json`). Use it to test or install a complete host plugin, not as a source-repository replacement. Hooks apply only where the host loads them.
 
 This candidate keeps existing approval records and report snapshots unchanged. No existing project or global skill installation is changed by unpacking the ZIP elsewhere. See [architecture](docs/ARCHITECTURE.md), [fresh testing](docs/EVALUATION.md) and [current validation](VALIDATION.md).
 
@@ -11,13 +43,13 @@ This candidate keeps existing approval records and report snapshots unchanged. N
 
 Review the candidate and its tests first. Keep the active directory immutable. Use one complete version in a fresh host session; inspect both directory-plugin arguments and marketplace registration. Check the selected cache's hooks and skill files rather than trusting its version label. Preserve the previous working installation and change global settings only with approval.
 
-The new registration passes --hook-protocol=1. An old registration executing a new script blocks gated writes with restart guidance. After restart, verify PostToolUse and UserPromptSubmit fingerprints, present the report in its actual workspace, and obtain the owner's real reconfirmation. Existing source edits and historical approvals remain intact. See skills/workflow/SETUP.md for the contract and limits.
+The new registration passes --hook-protocol=1. An old registration executing a new script blocks gated writes with restart guidance. After restart, verify the PostToolUse and UserPromptSubmit fingerprints. For a legacy task, present the report in its actual workspace and obtain the owner's real reconfirmation. An offer task keeps its approval when its provenance validates, so a restart alone needs neither a report nor a new answer. Existing source edits and historical approvals remain intact. See skills/workflow/SETUP.md for the contract and limits.
 
 For the observed spinning session, interrupt it and run /goal clear in that session; verify the host acknowledgement. Resuming alone may restore the stale goal. This stops the external retry loop without approving work or marking deferred checks passed. Future goals must be bounded to an authorized phase and allow a legitimate user-input checkpoint.
 
 ## Test the candidate before adoption
 
-Use a clone of the **Git repository** for review and local/live tests. It contains all 21 registered skills, hooks, tests, tools and retained task history. The install ZIP omits development tests and history and is not a replacement for the editable repository.
+Use a clone of the **Git repository** for review and local/live tests. It contains all registered skills, hooks, tests, tools and retained task history. The install ZIP omits development tests and history and is not a replacement for the editable repository.
 
 The owner reported the older baseline overwritten. Do not hunt for a mandatory RAR, fabricate an old version, or require installing a candidate just to test it. Record its full SHA-256/content fingerprint, extract into an isolated test copy and confirm which package each session actually loads. No change to `D:\workflow-axa`, real project files, global settings or hooks is authorized by the testing handoff.
 
@@ -73,7 +105,7 @@ The advisory partial-read hook now compares canonical paths to its actual packag
 
 ## Install only after adoption
 
-Replace the complete plugin/runtime-owned folders together (all 21 registered skills, hooks and metadata), preserving local uncommitted changes and unrelated skills. Do not overlay the smaller archive onto an editable repository and assume stale files disappeared. Use the existing read-only installation checker to identify unexpected files; deletion needs review. A lowercase rules module that the checker reports on Windows can be the only copy of its capitalized file: replace the folder instead of deleting it.
+Replace the complete plugin/runtime-owned folders together (all registered skills, hooks and metadata), preserving local uncommitted changes and unrelated skills. Do not overlay the smaller archive onto an editable repository and assume stale files disappeared. Use the existing read-only installation checker to identify unexpected files; deletion needs review. A lowercase rules module that the checker reports on Windows can be the only copy of its capitalized file: replace the folder instead of deleting it.
 
 The global activation helpers and stable references are unchanged. If the source path is unchanged, the references can remain; verify effective profiles and real resolution in a fresh session:
 

@@ -29,7 +29,7 @@ A match is not permission: it doesn't approve new behavior or let you take over 
 | `FINDINGS.md` | Evidence (E), journeys (J), questions (Q), check results (V), blockers, failed attempts |
 | `DECISIONS.md` | Material choices with reason, status and who made them (`by: user` or `by: agent`); created on the first one |
 
-A lightweight edit or small change uses only PLAN with short Work and Evidence sections; if it grows, move those sections into the normal files and leave pointers in PLAN. Existing tasks keep their layout (including legacy `STATUS.md`); don't add missing template files for conformity. Records are project docs, not permission to commit them. No `HANDOFF.md` or other duplicate of the checkpoint.
+A lightweight edit uses only PLAN with short Work and Evidence sections; if it grows, move those sections into the normal files and leave pointers in PLAN. Existing tasks keep their layout (including legacy `STATUS.md`); don't add missing template files for conformity. Records are project docs, not permission to commit them. No `HANDOFF.md` or other duplicate of the checkpoint.
 
 ## PLAN.md
 
@@ -40,14 +40,14 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 
 ## Current checkpoint
 - Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, paused, stopped, cancelled, closed>
-- Agreement (gate one): <agreed/waived/legacy/not required — lightweight or small change/pending; revision ("agreement N") and record>
-- Approval (gate two): <approved/waived/legacy/not approved, or `small change approved <date>: "<answer>"` (VISUAL-REVIEW.md "Small change"); revision rN, the report file or the user's recorded "no report", and the user's exact words in quotes (the whole answer, including restrictions, from a real message after the named plan was shown)>. `waived` needs the user's own words skipping this approval; a non-interactive session, a request for a finished result or "don't ask me" about something else is never a waiver: stop and ask
-- Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; it allows `git commit` of only those files when the owner's latest message asks to commit, and no other git write
-- Small change: <existing files, comma-separated> — <what changes>
+- Agreement (gate one): <agreed/waived/legacy/not required — lightweight or one-ticket offer/pending; revision ("agreement N") and record>
+- Offer: #<id> <draft/approved/superseded/revoked>, the states `offers.py` stores. "Pending" is not stored: the hook derives it from a verified presentation. Approval binds to the offer id and its canonical rendering; the hook reads the owner's answer from the conversation, so never write an approval yourself. There is no approval waiver: a non-interactive session, a request for a finished result or "don't ask me" is never one; stop and ask. Legacy tasks the owner listed at the upgrade keep their `- Approval (gate two):` line unchanged
+- Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; its minimal offer lists those files. `git commit` of only those files only when the offer names that operation, and no other git write
 - Implementation: <not started/in progress/implemented/partial>
 - Verification / owner acceptance: <not run/passed/limited/blocked; evidence and what is outstanding>
 - Blockers: <ticket IDs, open questions, interrupted work>
 - Changed files: <paths this task changed so far, or none>
+- Scope paths: <optional: backticked root-relative files or folders (`src/finance/`) the task may touch; a project's scoped required reads use it>.
 - Next safe action: <last result and the specific next step>
 
 ## Working context
@@ -66,11 +66,11 @@ Leave out what doesn't apply; write `unknown` rather than inventing.
 - Goal: <what they are trying to get done>
 - Must stand out: <what they need to see first>
 ## Approval
-<Implementation approval: revision, report, the user's answer and date, included tickets, exclusions, what needs re-approval.>
+<Legacy tasks only: implementation approval: revision, report, the user's answer and date, included tickets, exclusions, what needs re-approval. Offer tasks record the offer id in the checkpoint and the answer in DECISIONS.>
 ## Outcome
 ```
 
-`Approval` means implementation authority; `Agreement` never does (gates: [VISUAL-REVIEW.md](VISUAL-REVIEW.md)). The checkpoint holds the current summary, TODO the item states, FINDINGS the detail, DECISIONS the reasons; don't repeat totals across them. Mark an unapproved revision "proposed"; it doesn't replace the last approved one. Write an agreement revision as "agreement N", never `rN`, because the gate reads any `rN` in the checkpoint as a plan revision. The `Small change:` line and its Approval line follow [VISUAL-REVIEW.md](VISUAL-REVIEW.md) "Small change".
+An approved offer means implementation authority; `Agreement` never does (gates: [VISUAL-REVIEW.md](VISUAL-REVIEW.md)). The checkpoint holds the current summary, TODO the item states, FINDINGS the detail, DECISIONS the reasons; don't repeat totals across them. Mark an unapproved revision "proposed"; it doesn't replace the last approved one. Write an agreement revision as "agreement N", never `rN`, because the gate reads any `rN` in the checkpoint as a plan revision.
 
 ## TODO and evidence
 
@@ -146,21 +146,19 @@ Before each unit of work, save what it is, the files it will touch and its check
 - **Blocked**: a ticket waiting on a decision, authority or infrastructure. Other tickets continue. When it unblocks within the approved scope, `workflow-execute` resumes it; a scope change goes to `workflow-clarify`.
 - **A reviewer fails twice** (crashes, cannot be started, returns nothing usable): mark the ticket blocked with the reason. Never self-approve while subagents exist.
 - **An interrupted worker**: compare its changed files with the ticket scope before trusting anything; uncertain changes stay unverified.
-- **A lightweight edit or small change**: deliver's short form, without the whole-feature review.
+- **A lightweight edit**: deliver's short form, without the whole-feature review.
 
 ## Approval waits and host goals
 
-Present the current report and approval question once, save `awaiting approval`, then end the assistant turn. A report remaining open, elapsed time, hook feedback or an automatic goal continuation is not a new owner response. Keep writes gated. Resume on the real answer: rejection stops the proposal; requested changes produce a new revision; approval applies only to the shown task, workspace and report bytes.
+Present the offer and the one question once, save `awaiting approval`, then end the assistant turn (the STOP in `workflow-specify` step 5). A report remaining open, elapsed time, hook feedback or an automatic goal continuation is not a new owner response. Keep writes gated. Resume on the real answer: rejection stops the proposal; requested changes produce a revised offer; approval applies only to the shown offer, task and workspace.
 
 Before using a host goal, bound its current authorized phase with an observable result and check. For planning, completion is the reviewable report and one approval request. For implementation, name the approved tickets and verification. Do not use unbounded conditions such as "maximum FPS". Explicitly deferred work stays unverified with its reason; it is not a runnable completion requirement for the current phase. Genuine blockers, waiting for input and an owner's stop each end autonomous work without claiming the whole task passed. Preserve other authorized, independent work.
 
-Claude Code `/goal` is an independent Stop evaluator. If stale goal feedback restarts an approval wait, diagnose it once and hand control back; do not repeat "still waiting", call sleep in a loop, forge a user response or weaken approval checks. The owner can interrupt the loop, inspect `/goal`, and use `/goal clear` in that affected session. Confirm the host reports it cleared; a restart alone may restore the active goal. Clearing that host loop does not approve implementation or mark deferred work complete. Do not silently clear or rewrite a user's goal in another host.
-
-The workflow Stop hook returns without feedback for `Waiting on you` and for a direct owner stop. It cannot cancel another hook's retry decision. Test actual host idleness separately from synthetic hook output. Source: [Claude Code goal documentation](https://code.claude.com/docs/en/goal).
+Claude Code `/goal` is an independent Stop evaluator. If stale goal feedback restarts an approval wait, diagnose it once and hand control back; do not repeat "still waiting", call sleep in a loop, forge a user response or weaken approval checks. The owner can interrupt the loop, inspect `/goal`, and use `/goal clear` in that affected session. Confirm the host reports it cleared; a restart alone may restore the active goal. Clearing that host loop does not approve implementation or mark deferred work complete. Do not silently clear or rewrite a user's goal in another host. Source: [Claude Code goal documentation](https://code.claude.com/docs/en/goal).
 
 ## Resume
 
-Run `resume-task`; it owns the procedure. These records are what it reads. After a resume, a check or review still counts only for files and rules unchanged since it ran (its V entry's state, and `rule-maker/scripts/rules_stamp.py` for the rules).
+Run `resume`; it owns the procedure. These records are what it reads. After a resume, a check or review still counts only for files and rules unchanged since it ran (its V entry's state, and `rule-maker/scripts/rules_stamp.py` for the rules).
 
 ## Revisions
 

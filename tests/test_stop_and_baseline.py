@@ -113,11 +113,6 @@ class SmallRouteTests(unittest.TestCase):
         self.assertIn("Never review a diff again that has not changed", execute)
         self.assertNotIn("even a single one", execute)
 
-    def test_phase_note_no_longer_demands_a_worker_for_a_two_line_edit(self):
-        reads = (ROOT / "hooks/phase_reads.py").read_text(encoding="utf-8")
-        self.assertNotIn("even a two-line edit", reads)
-        self.assertNotIn("Re-review every repair", reads)
-        self.assertIn("small route", reads)
 
 
 if __name__ == "__main__":

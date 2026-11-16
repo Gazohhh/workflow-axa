@@ -5,7 +5,6 @@ import sys
 import unittest
 
 import test_phase_gate_hook as gate
-import test_plain_reply_hook as stop
 
 
 class SessionRecoveryTests(unittest.TestCase):
@@ -78,23 +77,22 @@ class SessionRecoveryTests(unittest.TestCase):
 
     def test_registration_pairs_all_fingerprint_events_with_the_same_protocol(self):
         hooks = json.loads((gate.ROOT / 'hooks/hooks.json').read_text())['hooks']
-        for event in ('PreToolUse', 'PostToolUse', 'UserPromptSubmit'):
+        for event in ('PostToolUse', 'UserPromptSubmit'):
             commands = [h['command'] for group in hooks[event] for h in group['hooks']
                         if 'phase_gate.py' in h.get('command', '')]
             self.assertTrue(commands)
             self.assertTrue(all('--hook-protocol=1' in c for c in commands))
+        # T17: PreToolUse is the offer checker; legacy tasks reach phase_gate through it, with the same protocol.
+        pre = [h['command'] for group in hooks['PreToolUse'] for h in group['hooks'] if 'approval.py' in h['command']]
+        self.assertTrue(pre)
+        self.assertIn('"--hook-protocol=1"', (gate.ROOT / 'hooks/approval.py').read_text(encoding='utf-8'))
 
     def test_approval_wait_emits_no_stop_feedback_even_with_unread_guides(self):
         self.task(gate.TASK, '- Approval: not approved; report reviews/plan-r1.html')
         rows = [gate.ROUTER, self.records(), gate.skill('workflow-axa:workflow-specify'),
                 self.present()]
         self.session(self.path, rows)
-        event = {'hook_event_name': 'Stop', 'cwd': str(self.repo),
-                 'transcript_path': str(self.path),
-                 'last_assistant_message': 'Waiting on you: approve plan-r1.html or request changes.'}
-        # No timer/retry/state mutation: repeated host Stop events stay silent.
-        for _ in range(3):
-            self.assertEqual(stop.fire(event), (0, ''))
+        # T20: no Stop hook any more; the write stays refused while the owner decides.
         self.assertEqual(self.decision(rows, 'Edit', {'file_path': self.code}), 'deny')
 
     def test_copied_worktree_records_do_not_inherit_approval(self):

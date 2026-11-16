@@ -1,11 +1,11 @@
 ---
 name: rule-maker
-description: "Audit, set up or check a project's agent rules (AGENTS.md, CLAUDE.md) and documentation structure. Use when a readiness check finds gaps, or the user asks to set up, update, audit or check them. Changes a project only after an approved proposal."
+description: "Audit, set up or check a project's agent rules (AGENTS.md, CLAUDE.md) and documentation structure, or diagnose the workflow-axa installation. Use when a readiness check finds gaps, the user asks to set up, update, audit or check them, or asks whether the setup is healthy. Changes a project only after an approved proposal."
 ---
 
 # Rule maker
 
-Rule maker owns a project's agent instructions and documentation structure, new or existing, through three operations: audit, apply and check. Read [rules/START.md](rules/START.md), [rules/READINESS.md](rules/READINESS.md) and [DOCS.md](DOCS.md). Ordinary work reads the shared library without running this skill.
+Rule maker owns a project's agent instructions and documentation structure, new or existing, through three operations: audit, apply and check, plus a read-only diagnose mode for the installation. Read [rules/START.md](rules/START.md), [rules/READINESS.md](rules/READINESS.md) and [DOCS.md](DOCS.md). Ordinary work reads the shared library without running this skill.
 
 ## Standing rules
 
@@ -44,6 +44,10 @@ Done when only the named files changed, the check shows no new blocking finding,
 ## Check
 
 Run docs_check on demand, or with `--changed` or `--changed-from-git` on changed files, then the claim review for the affected claims. Report by DOCS.md severity. Read-only.
+
+## Diagnose (read-only)
+
+"Is my setup healthy?": follow [DIAGNOSE.md](DIAGNOSE.md). It reports PASS, WARNING, BLOCKED or NOT VERIFIED with evidence and the next step in chat, and never installs, enables, deletes or repairs anything.
 
 ## Return to the interrupted task
 

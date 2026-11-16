@@ -273,7 +273,7 @@ class ReadinessContractTests(unittest.TestCase):
         for s in ('LIMITED_EXCEPTION','SETUP_ONLY','No separate waiver report','Noninteractive runs','unknown state','before delegation'):
             self.assertIn(s,t)
     def test_all_entrypoints_address_readiness_without_duplicate_full_policy(self):
-        for name in ('workflow','resume-task','plan-review','workflow-doctor','task-status','codebase-map'):
+        for name in ('workflow','resume','plan-review','rule-maker','codebase-map'):  # T21 merges
             t=(ROOT/f'skills/{name}/SKILL.md').read_text().lower()
             self.assertTrue('rules' in t,name)
         self.assertEqual(len(list((ROOT/'skills').rglob('READINESS.md'))),1)
@@ -281,4 +281,4 @@ class ReadinessContractTests(unittest.TestCase):
         self.assertTrue((ROOT/'skills/grilling/SKILL.md').exists())
         self.assertFalse((ROOT/'skills/diagram-design').exists())
     def test_rule_module_integrity(self):
-        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.8.8')
+        self.assertEqual(a.validate_library(a.LIBRARY)['rules_version'],'1.9.0')

@@ -21,7 +21,6 @@ from test_phase_gate_hook import APPROVED, ROUTER, hook_context, hooked, say, sh
 
 ROOT = Path(__file__).resolve().parents[1]
 GATE = ROOT / "hooks/phase_gate.py"
-REPLY = ROOT / "hooks/plain_reply.py"
 CACHE = tempfile.TemporaryDirectory()  # the gate's transcript cache, kept out of the system temp folder
 RECORD = 'R="python -X utf8 -I skills/workflow/scripts/record.py"'
 
@@ -36,13 +35,6 @@ def run_gate(event) -> dict | None:
                             env={**os.environ, "WORKFLOW_AXA_GATE_CACHE": CACHE.name})
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)["hookSpecificOutput"] if result.stdout.strip() else None
-
-
-def run_reply(event) -> tuple[int, str]:
-    result = subprocess.run([sys.executable, "-X", "utf8", "-I", str(REPLY)], input=json.dumps(event),
-                            capture_output=True, text=True, encoding="utf-8",
-                            env={**os.environ, "WORKFLOW_AXA_GATE_CACHE": CACHE.name})
-    return result.returncode, result.stdout.strip()
 
 
 def write_rows(path: Path, rows):
@@ -104,17 +96,6 @@ class GateCase(unittest.TestCase):
 
 class PhaseEntryRegressions(GateCase):
 
-    def test_a_whole_read_of_a_phase_skill_outside_a_workflow_session_demands_no_reads(self):
-        """H2. Evidence: FINDINGS Part 5 ("Hooks firing outside their phase"): plain_reply.py:209-210 and :227-231
-        count a whole Read of any <phase>/SKILL.md as loading that phase. Here nobody started a workflow: the user
-        asked a question and the agent read the specify skill to answer it. Today the Stop hook demands
-        workflow-specify's required reads. Its session check (item b) also fires here, because the path contains
-        "workflow-axa"; both belong to H2. Expected after H2: no demand."""
-        rows = [user("explain how the specify phase decides on tickets"),
-                tool("Read", file_path="D:\\workflow-axa\\skills\\workflow-specify\\SKILL.md"),
-                say("It writes one ticket per independent change.")]
-        write_rows(self.path, rows)
-        self.assertEqual(run_reply({"transcript_path": str(self.path), "cwd": str(self.repo)}), (0, ""))
 
     def test_a_whole_read_of_a_phase_skill_still_activates_the_write_gate(self):
         """Protection, kept by H2 (passes, must keep passing). A whole Read of a phase SKILL.md turns the write gate
@@ -128,25 +109,18 @@ class PhaseEntryRegressions(GateCase):
         self.assertEqual(out and out["permissionDecision"], "deny")
         self.assertIn("has not written or named a task folder", out["permissionDecisionReason"])
 
-    def test_a_path_containing_workflow_axa_does_not_make_a_workflow_session(self):
-        """H2. Evidence: FINDINGS Part 5: plain_reply.py:34-38 treats a session as a workflow session when any tool
-        input contains the string "workflow-axa", which is every path in this repository. A plain edit in the
-        workflow-axa checkout that ends with "Done" then gets the workflow "no review" demand. Today: blocked with
-        that reason. Expected after H2: silent, like the same session in another folder (next test)."""
-        rows = [user("fix the typo in the gate comment"),
-                tool("Edit", file_path="D:/workflow-axa/hooks/phase_gate.py", old_string="teh", new_string="the"),
-                say("Fixed the typo.\n\n**Done.**")]
-        write_rows(self.path, rows)
-        self.assertEqual(run_reply({"transcript_path": str(self.path), "cwd": "D:\\workflow-axa"}), (0, ""))
 
-    def test_a_broken_plain_reply_copy_adds_no_blocking_and_keeps_the_write_gate(self):
-        """H2 review: the gate's read checks go through plain_reply.scan_reads. With a broken plain_reply.py in the
-        plugin root they are skipped, as before H2 (the error then reached main() and allowed non-edit tools), but
-        the write gate still judges edits. Control: a working copy holds the render back for the report guides."""
+    def test_a_broken_read_evidence_copy_fails_closed_and_keeps_the_write_gate(self):
+        """T20: the gate's read checks go through read_evidence.scan_reads (plain_reply.py until then). With a broken
+        read_evidence.py the required reads fail closed, and the write gate still judges edits. Control: a working
+        copy holds the render back for the report guides."""
         root = self.base / "plugin"
         (root / "hooks").mkdir(parents=True)
-        for name in ("phase_gate.py", "phase_reads.py", "plain_reply.py"):
+        for name in ("phase_gate.py", "read_evidence.py"):
             (root / "hooks" / name).write_bytes((ROOT / "hooks" / name).read_bytes())
+        parser = "skills/rule-maker/scripts/required_reads.py"  # the gate's shared declaration parser (T6)
+        (root / parser).parent.mkdir(parents=True)
+        (root / parser).write_bytes((ROOT / parser).read_bytes())
         (self.repo / "AGENTS.md").write_text('<!-- workflow-axa:required-read phases=specify path="tests/README.md" -->\n',
                                              encoding="utf-8")
         (self.repo / "tests").mkdir()
@@ -167,28 +141,13 @@ class PhaseEntryRegressions(GateCase):
 
         self.assertIn("deny: workflow-axa: read these whole before rendering", gate("Bash", render))
         self.assertIn("Not yet read: tests/README.md", gate("Skill", {"skill": "workflow-axa:workflow-specify"}))
-        (root / "hooks/plain_reply.py").write_text("def broken(:\n", encoding="utf-8")
-        self.assertIsNone(gate("Bash", render))
-        self.assertIsNone(gate("Skill", {"skill": "workflow-axa:workflow-specify"}))
+        (root / "hooks/read_evidence.py").write_text("def broken(:\n", encoding="utf-8")
+        self.assertIn("read-evidence library", gate("Skill", {"skill": "workflow-axa:workflow-specify"}))
+        (root / "hooks/read_evidence.py").unlink()  # missing, not broken: still no transcript error
+        self.assertIn("read-evidence library", gate("Skill", {"skill": "workflow-axa:workflow-specify"}))
         self.assertTrue(gate("Edit", self.code()).startswith("deny: "))
 
-    def test_the_same_plain_session_in_another_folder_is_silent(self):
-        """Control for the test above (passes today, must keep passing): only the folder name differs."""
-        rows = [user("fix the typo in the gate comment"),
-                tool("Edit", file_path="D:/other-project/hooks/gate.py", old_string="teh", new_string="the"),
-                say("Fixed the typo.\n\n**Done.**")]
-        write_rows(self.path, rows)
-        self.assertEqual(run_reply({"transcript_path": str(self.path), "cwd": "D:\\other-project"}), (0, ""))
 
-    def test_a_started_workflow_still_demands_the_phase_reads(self):
-        """Control (passes today, must keep passing): after a real phase start (a Skill call), the Stop hook still
-        names the unread required file. H2 narrows the trigger, it does not remove the check."""
-        rows = [user("/workflow-axa:workflow add a badge"), skill("workflow-axa:workflow-clarify"),
-                say("Questions are ready.")]
-        write_rows(self.path, rows)
-        code, out = run_reply({"transcript_path": str(self.path), "cwd": str(self.repo)})
-        self.assertEqual(code, 0)
-        self.assertIn("workflow-clarify: grilling/SKILL.md", json.loads(out)["reason"])
 
 
 # H3: another task's record write and an approved edit
@@ -218,11 +177,10 @@ class TaskSwitchRegressions(GateCase):
         self.task(A, APPROVED, write_paths=["src/a.ts"])
         self.task(B, APPROVED, write_paths=["src/b.ts"])
         self.assertEqual(self.decision(self.rows(), "Edit", self.code("src/c.ts")), "deny")
-        # A shell write task A covers passes the same way; a git write (no file list of its own) keeps the stop.
+        # A shell write task A covers passes the same way. T7 of 2026-11-15-workflow-redesign (N4): B was already in
+        # the session before the owner's last message, so the note to B no longer moves a git write away from A.
         self.assertIsNone(self.decision(self.rows(), "Bash", {"command": "sed -i s/a/b/ src/a.ts"}))
-        out = self.fire(self.rows(), "Bash", {"command": "git commit -m x"})
-        self.assertEqual(out and out["permissionDecision"], "deny")
-        self.assertIn(f"changed to {B}", out["permissionDecisionReason"])
+        self.assertIsNone(self.fire(self.rows(), "Bash", {"command": "git commit -m x"}))
 
     def assert_switch_stop(self):
         out = self.fire(self.rows(), "Edit", self.code())
@@ -829,14 +787,20 @@ class SmallChangeRoute(GateCase):
                 self.assertIn("no plan report", reason)  # as if the line were absent
                 self.assertIn("Approval needs the plan report from workflow-specify", reason)  # ST6: CONTEXT.md term
 
-    def test_a_task_with_a_plan_report_keeps_the_full_route(self):
-        """The small route applies only without a plan report; with one, the full approval rules apply as before."""
+    def test_a_small_change_approval_works_in_a_folder_that_holds_an_older_report(self):
+        """T7 of 2026-11-15-workflow-redesign (P10): before, a task folder holding any report closed the small route,
+        so a small follow-up needed a new task. An Approval line that records the small change (and names no report)
+        now keeps the small route; the file list and the quoted yes are still enforced."""
         self.task(A, "- Small change: src/a.ts, src/b.ts — rename the Save button label", SMALL_YES)
-        self.assertEqual(self.decision(self.rows(), "Edit", self.code("src/a.ts")), "deny")
+        self.assertIsNone(self.fire(self.rows(), "Edit", self.code("src/a.ts")))
+        self.assertEqual(self.decision(self.rows(), "Edit", self.code("src/c.ts")), "deny")
+        self.assertEqual(self.decision(self.rows(self.offer(), user("ok")), "Edit", self.code("src/a.ts")), "deny")
 
     def test_a_plan_report_refusal_says_the_small_change_line_was_ignored(self):
-        """SP4: with a plan report the small route does not apply, and the refusal says why the valid line is ignored."""
-        self.task(A, "- Small change: src/a.ts, src/b.ts — rename the Save button label", SMALL_YES)
+        """SP4: under a full-route Approval line a plan report overrides the small route, and the refusal says why the
+        valid line is ignored."""
+        self.task(A, "- Small change: src/a.ts, src/b.ts — rename the Save button label",
+                  '- Approval: revision r1 approved 2026-11-11: "yes, go ahead"')
         self.refused(self.rows(), "Edit", self.code("src/a.ts"),
                      "Its `- Small change:` line is ignored because this task has a plan report",
                      "use the full route or a new task")
@@ -850,40 +814,9 @@ class SmallChangeRoute(GateCase):
         self.refused(self.rows(), "Edit", self.code("src/a.ts"), "no plan report named plan-r9.html",
                      "Its `- Small change:` line is ignored because this task has a plan report")
 
-    def test_the_stop_hook_demands_report_guides_when_the_approval_names_a_missing_report(self):
-        """D46: with a plan report present, an Approval line naming a missing report does not make this a small change
-        task for the Stop hook either; the report guides are still demanded."""
-        self.task(A, "- Small change: src/a.ts, src/b.ts — rename the Save button label",
-                  '- Approval: small change approved 2026-11-11 (reviews/plan-r9.html): "yes, go ahead"')
-        rows = [user("/workflow-axa:workflow rename the save label"), skill("workflow-axa:workflow-specify"),
-                self.records(A), self.offer(), user("yes, go ahead"),
-                tool("Edit", file_path=self.code("src/a.ts")["file_path"], old_string="x", new_string="y"),
-                say("Renamed.\n\n**Done.**")]
-        write_rows(self.path, rows)
-        code, out = run_reply({"transcript_path": str(self.path), "cwd": str(self.repo)})
-        self.assertIn("TASK-REPORT.md", json.loads(out)["reason"])
 
-    def test_the_stop_hook_skips_report_guides_but_demands_the_review(self):
-        rows = [user("/workflow-axa:workflow rename the save label"), skill("workflow-axa:workflow-specify"),
-                self.records(A), self.offer(), user("yes, go ahead"),
-                tool("Edit", file_path=self.code("src/a.ts")["file_path"], old_string="x", new_string="y"),
-                say("Renamed.\n\n**Done.**")]
-        write_rows(self.path, rows)
-        code, out = run_reply({"transcript_path": str(self.path), "cwd": str(self.repo)})
-        reason = json.loads(out)["reason"]
-        self.assertIn("no review", reason)
-        for guide in ("TASK-REPORT.md", "simple-english/SKILL.md", "FLOWCHART-DESIGN.md"):
-            self.assertNotIn(guide, reason)
-        # An invalid Small change line (a missing file) counts as absent: the report guides are demanded again.
-        self.small("src/a.ts, src/z.ts")
-        write_rows(self.path, rows + [say("Checked again.\n\n**Done.**")])
-        self.assertIn("TASK-REPORT.md", json.loads(run_reply({"transcript_path": str(self.path),
-                                                               "cwd": str(self.repo)})[1])["reason"])
-        # Control: the same task with a plan report gets the report guides demanded.
-        self.task(A, "- Small change: src/a.ts, src/b.ts — rename the Save button label", SMALL_YES)
-        write_rows(self.path, rows + [say("Checked.\n\n**Done.**")])
-        self.assertIn("TASK-REPORT.md", json.loads(run_reply({"transcript_path": str(self.path),
-                                                               "cwd": str(self.repo)})[1])["reason"])
+
+
 
 
 # E35: agreement and plan revisions share one number space
@@ -949,18 +882,6 @@ class AltinstarRegressions(GateCase):
         rows = [ROUTER, self.records(A), read, ask, answer, reply]
         self.assertIsNone(self.fire(rows, "Edit", self.code(), hooks=False))
 
-    def test_the_stop_hook_never_adds_a_turn_while_waiting_or_on_its_own_retry(self):
-        """Altinstar, repeated goal stops. Evidence: the repeated stops in the Altinstar sessions were the host's
-        session-scoped /goal Stop hook ("A session-scoped Stop hook is now active with condition ..."), not a
-        workflow-axa hook, so they cannot be reproduced with these scripts. This pins the workflow-axa side (passes
-        today): plain_reply.py stays silent at "Waiting on you" and on stop_hook_active, even with unread files."""
-        rows = [user("/workflow-axa:workflow add a badge"), skill("workflow-axa:workflow-clarify"),
-                say("**Waiting on you:** answer Q1 to Q3.")]
-        write_rows(self.path, rows)
-        self.assertEqual(run_reply({"transcript_path": str(self.path), "cwd": str(self.repo)}), (0, ""))
-        rows[-1] = say("Questions are ready.")
-        write_rows(self.path, rows)
-        self.assertEqual(run_reply({"transcript_path": str(self.path), "stop_hook_active": True}), (0, ""))
 
 
 class CheckpointHeadingRegressions(GateCase):

@@ -1,4 +1,17 @@
-"""PreToolUse hook: after /workflow, code edits and git writes need the current task's recorded approval.
+"""The retained legacy checker and the shared parsing library (since the 2.9.0 cutover, T17/T19).
+
+PreToolUse is hooks/approval.py. This file decides a write only for a task the owner listed as a pre-offer approval
+(legacy_inventory.py), reached through approval.py's dispatch, and keeps its PostToolUse/UserPromptSubmit fingerprints
+for those tasks. approval.py also uses its helpers: shell and path parsing (targets_of, shell_writes, Project, slash,
+relative), the kept safeguards (install_problem, bulk_delete), the read checks (required_read_problem, ReadEvidence,
+unread_report_guides), transcript reading (scan, user_text, queued_text, control_intent, REVOKED, RESTRICTS, bare,
+clean) and styling (edit_texts, ui_cues). Change it only for legacy tasks or those helpers, with the reason in the
+CHANGELOG; new approval rules belong in approval.py. Where each check lives: docs/RULE-CONTRACTS.md. It retires after
+at least two releases and diagnostics showing no active task depends on a legacy approval (UPGRADE.md).
+
+The original description, for the legacy route:
+
+PreToolUse hook: after /workflow, code edits and git writes need the current task's recorded approval.
 
 Hooqd retro (2026-11-03): after "Let's do that, push when done" the agent edited code and pushed with no task folder.
 The audit of 2026-11-03 (task 2026-11-03-audit-hardening, E1-E8, D1) then found that any phase name in the transcript
@@ -87,6 +100,25 @@ REVISION = re.compile(r'\b(?i:revision)\s+[rR]?(\d+)(?![\w-])|'
                       r'(?:(?<![\w/-])r|\b(?:plan|review)-r)(\d+)(?![\w-])')
 # "no repor" (Putten, 2026-11-07) is a typo of "no report"; "no repository" is not.
 NO_REPORT = re.compile(r'\b(?:no\s+(?:plan\s+|html\s+)?repo(?!sitor)\w*|without\s+(?:the\s+|an?\s+)?(?:html\s+|plan\s+)?report)\b', re.I)  # the user skipped the plan report
+# T7 (P1, interim until the offer model): the owner's other ways of declining the report, in any message of the task.
+# Each names the report or review.html itself, so "no code review needed" never waives it.
+REPORT_WAIVER = re.compile(
+    r"\b(?:no\s+need\s+(?:for|of)\s+(?:an?\s+|the\s+)?(?:html\s+|plan\s+)?report"
+    r"|(?:don'?t|do\s+not)\s+need\s+(?:an?\s+|the\s+)?(?:html\s+|plan\s+)?report"
+    r"|skip(?:ping)?\s+(?:the\s+)?(?:html\s+|plan\s+)?report"
+    r"|(?:html\s+|plan\s+)?report\s+(?:is\s+)?not\s+needed"
+    r"|(?:no|without|skip(?:ping)?)\s+(?:the\s+|a\s+)?review\.html"
+    r"|review\.html\s+(?:is\s+)?not\s+needed)\b", re.I)
+
+
+def report_waived(state: dict, task: str) -> bool:
+    """A real owner message of this task declines the plan report (NO_REPORT or REPORT_WAIVER). Interim relief for
+    P1/P2: the waiver and a later bare "Approve" combine. A report the owner later approves still counts as well. A
+    message sent before any task was recorded counts only when this session has no other task (unambiguous)."""
+    only = {name for name, _at in state.get('tasks', [])} <= {task}
+    return any(state.get('user_tasks', {}).get(str(n), '*') in ((task, '*') if only else (task,))
+               and (NO_REPORT.search(words) or REPORT_WAIVER.search(words))
+               for n, words, _truncated, _kind in state.get('users', []))
 QUOTE = re.compile(r'"([^"\n]+)"|\u201c([^\u201d\n]+)\u201d')
 
 # Shell writes. Interpreter code that writes files: Python, Node, PHP, Ruby, .NET (E4: node -e writeFileSync).
@@ -795,7 +827,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 25
+STATE_VERSION = 27  # 26: T7 waiver and unnumbered chat presentations; 27: small offers keep their root
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -1132,17 +1164,19 @@ def present_reports(state: dict, text: str, n: int, cwd: str):
             roots[name.lower()] = (roots.get(name.lower(), []) + [[n, slash(home)]])[-50:]
 
 
-def small_offers(state: dict, text: str, n: int, task: str | None):
+def small_offers(state: dict, text: str, n: int, task: str | None, origin: str = ''):
     """H4: record each `Small change: <files> — <what changes>` line of a delivered assistant message or
-    AskUserQuestion question as an offer of exactly that file set, under the task current when it was shown. An offer
-    while no task is current counts for none; other path words in the message never count."""
+    AskUserQuestion question as an offer of exactly that file set, under the task current when it was shown, with the
+    project root it was shown in (T7: an earlier session's offer is bound to its workspace). An offer while no task is
+    current counts for none; other path words in the message never count."""
     if not task:
         return
+    root = key(Project(origin).root) if origin else ''
     for found in SMALL_OFFER_LINE.finditer(text):
         files = sorted({key(f) for f in small_files(found.group(2))})
         if files:
             rows = state.setdefault('small_shown', {}).setdefault(task, [])
-            rows.append([n, files, small_description(found.group(2), offer=True)])
+            rows.append([n, files, small_description(found.group(2), offer=True), root])
             del rows[:-20]
 
 
@@ -1211,7 +1245,7 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                         # A matched host answer establishes that this question was actually delivered.
                         # The question alone, a cancelled tool or thinking never presents/approves anything.
                         present_reports(state, question, at, origin)
-                        small_offers(state, question, at, asked_task[0] if asked_task else None)
+                        small_offers(state, question, at, asked_task[0] if asked_task else None, origin)
                         add_words(state, n, str(value), 'answer')
         return
     if entry.get('type') != 'assistant' or entry.get('isSidechain') or not isinstance(content, list):
@@ -1222,13 +1256,15 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                         if isinstance(b, dict) and b.get('type') == 'text')
     origin = str(entry.get('cwd') or cwd)
     present_reports(state, visible, n, origin)
-    small_offers(state, visible, n, state['tasks'][-1][0] if state['tasks'] else None)
+    small_offers(state, visible, n, state['tasks'][-1][0] if state['tasks'] else None, origin)
     if re.search(r'\b(?:plan|proposal|implementation scope)\b', visible, re.I):
+        # T7 (P3): a presentation that names no revision is kept under '*'; it counts only for a task whose checkpoint
+        # names exactly one revision (approval_problem decides).
+        named = [str(int(a or b)) for a, b in REVISION.findall(visible)] or ['*']
         for task in TASK_PATH.findall(slash(visible) + '/'):
-            for a, b in REVISION.findall(visible):
-                state['chat_presented'].setdefault(task, {}).setdefault(str(int(a or b)), n)
+            for revision in named:
+                state['chat_presented'].setdefault(task, {}).setdefault(revision, n)
                 roots = state['chat_roots'].setdefault(task, {})
-                revision = str(int(a or b))
                 roots[revision] = (roots.get(revision, []) + [[n, key(Project(origin).root)]])[-50:]
     for block in content:
         if not isinstance(block, dict) or block.get('type') != 'tool_use':
@@ -1461,11 +1497,39 @@ def report_check(state: dict, task: str, name: str, answer: int, folder: Path | 
     return ''
 
 
+def no_report_route(quote: str, state: dict, task: str) -> bool:
+    """The approval needs no report bytes: the quoted answer declines the report, or (T7, P1/P2) another owner message
+    of the task did."""
+    return bool(NO_REPORT.search(quote)) or report_waived(state, task)
+
+
+def chat_shown(state: dict, task: str, revision: int, single: bool, kind: str = 'chat_presented'):
+    """When the revision was presented in chat. T7 (P3): with exactly one plan revision in the task's checkpoint
+    (`single`), a chat presentation that names the plan and the task path but no revision presents that revision."""
+    shown = state.get(kind, {}).get(task, {})
+    found = shown.get(str(revision))
+    if found is None and single:
+        found = shown.get('*')
+    return found
+
+
 def consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...] = (), revisions: tuple[int, ...] = (),
-               folder: Path | None = None, why: list | None = None, used: list | None = None) -> int | None:
+               folder: Path | None = None, why: list | None = None, used: list | None = None,
+               single: bool = False, waiver: bool = True) -> int | None:
     """Where the whole real answer came after this report was shown, for the exact report bytes (report_check), or None.
-    This checks provenance, not semantic intent or the truth/completeness of the agent-written scope record."""
-    start = presentation_start(quote, state, task, reports, revisions)
+    This checks provenance, not semantic intent or the truth/completeness of the agent-written scope record.
+    A report waiver from another owner message (T7) adds the chat route; it never removes the report route, so the
+    report route is tried again when the chat route finds nothing (`waiver=False`)."""
+    if waiver and not reports and not NO_REPORT.search(quote) and report_waived(state, task):
+        chat = _consent_at(quote, state, task, reports, revisions, folder, why, used, single, True)
+        return chat if chat is not None else _consent_at(quote, state, task, reports, revisions, folder, why, used,
+                                                         single, False)
+    return _consent_at(quote, state, task, reports, revisions, folder, why, used, single, waiver)
+
+
+def _consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...],
+                folder: Path | None, why: list | None, used: list | None, single: bool, waiver: bool) -> int | None:
+    start = presentation_start(quote, state, task, reports, revisions, single, waiver)
     if start is None:
         return None
     wanted = bare(clean(quote))
@@ -1476,9 +1540,10 @@ def consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...] = ()
             if why is not None:
                 why.append('a later real user message withdraws it')
             continue  # a later real withdrawal applies in this session too
-        if not reports and NO_REPORT.search(quote):
+        if not reports and (no_report_route(quote, state, task) if waiver else NO_REPORT.search(quote)):
             roots = state.get('chat_roots', {}).get(task, {})
-            before = [[root for at, root in roots.get(str(rev), []) if at < n] for rev in revisions]
+            before = [[root for at, root in (roots.get(str(rev)) or (roots.get('*', []) if single else [])) if at < n]
+                      for rev in revisions]
             if folder is None or any(not seen or seen[-1] != key(slash(str(folder.parents[2]))) for seen in before):
                 continue
             return n  # the owner skipped the report: a chat-presented revision has no report bytes to compare
@@ -1495,15 +1560,15 @@ def consent_at(quote: str, state: dict, task: str, reports: tuple[str, ...] = ()
     return None
 
 
-def presentation_start(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...]) -> int | None:
+def presentation_start(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...],
+                       single: bool = False, waiver: bool = True) -> int | None:
     shown = state.get('report_presented', {}).get(task, {})
     if reports:
         if any(name.lower() not in shown for name in reports):
             return None
         start = max(shown[name.lower()] for name in reports)
-    elif NO_REPORT.search(quote):
-        shown_chat = state.get('chat_presented', {}).get(task, {})
-        times = [shown_chat.get(str(revision)) for revision in revisions]
+    elif no_report_route(quote, state, task) if waiver else NO_REPORT.search(quote):
+        times = [chat_shown(state, task, revision, single) for revision in revisions]
         start = max(times) if times and all(n is not None for n in times) else None
     else:
         start = state['presented'].get(task)
@@ -1528,7 +1593,7 @@ def revoked_after(state: dict, task: str, after: int = -1) -> bool:
 def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: tuple[str, ...] = (),
                     revisions: tuple[int, ...] = (), budget: float = 2.5, folder: Path | None = None,
                     recorded: frozenset = frozenset(), current: dict | None = None,
-                    used: list | None = None) -> tuple[bool, str]:
+                    used: list | None = None, single: bool = False) -> tuple[bool, str]:
     """The same test in sibling transcripts (earlier sessions of this project) that name this task's folder, and why an
     approval found there does not carry over: the report bytes differ from those presented and approved (report_check),
     a later revocation, a later stop without a continuation since, or a later restriction the checkpoint does not record."""
@@ -1551,31 +1616,69 @@ def earlier_consent(transcript: Path, quote: str, task: str, cwd: str, reports: 
         except (OSError, ValueError):
             continue
         why, names = [], []
-        at = consent_at(quote, state, task, reports, revisions, folder, why, names)  # same task, report bytes and revision
+        at = consent_at(quote, state, task, reports, revisions, folder, why, names, single)  # same task, bytes, revision
         if at is None:
             note = note or (f'in an earlier session, {why[0]}' if why else '')
             continue
-        later = [(n, words) for n, words, _t, _k in state['users'] if n > at
-                 and state.get('user_tasks', {}).get(str(n), '*') in (task, '*')]
-        for n, words in later:
-            if REVOKED.search(words):
-                return False, f'a later message in that session withdraws it ("{words[:120]}")'
-        intents = state.get('intents', {})
-        said = lambda n, w: intents[str(n)] if str(n) in intents else control_intent(w)
-        stopped = [n for n, words in later if said(n, words) == 'pause']
-        if stopped and not any(n > stopped[-1] and said(n, w) == 'resume' for n, w in later) \
-                and not any(((current or {}).get('intents', {}).get(str(_n)) if str(_n) in (current or {}).get('intents', {})
-                             else control_intent(w)) == 'resume'
-                            and (current or {}).get('user_tasks', {}).get(str(_n), '*') in (task, '*')
-                            for _n, w, _t, _k in (current or {}).get('users', [])):
-            return False, 'that session was stopped after the approval and nobody has asked to continue since'
-        for n, words in later:
-            if RESTRICTS.search(words) and bare(words) not in recorded:
-                return False, f'a later message in that session may restrict it and is not recorded ("{words[:120]}")'
+        later = later_problem(state, at, task, current, recorded)
+        if later:
+            return False, later
         if used is not None:
             used.extend(names)
         return True, ''
     return False, note
+
+
+def later_problem(state: dict, at: int, task: str, current: dict | None, recorded: frozenset) -> str:
+    """Why an approval found at message `at` of an earlier session no longer holds: a later withdrawal, a stop with no
+    continuation since (there or in the current session), or a later restriction the checkpoint does not record."""
+    later = [(n, words) for n, words, _t, _k in state['users'] if n > at
+             and state.get('user_tasks', {}).get(str(n), '*') in (task, '*')]
+    for n, words in later:
+        if REVOKED.search(words):
+            return f'a later message in that session withdraws it ("{words[:120]}")'
+    intents = state.get('intents', {})
+    said = lambda n, w: intents[str(n)] if str(n) in intents else control_intent(w)
+    stopped = [n for n, words in later if said(n, words) == 'pause']
+    if stopped and not any(n > stopped[-1] and said(n, w) == 'resume' for n, w in later) \
+            and not any(((current or {}).get('intents', {}).get(str(_n)) if str(_n) in (current or {}).get('intents', {})
+                         else control_intent(w)) == 'resume'
+                        and (current or {}).get('user_tasks', {}).get(str(_n), '*') in (task, '*')
+                        for _n, w, _t, _k in (current or {}).get('users', [])):
+        return 'that session was stopped after the approval and nobody has asked to continue since'
+    for n, words in later:
+        if RESTRICTS.search(words) and bare(words) not in recorded:
+            return f'a later message in that session may restrict it and is not recorded ("{words[:120]}")'
+    return ''
+
+
+def earlier_small_yes(transcript: Path, quotes: list[str], task: str, cwd: str, files: list[str], description: str,
+                      current: dict, recorded: frozenset, budget: float = 2.5) -> bool:
+    """T7 (P5): the small change's quoted yes, given in an earlier session after the same offer (same files and
+    description), carries over unless later_problem finds a withdrawal, stop or unrecorded restriction."""
+    if revoked_after(current, task):
+        return False
+    started = time.monotonic()
+    try:
+        siblings = sorted((p for p in transcript.parent.glob('*.jsonl') if p != transcript),
+                          key=lambda p: p.stat().st_mtime, reverse=True)
+    except OSError:
+        return False
+    for sibling in siblings:
+        if time.monotonic() - started > budget:
+            break
+        try:
+            if task.encode('utf-8') not in sibling.read_bytes():
+                continue
+            state = scan(sibling, cwd)
+        except (OSError, ValueError):
+            continue
+        root = key(Project(cwd).root)
+        if small_yes_problem(quotes, state, task, files, description, root) is not None:
+            continue
+        return not later_problem(state, small_offer_start(state, task, files, description, root), task, current,
+                                 recorded)
+    return False
 
 
 def revision_numbers(text: str) -> list[int]:
@@ -1590,10 +1693,11 @@ class RecordFix(str):
 RECORD_EXAMPLE = '`- Approval (gate two): r1 approved, <date>, no report: "<the owner\'s whole message>"`'
 
 
-def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...]) -> str | None:
+def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...], revisions: tuple[int, ...],
+                    single: bool = False) -> str | None:
     """Why a quoted answer was not found, when the cause is known: the quote is only part of a real message given after
     the plan was shown (a record fix), or the matching message came before any presentation (missing consent)."""
-    wanted, start = bare(clean(quote)), presentation_start(quote, state, task, reports, revisions)
+    wanted, start = bare(clean(quote)), presentation_start(quote, state, task, reports, revisions, single)
     users = [(n, bare(words)) for n, words, truncated, _kind in state['users'] if not truncated]
     if start is not None:
         longer = [words for n, words in users if n > start and wanted and words.startswith(wanted) and words != wanted]
@@ -1603,11 +1707,17 @@ def unmatched_quote(quote: str, state: dict, task: str, reports: tuple[str, ...]
                              'retry; do not ask the owner again')
     exact = [n for n, words in users if words == wanted]
     if exact and (start is None or all(n <= start for n in exact)):
-        shown = (f'names its report path docs/plans/{task}/reviews/<file>.html' if reports or not NO_REPORT.search(quote)
+        chat = not reports and no_report_route(quote, state, task)
+        shown = (f'names its report path docs/plans/{task}/reviews/<file>.html' if not chat
                  else f'contains the word plan, the task path docs/plans/{task} and the revision '
                       f'r{max(revisions) if revisions else "<N>"}')
         when = 'it came before the plan for this task was presented' if start is not None else \
             'the gate found no presentation of this task\'s plan in this session'
+        if start is None and chat and state.get('chat_presented', {}).get(task, {}).get('*') is not None:
+            # T7 (N1): say exactly what was missing, so the agent does not misdiagnose its own presentation.
+            when = (f'your message that showed this task\'s plan named no revision, and the checkpoint names more than '
+                    f'one revision, so the gate cannot tell which plan was shown (it needs r'
+                    f'{max(revisions) if revisions else "<N>"} in that message)')
         return (f'quotes "{quote}", a real message from the owner, but {when}. A plan counts as shown when one '
                 f'message of yours {shown} (markdown emphasis is fine). An answer given before that cannot approve '
                 'it: present the plan that way, ask the owner, then quote their new answer')
@@ -1673,18 +1783,24 @@ def small_change(text: str, root: str) -> tuple[list[str] | None, str]:
         path = Path(root or '.') / name
         if name.endswith('/') or path.is_dir():
             return None, f'{name} is a folder'
-        if not path.is_file():
-            return None, f'{name} does not exist (a small change never adds a file)'
+        if not path.is_file() and not (TEST_FILE.search(name) and path.parent.is_dir()):
+            return None, f'{name} does not exist (a small change adds no file except a new test file)'
     return [key(n) for n in dict.fromkeys(names)], ''
 
 
-def small_offer_start(state: dict, task: str, files: list[str], description: str) -> int | None:
+# T7 (P10): the one kind of file a small change may add, so it can carry its regression test.
+TEST_FILE = re.compile(r'(?:^|/)(?:tests?|__tests__|spec)/[^/]+$|(?:^|/)test_[^/]+\.py$'
+                       r'|[^/]+[._-](?:test|spec)\.[A-Za-z0-9]+$|[^/]+Test\.(?:php|java|kt|cs)$', re.I)
+
+
+def small_offer_start(state: dict, task: str, files: list[str], description: str, root: str | None = None) -> int | None:
     """The first offer, shown while this task was current, whose `Small change:` line lists exactly the same file set
     (order and spacing ignored) and the same description (SP8, whitespace-normalized) as the checkpoint line. A line
-    edited later to add a file or change what changes needs a new offer."""
+    edited later to add a file or change what changes needs a new offer. With `root`, only an offer shown in that
+    project root counts (T7: an earlier session's offer in another checkout never authorises this one)."""
     wanted = sorted(set(files))
-    starts = [n for n, offered, shown in state.get('small_shown', {}).get(task, [])
-              if offered == wanted and shown == description]
+    starts = [row[0] for row in state.get('small_shown', {}).get(task, [])
+              if row[1] == wanted and row[2] == description and (root is None or (len(row) > 3 and row[3] == root))]
     return min(starts) if starts else None
 
 
@@ -1693,10 +1809,11 @@ class Reconfirm(str):
     refusal asks for a new yes on a separate Reconfirmed line, so the original quote stays as recorded."""
 
 
-def small_yes_problem(quotes: list[str], state: dict, task: str, files: list[str], description: str) -> str | None:
+def small_yes_problem(quotes: list[str], state: dict, task: str, files: list[str], description: str,
+                      root: str | None = None) -> str | None:
     """Why these quotes are not each the whole of a real user message after this session's offer of the same file set
-    and description, not withdrawn since, or None."""
-    start = small_offer_start(state, task, files, description)
+    and description, given while this task was current (T7) and not withdrawn since, or None."""
+    start = small_offer_start(state, task, files, description, root)
     if start is None:
         return (f'no message of yours in this session says "Small change:" with every listed file '
                 f'({", ".join(files)}) and the same description as the checkpoint line ("{description[:160]}"), so '
@@ -1704,13 +1821,15 @@ def small_yes_problem(quotes: list[str], state: dict, task: str, files: list[str
     for quote in quotes:
         wanted = bare(clean(quote))
         if not any(n > start and bare(words) == wanted and not truncated and not revoked_after(state, task, n)
+                   and state.get('user_tasks', {}).get(str(n)) == task
                    for n, words, truncated, _kind in state['users']):
             return (f'it quotes "{quote}", but no real user message after your "Small change:" message is exactly '
                     'those words and still stands')
     return None
 
 
-def small_approval_problem(text: str, state: dict, task: str, files: list[str]) -> str | None:
+def small_approval_problem(text: str, state: dict, task: str, files: list[str], transcript: Path | None = None,
+                           cwd: str = '') -> str | None:
     """Why the Approval line does not carry the owner's yes to this small change, or None. The yes must be the whole of
     a real user message after the offer, not withdrawn since; stop and pause handling stay in judge(). A later session
     cannot see the original yes: a `- Reconfirmed (gate two): small change, <date>: "<words>"` line that passes the
@@ -1731,6 +1850,9 @@ def small_approval_problem(text: str, state: dict, task: str, files: list[str]) 
     why = small_yes_problem(quotes, state, task, files, description)
     if why is None:
         return None
+    recorded = frozenset(bare(clean(a or b)) for a, b in QUOTE.findall(text))
+    if transcript is not None and earlier_small_yes(transcript, quotes, task, cwd, files, description, state, recorded):
+        return None  # T7 (P5): approved in an earlier session and still standing
     for again in RECONFIRMED.finditer(text):
         if not re.search(r'\bsmall change\b', QUOTE.sub('', again.group(1)), re.I):
             continue  # a report revision's confirmation, not this route's
@@ -1741,7 +1863,7 @@ def small_approval_problem(text: str, state: dict, task: str, files: list[str]) 
 
 
 def small_route_problem(target: tuple[str, str, str], files: list[str], text: str, state: dict, task: str,
-                        root: str) -> str | None:
+                        root: str, transcript: Path | None = None, cwd: str = '') -> str | None:
     """A write under a valid Small change line in a task without a plan report: only the listed existing files, and
     only after the owner's quoted yes. Git writes need the same yes; their files are separate path targets (H3)."""
     kind, where, label = target
@@ -1751,9 +1873,10 @@ def small_route_problem(target: tuple[str, str, str], files: list[str], text: st
         return f"workflow-axa: {label} is refused in task {task}: a small change never deletes a file. {full}"
     if (kind == 'path' and MOVING in label) or (kind == 'git' and label.startswith('`git mv`')):
         return f"workflow-axa: {label} is refused in task {task}: a small change never moves or renames a file. {full}"
-    if kind == 'path' and (key(relative(where, root)) not in files or not Path(where).is_file()):
+    if kind == 'path' and (key(relative(where, root)) not in files
+                           or not (Path(where).is_file() or TEST_FILE.search(relative(where, root)))):
         return (f"workflow-axa: {label} is not covered by the current task {task}: its `- Small change:` line lists only "
-                f"{', '.join(files)}, and a small change never adds a file. {full}")
+                f"{', '.join(files)}, and a small change adds no file except a listed new test file. {full}")
     if kind not in ('path', 'git'):
         return (f"workflow-axa: {label} cannot be matched to the files of the `- Small change:` line of task {task}. "
                 f"{full}")
@@ -1763,7 +1886,7 @@ def small_route_problem(target: tuple[str, str, str], files: list[str], text: st
         light = lightweight_commit_problem(target, state, root, set(files), 'Small change')
         if light:
             return f"workflow-axa: {label} is not covered by the small change in task {task}: {light}."
-    why = small_approval_problem(text, state, task, files)
+    why = small_approval_problem(text, state, task, files, transcript, cwd)
     if isinstance(why, Reconfirm):
         return (f"workflow-axa: {label} needs the owner's yes to the small change in task {task}: {why}. If the owner "
                 "approved it in an earlier session, show the same \"Small change:\" line again in one message and ask "
@@ -1789,8 +1912,38 @@ def small_change_without_report(state: dict, cwd: str) -> bool:
         text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
     except OSError:
         return False
-    return (small_change(text, root)[0] is not None and report_problem(plan.parent, text) is not None
-            and not has_plan_report(plan.parent))
+    if small_change(text, root)[0] is None:
+        return False
+    return small_marked(text) or (report_problem(plan.parent, text, report_waived(state, task)) is not None
+                                  and not has_plan_report(plan.parent))
+
+
+def small_marked(text: str) -> bool:
+    """T7 (P10): the Approval line records the small change outside its quotes and names no report. D46 stays: an
+    Approval line naming a report (even a missing one) never opens the small route."""
+    approval = APPROVAL.search(text)
+    marker = QUOTE.sub('', approval.group(1)) if approval else ''
+    return bool(re.search(r'\bsmall change\b', marker, re.I)) and not re.search(r'\.html\b', marker, re.I)
+
+
+def no_report_task(state: dict, cwd: str) -> bool:
+    """For plain_reply.py (T8, N2): the current task is on a no-report route, so the report guides are not required
+    reads. True when the task folder holds no plan report and the owner declined one: in the Approval line's quoted
+    answer or in another owner message of the task (report_waived)."""
+    if not state.get('tasks'):
+        return False
+    task = state['tasks'][-1][0]
+    root = Project(cwd).root if cwd else ''
+    plan = task_plan(task, state, root)
+    try:
+        text = checkpoint(plan.read_text(encoding='utf-8', errors='replace'))
+    except OSError:
+        return False
+    if has_plan_report(plan.parent):
+        return False
+    found = APPROVAL.search(text)
+    quoted = bool(found) and any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(found.group(1)))
+    return quoted or report_waived(state, task)
 
 
 def has_plan_report(folder: Path) -> bool:
@@ -1822,7 +1975,8 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
     revisions = revision_numbers(line)
     other_revisions = [r for other in text.splitlines() if other.strip() != found.group(0).strip()
                        for r in revision_numbers(other)]
-    if not revisions and not reports and any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(line)):
+    if not revisions and not reports and (any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(line))
+                                          or report_waived(state, task)):
         return RecordFix('names no revision. A plan shown in chat without a report is identified by the revision you '
                          f'showed; write it outside the quotes, for example {RECORD_EXAMPLE}. If the owner already '
                          'approved after the plan was shown, do not ask the owner again')
@@ -1831,13 +1985,13 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
         # answer must still follow that exact report's presentation below.
         marker = re.sub(r'[\w./-]+\.html\b', '', QUOTE.sub('', line))
         if not re.search(r'\blegacy\b', marker, re.I) or len(set(reports)) != 1:
-            return ('has no explicit revision or reconciled legacy report identity; use resume-task to inspect '
+            return ('has no explicit revision or reconciled legacy report identity; use the resume skill to inspect '
                     'the original report, full user answer and current scope. Record legacy only when those '
                     'establish the same unchanged scope; otherwise ask through workflow-clarify/workflow-specify. '
                     'Do not invent a revision or edit or disable the hook')
         if other_revisions:
             return ('names only a legacy report but the checkpoint also names a revision; reconcile that scope '
-                    'through resume-task, then clarify/specify only the unresolved part')
+                    'through the resume skill, then clarify/specify only the unresolved part')
     elif other_revisions and max(other_revisions) > max(revisions):
         return f'approves r{max(revisions)}, but the checkpoint names revision r{max(other_revisions)}, which it does not approve'
     quotes = [a or b for a, b in QUOTE.findall(line) if re.search(r'\w', a or b)]
@@ -1847,14 +2001,15 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
         return 'quotes an explicit refusal or delay, not implementation approval'
     recorded = frozenset(bare(clean(a or b)) for a, b in QUOTE.findall(text))
     notes = []
+    single = len(set(revisions) | set(other_revisions)) == 1  # T7 (P3): exactly one plan revision in the checkpoint
 
     def holds(quote: str) -> bool:
         why = []
-        if consent_at(quote, state, task, reports, tuple(revisions), folder, why, used) is not None:
+        if consent_at(quote, state, task, reports, tuple(revisions), folder, why, used, single) is not None:
             return True
         notes.extend(why)
         ok, note = earlier_consent(transcript, quote, task, cwd, reports, tuple(revisions), folder=folder,
-                                   recorded=recorded, current=state, used=used)
+                                   recorded=recorded, current=state, used=used, single=single)
         if note:
             notes.append(note)
         return ok
@@ -1878,7 +2033,7 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
                 'Claude Code with one verified plugin source. Do not keep asking for the same approval in this '
                 f'session. After recovery, read and present {report}, obtain the real answer, and preserve it on '
                 'a separate Reconfirmed (gate two) line. Keep existing approval records and edits intact')
-    known = unmatched_quote(missing[0], state, task, reports, tuple(revisions))
+    known = unmatched_quote(missing[0], state, task, reports, tuple(revisions), single)
     if known:
         return known
     why = f' ({notes[0]})' if notes else ''
@@ -1891,12 +2046,14 @@ def approval_problem(text: str, state: dict, task: str, transcript: Path, cwd: s
             f'`- Reconfirmed (gate two): r{max(revisions) if revisions else "<N>"}, <date>: "<their words>"` line')
 
 
-def report_problem(folder: Path, text: str) -> str | None:
+def report_problem(folder: Path, text: str, waived: bool = False) -> str | None:
     """Live rounds w2/w3: an Approval line was answered with no plan report. Approval needs the HTML report in
     task folder or `reviews/`, and the very report the Approval line names when it names one. An Approval line that
-    records the user's "no report" needs none; approval_problem still checks its quoted words as consent."""
+    records the user's "no report", or (T7) a task whose owner declined the report in another message (`waived`),
+    needs none; approval_problem still checks its quoted words as consent."""
     found = APPROVAL.search(text)
-    if found and any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(found.group(1))):
+    if found and (waived and not re.findall(r'([\w.-]+\.html)\b', found.group(1))
+                  or any(NO_REPORT.search(a or b) for a, b in QUOTE.findall(found.group(1)))):
         return None  # approval_problem still verifies the complete quoted user answer
     named = re.findall(r'([\w.-]+\.html)\b', found.group(1)) if found else []
     try:
@@ -1959,7 +2116,7 @@ def approved_write_paths(task: str, state: dict, root: str, project: 'Project', 
     except OSError:
         return []
     used: list[str] = []
-    if report_problem(plan.parent, text) or approval_problem(text, state, task, transcript, project.cwd, plan.parent,
+    if report_problem(plan.parent, text, report_waived(state, task)) or approval_problem(text, state, task, transcript, project.cwd, plan.parent,
                                                             used):
         return []
     allowed, bad = report_write_paths(plan.parent, used)
@@ -2019,6 +2176,11 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
         theirs = approved_write_paths(task, state, root, project, transcript) if mine else []
         if mine and theirs and covers(mine, where, root) and not covers(theirs, where, root):
             task = then
+        elif then and kind == 'git' and any(name == task and at <= state['last_user'] for name, at in state['tasks']):
+            # T7 (N4, interim until the offer model): a note written to a task that was already in this session before
+            # the owner's last message does not move a git write away from the task current at that message. A task
+            # first recorded after that message is new work, so the stop below stays. File writes keep the stop too.
+            task = then
         else:
             back = (f" If it belongs to {then}, the task current at the user's last message, write a record of {then} "
                     "(for example its checkpoint) and retry; no reply is needed then.") if then else ''
@@ -2044,13 +2206,15 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
         light = (f'its `- Lightweight edit:` line does not list {relative(where, root)}. If this file belongs to the '
                  'lightweight edit (no behavior a user or caller can notice), add it to that line; otherwise it needs '
                  'implementation approval')
-    problem = report_problem(plan.parent, text)
+    problem = report_problem(plan.parent, text, report_waived(state, task))
     small, ignored = small_change(text, root)
     has_report = has_plan_report(plan.parent)
     # H4: a valid small change in a task folder with no .html report. D46: an Approval line naming a missing report
-    # while another report exists keeps the full route.
-    if problem and small is not None and not has_report:
-        return small_route_problem(target, small, text, state, task, root)
+    # while another report exists keeps the full route. T7 (P10): an Approval line that records the small change
+    # ("small change approved ...") keeps the small route even when the folder holds an older report.
+    marked = small_marked(text)
+    if small is not None and (marked or (problem and not has_report)):
+        return small_route_problem(target, small, text, state, task, root, transcript, project.cwd)
     ignored = f" Its `- Small change:` line was ignored: {ignored}." if ignored else ''
     if small is not None and (has_report or not problem):
         # SP4: a valid line that the full route overrides. Say so, or the agent keeps quoting yeses for it.
@@ -2084,21 +2248,21 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
     return (f"workflow-axa: {label} needs implementation approval, and the current task {task} does not have it: the "
             f"Approval line in {slash(str(plan))} {problem}.{ignored} Loading a phase grants nothing by itself. Agree the behavior "
             "(workflow-clarify), approve the plan (workflow-specify), and record the user's answer in quotes on the "
-            "`- Approval:` line before requesting the edit. For an older record, use resume-task to reconcile the "
+            "`- Approval:` line before requesting the edit. For an older record, use the resume skill to reconcile the "
             "original report, complete answer and scope; ask only where that evidence is insufficient. "
             "Do not edit or disable the hook to bypass this block. Task records, .artifacts and the report stay writable.")
 
 
 # Report guides (round v3), unchanged
 
-REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'simple-english/SKILL.md', 'codebase-map/FLOWCHART-DESIGN.md')
+REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'workflow/SIMPLE-ENGLISH.md', 'codebase-map/FLOWCHART-DESIGN.md')
 UI_GUIDE = 'codebase-map/UI-FLOW.md'
 
 
 def unread_report_guides(path: Path, reads: 'ReadEvidence | None' = None) -> list[str]:
     """Report guides not read whole in this context, when specify or deliver loaded (round v3: in all four
     worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test."""
-    missing = reply_module().unread_files(path, (reads or ReadEvidence(str(path))).get())
+    missing = evidence_library().unread_files(path, (reads or ReadEvidence(str(path))).get())
     wanted = REPORT_GUIDES + (UI_GUIDE,)
     return sorted({rel for phase in ('workflow-specify', 'workflow-deliver') for rel in missing.get(phase, ())
                    if rel in wanted})
@@ -2108,25 +2272,36 @@ _REPLY = None
 
 
 def reply_module():
-    """plain_reply.py, loaded once per hook process."""
+    """read_evidence.py (the read-evidence library; plain_reply.py until T20), loaded once per hook process."""
     global _REPLY
     if _REPLY is None:
         import importlib.util
-        spec = importlib.util.spec_from_file_location('plain_reply', Path(__file__).with_name('plain_reply.py'))
+        spec = importlib.util.spec_from_file_location('read_evidence', Path(__file__).with_name('read_evidence.py'))
         _REPLY = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(_REPLY)
     return _REPLY
 
 
+def evidence_library():
+    """read_evidence.py, or EvidenceUnavailable when it is missing or broken: a load failure is never mistaken for an
+    unreadable transcript (T20 review)."""
+    global _REPLY
+    try:
+        return reply_module()
+    except (OSError, SyntaxError, ImportError, AttributeError) as error:
+        _REPLY = None
+        raise EvidenceUnavailable(f'{type(error).__name__}: {error}') from None
+
+
 class EvidenceUnavailable(Exception):
-    """plain_reply.py could not be loaded or its scan failed on an unexpected entry. Callers skip the check, as
-    they did before H2 when such an error reached main() (no new blocking for these tools)."""
+    """read_evidence.py could not be loaded or its scan failed on an unexpected entry. Since T20 the required-read
+    checks fail closed on it."""
 
 
 class ReadEvidence:
     """One plain_reply.scan_reads pass per hook event, shared by the report-guide and declared-read checks.
     A read error is remembered and raised again to each caller: OSError/ValueError for a transcript that cannot be
-    read (unchanged), EvidenceUnavailable for a broken plain_reply.py or a scan error."""
+    read (unchanged), EvidenceUnavailable for a broken read_evidence.py or a scan error."""
 
     def __init__(self, transcript: str):
         self.path, self.result, self.error = Path(transcript), None, None
@@ -2134,10 +2309,14 @@ class ReadEvidence:
     def get(self) -> dict:
         if self.result is None and self.error is None:
             try:
+                library = evidence_library()
+            except EvidenceUnavailable as error:
+                self.error = error
+                raise
+            try:
                 # The gate's own checks keep the old rule: any whole read of a phase SKILL.md loads it (H2 rework).
-                # Passing this module avoids loading phase_gate.py a second time inside plain_reply.
-                self.result = reply_module().scan_reads(self.path, entry_required=False,
-                                                        gate=sys.modules.get(__name__))
+                # Passing this module avoids loading phase_gate.py a second time inside read_evidence.
+                self.result = library.scan_reads(self.path, entry_required=False, gate=sys.modules.get(__name__))
             except (OSError, ValueError) as error:
                 self.error = error
             except (SyntaxError, ImportError, AttributeError, KeyError, TypeError) as error:
@@ -2153,11 +2332,19 @@ class ReadEvidence:
 
 DECLARED_PHASES = {'specify': 'workflow-specify', 'execute': 'workflow-execute', 'deliver': 'workflow-deliver'}
 ROOT_RULES = ('AGENTS.md', 'CLAUDE.md')
-# A declaration starts its own line (at most three spaces in), so indented code blocks and list-item examples are text.
-DECLARATION_START = re.compile(r'^ {0,3}<!--\s*workflow-axa:required-read', re.M)
-DECLARATION = re.compile(r'<!--\s*workflow-axa:required-read(.*?)-->', re.S)
-DECLARATION_BODY = re.compile(r'\s+phases=([a-z]+(?:,[a-z]+)*)\s+path="([^"\r\n]+)"\s*')
 FENCE = re.compile(r'^\s*(`{3,}|~{3,})')  # at any indentation, including inside list items
+
+
+def required_reads_module():
+    """skills/rule-maker/scripts/required_reads.py: the one parser of the declaration grammar (G3)."""
+    name = 'workflow_axa_required_reads'
+    if name not in sys.modules:
+        script = Path(__file__).resolve().parents[1] / 'skills' / 'rule-maker' / 'scripts' / 'required_reads.py'
+        spec = importlib.util.spec_from_file_location(name, script)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module  # dataclasses look their module up while the file runs
+        spec.loader.exec_module(module)
+    return sys.modules[name]
 
 
 class DeclarationError(ValueError):
@@ -2208,10 +2395,11 @@ def declared_path(raw: str, root: str, source: str) -> str:
     return raw
 
 
-def declared_reads(root: str) -> dict[str, list[str]]:
-    """{phase skill: [root-relative paths]}: the deduplicated union of the root AGENTS.md and CLAUDE.md declarations.
-    Absent files declare nothing. Raises DeclarationError for an unreadable existing file or a malformed declaration."""
-    out: dict[str, list[str]] = {}
+def declared_reads(root: str) -> dict[str, list]:
+    """{phase skill: [Declaration]}: the union of the root AGENTS.md and CLAUDE.md declarations, one per path and
+    phase. Absent files declare nothing. Raises DeclarationError for an unreadable existing file or a malformed
+    declaration."""
+    out: dict[str, list] = {}
     for name in ROOT_RULES if root else ():
         file = Path(root) / name
         if not os.path.lexists(file):
@@ -2220,21 +2408,63 @@ def declared_reads(root: str) -> dict[str, list[str]]:
             text = outside_fences(file.read_text(encoding='utf-8-sig', errors='replace'))
         except OSError as error:
             raise DeclarationError(f'{name} exists at the project root but cannot be read ({type(error).__name__})')
-        for start in DECLARATION_START.finditer(text):
-            whole = DECLARATION.match(text, text.index('<!--', start.start()))
-            body = DECLARATION_BODY.fullmatch(whole.group(1)) if whole else None
-            phases = body.group(1).split(',') if body else []
-            if not body or any(phase not in DECLARED_PHASES for phase in phases):
-                shown = ' '.join((whole.group(0) if whole else text[start.start():start.start() + 120]).split())
-                raise DeclarationError(f'{name} has a malformed required-read declaration ({shown[:160]}); use '
-                                       '<!-- workflow-axa:required-read phases=specify,execute,deliver '
-                                       'path="relative/file.md" --> with phases from specify, execute and deliver')
-            relative_path = declared_path(body.group(2), root, name)
-            for phase in phases:
+        try:
+            parser = required_reads_module()
+        except Exception as error:  # the plugin copy lacks its parser: fail closed at this boundary, never open
+            sys.modules.pop('workflow_axa_required_reads', None)
+            raise DeclarationError('the plugin\'s skills/rule-maker/scripts/required_reads.py cannot be loaded '
+                                   f'({type(error).__name__}); reinstall one complete plugin version')
+        for declaration in parser.parse(text):
+            if declaration.error:
+                raise DeclarationError(f'{name} has a {declaration.error}')
+            declared_path(declaration.path, root, name)
+            for phase in declaration.phases:
                 listed = out.setdefault(DECLARED_PHASES[phase], [])
-                if relative_path not in listed:
-                    listed.append(relative_path)
+                same = next((d for d in listed if d.path == declaration.path), None)
+                if same is None:
+                    listed.append(declaration)
+                elif same.paths and declaration.paths:  # two scoped declarations of one file: either scope applies
+                    listed[listed.index(same)] = type(same)(same.line, same.text, same.phases, same.path,
+                                                            same.paths + declaration.paths)
+                elif same.paths:  # an unscoped declaration of the same file applies to every task
+                    listed[listed.index(same)] = declaration
     return out
+
+
+# The task's declared scope: its PLAN.md checkpoint line `- Scope paths:` (or `- Changed files:`), backticked
+# root-relative files or folders (a folder ends with `/`). Prose elsewhere in the records is never scope.
+SCOPE_LINE = re.compile(r'^\s*[-*]\s*(?:Scope paths|Changed files)\s*:(.*)$', re.I | re.M)
+SCOPE_PATH = re.compile(r'`([^`\s]+)`')
+
+
+def task_scope(transcript: str, cwd: str, root: str) -> list[str] | None:
+    """The scope paths of the task that was current at the user's last message, or None (unknown) when there is no
+    such task, it declares no scope line, or a scope entry is not a root-relative path. A record written for another
+    task after that message never changes whose scope counts (N4)."""
+    try:
+        state = scan(Path(transcript), cwd)
+    except (OSError, ValueError):
+        return None
+    tasks = state.get('tasks') or []
+    then = next((name for name, at in reversed(tasks) if at <= state.get('last_user', -1)), None)
+    if then is None:
+        names = {name for name, _at in tasks}
+        then = tasks[-1][0] if len(names) == 1 else None
+    if then is None:
+        return None
+    try:
+        text = checkpoint((Path(root) / 'docs' / 'plans' / then / 'PLAN.md').read_text(encoding='utf-8', errors='replace'))
+    except OSError:
+        return None
+    found = []
+    for value in SCOPE_LINE.findall(text):
+        for item in value.strip().rstrip('.').split(','):
+            item = item.strip()
+            whole = SCOPE_PATH.fullmatch(item)
+            if not whole or not required_reads_module().glob_ok(whole[1].rstrip('/').removeprefix('./')):
+                return None  # one entry it can't read (unquoted, spaces, outside the root): the scope is unknown
+            found.append(whole[1].removeprefix('./'))
+    return found or None
 
 
 def read_identity(path: str) -> str:
@@ -2282,7 +2512,8 @@ def required_read_problem(event: dict, reads: ReadEvidence | None = None) -> str
             except (OSError, ValueError):
                 pass
             except EvidenceUnavailable:
-                return None  # plain_reply.py is broken: skip the check, as before H2
+                return (f'workflow-axa: the read-evidence library (hooks/read_evidence.py) is missing or broken, so '
+                        f'the project\'s required reads cannot be checked. Repair the package. {recovery}')
         what = phase or 'this report operation'
         return (f'workflow-axa: {what} cannot check the project\'s required reads: {error}. Fix the declaration in '
                 f'the project root ({root}), then retry. {recovery}')
@@ -2290,16 +2521,21 @@ def required_read_problem(event: dict, reads: ReadEvidence | None = None) -> str
         return None  # an undeclared project keeps its existing behavior
     try:
         evidence = reads.get()
-    except EvidenceUnavailable:
-        return None  # plain_reply.py is broken: skip the check, as before H2
+    except EvidenceUnavailable:  # T20: fail closed (it skipped the check while this lived in plain_reply.py)
+        return (f'workflow-axa: the read-evidence library (hooks/read_evidence.py) is missing or broken, so the files '
+                f'this project declares as required reads cannot be checked. Repair the package. {recovery}')
     except (OSError, ValueError):
         return (f'workflow-axa: the session transcript ({transcript}) cannot be read, so the files this project '
                 f'declares as required reads cannot be checked before {phase or "this report operation"}. Restore '
                 f'transcript access, then retry. {recovery}')
     wanted = [phase] if phase else [name for name in DECLARED_PHASES.values() if name in evidence['loaded']]
+    applicable = [d for name in wanted for d in declared.get(name, ())]
+    if any(d.paths for d in applicable):  # N3: a scoped read applies only to a task whose scope matches it
+        scope = task_scope(transcript, str(event.get('cwd') or ''), root)
+        applicable = [d for d in applicable if required_reads_module().applies(d, scope)]
     opened = {read_identity(path) for path in evidence['complete'] if is_absolute(path) or path.startswith('~')}
-    missing = list(dict.fromkeys(rel for name in wanted for rel in declared.get(name, ())
-                                 if read_identity(root.rstrip('/') + '/' + rel) not in opened))
+    missing = list(dict.fromkeys(d.path for d in applicable
+                                 if read_identity(root.rstrip('/') + '/' + d.path) not in opened))
     if not missing:
         return None
     before = phase or f'this report operation while {", ".join(n for n in wanted if declared.get(n))} is loaded'

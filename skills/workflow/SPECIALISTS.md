@@ -14,8 +14,9 @@ Separate skills in this package (plugin names `workflow-axa:<name>`). Phases loa
 | Writing or reviewing skills and agent instructions | `writing-for-agents` (`../writing-for-agents/SKILL.md`) | reviews of instruction changes |
 | An interface, seam or module boundary is in question | `codebase-design` (`../codebase-design/SKILL.md`) | `workflow-specify` step 1 |
 | A term, owner or domain boundary is unclear or changing | `domain-modeling` (`../domain-modeling/SKILL.md`) | any phase |
-| Ticket-graph execution (reference only) | `implement-spec` (`../implement-spec/SKILL.md`) | `workflow-execute` (never run as written) |
-| A retrospective over one or many sessions, when the user asks | `retro` (`../retro/SKILL.md`) | user-invoked |
+| The user asks whether an adversary can break a plan or change | `interrogate` (`../interrogate/SKILL.md`) | user-invoked; a project's risk triggers make the workflow recommend it, never run it |
+| The user asks to clean up comments in a scope | `no-comments` (`../no-comments/SKILL.md`) | user-invoked; changes go through one offer |
+| The user types `/wait-what` | `wait-what` (`../wait-what/SKILL.md`) | user-invoked; never an answer |
 
 A detailed prompt is not an exemption from grilling; an unchanged approved task is not re-interviewed.
 
@@ -37,15 +38,15 @@ Installed is not invoked, and invoked is not a correct result.
 
 ## Manual workflows are never chained in
 
-User-run workflow skills such as `grill-me`, `implement`, `implement-spec`, `to-spec`, `to-tickets`, setup and handoff may commit or publish to a tracker. Don't call them automatically or strip their invocation flags. PLAN/TODO stay the records. When the user asks, mirror progress to their tracker as one generated update from the records; never keep a second list by hand. If the user explicitly chooses one, confirm only the integration boundaries that are still open.
+User-run workflow skills such as `grill-me`, `implement`, `to-spec`, `to-tickets`, setup and handoff may commit or publish to a tracker. Don't call them automatically or strip their invocation flags. PLAN/TODO stay the records. When the user asks, mirror progress to their tracker as one generated update from the records; never keep a second list by hand. If the user explicitly chooses one, confirm only the integration boundaries that are still open.
 
-`workflow-execute` owns this package's ticket execution; `implement-spec` is only its reference.
+`workflow-execute` owns this package's ticket execution.
 
 ## Local routes
 
 - **Phase skills** `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`: this package's procedures, picked by `workflow` or invoked directly.
 - **`codebase-map`**: flowcharts and the plan report ([VISUAL-REVIEW.md](VISUAL-REVIEW.md)). It never implements, approves, grills or calls back into the workflow. Don't use an architecture-refactoring skill just to draw a flow.
-- **`ui-design`**: load it before planning any application UI, even behavior-only UI changes. Its rule (never write CSS) is owned by `../rule-maker/rules/DESIGN.md`. Pass its mode, approval source and preview limits to every worker. Code review checks markup, visual props and removed styling, not just CSS additions.
+- **`ui-design`**: load it before planning any application UI, even behavior-only UI changes. Its rule (no CSS while the machine CSS switch is off) is owned by `../rule-maker/rules/DESIGN.md`. Pass its mode, approval source and preview limits to every worker. Code review checks markup, visual props and removed styling, not just CSS additions.
 - **Optional helpers** (skill-creator, webapp-testing): [OPTIONAL-HELPERS.md](OPTIONAL-HELPERS.md); never prerequisites.
 
-Every route: pass the output folder and protected paths from ARTIFACTS.md; each worker cleans only its own scratch. If the host can't apply a specialist's boundaries without conflict, don't run it unchanged: record the conflict and confirm a fallback with the user.
+Every route: pass the output folder and protected paths from ARTIFACTS.md, the rules state and, after a skip, the named gaps it waives and the rules that still apply; each worker cleans only its own scratch. If the host can't apply a specialist's boundaries without conflict, don't run it unchanged: record the conflict and confirm a fallback with the user.

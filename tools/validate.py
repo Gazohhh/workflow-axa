@@ -16,109 +16,71 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED = {".git", "__pycache__", ".artifacts", ".local-fixtures"}
-SKILL_BUDGETS = {'workflow': 700, 'codebase-map': 850, 'task-status': 450, 'resume-task': 500, 'workflow-doctor': 450, 'plan-review': 550, 'rule-maker': 850, 'ui-design': 850, 'workflow-clarify': 850, 'workflow-specify': 850, 'workflow-execute': 900, 'workflow-deliver': 850, 'grilling': 1350, 'tdd': 850, 'code-review': 1550, 'writing-for-agents': 2150, 'codebase-design': 1100, 'domain-modeling': 700, 'implement-spec': 650, 'retro': 1050, 'simple-english': 1450}
-REGISTERED_NAMES = tuple(SKILL_BUDGETS)
-REQUIRED = (
-    "skills/ui-design/LIVE-KIT.md", "skills/ui-design/scripts/inspect_kit_index.py",
-    "skills/codebase-map/scripts/kit_bindings.py", "tests/test_strict_kit.py", "tests/test_kit_index.py",
-    "skills/codebase-map/UI-FLOW.md", "skills/codebase-map/scripts/screen_flow.py",
-    "skills/codebase-map/assets/ui-review.css", "skills/codebase-map/assets/ui-review.js",
-    "skills/rule-maker/AUDIT.md", "skills/rule-maker/INSTALLATION.md",
-    "skills/rule-maker/scripts/audit_installation.py", "skills/rule-maker/rules/POLICY.md",
-    "skills/rule-maker/rules/OPERATIONS.md", "skills/rule-maker/rules/ANGULAR.md",
-    "skills/rule-maker/rules/IONIC.md", "skills/rule-maker/rules/CAPACITOR.md",
-    "skills/ui-design/KIT.md", "skills/ui-design/CATALOGUE.md",
-    "skills/ui-design/templates/KIT.md", "skills/ui-design/templates/DESIGN.md", "skills/ui-design/templates/design-kit.json",
-    "skills/ui-design/scripts/check_design_kit.py", "tests/test_design_kit.py", "tests/test_rules_audit.py",
+# Files this validator itself reads. Which skills, hooks, assets and tests must exist is asserted independently by
+# tests/test_package_contract.py, so a deleted file can't validate itself away (REDESIGN.md §11, G2/G5).
+BASE_FILES = (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", "README.md", "CHANGELOG.md",
+              "UPGRADE.md", "VALIDATION.md", "VENDORED-SKILLS.md", "CONTEXT.md", "skills/rule-maker/rules/version.json")
+# One default ceiling per kind of file, advisory: a file above it is printed as a NOTE, never a failure (G5).
+SKILL_CEILING = 2200
+REFERENCE_CEILING = 3300
 
-    ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json",
-    "README.md", "CHANGELOG.md", "VALIDATION.md", "docs/DESIGN.md",
-    "skills/workflow/SKILL.md", "skills/workflow/TASK-FOLDER.md",
-    "skills/workflow/AUDIT.md",
-    "skills/workflow/ARTIFACTS.md", "skills/workflow/scripts/global_policy.py",
-    "skills/workflow/WRITING.md", "skills/workflow/OPTIONAL-HELPERS.md",
-    "tools/visual_regression.py", "tests/behavioral/cases.json", "tests/behavioral/README.md",
-    "skills/workflow/PDF-DELIVERABLE.md", "skills/workflow/CHATGPT-PROMPTS.md",
-    "skills/workflow/agents/openai.yaml", "tests/README.md", "tests/SCENARIOS.md",
-    "tools/create_fixture.py", "skills/workflow/SPECIALISTS.md", "skills/workflow/SETUP.md",
-    "tests/test_reports.py", "tools/browser_smoke.py",
-    "skills/workflow/GROUNDING.md", "skills/workflow/VISUAL-REVIEW.md",
-    "skills/workflow/templates/PROJECT-ROUTING.md", "skills/codebase-map/SKILL.md",
-    "skills/codebase-map/REPORT.md", "skills/codebase-map/FLOWCHART-DESIGN.md", "skills/codebase-map/agents/openai.yaml",
-    "skills/codebase-map/scripts/render_report.py", "skills/codebase-map/assets/report.css",
-    "skills/codebase-map/assets/report.js", "skills/codebase-map/examples/review.json",
-    "skills/codebase-map/examples/review.html",
-    "skills/task-status/SKILL.md", "skills/task-status/agents/openai.yaml",
-    "skills/resume-task/SKILL.md", "skills/resume-task/agents/openai.yaml",
-    "skills/workflow-doctor/SKILL.md", "skills/workflow-doctor/agents/openai.yaml",
-    "skills/rule-maker/SKILL.md", "skills/rule-maker/agents/openai.yaml",
-    "skills/rule-maker/rules/START.md", "skills/rule-maker/rules/CORE.md",
-    "skills/rule-maker/rules/READINESS.md", "skills/rule-maker/SETUP.md",
-    "skills/rule-maker/scripts/activate_rules.py", "skills/rule-maker/scripts/readiness.py",
-    "skills/workflow/RULES.md", "skills/rule-maker/scripts/version_facts.py",
-    "skills/rule-maker/rules/ENGINEERING.md", "skills/rule-maker/rules/VERSIONS.md",
-    "skills/rule-maker/rules/PHP.md", "skills/rule-maker/rules/LARAVEL.md", "skills/rule-maker/rules/RUST.md",
-    "skills/rule-maker/rules/data-contracts.md", "skills/rule-maker/rules/LIFETIMES.md",
-    "skills/rule-maker/rules/RELIABILITY.md", "skills/rule-maker/rules/TESTING.md",
-    "skills/rule-maker/rules/SECURITY.md", "skills/rule-maker/rules/PERFORMANCE.md", "skills/rule-maker/rules/COMPATIBILITY.md",
-    "tests/test_version_facts.py", "tests/test_engineering_rules.py", "tests/behavioral/engineering-rules.json",
-    "skills/plan-review/SKILL.md", "skills/plan-review/agents/openai.yaml",
-    "skills/ui-design/SKILL.md", "skills/ui-design/agents/openai.yaml",
-    "skills/ui-design/CONTRACT.md", "skills/ui-design/VERIFY.md", "skills/ui-design/EXAMPLES.md",
-    "skills/ui-design/scripts/review_ui_diff.py", "tests/test_ui_design.py", "tests/behavioral/ui-design.json",
-)
-REQUIRED += tuple(f"skills/{name}/{file}" for name in REGISTERED_NAMES for file in ("SKILL.md", "agents/openai.yaml"))
-REQUIRED += ("VENDORED-SKILLS.md", "skills/retro/scripts/digest_sessions.py", "skills/workflow/scripts/open_items.py", "skills/workflow/scripts/record.py", "skills/codebase-map/scripts/screenshot_report.py", "tests/test_screenshot_report.py", "tests/test_open_items.py", "tests/test_record.py", "skills/ui-design/scripts/class_rules.py", "tests/test_class_rules.py", "hooks/phase_reads.py", "tests/test_phase_reads_hook.py", "hooks/plain_reply.py", "tests/test_plain_reply_hook.py",
-             "hooks/duplicate_skills.py", "tests/test_duplicate_skills_hook.py")
-REQUIRED += ("skills/codebase-map/assets/report-style.css", "skills/codebase-map/assets/report-style-compat.css", "skills/codebase-map/assets/report-extra.js", "tests/test_simple_english.py", "skills/simple-english/LICENSE")
-REQUIRED += ("skills/workflow/scripts/ticket_records.py", "skills/workflow/examples/readable-todo.md", "docs/archive/RC3-CASES.md", "tests/test_rc3_reliability.py")
-REQUIRED += ("skills/codebase-map/TASK-REPORT.md", "skills/codebase-map/scripts/task_report.py", "skills/codebase-map/assets/task-report.css", "tests/test_task_report.py")
-REQUIRED += ("CONTEXT.md", "tests/test_validate_budgets.py", "tests/test_owned_skills.py")
-# Skills that began as copies of MIT-licensed projects (VENDORED-SKILLS.md credits them). They are our own text now;
-# each folder keeps its LICENSE because the licence requires the copyright notice to travel with the text.
-FORMERLY_COPIED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
-                   "implement-spec", "retro", "simple-english")
-REQUIRED += tuple(f"skills/{name}/LICENSE" for name in FORMERLY_COPIED)
 
-# Word ceilings for the reference .md files under skills/ (path below skills/), excluding SKILL.md files. Each
-# ceiling is the file's final size after the 2026-11-11 wording work plus 5 percent, rounded up to the next ten
-# (the formerly copied skills' files: their 2026-11-12 size, when they became our own text, plus 5 percent). Where that came out above the earlier headroom ceiling, the
-# earlier ceiling stays (rule-maker/rules/DESIGN.md, workflow/SETUP.md, workflow/VISUAL-REVIEW.md).
-REFERENCE_BUDGETS = {
-    'codebase-map/DIAGRAM-DESIGN.md': 50, 'codebase-map/examples/FINDINGS.md': 90, 'codebase-map/examples/PLAN.md': 150,
-    'codebase-map/examples/README.md': 230, 'codebase-map/examples/STATUS.md': 270, 'codebase-map/examples/TODO.md': 80,
-    'codebase-map/examples/ui-review/README.md': 320, 'codebase-map/examples/ui-review/UI-FINDINGS.md': 100,
-    'codebase-map/examples/ui-review/UI-PLAN.md': 210, 'codebase-map/examples/ui-review/UI-TODO.md': 90,
-    'codebase-map/FLOWCHART-DESIGN.md': 1460, 'codebase-map/REPORT.md': 2440, 'codebase-map/TASK-REPORT.md': 2160,
-    # AUDIT.md (next line) holds rule additions from the 2026-11-11 V1 review: 929 words, ceiling about 5 percent above.
-    'codebase-map/UI-FLOW.md': 2790, 'rule-maker/AUDIT.md': 970, 'rule-maker/CHECKER.md': 750,
-    # DOCS.md (next line) holds rule additions from the 2026-11-11 V1 review: 1,272 words plus 5 percent.
-    'rule-maker/DOCS.md': 1340, 'rule-maker/INSTALLATION.md': 630, 'rule-maker/rules/ANGULAR.md': 340,
-    # CHANGES.md (next line) is the rules history file and grows each release: 972 words at 1.8.7 plus 5 percent.
-    'rule-maker/rules/CAPACITOR.md': 340, 'rule-maker/rules/CHANGES.md': 1020, 'rule-maker/rules/COMPATIBILITY.md': 330,
-    'rule-maker/rules/CORE.md': 690, 'rule-maker/rules/data-contracts.md': 360, 'rule-maker/rules/DESIGN.md': 1130,
-    'rule-maker/rules/ENGINEERING.md': 490, 'rule-maker/rules/IONIC.md': 310, 'rule-maker/rules/LARAVEL.md': 420,
-    'rule-maker/rules/LIFETIMES.md': 340, 'rule-maker/rules/OPERATIONS.md': 420, 'rule-maker/rules/PERFORMANCE.md': 350,
-    'rule-maker/rules/PHP.md': 340, 'rule-maker/rules/PIXIJS.md': 130, 'rule-maker/rules/POLICY.md': 450,
-    'rule-maker/rules/REACT.md': 260, 'rule-maker/rules/READINESS.md': 1600, 'rule-maker/rules/RELIABILITY.md': 330,
-    'rule-maker/rules/RUST.md': 340, 'rule-maker/rules/SECURITY.md': 350, 'rule-maker/rules/SOURCES.md': 730,
-    'rule-maker/rules/START.md': 600, 'rule-maker/rules/TESTING.md': 390, 'rule-maker/rules/THREEJS.md': 130,
-    'rule-maker/rules/TYPESCRIPT.md': 230, 'rule-maker/rules/UNITY.md': 210, 'rule-maker/rules/VERSIONS.md': 550,
-    'rule-maker/rules/VITE.md': 140, 'rule-maker/SETUP.md': 760, 'ui-design/CATALOGUE.md': 540,
-    'ui-design/CONTRACT.md': 550, 'ui-design/EXAMPLES.md': 450, 'ui-design/KIT.md': 1040, 'ui-design/LIVE-KIT.md': 3010,
-    'ui-design/templates/DESIGN.md': 730, 'ui-design/templates/KIT.md': 260, 'ui-design/VERIFY.md': 1050,
-    'workflow/ARTIFACTS.md': 930, 'workflow/AUDIT.md': 1710, 'workflow/CHATGPT-PROMPTS.md': 230,
-    'workflow/examples/readable-todo.md': 590, 'workflow/GROUNDING.md': 500, 'workflow/OPTIONAL-HELPERS.md': 390,
-    'workflow/PDF-DELIVERABLE.md': 1040, 'workflow/RULES.md': 220, 'workflow/SETUP.md': 2310,
-    'workflow/SPECIALISTS.md': 820, 'workflow/TASK-FOLDER.md': 3290, 'workflow/templates/PROJECT-ROUTING.md': 820,
-    'workflow/VISUAL-REVIEW.md': 2120, 'workflow/WRITING.md': 690,
-    'codebase-design/DEEPENING.md': 410, 'codebase-design/DESIGN-IT-TWICE.md': 430,
-    'domain-modeling/ADR-FORMAT.md': 460, 'domain-modeling/GLOSSARY-FORMAT.md': 360,
-    'simple-english/references/rule-catalog.md': 1820, 'simple-english/references/strict-vocabulary.md': 960,
-    'simple-english/references/use-cases.md': 620, 'simple-english/references/word-swaps.md': 520,
-    'tdd/mocking.md': 220, 'tdd/tests.md': 310, 'writing-for-agents/SKILL-MECHANICS.md': 440,
-}
-SYNONYMS_FAIL = True  # A rejected CONTEXT.md synonym in skill prose fails validation.
+SKILL_ENTRY = re.compile(r"\./skills/([a-z0-9][a-z0-9-]*)")
+
+
+def skill_entries(root: Path) -> list:
+    try:
+        entries = json.loads((root / ".claude-plugin/plugin.json").read_text(encoding="utf-8")).get("skills")
+    except (OSError, ValueError, AttributeError):
+        return []
+    return entries if isinstance(entries, list) else []
+
+
+def manifest_entry_errors(root: Path) -> list[str]:
+    """plugin.json `skills` must be a non-empty list of unique `./skills/<name>` strings. Checked before any entry is
+    used as a path, so a malformed entry (absolute, `..`, not a string) is never read."""
+    entries = skill_entries(root)
+    bad = [entry for entry in entries if not isinstance(entry, str) or not SKILL_ENTRY.fullmatch(entry)]
+    errors = [f"plugin.json skill entry {json.dumps(entry)} is not ./skills/<name>." for entry in bad]
+    if not entries:
+        errors.append("plugin.json must register its skills as a non-empty list.")
+    duplicates = sorted({e for e in entries if isinstance(e, str) and entries.count(e) > 1})
+    errors += [f"plugin.json registers {entry} more than once." for entry in duplicates]
+    return errors
+
+
+def registered_names(root: Path) -> tuple[str, ...]:
+    """The skills plugin.json registers, in its order; only well-formed `./skills/<name>` entries."""
+    return tuple(found[1] for entry in skill_entries(root)
+                 if isinstance(entry, str) and (found := SKILL_ENTRY.fullmatch(entry)))
+
+
+def credit_rows(root: Path) -> list[tuple[list[str], list[str]]]:
+    """VENDORED-SKILLS.md's credits table: per row, the backticked skill names (first column) and the backticked
+    licence paths (third column), where `<name>` stands for each name of the row."""
+    rows = []
+    for line in (root / "VENDORED-SKILLS.md").read_text(encoding="utf-8").splitlines():
+        cells = line.strip().strip("|").split("|")
+        if line.startswith("|") and len(cells) >= 3 and not set(cells[0].strip()) <= {"-", " "}:
+            names = re.findall(r"`([a-z0-9][a-z0-9-]*)`", cells[0])
+            paths = [p for p in re.findall(r"`([^`]+)`", cells[2]) if p.endswith("LICENSE")]
+            if names:
+                rows.append((names, paths))
+    return rows
+
+
+def licensed_skills(root: Path) -> list[str]:
+    """The formerly copied skills, from the credits table."""
+    return sorted({name for names, _ in credit_rows(root) for name in names})
+
+
+def licence_files(root: Path) -> list[str]:
+    """Every licence file the credits table names: the licence requires the notice to travel with the text."""
+    return sorted({p.replace("<name>", name) if "<name>" in p else p
+                   for names, paths in credit_rows(root) for name in names for p in paths})
+
+
+SYNONYMS_FAIL = False  # G4: a rejected CONTEXT.md synonym in skill prose is an advisory NOTE.
 REPEAT_WORDS = 25
 
 
@@ -212,17 +174,67 @@ def reference_files(root: Path) -> dict[str, int]:
             for relative, path in _skill_markdown(root) if path.name != "SKILL.md"}
 
 
-def reference_budget_errors(root: Path) -> list[str]:
-    errors, files = [], reference_files(root)
-    for relative, words in files.items():
-        budget = REFERENCE_BUDGETS.get(relative)
-        if budget is None:
-            errors.append(f"skills/{relative}: no word budget; add one to REFERENCE_BUDGETS in tools/validate.py.")
-        elif words > budget:
-            errors.append(f"skills/{relative}: {words} words exceed its {budget}-word budget.")
-    for relative in sorted(set(REFERENCE_BUDGETS) - set(files)):
-        errors.append(f"skills/{relative}: has a word budget in tools/validate.py but no file.")
+FLOWS = "skills/workflow/flows"
+FLOW_KEYS = ("name", "uses", "fallbacks", "approval-exceptions")
+
+
+def flow_index_errors(root: Path, registered: tuple[str, ...]) -> list[str]:
+    """C-FLOW-1: every INDEX.md row names an existing recipe and every recipe has a row (INDEX.md and TEMPLATE.md
+    excluded); each recipe's frontmatter has exactly name (its file name), uses (registered skills), fallbacks and
+    approval-exceptions, and never routing signals, which live only in the index."""
+    folder = root / FLOWS
+    if not folder.is_dir():
+        return []
+    index = folder / "INDEX.md"
+    if not index.is_file():
+        return [f"{FLOWS}/INDEX.md is missing; the router reads only the index."]
+    errors = []
+    rows = {}
+    for line in index.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")] if line.startswith("|") else []
+        link = re.fullmatch(r"\[([\w.-]+\.md)\]\(([\w.-]+\.md)\)", cells[-1]) if len(cells) == 3 else None
+        if link:
+            if cells[0] in rows or link[2] in rows.values():
+                errors.append(f"{FLOWS}/INDEX.md lists '{cells[0]}' ({link[2]}) more than once.")
+            rows[cells[0]] = link[2]
+            if link[1] != link[2] or Path(link[2]).stem != cells[0]:
+                errors.append(f"{FLOWS}/INDEX.md: row '{cells[0]}' must link its own file {cells[0]}.md.")
+    files = sorted(p.name for p in folder.glob("*.md") if p.name not in ("INDEX.md", "TEMPLATE.md"))
+    for name, file in rows.items():
+        if not (folder / file).is_file():
+            errors.append(f"{FLOWS}/INDEX.md lists {file}, which does not exist.")
+    for file in files:
+        if file not in rows.values():
+            errors.append(f"{FLOWS}/{file} has no row in INDEX.md.")
+            continue
+        text = (folder / file).read_text(encoding="utf-8")
+        found = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
+        fields = dict(re.findall(r"^([\w-]+):\s*(.*)$", found[1], re.M)) if found else {}
+        if sorted(fields) != sorted(FLOW_KEYS):
+            errors.append(f"{FLOWS}/{file}: frontmatter must have exactly {', '.join(FLOW_KEYS)} (signals belong in "
+                          f"INDEX.md); it has {', '.join(sorted(fields)) or 'none'}.")
+            continue
+        if fields["name"] != Path(file).stem:
+            errors.append(f"{FLOWS}/{file}: name must be {Path(file).stem}.")
+        uses = re.fullmatch(r"\[([^\]]*)\]", fields["uses"].strip())
+        for skill in [s.strip() for s in uses[1].split(",") if s.strip()] if uses else [None]:
+            if skill not in registered:
+                errors.append(f"{FLOWS}/{file}: uses names {skill!r}, which is not a registered skill.")
+        fallbacks = re.fullmatch(r"\[([^\]]+)\]", fields["fallbacks"].strip())
+        if not fallbacks or not fields["approval-exceptions"].strip():
+            errors.append(f"{FLOWS}/{file}: fallbacks must list at least one name and approval-exceptions must be set.")
     return errors
+
+
+def ceiling_notes(root: Path) -> list[str]:
+    """Advisory: SKILL.md files above SKILL_CEILING words and reference files above REFERENCE_CEILING words."""
+    notes = []
+    for relative, path in _skill_markdown(root):
+        words = len(path.read_text(encoding="utf-8").split())
+        ceiling = SKILL_CEILING if path.name == "SKILL.md" else REFERENCE_CEILING
+        if words > ceiling:
+            notes.append(f"skills/{relative}: {words} words, above the {ceiling}-word default ceiling")
+    return notes
 
 
 def repeat_notes(root: Path) -> list[str]:
@@ -303,7 +315,7 @@ def synonym_findings(root: Path) -> list[str]:
 def package_notes(root: Path) -> list[str]:
     """Advisory findings printed as NOTE lines; they never fail validation."""
     root = root.resolve()
-    notes: list[str] = []
+    notes: list[str] = ceiling_notes(root)
     if not SYNONYMS_FAIL and (root / "CONTEXT.md").is_file():
         notes += synonym_findings(root)
     return notes
@@ -312,7 +324,21 @@ def package_notes(root: Path) -> list[str]:
 def validate_package(root: Path) -> list[str]:
     errors: list[str] = []
     root = root.resolve()
-    for name in REQUIRED:
+    for name in BASE_FILES:
+        if not (root / name).is_file():
+            errors.append(f"Missing required file: {name}")
+    errors += manifest_entry_errors(root)
+    if errors:
+        return errors
+    skill_names = registered_names(root)
+    required = BASE_FILES + tuple(f"skills/{name}/{file}" for name in skill_names for file in ("SKILL.md", "agents/openai.yaml"))
+    # Archived skills' licences live under docs/archive/, which the source checkout has and the shipped package
+    # leaves out; there they are required, and every shipped licence is required everywhere.
+    has_archive = (root / "docs/archive").is_dir()
+    required += tuple(p for p in licence_files(root) if has_archive or not p.startswith("docs/archive/"))
+    if any(not paths for _, paths in credit_rows(root)):
+        errors.append("VENDORED-SKILLS.md: every credits row names its licence file in the third column.")
+    for name in required:
         if not (root / name).is_file():
             errors.append(f"Missing required file: {name}")
     if errors:
@@ -329,9 +355,6 @@ def validate_package(root: Path) -> list[str]:
             errors.append("Plugin version must use the package's semantic-version format.")
         elif f"## {version} —" not in (root / "CHANGELOG.md").read_text(encoding="utf-8"):
             errors.append("Plugin version has no matching changelog entry.")
-        expected_registered = [f"./skills/{name}" for name in REGISTERED_NAMES]
-        if plugin.get("skills") != expected_registered:
-            errors.append("Register the twenty-one workflow-axa skills exactly once in the approved order.")
         entries = market.get("plugins", [])
         if len(entries) != 1 or entries[0].get("name") != "workflow-axa" or entries[0].get("source") != "./":
             errors.append("Marketplace must point to this one local plugin.")
@@ -359,13 +382,10 @@ def validate_package(root: Path) -> list[str]:
     except (OSError, ValueError, TypeError, AttributeError) as exc:
         errors.append(f"Shared rules manifest error: {exc}")
 
-    registered_names = REGISTERED_NAMES
-    expected_skills = {root / f"skills/{name}/SKILL.md" for name in registered_names}
+    expected_skills = {root / f"skills/{name}/SKILL.md" for name in skill_names}
     if set((root / "skills").rglob("SKILL.md")) != expected_skills:
-        errors.append("Exactly the twenty-one registered workflow-axa SKILL.md files are required.")
-    budgets = SKILL_BUDGETS
-    for name in registered_names:
-        budget = budgets[name]
+        errors.append(f"Exactly the {len(skill_names)} SKILL.md files plugin.json registers are required.")
+    for name in skill_names:
         core = (root / f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
         header = re.match(r'\A---\nname: ' + re.escape(name) + r'\ndescription: ("[^\n]+")\n(?:disable-model-invocation: true\n)?---\n', core)
         if not header:
@@ -377,20 +397,23 @@ def validate_package(root: Path) -> list[str]:
                     errors.append(f"{name}: invalid description length/markup.")
             except ValueError as exc:
                 errors.append(f"{name}: invalid quoted description: {exc}")
-        if len(core.split()) > budget:
-            errors.append(f"{name}: exceeds the team's {budget}-word maintenance budget.")
         metadata = (root / f"skills/{name}/agents/openai.yaml").read_text(encoding="utf-8")
-        match = re.fullmatch(r'interface:\n  display_name: ("[^\n]+")\n  short_description: ("[^\n]+")\n', metadata)
+        match = re.fullmatch(r'interface:\n  display_name: ("[^\n]+")\n  short_description: ("[^\n]+")\n'
+                             r'(policy:\n  allow_implicit_invocation: false\n)?', metadata)
+        user_only = "\ndisable-model-invocation: true\n" in core.split("\n---\n", 1)[0] + "\n"
         if not match:
             errors.append(f"{name}: unexpected minimal OpenAI metadata shape.")
+        elif bool(match.group(3)) != user_only:
+            errors.append(f"{name}: SKILL.md's disable-model-invocation and agents/openai.yaml's "
+                          "allow_implicit_invocation: false must agree (both user-only, or neither).")
         else:
             try:
-                if not all(json.loads(value).strip() for value in match.groups()):
+                if not all(json.loads(value).strip() for value in match.groups()[:2]):
                     errors.append(f"{name}: empty OpenAI display string.")
             except (ValueError, AttributeError) as exc:
                 errors.append(f"{name}: invalid OpenAI string: {exc}")
 
-    skill_roots = [root / f"skills/{name}" for name in REGISTERED_NAMES]
+    skill_roots = [root / f"skills/{name}" for name in skill_names]
     for path in sorted(root.rglob("*.md")):
         if any(part in IGNORED for part in path.relative_to(root).parts):
             continue
@@ -407,8 +430,8 @@ def validate_package(root: Path) -> list[str]:
             elif any(path.is_relative_to(sr) and not resolved.is_relative_to(sr) for sr in skill_roots):
                 errors.append(f"Skill reference escapes the separately installable skill folder: {target}")
 
-    errors += reference_budget_errors(root)
     errors += repeat_notes(root)  # A8: a paragraph repeated across skill files fails validation
+    errors += flow_index_errors(root, skill_names)
     try:
         errors += vocabulary_errors(root)
         if SYNONYMS_FAIL:
@@ -420,7 +443,7 @@ def validate_package(root: Path) -> list[str]:
         rules_version = json.loads((root / "skills/rule-maker/rules/version.json").read_text(encoding="utf-8")).get(
             "rules_version", "")
         errors += doc_fact_errors(root, str(plugin.get("version", "")), str(rules_version),
-                                  len(REGISTERED_NAMES), len(FORMERLY_COPIED))
+                                  len(skill_names), len(licensed_skills(root)))
     except (OSError, ValueError, AttributeError) as exc:
         errors.append(f"Documentation facts error: {exc}")
     return errors
@@ -446,7 +469,8 @@ def main() -> int:
             print(f"NOTE: {note}")
         return 1
     words = len((args.root / "skills/workflow/SKILL.md").read_text(encoding="utf-8").split())
-    print(f"PASS: package structure, manifest consistency, minimal metadata, twenty-one local skills, relative links, core budget ({words} workflow words).")
+    count = len(registered_names(args.root.resolve()))
+    print(f"PASS: package structure, manifest consistency, minimal metadata, {count} local skills, relative links ({words} workflow words).")
     print("NOT RUN: Claude/Codex host validation and live behavioral evaluations.")
     for note in notes:
         print(f"NOTE: {note}")

@@ -1,5 +1,53 @@
 # Changelog
 
+## 2.9.0-rc.1 — the offer model and a smaller package (2026-11-16)
+
+The offer model:
+
+- Every change ends with an **offer** and **one question**: *Show review.html first*, *Approve from this summary* or *Change something*. A lightweight edit gets the minimal offer (its files, its check and a one-line why); one-ticket work gets the one-ticket offer; multi-ticket work gets the full ticket list. The small change route is folded into the one-ticket offer.
+- The plan report is built only when the owner answers *Show review.html first* or asks for it.
+- The owner's answer approves the offer; the hook reads it from the conversation and checks it again in later sessions. A later withdrawal or narrowing ends the approval; a stop only pauses it. Git writes and MCP write tools need their operation named in the offer. Offer records (`docs/plans/<task>/offers/`) are written only through `record.py offer`.
+- Record writes no longer switch the task the hook binds an answer to. The owner naming a task and an offer presentation still do.
+
+Hooks:
+
+- New `hooks/approval.py` is the PreToolUse checker and takes over the approval role of `phase_gate.py`. `phase_gate.py` stays as the legacy checker and shared library: it still checks tasks approved before the offer model, and it keeps the PostToolUse and UserPromptSubmit hooks.
+- New `skills/workflow/scripts/legacy_inventory.py`: the owner lists, once at the upgrade, the tasks that keep their `Approval:` line. A task not on that frozen list uses offers only.
+- Removed: `plain_reply.py`, `phase_reads.py` and `truncated_read.py`. Their kept checks are mapped in docs/RULE-CONTRACTS.md "Removed with their hooks". There is no Stop hook. The required-read check now uses the library `hooks/read_evidence.py`, and fails closed when it can't load.
+- `duplicate_skills.py` only diagnoses: it names second copies at session start and explains how to settle them; it never blocks.
+
+Delivery, recipes and fallbacks:
+
+- New `skills/workflow-deliver/scripts/completion_check.py` (baseline, snapshot, check): Done needs every changed path covered by a review of its exact bytes. It replaces the Stop hook's "Done without review" check.
+- New `skills/workflow/flows/` recipes (bug, feature, new-project, ui, refactor, architecture, performance, migration, docs-tests). The router picks one from `flows/INDEX.md`.
+- New `skills/workflow/FALLBACKS.md`: the named fallback for each missing tool or check, and the short list of conditions that may pause work.
+
+The CSS switch:
+
+- Each machine has one CSS switch in `~/.workflow-axa/settings.json`, off by default; `skills/workflow/scripts/settings.py` shows and changes it. While it is off, `approval.py` refuses styling writes. Changing the switch needs the owner's Yes to that exact question. A project DESIGN.md with `css: never` keeps it off there.
+- The global artifact policy is revision 2.9.0: its block now names the settings file, and `global_policy.py --apply` creates `settings.json` with CSS off only when it is missing.
+
+Skills (19 skills):
+
+- `resume` replaces `task-status` and `resume-task` (status, continue and handoff modes). `rule-maker` diagnose mode replaces `workflow-doctor`.
+- `implement-spec` and `retro` are archived in `docs/archive/skills/`; `tools/digest_sessions.py` stays in the source checkout. `simple-english` is now the reference text `skills/workflow/SIMPLE-ENGLISH.md`.
+- New user-invoked skills: `interrogate` (with `scripts/snapshot.py`), `no-comments` and `wait-what`.
+- `code-review` checks comments and reader load, and adds a blast-radius step when shared code changes.
+
+Rules library 1.9.0 (rules CHANGES.md): DESIGN.md is the one owner of the styling rules and has the CSS switch; CORE.md comment rules; the readiness question *Set up rules now* or *Skip for this task*; the standing diagnostic allowance; protections and preferences. **Project action:** a project that requires doc comments says so in its rules; a project that must never get new CSS adds `css: never`.
+
+Docs: README, UPGRADE (the inventory, the renamed skills, "Back to rc.39"), docs/ARCHITECTURE.md, docs/RULE-CONTRACTS.md, CONTEXT.md, docs/EVALUATION.md, docs/DESIGN.md and tests/README.md describe the offer model.
+
+Version fields: `.claude-plugin/plugin.json`, the rules `version.json` package version, `RENDERER_VERSION` in `skills/codebase-map/scripts/render_report.py` and the `candidate_version` of the four live-case files under `tests/behavioral/` are 2.9.0-rc.1. Rules library 1.9.0. Global artifact policy 2.9.0.
+
+Limits:
+
+- The observed `/interrogate` run on a seeded bug and the `/no-comments` dry run are unmet, pending the owner's run budget.
+- The T26 pilot (fresh host runs compared with the rc.39 sample) is pending.
+- Live host checks are limited to the T16 ledger. The T16 host copy under `.artifacts/` was built from rc.39 plus the candidate texts, so it is not evidence for 2.9.0-rc.1 itself.
+- VALIDATION.md is bound to an uncommitted working tree.
+- A known intermittent failure: `test_record_safety.test_parallel_appends_lose_nothing` sometimes leaves `FINDINGS.md.lock` (about 1 run in 30). It also happens on rc.39.
+
 ## 2.8.0-rc.39 — bold approvals and one-run validation (2026-11-12)
 
 - Approval quotes: a typed answer in bold or italics (`**Approve r1, no report**`, `_..._`, `***...***`) now matches its quote. Only the comparison of a quote with the owner's message ignores these markers; refusals, installs, commits and pauses read the owner's words as before. Markers inside a word (`my__task`) stay.

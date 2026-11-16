@@ -22,6 +22,10 @@ Within the existing plan, identify the consequential risks and their checks. Pas
 
 At review, inspect the final changed behavior and relevant callers. Explain material issues with evidence and the smallest correction. Report unverified aspects, not a self-awarded compliance score. Do not produce one checklist per function, one report per module, or an extra task folder. The source catalog is optional background for researching a rule; it is not mandatory context for ordinary work.
 
+## Comments
+
+The detail behind CORE's comment rules. When a comment and the code disagree, reason from the actual behaviour. A comment states an intended contract when it is a public doc comment, or when a spec, test name, decision record or issue supports it; that mismatch is a possible bug, never settled by deleting the comment or by assuming the code is right. Delete stale or narrating comments only in the lines an approved change already edits; list misleading comments elsewhere as comment debt. Check a claim such as "do not remove" or "talk to X first" before acting (trace the symbol, read the history); an unverified one stays unless the approved scope names its removal and any authority it names is given. Tool-read annotations (static-analysis types, decorators, pragmas, lint or type suppressions) stay until the scope justifies their replacement and the check passes without them; a suppression that hides a correctness or safety rule is flagged, never just removed.
+
 ## Applying defaults
 
 Use the existing project error model, resource owner, design system and test runner. A general preference cannot justify breaking a supported contract. Resolve material contradictions before dependent work. Concrete examples illustrate contracts; they are not templates to paste into unrelated projects.

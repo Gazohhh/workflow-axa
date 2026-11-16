@@ -93,14 +93,14 @@ class InstructionRegressionTests(unittest.TestCase):
         router=self.text('SKILL.md')
         self.assertIn('The table routes; it does not replace a phase',router)
         # A9: the router was loaded but no phase skill was invoked.
-        self.assertIn('Invoke the phase skill §3 selects',router)
+        self.assertIn('invoke the phase skill §4 selects',router)
         # A10 then D13: the identity question goes with clarify's first questions, never with approvals.
         self.assertIn('which asks "separate task or revision?" with its first questions',router)
         self.assertIn('never ask it alongside approvals',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
         # Design loop: identity-pending questions existed only in chat (W2 bug again); save them in an identity-pending folder.
         self.assertIn('identity pending (vs <related task>)',self.text('TASK-FOLDER.md'))
         # Design loop: questions bundled into a readiness stop were never saved; ui-design skipped for a UI change.
-        self.assertIn('ask only the readiness choice and stop',self.text('RULES.md'))
+        self.assertIn('ask only the readiness question',self.text('RULES.md'))  # T17: set up now / skip for this task
         self.assertIn('first read `../ui-design/SKILL.md` and `../rule-maker/rules/DESIGN.md`, then trace',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
         self.assertIn('A script hook is not styling',(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text())
         # Design retro: reference files still taught the strict-kit model, and a plan offered new CSS as an option.
@@ -113,7 +113,7 @@ class InstructionRegressionTests(unittest.TestCase):
                 with self.subTest(path=path,phrase=phrase):self.assertNotIn(phrase,(ROOT/path).read_text(encoding='utf-8'))
         for path in ('skills/workflow/SKILL.md','skills/workflow-clarify/SKILL.md','skills/workflow-specify/SKILL.md'):
             text=(ROOT/path).read_text(encoding='utf-8')
-            self.assertRegex(text,r'(?i)never (offer|write or offer|include) new CSS',path)
+            self.assertRegex(text,r'(?i)new CSS only when the machine CSS switch is on',path)  # T17: the switch, off by default
         self.assertIn('never an option the rules forbid',(ROOT/'skills/grilling/SKILL.md').read_text(encoding='utf-8'))
         # Design round 4: specify asked whether to delete the replaced, presented review-r1.
         self.assertIn('delete or offer to delete a presented',(ROOT/'skills/workflow/VISUAL-REVIEW.md').read_text(encoding='utf-8'))
@@ -144,7 +144,7 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('A finding the reviewer calls a user decision',(ROOT/'skills/workflow-execute/SKILL.md').read_text(encoding='utf-8'))
         self.assertIn('names any failures it already had',(ROOT/'skills/workflow/WRITING.md').read_text(encoding='utf-8'))
         # Old-docs test: resume offered to rewrite an old review JSON to 'approved'.
-        self.assertIn('never edit or offer to edit an old report',(ROOT/'skills/resume-task/SKILL.md').read_text())
+        self.assertIn('never edit or offer to edit an old report',(ROOT/'skills/resume/SKILL.md').read_text())  # T21: resume-task merged into resume
         # Design loop: plan and delivery of a capturable page used sketches only.
         self.assertIn('real captures of the built result',(ROOT/'skills/workflow-deliver/SKILL.md').read_text())
         self.assertIn('kit screens with a design kit',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
@@ -179,7 +179,10 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('correct quoting, encoding and an authorized target',self.text('TASK-FOLDER.md'))
         self.assertIn('task_report.py scaffold',(ROOT/'skills/workflow-deliver/SKILL.md').read_text())
         self.assertIn('independent, axes sequential',(ROOT/'skills/code-review/SKILL.md').read_text())
-        self.assertIn("I don't need to see the plan",self.text('VISUAL-REVIEW.md'))
+        # T24: the hook honours no approval waiver, so the "I don't need to see the plan" waiver went; agreement waivers stay.
+        self.assertIn('Implementation approval has no waiver',self.text('VISUAL-REVIEW.md'))
+        self.assertIn('**Agreement waivers** are explicit and bounded',self.text('VISUAL-REVIEW.md'))
+        self.assertNotIn("I don't need to see the plan",self.text('VISUAL-REVIEW.md'))
         self.assertIn('needs human',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         execute=(ROOT/'skills/workflow-execute/SKILL.md').read_text()
         self.assertIn('Parallel work needs independent tickets and separate files',execute)
@@ -192,8 +195,10 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('goes to the user before you ship it',execute)
         self.assertIn('read `../tdd/SKILL.md` before the first test',execute)
         gates=self.text('VISUAL-REVIEW.md')
-        # D11: the owner wants the HTML report even for small changes unless they explicitly decline it (the small change route is the one exception).
-        self.assertIn('Every implementation approval request comes with a fresh HTML report',gates)
+        # D11, revised by the approved redesign (v6, T17): every approval, small changes included, is an offer with the one
+        # question, and its first answer is the HTML report.
+        self.assertIn('Every implementation approval is an offer with the one question',gates)
+        self.assertIn('*Show review.html first*',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         self.assertIn('(one-line changes included)',(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         # A8: clarify asked for both gates itself (no specify, no report) and copied earlier revisions.
         self.assertIn('Clarify never asks for plan approval itself',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
@@ -203,11 +208,16 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('anything a user sees on screen (order, text, which rows or items show',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
         self.assertIn("also needs the report's screen diagram",(ROOT/'skills/workflow-specify/SKILL.md').read_text())
         self.assertIn('An earlier revision that skipped a step is not a precedent',self.text('TASK-FOLDER.md'))
-        self.assertIn('Both gates in one message',gates)
-        self.assertIn('Only an explicit yes to both records both lines',gates)
+        # T24: "Both gates in one message" went (test_cutover checks it is gone); settled one-ticket work goes straight to
+        # its offer, which carries the agreement.
+        self.assertIn('**No separate agreement** for a lightweight edit, or for one-ticket work when clarification left no open choice',gates)
+        self.assertIn("The offer's behavior summary carries the agreement",gates)
         deliver=(ROOT/'skills/workflow-deliver/SKILL.md').read_text()
-        self.assertIn('Done when all three exist',deliver)
-        self.assertIn('whenever the task has any HTML report',deliver)
+        self.assertIn("Done when these exist: the PLAN Outcome; the chat report; and, only when the offer's presentation decision was `html-first` or the owner asks for one, a delivery snapshot",deliver)
+        self.assertNotIn('Done when all three exist',deliver)  # T24: the snapshot is conditional
+        # T24: a delivery snapshot only on html-first or when asked, not for every task with a report.
+        self.assertIn("when the offer's presentation decision was `html-first` or the owner asks for one",deliver)
+        self.assertNotIn('whenever the task has any HTML report',deliver)
         self.assertIn('open_items.py',deliver)
         self.assertIn('`by: agent`',deliver)
 

@@ -10,6 +10,10 @@ Establish the effective environment and data isolation. "staging", "dev" or "tes
 
 For profiling/benchmarking, observe the project's quiet-host/exclusivity rules. Stop or schedule independent agents/builds through authorized coordination; do not kill unknown processes. Device, build identity, workload and quality must match the evidence claim. Every change needs an impact assessment; actual measurement requirements follow the approved project policy, not an agent's preference to skip it.
 
+## Standing diagnostic allowance
+
+A diagnostic probe (a reproduction script, a focused benchmark, a debugging run) needs no separate approval when all of these hold: it writes only to an owned disposable location; its inputs are synthetic, sanitised or already authorised; it runs on an established isolated target; it involves no protected operation, install, external change or persistent configuration change; it stays within this module's resource limits; and its output follows the artifact policy. Where a file sits is never the test by itself. Anything else, such as instrumenting the real application, belongs in the task's approved scope.
+
 ## Report observations, not obligations as facts
 
 A rule that requires GREEN is not evidence that the result is GREEN. Use current observed proof: passing, failing, stale, not run, blocked or not applicable, with source/time and relevant code identity. Verify cached proof is current before reusing it. Never hand-edit a generated verdict to satisfy a build.

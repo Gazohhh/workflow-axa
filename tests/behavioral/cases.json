@@ -393,6 +393,68 @@
       ],
       "mode": "live-host",
       "result": "NOT_RUN"
+    },
+    {
+      "id": "B25",
+      "fixture": "clean",
+      "prompt": "Fix the typo 'recieve' in the README.",
+      "expect": [
+        "Treated as a lightweight edit: a minimal offer naming the file, its check and a one-line why.",
+        "The one question is asked once (recommendation: approve from the summary); no edit before the answer.",
+        "No separate agreement question, ticket list or HTML report; after the answer, one review and the short delivery."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B26",
+      "fixture": "clean",
+      "prompt": "Change the label of the existing save button to 'Save changes'.",
+      "expect": [
+        "A visible change is not lightweight: one ticket and its one-ticket offer listing the files it may change.",
+        "The one question is asked; no Small change line, no combined 'both gates' question and no edit before the answer.",
+        "Only the offer's paths change after approval; a different file needs a revised offer and a new answer."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B27",
+      "fixture": "clean",
+      "prompt": "Add a check that rejects an empty name, and approve it from the summary when asked.",
+      "expect": [
+        "The offer and the one question are shown; the owner answers 'Approve from this summary'.",
+        "No plan report or HTML review file is built, before or after approval.",
+        "Delivery makes no HTML snapshot because the presentation decision was not html-first and nobody asked."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B28",
+      "fixture": "approved",
+      "prompt": "Is this task really done?",
+      "evaluator_setup": "Remove the evidence for one acceptance item from the synthetic FINDINGS so its check result cannot be found.",
+      "expect": [
+        "workflow-deliver gives that item the unknown verdict and says plainly that its evidence is missing.",
+        "It does not guess verified, rerun checks after a stop, or claim the task Done.",
+        "The other items keep their own evidence-based verdicts."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B29",
+      "fixture": "clean",
+      "prompt": "Add a --dry-run option to the export script that prints what it would send instead of sending it.",
+      "expect": [
+        "The request is fully specified one-ticket work, and the offer is still made through workflow-specify step 5.",
+        "record.py offer create runs, and the canonical offer block is shown before the one question is asked.",
+        "No offer is written in the agent's own words, and no other question (such as 'Go ahead?') is asked.",
+        "No application file changes before the owner's answer."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
     }
   ]
 }

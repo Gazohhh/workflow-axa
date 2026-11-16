@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 SKILLS = Path(__file__).resolve().parents[2]
-NAMES = ("workflow", "codebase-map", "task-status", "resume-task", "workflow-doctor", "plan-review", "rule-maker", "ui-design", "workflow-clarify", "workflow-specify", "workflow-execute", "workflow-deliver", "grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling", "implement-spec", "retro")
+NAMES = ("workflow", "codebase-map", "resume", "plan-review", "rule-maker", "ui-design", "workflow-clarify", "workflow-specify", "workflow-execute", "workflow-deliver", "grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling")
 MAX_BYTES = 2_000_000
 MAX_FILES = 512
 

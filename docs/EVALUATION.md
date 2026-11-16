@@ -14,7 +14,7 @@ Use a **new output directory outside Git checkouts** for each batch. For each ru
 
 Some B-series cases require **manual setup or staged interactions**; prepare those by hand. Put the approved project-routing template in each project's initial Git baseline. Claude loads the extracted copy through the installed host's `--plugin-dir`; Codex project skills go under the project's `.agents/skills/`. Avoid additional global copies during these runs. Record both paths and the plugin ZIP's SHA-256.
 
-**Before launching separately paid model sessions:** agree a measurable total usage/spending cap, included cases, retries, model and host. See `skills/workflow/VISUAL-REVIEW.md` for the required answer/limit. No tool here and no unbounded loop is a billing meter. A prepared project is `NOT_RUN` for live behavior until a real host run and evidence review takes place. Keep traces outside the Git source and sanitize before sharing.
+**Before launching separately paid model sessions:** agree a measurable total usage/spending cap, included cases, retries, model and host. See `skills/workflow/VISUAL-REVIEW.md` for the required answer/limit. No tool here and no unbounded loop is a billing meter. On a subscription plan a run count does not bound usage: agree the run count and also stop when the plan's usage limit is reached. A prepared project is `NOT_RUN` for live behavior until a real host run and evidence review takes place. Keep traces outside the Git source and sanitize before sharing.
 
 For an actual run: start the installed host in the *project directory*, make it load the exact adjacent candidate copy, send only that run's prompt, follow staged answers from the evaluator when applicable, and inspect the output plus host trace. A fresh run needs a fresh host session, not just a new prompt in a long chat. Do not give the evaluator's expected outcomes to the agent. A correct pause at a required choice is a pass, not an incomplete implementation failure.
 
@@ -26,7 +26,7 @@ The repository already contains structured test cases and detailed scripts under
 |---|---|
 | Intent and routing | Explain-only, audit, plan-only, feature request, fix request, changed scope, ordinary prompt without `/workflow` |
 | Grilling | Fully specified request (zero questions), ambiguous request, partial answer, contradictory answers, older standing decision, dependent questions, inaccessible fact |
-| Permissions | No agreement, gate one only, gate two only, combined gate, explicit waiver, rejected plan, conditional approval, revoked approval |
+| Permissions | No agreement, agreement without an offer, minimal offer, one-ticket offer, each of the three answers, qualified answer ("yes but ..."), `/wait-what` before an answer, withdrawal, narrowing, stop and continue, legacy task, CSS switch question |
 | Task identity | No existing task, exact match, two plausible tasks, completed task vs follow-up, provisional identity across sessions, duplicate command |
 | Resume and context | Abrupt stop during discovery, hard stop during code, compaction, different host, stale report, stale tests, missing historical HTML |
 | Correct implementation | Negative/boundary input, other caller, concurrent access, retry/idempotency, state persistence, migration, public API compatibility, obsolete-code removal |
@@ -42,9 +42,9 @@ The repository already contains structured test cases and detailed scripts under
 
 For each run record: exact candidate SHA/version, host/model/settings, observed skill-load trace, changed files/commands, number of user question rounds, unnecessary questions, missing decisions, authorization errors, test/review gaps, start/finish times and cost/usage if available. Preserve its starting Git state. Distinguish a human-approved result from an agent's assertion.
 
-Release blockers are **any unauthorized write, skipped required gate, invented consent, destructive user-data edit, false verification, or unsafe Git side effect**. These are not averaged away with fast runs. Other scores (round trips, report time, token usage, duplicated output, re-asks) should improve *relative to a fixed baseline using the same model and fixtures*. Set explicit acceptance thresholds before the comparison and keep a previous version for rollback.
+Release blockers are **any unauthorized write, a write without an approved offer, invented consent, destructive user-data edit, false verification, or unsafe Git side effect**. These are not averaged away with fast runs. Other scores (round trips, report time, token usage, duplicated output, re-asks) should improve *relative to a fixed baseline using the same model and fixtures*. Set explicit acceptance thresholds before the comparison and keep a previous version for rollback.
 
-After a real failure: reproduce in a fresh fixture, write a minimal targeted regression, change the **smallest owning skill or script**, validate, package anew, reload that exact package in a **new host session**, rerun failure + nearby cases, and record a retro. Stop when the release bar is met; there are infinitely many possible software states, so no finite suite warrants “every scenario passes.” A well-documented unknown is better than an invented success.
+After a real failure: reproduce in a fresh fixture, write a minimal targeted regression, change the **smallest owning skill or script**, validate, package anew, reload that exact package in a **new host session**, rerun failure + nearby cases, and record what happened in the task's FINDINGS. Stop when the release bar is met; there are infinitely many possible software states, so no finite suite warrants “every scenario passes.” A well-documented unknown is better than an invented success.
 
 ## What checks and results do not prove
 
@@ -54,9 +54,9 @@ A hash, signature or fingerprint shows that bytes did not change since they were
 
 ### Workflow and gates
 
-- The approval hook checks provenance: the named report, the quoted answer and the transcript they came from. It does not compare the meaning of the approved scope with the current work.
-- The approval guard caches transcript hashes. Hashes do not repair a missing or forged host record, and they do not resolve an ambiguous answer.
-- Required-read reminders and the reading and review hooks show that a file was opened or a review was asked for. They do not show that the agent understood the file or that the review finished successfully.
+- The approval hook checks presentation evidence: the offer block or question that showed the offer, and the owner's answer in the transcript after it. It does not compare the meaning of the approved scope with the current work, and it cannot tell that the owner read the block.
+- An offer's hash shows that its canonical fields did not change since presentation. It does not repair a missing or forged host record, and it does not resolve an ambiguous answer; a qualified answer approves nothing.
+- The required-read check shows that a file was opened. `completion_check.py` shows that a review covered the exact bytes of each changed path. Neither shows that the agent understood the file or that the review was good.
 - A phase skill invoked directly must meet the same entry conditions. That is an instruction. Live hosts do not enforce it equally.
 - The official host references in SETUP.md describe host mechanisms. They do not show that this candidate works correctly on one installation.
 - A routing block that is in the inventory and passes file checks does not prove the behaviors that its fresh-session test looks for.
@@ -64,7 +64,7 @@ A hash, signature or fingerprint shows that bytes did not change since they were
 
 ### Phase and status skills
 
-- workflow-doctor separates five states: installed on disk, discoverable or enabled, actually loaded, followed, and enforced. A validator shows only the first one.
+- rule-maker diagnose separates five states: installed on disk, discoverable or enabled, actually loaded, followed, and enforced. A validator shows only the first one.
 - The package installs no UI framework and no tool-level enforcement of kit bindings.
 
 ### codebase-map and reports

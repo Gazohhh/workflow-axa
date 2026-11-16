@@ -11,8 +11,11 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 FORMERLY_COPIED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design",
-                   "domain-modeling", "implement-spec", "retro", "simple-english")
-USER_ONLY = {"implement-spec", "retro"}
+                   "domain-modeling")
+# T22 (2.9.0): implement-spec and retro are archived with their licences; simple-english is reference text
+# inside the workflow skill, with its licence beside it.
+ARCHIVED = ("implement-spec", "retro", "simple-english")
+USER_ONLY: set[str] = set()
 # The owner asked (2026-11-12) for no reference to where these skills came from anywhere under skills/.
 # LICENSE files are exempt: the MIT licence requires its copyright notice to stay with the copied text.
 SOURCE_MENTIONS = re.compile(
@@ -35,6 +38,11 @@ class OwnedSkillTests(unittest.TestCase):
             text = (folder / "SKILL.md").read_text(encoding="utf-8")
             self.assertTrue(text.startswith(f"---\nname: {name}\n"), name)
             self.assertEqual("disable-model-invocation: true" in text.split("---", 2)[1], name in USER_ONLY, name)
+        for name in ARCHIVED:
+            self.assertNotIn(f"./skills/{name}", plugin["skills"])
+            self.assertFalse((ROOT / "skills" / name).exists(), name)
+            self.assertIn("MIT License", (ROOT / "docs/archive/skills" / name / "LICENSE").read_text(encoding="utf-8"), name)
+        self.assertIn("MIT License", (ROOT / "skills/workflow/SIMPLE-ENGLISH.LICENSE").read_text(encoding="utf-8"))
         self.assertFalse((ROOT / "skills/workflow/specialists").exists(), "old bundled folder must be gone")
         self.assertFalse((ROOT / "skills/workflow/specialists.json").exists(), "D17: no catalogue of external providers")
 
@@ -63,7 +71,7 @@ class OwnedSkillTests(unittest.TestCase):
 
 
 class SessionDigestTests(unittest.TestCase):
-    """retro's scripts/digest_sessions.py."""
+    """tools/digest_sessions.py (formerly retro's script)."""
 
     def test_session_digest_lists_human_messages_and_skills(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -81,7 +89,7 @@ class SessionDigestTests(unittest.TestCase):
             ]
             (logs / "s1.jsonl").write_text("\n".join(json.dumps(l) for l in lines) + "\nnot json\n", encoding="utf-8")
             out = Path(tmp) / "digest.md"
-            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/digest_sessions.py"), str(logs), str(out)],
                            check=True, capture_output=True)
             text = out.read_text(encoding="utf-8")
         self.assertIn("human messages: 2", text)
@@ -100,7 +108,7 @@ class SessionDigestTests(unittest.TestCase):
                      "content": "PreToolUse:Edit hook error: workflow-axa: editing src/a.py needs implementation approval"}
             (logs / "s1.jsonl").write_text(json.dumps({"type": "user", "message": {"content": [block]}}), encoding="utf-8")
             out = Path(tmp) / "digest.md"
-            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/digest_sessions.py"), str(logs), str(out)],
                            check=True, capture_output=True)
             self.assertIn("tool errors: 1 (denied 0); hook denials: 1", out.read_text(encoding="utf-8"))
 
@@ -118,7 +126,7 @@ class SessionDigestTests(unittest.TestCase):
             (logs / "s1.jsonl").write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
             out = Path(tmp) / "digest.md"
             result = subprocess.run([sys.executable, "-X", "utf8", "-I",
-                                     str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+                                     str(ROOT / "tools/digest_sessions.py"), str(logs), str(out)],
                                     capture_output=True, text=True, encoding="utf-8")
             self.assertEqual(result.returncode, 0, result.stderr)
             text = out.read_text(encoding="utf-8")
@@ -126,6 +134,48 @@ class SessionDigestTests(unittest.TestCase):
             self.assertIn("Continue the approved task", text)
             self.assertIn("host permission denials: 1", text)
             self.assertIn("tool errors: 0", text)
+
+    def run_digest(self, rows, *flags):
+        with tempfile.TemporaryDirectory() as tmp:
+            logs = Path(tmp) / "logs"
+            logs.mkdir()
+            (logs / "s1.jsonl").write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+            out = Path(tmp) / "digest.md"
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/digest_sessions.py"),
+                            str(logs), str(out), *flags], check=True, capture_output=True)
+            return out.read_text(encoding="utf-8")
+
+    def session_rows(self):
+        """T2 of 2026-11-15-workflow-redesign: approvals repeated after gate refusals, as in the owner's session."""
+        deny = lambda reason: {"type": "user", "message": {"content": [{"type": "tool_result", "is_error": True,
+                               "content": f"PreToolUse:Bash hook error: workflow-axa: `cp` into a.sh {reason}"}]}}
+        human = lambda text: {"type": "user", "timestamp": "2026-11-14T00:00:00Z", "message": {"content": text}}
+        return [human("Agree no need for report just docs and agents.md"), human("Approve"),
+                deny("needs implementation approval, but the task has no plan report (no .html file)"),
+                human("approve r1, no report"), deny("was stopped because the current task changed to b"),
+                human("ok"), human("Base directory for this skill: D:\\x\\skills\\workflow"),
+                human("Find out why the document has not been created and then fix it")]
+
+    def test_session_digest_counts_approvals_process_turns_and_denial_reasons(self):
+        text = self.run_digest(self.session_rows())
+        self.assertIn("approval messages: 3; process-only turns: 3;", text)
+        self.assertIn("'no plan report': 1", text)
+        self.assertIn("'task switch': 1", text)
+        self.assertNotIn("Base directory for this skill", text)
+
+    def test_a_request_after_an_assent_is_not_counted_as_approval_or_process(self):
+        human = lambda text: {"type": "user", "message": {"content": text}}
+        rows = [human(t) for t in ("go investigate the bug", "yes, change the database schema", "ok but only src/",
+                                   "Approve both", "approve r4, no report", "done.")]
+        self.assertIn("approval messages: 2; process-only turns: 3;", self.run_digest(rows))
+
+    def test_session_digest_counts_mode_has_no_message_text(self):
+        text = self.run_digest(self.session_rows(), "--counts")
+        self.assertIn("heuristics", text)
+        self.assertIn("workflow-axa hook refusals only", text)
+        self.assertIn("| s1 | 2026-11-14 | 5 | 3 | 3 | 2 | no plan report 1, task switch 1 |", text)
+        self.assertNotIn("Approve", text)
+        self.assertNotIn("document", text)
 
     def test_session_digest_hides_secrets_and_counts_typed_commands(self):
         # Hooqd retro: a pasted server password reached the digest, and a typed /workflow showed as "skills: []".
@@ -138,7 +188,7 @@ class SessionDigestTests(unittest.TestCase):
                      {"type": "user", "timestamp": "2026-11-03T14:12:00Z", "message": {"content": "password=hunter2 please"}}]
             (logs / "s1.jsonl").write_text("\n".join(json.dumps(l) for l in lines), encoding="utf-8")
             out = Path(tmp) / "digest.md"
-            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "skills/retro/scripts/digest_sessions.py"), str(logs), str(out)],
+            subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/digest_sessions.py"), str(logs), str(out)],
                            check=True, capture_output=True)
             text = out.read_text(encoding="utf-8")
         for secret in ("EXAMPLEnotArealSecret9", "abc123", "hunter2"):

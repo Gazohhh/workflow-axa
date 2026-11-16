@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from tools.validate import ROOT, validate_package
@@ -192,6 +193,8 @@ class VerificationSummaryTests(unittest.TestCase):
             (root / "skills/rule-maker/rules").mkdir(parents=True)
             (root / "skills/rule-maker/rules/version.json").write_text('{"rules_version": "1.0.0"}', encoding="utf-8")
             (root / "tests").mkdir()
+            (root / "tests/test_ok.py").write_text("import unittest\n\nclass T(unittest.TestCase):\n"
+                                                   "    def test_ok(self):\n        pass\n", encoding="utf-8")
             (root / "tools").mkdir()
             # The stand-in validator fails while VALIDATION.md still mentions the old version anywhere current.
             (root / "tools/validate.py").write_text(
@@ -206,7 +209,9 @@ class VerificationSummaryTests(unittest.TestCase):
             done = subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"),
                                    "--root", str(root), "--run", "--write", str(path)],
                                   capture_output=True, text=True, encoding="utf-8")
-            self.assertEqual(done.returncode, 0, done.stderr)
+            # Outside Git the tree has no identity, so the results are written but never count as a pass (T5).
+            self.assertEqual(done.returncode, 1, done.stderr)
+            self.assertIn("stale or unbound", done.stderr)
             text = path.read_text(encoding="utf-8")
             current, history = text.split("## History", 1)
             self.assertIn("workflow-axa 9.9.9-new", current)
@@ -221,6 +226,133 @@ class VerificationSummaryTests(unittest.TestCase):
             subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"),
                             "--root", str(root), "--run", "--write", str(path)], capture_output=True, check=True)
             self.assertIn("| Working tree | clean |", path.read_text(encoding="utf-8"))
+
+    # T5 of 2026-11-15-workflow-redesign: G1 exit status, tree identity and --check.
+
+    PASSING = "Ran 2 tests in 0.1s\n\nOK\n"
+
+    def real_unittest_summary(self, body: str) -> str:
+        """Actual unittest output for a module, so the parser sees unittest's own labels."""
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "test_m.py").write_text("import unittest\n\nclass T(unittest.TestCase):\n" + body,
+                                                 encoding="utf-8")
+            return subprocess.run([sys.executable, "-m", "unittest", "test_m"], cwd=tmp, capture_output=True,
+                                  text=True).stderr
+
+    def test_expected_failures_and_unexpected_successes_are_read_by_their_labels(self):
+        output = self.real_unittest_summary(
+            "    @unittest.expectedFailure\n    def test_x(self):\n        self.fail()\n"
+            "    @unittest.expectedFailure\n    def test_y(self):\n        self.fail()\n"
+            "    @unittest.skip('s')\n    def test_s(self):\n        pass\n    def test_ok(self):\n        pass\n")
+        self.assertIn("expected failures=2", output)
+        totals = vs.parse_unittest(output)
+        self.assertEqual((totals.ran, totals.failed, totals.skipped, totals.passed), (4, 0, 1, 1))
+        unexpected = vs.parse_unittest(self.real_unittest_summary(
+            "    @unittest.expectedFailure\n    def test_x(self):\n        pass\n"))
+        self.assertEqual(unexpected.failed, 1)
+
+    def test_unknown_identity_and_zero_tests_never_count_as_passing(self):
+        unknown = self.facts(identity="unknown")
+        self.assertTrue(vs.problems(unknown, vs.CommandResult("t", 0, self.PASSING, "unknown"), None, {}))
+        self.assertIn("STALE", vs.render_block(unknown, vs.CommandResult("t", 0, self.PASSING, "unknown"), None, {}))
+        facts = self.facts(identity="abc+clean")
+        self.assertIn("unit tests: no tests ran",
+                      vs.problems(facts, vs.CommandResult("t", 0, "Ran 0 tests in 0.0s\n\nOK\n", "abc+clean"), None, {}))
+
+    def test_an_unreadable_untracked_file_leaves_the_tree_unidentified(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.git_repo(tmp)
+            (root / "new.txt").write_text("n\n", encoding="utf-8")
+            real = Path.read_bytes
+            with mock.patch.object(Path, "read_bytes", lambda self: (_ for _ in ()).throw(OSError("locked"))
+                                   if self.name == "new.txt" else real(self)):
+                self.assertEqual(vs.tree_identity(root), "unknown")
+
+    def test_problems_are_empty_only_for_passing_evidence_from_this_tree(self):
+        facts = self.facts(identity="abc+clean")
+        ok = lambda out=self.PASSING, code=0, source="abc+clean": vs.CommandResult("t", code, out, source)
+        self.assertEqual(vs.problems(facts, ok(), ok("PASS: x\n"), {}), [])
+        self.assertEqual(vs.problems(facts, None, None, {}), [])
+        cases = {"tests exit": (ok(code=1), None, {}), "failed": (ok("Ran 3 tests in 1s\n\nFAILED (failures=1)\n", 1), None, {}),
+                 "no summary": (ok("Traceback\n"), None, {}), "stale": (ok(source="old+clean"), None, {}),
+                 "unbound": (ok(source=None), None, {}), "validator": (None, ok("FAIL: x\n", 1), {}),
+                 "extra": (None, None, {"Browser suites": "FAIL"})}
+        for name, (tests, validate, extra) in cases.items():
+            with self.subTest(case=name):
+                self.assertTrue(vs.problems(facts, tests, validate, extra))
+
+    def test_a_stale_log_is_marked_in_the_block(self):
+        block = vs.render_block(self.facts(identity="abc+clean"), vs.CommandResult("t", 0, self.PASSING, "old+1234"),
+                                None, {})
+        self.assertIn("STALE (ran on `old+1234`)", block)
+        self.assertIn("| Tree identity | `abc+clean` |", block)
+
+    def git_repo(self, tmp):
+        root = Path(tmp)
+        for args in (["init", "-q"], ["config", "user.email", "t@example.invalid"], ["config", "user.name", "t"]):
+            subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+        (root / "a.txt").write_text("a\n", encoding="utf-8")
+        (root / "VALIDATION.md").write_text("# Validation\n\n## History\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", "x"], check=True, capture_output=True)
+        return root
+
+    def test_tree_identity_changes_with_the_tree_but_not_with_validation_md(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.git_repo(tmp)
+            clean = vs.tree_identity(root)
+            self.assertTrue(clean.endswith("+clean"), clean)
+            (root / "VALIDATION.md").write_text("# Validation\n\nnew\n\n## History\n", encoding="utf-8")
+            self.assertEqual(vs.tree_identity(root), clean)
+            (root / "a.txt").write_text("b\n", encoding="utf-8")
+            edited = vs.tree_identity(root)
+            self.assertNotEqual(edited, clean)
+            (root / "new.txt").write_text("n\n", encoding="utf-8")
+            self.assertNotIn(vs.tree_identity(root), (clean, edited))
+
+    def test_check_accepts_only_a_current_passing_section(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.git_repo(tmp)
+            path = root / "VALIDATION.md"
+            identity = vs.tree_identity(root)
+            facts = self.facts(identity=identity)
+            passing = vs.render_block(facts, vs.CommandResult("t", 0, self.PASSING, identity),
+                                      vs.CommandResult("v", 0, "PASS: x\n", identity), {})
+            vs.write_section(path, passing)
+            self.assertEqual(vs.check_section(path, root), [])
+            failing = vs.render_block(facts, vs.CommandResult("t", 1, "Ran 3 tests in 1s\n\nFAILED (failures=1)\n",
+                                                              identity), vs.CommandResult("v", 0, "PASS\n", identity), {})
+            vs.write_section(path, failing)
+            self.assertTrue(any(p.startswith("Unit tests") for p in vs.check_section(path, root)))
+            unsummarised = vs.render_block(facts, vs.CommandResult("t", 0, "Traceback\n", identity),
+                                           vs.CommandResult("v", 0, "PASS\n", identity), {})
+            vs.write_section(path, unsummarised)
+            self.assertTrue(any(p.startswith("Unit tests") for p in vs.check_section(path, root)))
+            vs.write_section(path, passing)
+            (root / "a.txt").write_text("changed\n", encoding="utf-8")
+            self.assertTrue(any(p.startswith("stale") for p in vs.check_section(path, root)))
+            done = subprocess.run([sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"),
+                                   "--root", str(root), "--check", str(path)], capture_output=True, text=True)
+            self.assertEqual(done.returncode, 1)
+            self.assertEqual(path.read_text(encoding="utf-8").count("Tree identity"), 1)  # --check wrote nothing
+
+    def test_command_line_exits_non_zero_for_a_failed_or_unbound_log(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.git_repo(tmp)
+            (root / ".claude-plugin").mkdir()
+            (root / ".claude-plugin/plugin.json").write_text('{"version": "1.0.0"}', encoding="utf-8")
+            (root / "skills/rule-maker/rules").mkdir(parents=True)
+            (root / "skills/rule-maker/rules/version.json").write_text('{"rules_version": "1.0.0"}', encoding="utf-8")
+            log = Path(tmp) / "tests.log"
+            log.write_text(self.PASSING, encoding="utf-8")
+            tool = [sys.executable, "-X", "utf8", "-I", str(ROOT / "tools/verification_summary.py"), "--root", str(root)]
+            identity = subprocess.run(tool + ["--identity"], capture_output=True, text=True).stdout.strip()
+            run = lambda *extra: subprocess.run(tool + ["--tests-log", str(log), *extra], capture_output=True,
+                                                text=True).returncode
+            self.assertEqual(run("--tests-exit", "0", "--tests-source", identity), 0)
+            self.assertEqual(run("--tests-exit", "0"), 1)  # names no tree
+            self.assertEqual(run("--tests-exit", "1", "--tests-source", identity), 1)
+            self.assertEqual(run("--tests-exit", "0", "--tests-source", "other+clean"), 1)
 
     def test_write_refuses_without_history_heading(self):
         with tempfile.TemporaryDirectory() as tmp:

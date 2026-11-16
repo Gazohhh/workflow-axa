@@ -10,6 +10,7 @@ usage:
   python -X utf8 -I record.py tick     <TODO.md> <ticket-id> <evidence>  mark a checkbox or labelled ticket verified with evidence
   python -X utf8 -I record.py batch    <file> <edits.json | ->      several exact replacements in one call:
                                                                    [{"find": "old text", "replace": "new text"}, ...]
+  python -X utf8 -I record.py offer <command> ...                   the offer record (see offers.py)
 
 Keeps each line's ending as found (CRLF, LF or a mix; added lines take the file's main ending; `new` follows its
 input or sibling records), a UTF-8 byte order mark, and the encoding (UTF-8; other encodings are refused). A tick
@@ -222,6 +223,12 @@ def read_text(source: str) -> str:
 def main(argv: list[str]) -> int:
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # Windows consoles default to cp1252
+    if len(argv) > 1 and argv[1] == 'offer':  # the offer record (offers.py; REDESIGN.md §3.4)
+        spec = importlib.util.spec_from_file_location('workflow_axa_offers', pathlib.Path(__file__).with_name('offers.py'))
+        offers = importlib.util.module_from_spec(spec)
+        sys.modules['workflow_axa_offers'] = offers
+        spec.loader.exec_module(offers)
+        return offers.main(argv[2:])
     if len(argv) < 4 or argv[1] not in ('new', 'append', 'set-line', 'replace-section', 'tick', 'batch'):
         print(__doc__)
         return 2

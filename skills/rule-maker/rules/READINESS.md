@@ -1,10 +1,10 @@
 # Rules-readiness gate
 
-A required decision point before substantive repository planning, application edits, tests/builds with side effects, or delegated write work. `/workflow`, `resume-task` and ordinary globally routed requests use the same gate. Merely having files or having run rule-maker is neither necessary nor sufficient for readiness.
+A required decision point before substantive repository planning, application edits, tests/builds with side effects, or delegated write work. `/workflow`, `resume` and ordinary globally routed requests use the same gate. Merely having files or having run rule-maker is neither necessary nor sufficient for readiness.
 
 ## Entry and ownership
 
-This file owns the readiness procedure for workflow, its phases, resume-task and ordinary globally routed requests. Read START.md and CORE.md from this same installed rule-maker first. A missing library pauses affected work; do not fetch or invent one. A readiness blocker is asked on its own, before behavior/design questions. Record one scoped checkpoint line and name only files actually read. Setup is not implementation approval.
+This file owns the readiness procedure for workflow, its phases, resume and ordinary globally routed requests. Read START.md and CORE.md from this same installed rule-maker first. A missing library pauses affected work; do not fetch or invent one. A readiness blocker is asked on its own, before behavior/design questions. Record one scoped checkpoint line and name only files actually read. Setup is not implementation approval.
 
 After readiness, VERSIONS.md selects compatible guidance and ENGINEERING.md selects only the risk modules this change needs. Read OPERATIONS.md before side-effecting checks. Project conflicts use POLICY.md; a full rules audit uses the skill's AUDIT.md. Pass the effective rules, versions and approved exception to workers and reviewers. A specialist does not override them.
 
@@ -29,17 +29,17 @@ For the next bounded scope, establish:
 - Existing project agreements identify architecture/ownership and protected/generated files that matter to the change. Root or scoped files and approved linked records are valid sources. Valid existing rules pass in their current files and shape under [the shared principle](../DOCS.md#the-shared-principle).
 - Verification commands or an explicitly agreed verification approach are known; avoid executing unreviewed commands. Missing tests are not a claimed pass.
 - Output destinations, resource limits, data/credential handling and permissions are understood for the planned operations.
-- For application UI, read DESIGN.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. Follow DESIGN.md: no CSS is ever written; new elements use existing classes/IDs only, and an unmatched element waits for the answer to DESIGN.md's rule 4 question. Behavior-only fixes preserving existing markup/appearance need no kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
+- For application UI, read DESIGN.md and resolve local ui-design: mode, authority, approved references and any preview boundary cover the next scope. Follow DESIGN.md for styling authority, reuse of existing classes and IDs, and the question for an unmatched element. Behavior-only fixes preserving existing markup/appearance need no kit. No UI setup for unrelated backend work. Normal approved codebase-map reports retain their existing style.
 - Material conflicts and user decisions are resolved or clearly bounded by an authorized exception.
 
-A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project needs an agreed minimal setup before scaffolding ([DOCS.md](../DOCS.md#where-each-thing-belongs) names the starting files); do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
+A mature project with adequate existing rules passes without running rule-maker. Empty/placeholder rules fail. An empty new project gets the same question: an approved minimal setup, or *Skip for this task* with its named gaps listed; either way the scaffolding itself still needs its own approval ([DOCS.md](../DOCS.md#where-each-thing-belongs) names the starting files); do not demand architecture that does not exist yet. Do not require every framework module or audit the whole repository for a typo.
 
 ## 3. Choose an explicit state
 
 | State | Meaning and allowed next action |
 |---|---|
 | READY | Applicable shared/project rules were read and reviewed as sufficient for this scope. Continue workflow; implementation still requires its own approval. |
-| NEEDS_SETUP | Known, bounded rule coverage is absent/incomplete. Ask the user to choose setup, limited exception, read-only inspection or stop. |
+| NEEDS_SETUP | Known, bounded rule coverage is absent/incomplete. Name the gaps and ask one question: *Set up rules now* (recommended) or *Skip for this task*. Read-only work continues while the owner decides; only writes wait. |
 | BLOCKED | Trust, identity, safety, required access, conflicting authority or unreadable indispensable rules are unresolved. Stop affected work; no generic exception clears an unknown safety boundary. |
 | LIMITED_EXCEPTION | The authorized user accepted specific known rule omissions for one bounded task. Follow remaining rules and normal implementation approval; never report full readiness. |
 | READ_ONLY | Inspect/explain/status only. Disclose missing rules; no mutation authority. |
@@ -49,15 +49,15 @@ Fail closed on an unknown state or malformed/stale check: read-only investigatio
 
 ### The missing-rules message
 
-> I found the shared standards, but this project has no established instructions for safe edit areas, verification and output handling. I have not started the implementation plan or changed files.
+> I checked the project rules. Missing for this task: <the named gaps, for example "no test command, no ownership notes">. The rules that exist still apply.
 >
-> Recommended: prepare a minimal project-rules setup first. Alternatively, explicitly allow this one task under the shared defaults and the listed restrictions, continue read-only, or stop. Which do you choose?
+> *Set up rules now* (recommended) or *Skip for this task*?
 
 Name the actual gaps and practical consequences rather than a generic disclaimer. Ask once per unresolved gap; reuse a valid answer. Partial answers, "looks good", earlier implementation approval and silence are not a rule exception. Do not badger a user whose valid existing rules already cover the work.
 
-## 4. A limited exception is not "ignore rules"
+## 4. Skip for this task is not "ignore rules"
 
-Record in the existing task/checkpoint or, for a no-file request, the current conversation: approving response, reason, exact omitted requirements, intended root/worktree, task, operations, affected paths, applicable rule versions and an explicit expiry, in the user's words, that says whether later revisions are covered ("this task folder, all revisions" or "revision rN only"). No separate waiver report or permanent global opt-out.
+*Skip for this task* records a limited exception: in the existing task/checkpoint or, for a no-file request, the current conversation: the owner's answer, the exact named gaps it waives, the task and its root/worktree, and that it ends with the task. Existing project rules, protections, ownership and approved commands stay binding. Silence, "looks good" or an earlier approval is not a skip. Delivery names the actual gaps (for example "verification commands were not established"), not a generic "no rules". Also record: reason, exact omitted requirements, intended root/worktree, task, operations, affected paths, applicable rule versions and an explicit expiry, in the user's words, that says whether later revisions are covered ("this task folder, all revisions" or "revision rN only"). No separate waiver report or permanent global opt-out.
 
 Exceptions may cover a known documentation gap or agreed limited verification method. They cannot disable platform/organization protections, authorize external systems/production writes, reveal secrets, invent approval, bypass unknown ownership, override undisclosed conflicts or silently expand scope. The user must have authority over the exception. A policy marked non-waivable remains so. Unknown risk is not magically accepted by "do it anyway".
 
@@ -73,6 +73,6 @@ Pass workers: root/worktree, task, rules and sources, rule revision, scope/opera
 
 Use one compact existing checkpoint: `Rules: READY / sources / scope / checked revision / limits`. A project in the rule-maker structure lists its documents in the AGENTS.md index. No generated manifest and no check report on every invocation. The optional `scripts/readiness.py` checker validates declared assessments and freshness, not the truth of an agent's judgment.
 
-The acceptance suite must exercise missing/empty/valid/partial/stale/conflicting rules, bootstrap, explicit exceptions, untrusted code, subagents, scope expansion, unavailable tools, offline/cross-machine work and default-block behavior. All unclassified missing prerequisites block the affected action. Never promise complete scenario enumeration or error-free agents.
+The acceptance suite must exercise missing/empty/valid/partial/stale/conflicting rules, bootstrap, explicit exceptions, untrusted code, subagents, scope expansion, unavailable tools, offline/cross-machine work and default-block behavior. A missing tool or check follows the workflow's named fallbacks; only the conditions in FALLBACKS.md "What may pause work" pause the dependent action. Never promise complete scenario enumeration or error-free agents.
 
 A readiness assessment covers its named next-task scope only. A requested full rules audit follows rule-maker/AUDIT.md and reports installation/loading, policy/memory conflicts, framework coverage and verification safety separately. Apply POLICY.md to contradictions; do not convert an old memory into a new project rule.

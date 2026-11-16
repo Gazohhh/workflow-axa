@@ -57,6 +57,11 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
+Two more checks always join the Standards list:
+
+- **Comments** (from `../rule-maker/rules/CORE.md`): flag a new comment unless it is one of these: a licence header; a constraint the project can't change (vendor, platform, protocol), with its link; a public API doc comment; text a tool reads (a formatter or static-analysis directive, Rust `// SAFETY:`); an issue link; an exception the project adds. Flag a comment in the diff that contradicts the code, and when it states an intended contract, report it as a possible bug.
+- **Reader load** (a judgement call): code that makes the reader hold too much at once. Signs: many values live at the same time, a flag that changes what a function means, a layer of indirection that buys nothing. → split, name or inline until one screen can be read alone.
+
 ### 4. Run both axes
 
 Run each axis in a fresh subagent when the host has them: issue both calls together, in the foreground, and aggregate the reports they return. A fresh subagent that did not build the change is an **independent** review even when it runs both axes one after the other: label it "independent, axes sequential". When the builder reviews its own change, label it "self-review". Keep the axes separate either way.
@@ -64,7 +69,7 @@ Run each axis in a fresh subagent when the host has them: issue both calls toget
 **Standards prompt** should include:
 
 - The diff (in a task: the changed and untracked files) and any commits.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the subagent has no other access to it).
+- The list of standards-source files you found in step 3, **plus the smell baseline and the comment and reader-load checks from step 3** pasted in full (the subagent has no other access to them).
 - The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
 **Spec prompt** should include:
@@ -74,6 +79,10 @@ Run each axis in a fresh subagent when the host has them: issue both calls toget
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
 
 If the spec is missing, skip the Spec axis and note this in the final report.
+
+### 4b. Blast radius
+
+Run this step when the diff changes code that other code depends on: an exported symbol, a shared module, a schema, a configuration key. Search for the callers outside the diff, name them, and say what could break for each. Then prove the key safety fact by running code: a test or a probe. A probe follows the standing diagnostic allowance (`../rule-maker/rules/OPERATIONS.md`); one that writes runs in an isolated copy: pin the working tree with `python -X utf8 -I ../interrogate/scripts/snapshot.py id <repo>`, then make and verify the copy with its `copy` command, as `../interrogate/SKILL.md` steps 1 and 2 describe. When running it is not possible or not allowed, report the experiment that would prove the fact and mark the safety claim unverified. Put the result under `## Standards` as its own item, "Blast radius". This step reports only.
 
 ### 5. Aggregate
 

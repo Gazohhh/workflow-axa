@@ -1,15 +1,15 @@
 ---
 name: workflow-specify
-description: "Turn agreed behavior into scoped tickets, dependencies, checks and the plan report for implementation approval. Use after agreement or for a scoped revision."
+description: "Turn agreed behavior into scoped tickets, dependencies, checks and the offer for implementation approval; the plan report only when asked. Use after agreement or for a scoped revision."
 ---
 
 # Workflow specify
 
-Turn the agreement into tickets another agent could build, and get the plan approved. No application code or tests.
+Turn the agreement into tickets another agent could build, and get the offer approved. The plan report is built only on *Show review.html first* or when the owner asks. No application code or tests.
 
 Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never substitute another installed copy.
 
-**Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or clarify sent a small settled change here to ask both gates at once (`workflow/VISUAL-REVIEW.md`); otherwise go to `workflow-clarify`; no open choice blocks the plan; application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask DESIGN.md rule 4's question; never offer new CSS. Refresh evidence for files changed since the agreement.
+**Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or `not required` for a lightweight edit or settled one-ticket work, which gets the one-ticket offer (`workflow/VISUAL-REVIEW.md` "No separate agreement"); otherwise go to `workflow-clarify`; no open choice blocks the plan; application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask DESIGN.md rule 4's question; include new CSS only when the machine CSS switch is on (`rule-maker/rules/DESIGN.md` rule 1). Refresh evidence for files changed since the agreement.
 
 ## 1. Place the behavior
 
@@ -18,6 +18,8 @@ Put each behavior in the code that already owns it. Read `../codebase-design/SKI
 ## 2. Cut vertical tickets
 
 A **ticket** delivers one visible slice of a journey through every layer it needs, so it can be tested and reviewed alone. A ticket with no behavior of its own is a labeled prerequisite that names what it enables.
+
+Cut to the work's size. A lightweight edit gets no ticket: step 5's **minimal offer** names its files, its check and a one-line why. One-ticket work, a small visible change included, gets one ticket and the **one-ticket offer**. A ticket list is for multi-ticket work only.
 
 Write TODO in the `workflow/TASK-FOLDER.md` format via `record.py`. Supports, Depends on and Rules go under References, Documents on its own line, the rest under Technical details:
 
@@ -44,19 +46,21 @@ Run `plan-review` in a fresh context and resolve its findings. A behavior questi
 
 ## 5. Implementation approval
 
-First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Build the plan report as `workflow/VISUAL-REVIEW.md` "Prepare the report" says and ask for implementation approval; say "implements the behavior we agreed" only when that comparison found no difference. **STOP** (VISUAL-REVIEW "Prepare the report" step 4).
+First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Then write the **offer** (the minimal offer for a lightweight edit, one ticket's paths for one-ticket work): a JSON file with the behaviour summary, the paths the tickets may change, the operations (only protected actions, each by its exact name: `git commit` when asked, `git push`, an MCP tool's name; never a check), exclusions, conditions and required checks, and create it with `python -X utf8 -I <workflow>/scripts/record.py offer create <task-folder> <file.json>`. Run `record.py offer present <task-folder> <id>` and copy the block it prints, from its `--- workflow-axa offer` line to its `--- end offer` line, **into your reply** inside a code block, byte for byte. The owner doesn't see tool output, and only the block in your reply (or in the question) counts as presented. Your own summary may sit around it, never in place of it.
 
-Done when the report exists for this revision and its path is in your approval question (one-line changes included), or the user's explicit "no report" is recorded, or the task is on the small change route (valid `Small change:` line, no switch to the full route; `workflow/VISUAL-REVIEW.md`). Set `task_report.screen_change`; a change a user can see on screen (`visible`) also needs the report's screen diagram (`ui-design` step 3): kit screens with a design kit (`../codebase-map/UI-FLOW.md`), else capture and sketch; then preview is `not-needed`.
+End with **the one question**, with three answers: *Show review.html first*, *Approve from this summary*, *Change something*. Recommend the first when the change touches saved data, auth, a public interface, a migration, deletion, money, more than one owner or visible UI, and say why. Use the question tool when you have one (the block goes in the question). Without one, ask in text and end with this line, filled in: "Answer `/approve <id>` or approve, yes, ok, go, ja, akkoord or doe maar to approve from this summary; `/report <id>` to see review.html first; or say what to change." **STOP.** Say "implements the behavior we agreed" only when the comparison found no difference.
 
-Record the answer in the checkpoint `Approval` line and DECISIONS: approved (revision, report, tickets, exclusions), a correction (behavior or scope → `workflow-clarify`; tickets, seams, presentation → here), or a scoped waiver.
+Done when the offer was presented and the one question asked (one-line changes included). Record the owner's choice with `record.py offer presentation <task-folder> <id> html-first|chat`. The report is built only on *Show review.html first* or when the owner asks: build it as `workflow/VISUAL-REVIEW.md` "Prepare the report" says (read `../codebase-map/TASK-REPORT.md`, `../codebase-map/FLOWCHART-DESIGN.md` and `../workflow/SIMPLE-ENGLISH.md` whole first), name its `docs/plans/<task>/reviews/<file>.html` path, and ask again with *Approve from this summary* and *Change something*. Set `task_report.screen_change`; a change a user can see on screen (`visible`) also needs the report's screen diagram, kit screens with a design kit: VISUAL-REVIEW.md "UI work" owns its rules (read `../codebase-map/UI-FLOW.md` whole first); then preview is `not-needed`.
+
+The hook reads the answer from the conversation; never write an approval yourself. Record `- Offer: #<id>` in the checkpoint and the answer in DECISIONS. This step owns qualified answers and corrections. A qualified answer ("yes, but not the database") approves nothing: write the narrowed offer with `record.py offer revise`, present it, and ask once more. A correction of behavior or scope goes to `workflow-clarify` for those items; tickets, seams or presentation stay here. `offer revise` marks the old offer superseded; present the new one. `/wait-what` is no answer: explain, then present the unchanged offer and the same question again.
 
 ## Revisions
 
-For a later change, rewrite only affected tickets and checks and show the difference from the last approved revision. Other approved tickets keep running. Fixing a path or order inside an approved ticket needs no revision.
+For a later change, rewrite only affected tickets and checks and show the difference from the last approved revision. Other approved tickets keep running. Reordering tickets inside an approved offer needs no revision. Any change to the offer's allowed paths, operations or checks needs a revised offer (`record.py offer revise`) and a new answer.
 
 ## Next
 
-- Approved or waived, with implementation requested: `workflow-execute`.
+- Offer approved, or for a legacy task its recorded approval, with implementation requested: `workflow-execute`.
 - Plan-only request: stop with the plan, approved or not.
 - Blocked: record what blocks which tickets and what can still be approved.
 

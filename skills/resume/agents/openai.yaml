@@ -1,0 +1,3 @@
+interface:
+  display_name: "Resume"
+  short_description: "Report where a workflow task stands, continue it after a switch, or write a handoff into its records."

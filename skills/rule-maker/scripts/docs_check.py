@@ -63,11 +63,15 @@ REFERENCE = re.compile(r'^ {0,3}\[([^\]^][^\]]*)\]:\s*(<[^>\n]*>|\S+)(?:\s+("[^"
 EXTERNAL = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]+:')  # http:, https:, mailto: and other schemes
 FENCE = re.compile(r'^\s*(`{3,}|~{3,})')
 CODE_SPAN = re.compile(r'`[^`\n]*`')
-# The required-read marker, matched like hooks/phase_gate.py (DECLARATION_START, DECLARATION, declared_path).
-MARKER_START = re.compile(r'^ {0,3}<!--\s*workflow-axa:required-read', re.M)
-MARKER = re.compile(r'<!--\s*workflow-axa:required-read(.*?)-->', re.S)
-MARKER_BODY = re.compile(r'\s+phases=([a-z]+(?:,[a-z]+)*)\s+path="([^"\r\n]+)"\s*')
-MARKER_PHASES = {'specify', 'execute', 'deliver'}
+def _required_reads():
+    """required_reads.py next to this script: the one parser of the required-read grammar, shared with the hook."""
+    name = 'workflow_axa_required_reads'
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name('required_reads.py'))
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module  # dataclasses look their module up while the file runs
+        spec.loader.exec_module(module)
+    return sys.modules[name]
 COMMENT = re.compile(r'<!--.*?-->', re.S)
 HEADING = re.compile(r'^ {0,3}(#{1,6}(\s|$)|=+\s*$|-+\s*$)')  # ATX headings and setext underlines
 SEVERITIES = ('blocking', 'warning', 'note')
@@ -215,13 +219,6 @@ def repeated_paragraphs(paths: list[Path], min_words: int = PARAGRAPH_WORDS) -> 
     return [Repeat(text, tuple(places)) for text, places in seen.items() if len(places) > 1]
 
 
-def literal(path: str) -> bool:
-    """A literal root-relative path as the hook accepts it: no globs, URLs, absolute, backslash or dot parts."""
-    return bool(path) and path == path.strip() and '\\' not in path and not re.search(r'[*?\[\]{}]', path) \
-        and not re.match(r'^[A-Za-z][\w+.-]*:', path) and not path.startswith(('/', '~')) \
-        and all(part not in ('', '.', '..') for part in path.split('/'))
-
-
 def lexical(source: str, target: str) -> str:
     """A link target as a root-relative path, without touching the disk (for comparing missing paths)."""
     base = '' if target.startswith('/') else posixpath.dirname(source)
@@ -330,17 +327,11 @@ class Scan:
         A malformed one is a note; a well-formed one naming no existing file blocks."""
         for name in entries:
             text = self.read(name) if (self.root / name).is_file() else None
-            lines = outside_code(text or '')
-            joined = '\n'.join(lines)
-            for start in MARKER_START.finditer(joined):
-                number = joined.count('\n', 0, start.start()) + 1
-                whole = MARKER.match(joined, start.start() + start[0].index('<!--'))
-                body = whole and MARKER_BODY.fullmatch(whole[1])
-                path = body[2] if body else ''
-                if not body or any(p not in MARKER_PHASES for p in body[1].split(',')) or not literal(path):
-                    shown = ' '.join((whole[0] if whole else lines[number - 1]).split())[:120]
+            for declaration in _required_reads().parse('\n'.join(outside_code(text or ''))):
+                number, path = declaration.line, declaration.path
+                if declaration.error:
                     self.add('malformed-marker', 'note', name, number,
-                             f'the hook rejects this required-read marker: {shown}')
+                             f'the hook rejects this required-read marker: {declaration.text[:120]}')
                     continue
                 found = self.locate('', path)[0]
                 if found is not None and not (self.root / found).is_file():

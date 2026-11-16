@@ -151,7 +151,7 @@ class FollowupBaselineTests(unittest.TestCase):
 
 class ConditionalGuidanceTests(unittest.TestCase):
     def setUp(self):
-        self.mod = load_file(ROOT / 'hooks/plain_reply.py', 'plain_followup')
+        self.mod = load_file(ROOT / 'hooks/read_evidence.py', 'read_evidence_followup')  # T20
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.path = Path(self.tmp.name) / 'session.jsonl'
@@ -187,12 +187,6 @@ class ConditionalGuidanceTests(unittest.TestCase):
         self.assertIn('tdd/SKILL.md', missing)
         self.assertIn('code-review/SKILL.md', missing)
 
-    def test_stop_does_not_prompt_another_phase_read_or_review(self):
-        import test_plain_reply_hook
-        rows = [fixtures.ROUTER, fixtures.skill('workflow-execute'), fixtures.user('Stop.'),
-                fixtures.say('Stopped; the work is incomplete.')]
-        self.missing(rows)
-        self.assertEqual(test_plain_reply_hook.fire({'transcript_path': str(self.path)}), (0, ''))
 
 
 if __name__ == '__main__':

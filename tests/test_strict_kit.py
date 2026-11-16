@@ -187,7 +187,8 @@ class StrictKitTests(unittest.TestCase):
 class StrictPolicyTests(unittest.TestCase):
     def test_no_ordinary_escape_modes(self):
         core=(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
-        self.assertIn('No new CSS, ever.',core)
+        self.assertIn('No new CSS while the CSS switch is off',core)  # T17: off by default
+        self.assertIn('Only the owner turns it on',core)
         self.assertIn('Plain only on instruction.',core)
         self.assertIn('Record their words',core)
         self.assertIn('"no kit" is never permission to write CSS',core)

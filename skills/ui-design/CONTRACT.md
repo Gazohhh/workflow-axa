@@ -19,7 +19,7 @@ Look for the element that does the same job for the same user (DESIGN.md rule 4)
 
 ## Report diagram
 
-Every UI-visible change, except the small change route (DESIGN.md "Verify and report"), shows a screen diagram in the same full codebase-map report, as SKILL.md step 3 and UI-FLOW.md describe. A missing diagram keeps the report a draft.
+Every UI-visible change shows a screen diagram whenever a plan report is built (DESIGN.md "Verify and report"), in the same full codebase-map report, as SKILL.md step 3 and UI-FLOW.md describe. A missing diagram keeps the report a draft.
 
 The codebase-map renderer may generate its own HTML/CSS/SVG report shell. That is report code, not application code, and gives no permission to style the application or build prototypes under a reports path.
 

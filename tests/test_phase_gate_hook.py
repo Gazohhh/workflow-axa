@@ -228,11 +228,11 @@ class PhaseGateHookTests(unittest.TestCase):
         rows = [ROUTER, skill("workflow-axa:workflow-specify")]
         denied = self.fire(rows, "Bash", render)
         self.assertEqual(denied["permissionDecision"], "deny")
-        self.assertIn("simple-english/SKILL.md", denied["permissionDecisionReason"])
+        self.assertIn("workflow/SIMPLE-ENGLISH.md", denied["permissionDecisionReason"])
         self.assertIn("codebase-map/TASK-REPORT.md", denied["permissionDecisionReason"])
         read = lambda rel: {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
                             "input": {"file_path": f"D:/workflow-axa/skills/{rel}"}}]}}
-        rows += [read("simple-english/SKILL.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md"),
+        rows += [read("workflow/SIMPLE-ENGLISH.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md"),
                  read("codebase-map/FLOWCHART-DESIGN.md")]
         self.assertIsNone(self.fire(rows, "Bash", render))
         self.assertIsNone(self.fire([say("plain session")], "Bash", render))
@@ -250,7 +250,7 @@ class PhaseGateHookTests(unittest.TestCase):
 
     def test_report_requires_flowchart_guide_for_render_and_preflight(self):
         other_reads = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
-                       for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md')]
+                       for rel in ('workflow/SIMPLE-ENGLISH.md', 'codebase-map/TASK-REPORT.md')]
         for phase in ('workflow-specify', 'workflow-deliver'):
             for flag in ('--output docs/plans/t/reviews/plan.html', '--validate-input'):
                 command = {'command': f'python render_report.py --input p.json {flag}'}
@@ -262,7 +262,7 @@ class PhaseGateHookTests(unittest.TestCase):
     def test_flowchart_guide_read_evidence_and_compaction(self):
         command = {'command': 'python render_report.py --validate-input --input p.json'}
         other = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
-                 for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md')]
+                 for rel in ('workflow/SIMPLE-ENGLISH.md', 'codebase-map/TASK-REPORT.md')]
         read = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 'guide-read',
                 'name': 'Read', 'input': {'file_path': 'D:/workflow-axa/skills/codebase-map/FLOWCHART-DESIGN.md'}}]}}
         good = user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'content': 'Complete guide'}])
@@ -290,7 +290,7 @@ class PhaseGateHookTests(unittest.TestCase):
         # E6: the PowerShell tool and MCP write tools were outside the matcher, so the gate never ran for them.
         data = json.loads((ROOT / "hooks/hooks.json").read_text(encoding="utf-8"))
         entry = data["hooks"]["PreToolUse"][0]
-        self.assertIn("${CLAUDE_PLUGIN_ROOT}/hooks/phase_gate.py", entry["hooks"][0]["command"])
+        self.assertIn("${CLAUDE_PLUGIN_ROOT}/hooks/approval.py", entry["hooks"][0]["command"])  # T17: the offer checker; legacy tasks reach phase_gate through it
         matcher = re.compile(entry["matcher"])
         for name in ("Edit", "Write", "MultiEdit", "NotebookEdit", "Bash", "PowerShell", "mcp__UnityMCP__create_script",
                      "mcp__UnityMCP__manage_script", "mcp__trello__trelloWriteCard", "mcp__x__apply_text_edits",
@@ -1300,7 +1300,7 @@ class ApprovalGateTests(unittest.TestCase):
 
 DECLARE = '<!-- workflow-axa:required-read phases={phases} path="{path}" -->'
 GUIDES = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
-          for rel in ('simple-english/SKILL.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md')]
+          for rel in ('workflow/SIMPLE-ENGLISH.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md')]
 
 
 class RequiredReadTests(unittest.TestCase):

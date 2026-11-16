@@ -1,0 +1,5 @@
+interface:
+  display_name: "No comments"
+  short_description: "Reviewer verdicts per comment, one approved offer, then deletions and reshapes that keep behavior unchanged."
+policy:
+  allow_implicit_invocation: false

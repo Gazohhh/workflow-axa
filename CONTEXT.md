@@ -11,8 +11,14 @@ The user's first approval: the agreed behavior, journeys, scope and acceptance o
 _Avoid_: gate one
 
 **Implementation approval**:
-The user's second approval: the plan report with its tickets and checks, which permits code changes.
+The owner's answer to the one question that approves an offer (its files, operations and checks). It permits only the changes the offer lists. It has no waiver.
 _Avoid_: gate two, plan gate
+
+**Offer**:
+What the agent asks the owner to approve: the behavior summary, the paths and protected operations it may touch, the exclusions, conditions and checks. It is recorded under `docs/plans/<task>/offers/` with an id and changes only through `record.py offer`; a change to its content makes a new offer. Every offer ends with the one question (*Show review.html first*, *Approve from this summary*, *Change something*).
+
+**Legacy task**:
+A task approved before the offer model, which the owner listed with `legacy_inventory.py` at the upgrade. It keeps its `Approval:` line, checked by `hooks/phase_gate.py`. A task not on that list uses offers only.
 
 ### Reports
 
@@ -20,7 +26,7 @@ _Avoid_: gate two, plan gate
 The HTML page the package renders. "Review" names only the act of reviewing.
 
 **Plan report**:
-The report shown for implementation approval.
+The optional HTML report of an offer, built on *Show review.html first* or when the owner asks for it.
 _Avoid_: HTML plan, approval report
 
 "Task report" and "visual review" are not rejected: they name files (`TASK-REPORT.md`, `VISUAL-REVIEW.md`) and the act of reviewing.
@@ -52,17 +58,29 @@ One unit of a task with its own checks and status. In the report JSON, `tasks[]`
 The task record's current state: phase, approvals and what happens next.
 
 **Lightweight edit**:
-The route for an exact, low-risk change that nobody can notice. It skips both approvals; the checkpoint lists the files it may touch.
+An exact, low-risk change that nobody can notice. It needs no separate agreement but is still asked: it gets the minimal offer (its files, its check and a one-line why) and the one question, then one review and the short delivery.
 
 **Purpose statement**:
 For a change a user sees on screen: who uses it, in what situation, their goal and what must stand out. Taken from CONTEXT.md and the code; asked when a missing part would change the result, otherwise written as `unknown`. Without a task, the user and goal the request or CONTEXT.md names stand in for it. UI elements are chosen by the job they do for that user.
 
+**Interrogation**:
+An adversarial check the user starts with `/interrogate`: other agents try to show a concrete failure of a plan or a pinned change. A failure counts only when another agent reproduces it on a pristine copy. It reports and changes nothing.
+
+**Comment debt**:
+A misleading or stale comment outside the lines an approved change edits. It is listed in FINDINGS, not fixed; `/no-comments` is how the user cleans it up.
+
 **Small change**:
-The route for a visible edit to text, order or visibility of existing elements on one screen, with no new element, file, data, interface or dependency. One owner yes to the named files and description replaces both approvals; there is no plan report. Unlike a lightweight edit, its effect is visible. Execute's "small route" (one ticket built by the main agent) is a different thing.
+The former route for a small visible edit, now absorbed into the one-ticket offer: one ticket, its offer and the one question, with the plan report only when the owner asks. The term stays for old records with a `Small change:` line. Execute's "small route" (one ticket built by the main agent) is a different thing.
 
 **Limited exception**:
 A rules-readiness exception the user grants for one named piece of work while project rules are missing.
 _Avoid_: scoped exception
+
+**Recipe**:
+The order of steps for one kind of job (bug, feature, ui, refactor and so on), in `skills/workflow/flows/`. The router picks one from `flows/INDEX.md`; the skills it names do the work.
+
+**Fallback**:
+The named substitute when something a recipe needs is missing, from `skills/workflow/FALLBACKS.md`. The agent says it once, records it, and keeps going; only the conditions listed there pause work.
 
 ### Rules
 
@@ -76,6 +94,9 @@ The expected order of steps. The agent records a justified deviation.
 
 **Judgment call**:
 A decision the agent makes with a stated criterion. Two good runs can differ.
+
+**CSS switch**:
+The one setting per machine, in `~/.workflow-axa/settings.json`, that says whether styling may be written. It starts off; missing or invalid means off. Only the owner's Yes to the exact question turns it on, and a project's DESIGN.md with `css: never` keeps it off there.
 
 ### People and helpers
 
@@ -102,7 +123,7 @@ A hook, script or test parses, emits or asserts these exactly, or old records us
 - `Agreement (gate one)`: checkpoint label beside the parsed approval label, kept so existing records read the same.
 - `## Current checkpoint`: heading parsed by `hooks/phase_gate.py`.
 - `- Lightweight edit:`: checkpoint line parsed by `hooks/phase_gate.py`.
-- `small route`: hook note in `hooks/phase_reads.py`, asserted by its test.
+- `small route`: defined in `skills/workflow-execute/SKILL.md` step 3.
 - `plan approval`: asserted in `skills/workflow-clarify/SKILL.md` by `tests/test_behavioral_cases.py`; "Plan approval record" is a report heading.
 - `behavior agreement`: "Behavior agreement record" and status labels emitted by `skills/codebase-map/scripts/task_report.py`.
 - `task overview`: report kind (`task-overview`) and the "SAVED TASK OVERVIEW" heading asserted by tests.
@@ -129,7 +150,7 @@ Each rule below is stated in several files today. The owner file states it in fu
 
 | Rule | Owner file |
 |---|---|
-| Never write CSS | `skills/rule-maker/rules/DESIGN.md` |
+| No CSS while the CSS switch is off | `skills/rule-maker/rules/DESIGN.md` |
 | The question to ask when no existing style matches (DESIGN.md rule 4) | `skills/rule-maker/rules/DESIGN.md` |
 | Never stage, commit or push unless asked ("Always" list) | `skills/workflow/SKILL.md` |
 | Agreement is not permission to code | `skills/workflow/VISUAL-REVIEW.md` |

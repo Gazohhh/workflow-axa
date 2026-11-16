@@ -5,11 +5,11 @@ description: "Agree a task's behavior before planning: trace journeys, callers a
 
 # Workflow clarify
 
-Turn a request into a behavior agreement the user confirms. No tickets; no code except an approved small change's listed files.
+Turn a request into a behavior agreement the user confirms. No tickets, offers or code.
 
 Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never use another skills root's copy.
 
-**Before you start**, check: rules are READY, or a recorded LIMITED_EXCEPTION covers this phase within its limits (`workflow/RULES.md`); the task is found and checkpointed (`workflow/TASK-FOLDER.md`), or the router left only its identity open: then ask "separate task or revision?" as Q1 of your first round, saying a separate task is best in a fresh chat; word the other questions so they hold for either answer, save the round as TASK-FOLDER.md's "identity pending" row says, and never ask it alongside approvals; explain-only and lightweight edits are not clarify work (`workflow/SKILL.md` §2–3). If an agreement covers this revision, go to `workflow-specify`; an approved small change follows Next. Application UI, meaning anything a user sees on screen (order, text, which rows or items show, layout or styling): first read `../ui-design/SKILL.md` and `../rule-maker/rules/DESIGN.md`, then trace. Options you offer never include new CSS.
+**Before you start**, check: rules are READY, or a recorded LIMITED_EXCEPTION covers this phase within its limits (`workflow/RULES.md`); the task is found and checkpointed (`workflow/TASK-FOLDER.md`), or the router left only its identity open: then ask "separate task or revision?" as Q1 of your first round, saying a separate task is best in a fresh chat; word the other questions so they hold for either answer, save the round as TASK-FOLDER.md's "identity pending" row says, and never ask it alongside approvals; explain-only and lightweight edits are not clarify work (`workflow/SKILL.md` §2–3). If an agreement covers this revision, go to `workflow-specify`; an approved offer follows Next. Application UI, meaning anything a user sees on screen (order, text, which rows or items show, layout or styling): first read `../ui-design/SKILL.md` and `../rule-maker/rules/DESIGN.md`, then trace. Options you offer include new CSS only when the machine CSS switch is on (`rule-maker/rules/DESIGN.md` rule 1).
 
 ## 1. Trace the journeys
 
@@ -52,14 +52,13 @@ Summarize every part of the agreement in plain words, with the PLAN path. Then a
 
 **STOP.** Answering grilling, silence or a generic "go" is not agreement. Never invite approval of a plan the user hasn't seen, and never borrow shortcuts from other tasks or earlier revisions.
 
-When nothing is open: a change that qualifies under `workflow/VISUAL-REVIEW.md` "Small change" gets that section's offer instead of the question above (its steps 1-3, then step 4); that yes is not plan approval. One small enough for "Both gates in one message" there gets no question yet: invoke `workflow-specify`. Clarify never asks for plan approval itself.
+When nothing is open and the work is one ticket (`workflow/VISUAL-REVIEW.md` "No separate agreement"): record Agreement `not required — one-ticket offer` and invoke `workflow-specify` without the question above. Clarify never asks for plan approval itself and never makes an offer.
 
-Record the answer in the checkpoint `Agreement` line and DECISIONS: agreed (agreement N, date), partially agreed (reopened items go back to step 2), rejected, or an explicit waiver with its scope. Small change: Agreement `not required — lightweight or small change`; Approval per VISUAL-REVIEW "Small change" step 3.
+Record the answer in the checkpoint `Agreement` line and DECISIONS: agreed (agreement N, date), partially agreed (reopened items go back to step 2), rejected, or an explicit waiver with its scope.
 
 ## Next
 
-- Agreed or waived: `workflow-specify`.
-- Yes to both, even later: `workflow-execute`.
-- Small change approved: edit only the listed files, then VISUAL-REVIEW "Small change" step 4.
+- Agreed, waived or not required: `workflow-specify`.
+- Approved offer, even later: `workflow-execute`.
 - Research: stop with findings and open choices recorded. Plan-only: continue through `workflow-specify`, then stop; code needs an implementation request too.
 - Blocked: record the blocking question or missing access, and what can still proceed.

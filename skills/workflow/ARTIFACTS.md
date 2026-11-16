@@ -1,6 +1,6 @@
 # Test output without the clutter
 
-Policy revision: 2.5.0. Applies to testing, builds, device/browser checks, profiling and delegated work, including ordinary prompts outside `/workflow`. An artifact is a generated file, not automatically something worth keeping. Project protections and explicit user instructions still apply; resolve conflicting instructions before a risky write or cleanup.
+Policy revision: 2.9.0. Applies to testing, builds, device/browser checks, profiling and delegated work, including ordinary prompts outside `/workflow`. An artifact is a generated file, not automatically something worth keeping. Project protections and explicit user instructions still apply; resolve conflicting instructions before a risky write or cleanup.
 
 ## Before producing files
 

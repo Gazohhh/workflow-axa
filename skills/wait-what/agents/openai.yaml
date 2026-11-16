@@ -1,0 +1,5 @@
+interface:
+  display_name: "Wait, what?"
+  short_description: "Re-explain the last message in plain words; no new work, the pending question repeated unchanged."
+policy:
+  allow_implicit_invocation: false

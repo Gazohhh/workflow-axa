@@ -31,7 +31,7 @@ MAX_BYTES = 8 * 1024 * 1024
 STATES = {'draft', 'awaiting-approval', 'approved', 'inspection', 'superseded'}
 CHANGE = {'unchanged', 'added', 'modified', 'removed'}
 BASIS = {'observed', 'inferred', 'unknown', 'proposed'}
-RENDERER_VERSION = '2.8.0-rc.39'
+RENDERER_VERSION = '2.9.0-rc.1'
 
 
 def ui_module():
@@ -1039,12 +1039,12 @@ def main() -> int:
             out.write(result)
         print(f'{"REPLACED" if replacing else "RENDERED"}: {args.output.resolve()}')
         print('Artifact creation does not approve or start implementation.')
-        for path, problem in issues:  # simple-english advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
+        for path, problem in issues:  # SIMPLE-ENGLISH.md advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
             print(f'PLAIN ENGLISH: {path}: {problem}')
         for path, note in notes:
             print(f'PLAIN ENGLISH NOTE: {path}: {note}')
         if issues:
-            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with the simple-english skill, then render into the same file with --replace-unpresented.')
+            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with ../workflow/SIMPLE-ENGLISH.md, then render into the same file with --replace-unpresented.')
         if args.open and issues:
             print('NOT OPENED: wording problems remain. Opening would show the report to the user. Fix them first, then render again with --open.')
         elif args.open:

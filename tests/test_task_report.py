@@ -624,14 +624,14 @@ class WordingTests(unittest.TestCase):
             renderer.unpresented(output, self.root, self.data)
 
     def test_wording_docs_agree_on_uncertainty_words_and_replacing_drafts(self):
-        simple = (ROOT / "skills/simple-english/SKILL.md").read_text(encoding="utf-8")
+        simple = (ROOT / "skills/workflow/SIMPLE-ENGLISH.md").read_text(encoding="utf-8")
         writing = (ROOT / "skills/workflow/WRITING.md").read_text(encoding="utf-8")
         self.assertIn("uncertainty, permission or a proposal", simple)
         self.assertIn("never just delete", simple)
         self.assertIn("must, may, must not", writing.lower())
         self.assertIn("uncertainty, permission or a proposal", writing)
         self.assertIsNone(helper_contraction(writing), "WRITING.md uses a contraction")
-        for path in ("skills/simple-english/SKILL.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
+        for path in ("skills/workflow/SIMPLE-ENGLISH.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
             text = (ROOT / path).read_text(encoding="utf-8")
             self.assertIn("--replace-unpresented", text, path)
             self.assertNotIn("then render a new file", text, path)

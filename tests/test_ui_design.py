@@ -222,16 +222,17 @@ class UiDiffTests(unittest.TestCase):
 
 
 class UiPolicyContractTests(unittest.TestCase):
-    def test_ui_design_registered_once_among_twenty_one(self):
+    def test_ui_design_registered_once_among_the_skills(self):
         data=json.loads((ROOT/'.claude-plugin/plugin.json').read_text())
-        self.assertEqual(len(data['skills']),21)
+        self.assertEqual(len(data['skills']),19)  # T21: three skills merged into resume and rule-maker
         self.assertEqual(data['skills'].count('./skills/ui-design'),1)
 
     def test_strict_modes_and_no_kit_invention(self):
         text=(ROOT/'skills/rule-maker/rules/DESIGN.md').read_text()
         for name in ('behaviour-only','reuse','blocked','plain-by-instruction','Mirror the element','screen diagram'):
             self.assertIn(name,text)
-        self.assertIn('No new CSS, ever.',text)
+        self.assertIn('No new CSS while the CSS switch is off',text)  # T17: the machine switch, off by default
+        self.assertIn('Only the owner turns it on',text)
         self.assertIn("Is there an existing element I should mimic?",text)
 
     def test_ordinary_loading_covers_markup_not_only_css(self):
@@ -246,7 +247,7 @@ class UiPolicyContractTests(unittest.TestCase):
         self.assertIn('preview/release limits',text)
 
     def test_handoffs_review_status_doctor_and_setup_connected(self):
-        for path in ('skills/resume-task/SKILL.md','skills/task-status/SKILL.md','skills/plan-review/SKILL.md','skills/workflow-doctor/SKILL.md','skills/rule-maker/SKILL.md','skills/workflow/AUDIT.md','skills/workflow/templates/PROJECT-ROUTING.md'):
+        for path in ('skills/resume/SKILL.md','skills/plan-review/SKILL.md','skills/rule-maker/DIAGNOSE.md','skills/rule-maker/SKILL.md','skills/workflow/AUDIT.md','skills/workflow/templates/PROJECT-ROUTING.md'):
             text=(ROOT/path).read_text().lower()
             self.assertTrue('ui-design' in text or 'design acceptance' in text,path)
 

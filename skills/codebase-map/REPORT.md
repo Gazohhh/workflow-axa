@@ -101,7 +101,7 @@ For optional browser/visual verification, apply the active workflow ARTIFACTS.md
 
 ## Task-overview record context
 
-Ordinary approval reviews remain the default. For a specifically requested task-status illustration, set `report_kind: "task-overview"` and supply `checkpoint`. This is a saved projection of the existing task record, not a dashboard to regenerate per checkpoint. It does not ask for new approval or grant implementation authority. Preserve the selected `revision` exactly, even when a legacy review uses another filename/phase alias. The task overview labels the comparison as a historical baseline versus reviewed scope; a flow is not current-implementation evidence just because it is approved. In current-only mode, the inspected flow still needs fresh code evidence.
+Ordinary approval reviews remain the default. For a specifically requested resume status illustration, set `report_kind: "task-overview"` and supply `checkpoint`. This is a saved projection of the existing task record, not a dashboard to regenerate per checkpoint. It does not ask for new approval or grant implementation authority. Preserve the selected `revision` exactly, even when a legacy review uses another filename/phase alias. The task overview labels the comparison as a historical baseline versus reviewed scope; a flow is not current-implementation evidence just because it is approved. In current-only mode, the inspected flow still needs fresh code evidence.
 
 | Optional field | Meaning and requirements |
 |---|---|

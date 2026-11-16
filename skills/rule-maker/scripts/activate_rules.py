@@ -67,8 +67,8 @@ def block(host: str, library: Path) -> str:
 
 Before substantive repository planning, edits, output-producing commands or delegated writes,
 check applicable project-rule coverage using this library's READINESS.md. This applies even
-without /workflow or /rule-maker. Missing/insufficient rules: STOP and offer minimal setup,
-a specific one-task exception, read-only inspection or stop. Unknown trust/identity/safety
+without /workflow or /rule-maker. Missing/insufficient rules: name the gaps and ask "set up rules now" or
+"skip for this task"; read-only work continues, writes wait for the answer. Unknown trust/identity/safety
 conflicts cannot be waived by a generic 'continue'. Valid existing rules need no setup marker.
 Read-only discovery is allowed to establish the facts; no application changes during setup.
 

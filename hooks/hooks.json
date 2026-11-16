@@ -1,5 +1,5 @@
 {
-  "description": "After /workflow, blocks code edits, shell writes into project files, MCP write tools and git writes until the current task's PLAN.md Approval line approves a revision and quotes words from a real user message (canonical task records use record.py instead of direct Write/Edit/MultiEdit in active workflow sessions; see skills/workflow/SETUP.md, What the hooks enforce); on the two-gate route, also until the checkpoint Agreement line says agreed, waived, legacy or not required. It also blocks git clean (not its dry run), deleting .artifacts itself and wildcard deletes under it, and blocks package installs and npx-style downloads unless the user's latest words allow installing. When the project root AGENTS.md or CLAUDE.md declares required reads, blocks entering workflow-specify, workflow-execute or workflow-deliver, and validating or rendering a report while one is loaded, until each declared file was read whole in the current context. Warns the agent (never blocks): partial reads of workflow-axa instruction files, in-place task-record edits, edits that add styling to an application file or a new tag or class to a small-change file, and, when a phase skill loads, the exact files that phase must read; and, in workflow sessions, a one-time rewrite request when the last reply has contractions, em-dashes or semicolons. Duplicate skill copies: at session start, names every second copy of a workflow-axa skill in the personal or project skills folders and asks the owner to delete it (never deletes anything itself), and warns when the imported shared rules copy differs from the plugin's; while a copy exists, blocks loading workflow-clarify, workflow-specify, workflow-execute and bare duplicate names until the copies are gone or the owner sends a message that is only \"continue with duplicates\" (valid for that session, at most 12 hours).",
+  "description": "After /workflow, a project write is allowed only when an approved offer covers it (hooks/approval.py): the agent presents the offer from `record.py offer present` and asks one question (Show review.html first, Approve from this summary, Change something); the owner's answer in the conversation approves it, checked again in later sessions, and a later withdrawal, narrowing or stop counts. Git writes and MCP write tools need the operation named in the offer. Styling writes also need the machine CSS switch (~/.workflow-axa/settings.json, off by default), and changing the switch needs the owner's Yes to that exact question. Offer records, the switch and the frozen list of pre-offer approvals can't be written directly. Tasks approved before the offer model (listed by the owner with legacy_inventory.py at the upgrade) keep their Approval-line check through phase_gate.py. It also blocks git clean, deleting .artifacts itself and wildcard deletes under it, and package installs and npx-style downloads unless the user's latest words allow installing; an open rules question pauses writes. At session start it names second copies of workflow-axa skills and explains how to settle them; it never blocks for them. Delivery checks the review evidence itself (completion_check.py); there is no Stop hook.",
   "hooks": {
     "SessionStart": [
       {
@@ -18,43 +18,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_gate.py\" --hook-protocol=1",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/duplicate_skills.py\"",
-            "timeout": 5
+            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/approval.py\"",
+            "timeout": 20
           }
         ]
       }
     ],
     "PostToolUse": [
-      {
-        "matcher": "Bash|Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/truncated_read.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_reads.py\"",
-            "timeout": 5
-          }
-        ]
-      },
       {
         "matcher": "Bash|PowerShell|Read|Edit|Write|MultiEdit|AskUserQuestion",
         "hooks": [
@@ -71,28 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_reads.py\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
             "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/phase_gate.py\" --hook-protocol=1",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/duplicate_skills.py\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python -X utf8 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/plain_reply.py\"",
             "timeout": 5
           }
         ]

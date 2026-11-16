@@ -32,28 +32,6 @@ def record(*args):
                            *map(str, args)], capture_output=True, text=True, encoding='utf-8')
 
 
-class PackageLocationTests(unittest.TestCase):
-    def setUp(self):
-        self.hook = load(ROOT/'hooks/truncated_read.py', 'rc3_partial')
-
-    def test_git_bash_target_matches_actual_root_not_its_basename(self):
-        found = self.hook.partial_reads('cd /c/cache/vendor/release-17/skills && cat workflow/TASK-FOLDER.md | head -2',
-                                       'C:/cache/vendor/release-17')
-        self.assertTrue(found)
-
-    def test_quoted_paths_and_parent_escape(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)/'plugin cache'/'release 17'
-            folder = root/'skills/workflow'
-            folder.mkdir(parents=True)
-            (folder/'RULES.md').write_text('rule\n'*12, encoding='utf-8')
-            self.assertTrue(self.hook.partial_reads(f'cd "{folder}" && cat RULES.md | head -2', str(root)))
-            self.assertEqual(self.hook.partial_reads(f'cd "{folder}" && cat RULES.md | head -20', str(root)), [])
-            self.assertEqual(self.hook.partial_reads(f'cd "{folder}" && cat ../../../outside.md | head -2', str(root)), [])
-
-    def test_other_installation_not_claimed_by_a_matching_folder_name(self):
-        self.assertFalse(self.hook.in_package('C:/other/workflow-axa/skills/workflow/SKILL.md',
-                                             'C:/cache/vendor/release-17'))
 
 
 class LegacyApprovalTests(unittest.TestCase):
@@ -82,7 +60,7 @@ class LegacyApprovalTests(unittest.TestCase):
         rows = [fixtures.ROUTER, self.h.records(), fixtures.say(f'Plan: docs/plans/{fixtures.TASK}/reviews/legacy-review.html. Approve?'), fixtures.user('Yes to both')]
         result = self.h.fire(rows, 'Edit', {'file_path': self.h.code})
         reason = result['permissionDecisionReason']
-        self.assertIn('resume-task', reason)
+        self.assertIn('resume skill', reason)  # T21: resume-task merged into resume
         self.assertIn('Do not edit or disable the hook', reason)
 
 
@@ -333,7 +311,7 @@ class L1TidyTests(TicketFixture):
         self.assertIn('`Status: paused` with the reason on its own line', rule)
 
     def test_resume_keeps_the_original_approval_quote(self):
-        self.assertIn('Never rewrite the original `- Approval:` quote', (ROOT / 'skills/resume-task/SKILL.md').read_text(encoding='utf-8'))
+        self.assertIn('never rewrite an Approval quote', (ROOT / 'skills/resume/SKILL.md').read_text(encoding='utf-8'))  # T21
         policy = (ROOT / 'skills/workflow/VISUAL-REVIEW.md').read_text(encoding='utf-8')
         self.assertIn('`- Reconfirmed (gate two): r<N>, <date>: "<words>"`', policy)
         self.assertIn('The original Approval quote stays unchanged', policy)

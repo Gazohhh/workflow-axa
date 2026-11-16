@@ -9,7 +9,7 @@ Report what was requested, built and verified, including gaps. Deliver never fix
 
 Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never use another skills root's copy.
 
-**Before you start**, check: the PLAN checkpoint names the agreement and approval, or the lightweight request (else report what's missing, never reconstructing authority); no worker is still writing; execute recorded the whole-feature review, unless the task is stopped, paused, cancelled or lightweight, or a small change (`workflow/TASK-FOLDER.md`); otherwise hand back to `workflow-execute`, never run it here; rules cover any check you rerun (`workflow/RULES.md`), else that check stays not verified.
+**Before you start**, check: the PLAN checkpoint names the agreement and the approved offer (`Offer: #<id>`, the minimal offer for a lightweight edit), or a legacy task's Approval line (else report what's missing, never reconstructing authority); no worker is still writing; execute recorded the whole-feature review, unless the task is stopped, paused, cancelled or lightweight (`workflow/TASK-FOLDER.md`); otherwise hand back to `workflow-execute`, never run it here; rules cover any check you rerun (`workflow/RULES.md`), else that check stays not verified.
 
 With subagents, a fresh one that didn't build the work reconciles; on execute's small route the ticket's reviewer may, labeled. Otherwise label it self-performed.
 
@@ -29,6 +29,7 @@ For each agreed requirement, acceptance item, per-actor line and assumption, app
 | Not verified (`unverified`) | No check, a stale check (report the check as `stale`), or no environment; with the reason |
 | Waived (`waived`) | A recorded user decision; never shown as passed |
 | Superseded or descoped (`superseded`) | The decision that replaced it; no check cited |
+| Unknown (`unknown`; in a report `unverified`, its note starting "unknown:") | The evidence is missing or can't be read; say so plainly, never guess a verdict |
 
 ## 3. Checks
 
@@ -40,11 +41,11 @@ Map every changed file to a ticket; report unexplained changes, untouched promis
 
 ## 5. Reviews
 
-Each ticket review and the whole-feature review exist, cover Standards and Spec, ran on the final files and have every finding closed or limited; report missing or self-only reviews.
+Each ticket review and the whole-feature review exist, cover Standards and Spec, ran on the final files and have every finding closed or limited; report missing or self-only reviews. Prove "ran on the final files" with `python -X utf8 -I scripts/completion_check.py check <project-root> <task-folder>` before you write Done. Exit 1 names each change without a passed review of its current form: back to `workflow-execute` for those files, or report the task partial. Exit 2 (no baseline, no git, damaged record): the task is partial, verification pending, never Done, until the check passes; say why it could not run.
 
 ## 6. Records
 
-TODO states, the checkpoint and your ledger agree (`workflow/scripts/open_items.py` lists unevidenced ticks). List every DECISIONS entry marked `by: agent` for the user. Both gates are recorded, or classified legacy, waived, lightweight or small change.
+TODO states, the checkpoint and your ledger agree (`workflow/scripts/open_items.py` lists unevidenced ticks). List every DECISIONS entry marked `by: agent` for the user. The Agreement line is agreed, waived, legacy or not required, and the checkpoint names the approved offer, or for a legacy task its Approval line.
 
 ## 7. Send defects back
 
@@ -54,10 +55,10 @@ Done when every requirement, required check, changed file, claim and review has 
 
 ## 8. Write the delivery
 
-Write PLAN `## Outcome` with `workflow/scripts/record.py` and update the checkpoint: asked, agreed and built; tickets and states; changed files and documents; checks and results; both review axes; acceptance and claim verdicts; for UI, each class used with the file that defines it and "no CSS added" checked in the diff; limitations; kept evidence and remaining scratch; next safe action. 
+Write PLAN `## Outcome` with `workflow/scripts/record.py` and update the checkpoint: asked, agreed and built; tickets and states; changed files and documents; checks and results; both review axes; acceptance and claim verdicts; for UI, each class used with the file that defines it and, with the CSS switch off, "no CSS added" checked in the diff; limitations (`workflow/FALLBACKS.md`: the remaining gaps only); kept evidence and remaining scratch; next safe action. 
 
-Then tell the user (`../simple-english/SKILL.md`): what works now, what doesn't or wasn't checked, what they still need to accept; then evidence. Run `workflow/WRITING.md`'s cold-reader check. Owner or design acceptance is the user's to record.
+Then tell the user (`../workflow/SIMPLE-ENGLISH.md`): what works now, what doesn't or wasn't checked, what they still need to accept; then evidence. Run `workflow/WRITING.md`'s cold-reader check. Owner or design acceptance is the user's to record.
 
-Done when all three exist: the PLAN Outcome; whenever the task has any HTML report, a delivery snapshot or the user's recorded "no snapshot"; and the chat report, with the snapshot path. An unchanged reconciliation reuses the delivery snapshot; status-only changes stay in the records. A first or materially new outcome (verdict, check, file or completion change) gets a new dated snapshot: run `codebase-map/scripts/task_report.py scaffold <approved review.json> <new delivery.json>`, then fill every `FILL:` text and every status from the records; visible changes use real captures of the built result when safe. Snapshot rules and retention: `workflow/VISUAL-REVIEW.md`.
+Done when these exist: the PLAN Outcome; the chat report; and, only when the offer's presentation decision was `html-first` or the owner asks for one, a delivery snapshot (read `../codebase-map/TASK-REPORT.md`, `../codebase-map/FLOWCHART-DESIGN.md` and, for UI, `../codebase-map/UI-FLOW.md` whole first) with its path in the chat report, or the user's recorded "no snapshot". An unchanged reconciliation reuses the delivery snapshot; status-only changes stay in the records. A first or materially new outcome (verdict, check, file or completion change) gets a new dated snapshot: run `codebase-map/scripts/task_report.py scaffold <approved review.json> <new delivery.json>` (when the offer was approved in chat and no review.json exists, first build one for the approved offer as `../workflow/VISUAL-REVIEW.md` "Prepare the report" step 2 describes, then scaffold from it), then fill every `FILL:` text and every status from the records; visible changes use real captures of the built result when safe. Snapshot rules and retention: `workflow/VISUAL-REVIEW.md`.
 
-**Lightweight edit or small change**: the same at its real size: one ledger row with its check, one review and changed files, and a short report. No ticket or whole-feature reviews, no HTML snapshot.
+**Lightweight edit (minimal offer)**: the same at its real size: one ledger row with its check, one review and changed files (the baseline, snapshot and check too), and a short report. No ticket or whole-feature reviews. The HTML snapshot follows the same `html-first`-or-asked rule. **One-ticket offer**: the normal delivery; its one ticket review counts as the whole-feature review when it was briefed with those checks.

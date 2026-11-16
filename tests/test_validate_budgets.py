@@ -40,36 +40,21 @@ class ValidateBudgetTests(unittest.TestCase):
     def candidate(self) -> Path:
         return Path(shutil.copytree(self.clean, Path(tempfile.mkdtemp(dir=self.tmp.name)) / "candidate"))
 
-    # Word budgets for reference files
+    # Default word ceilings (advisory, G5: no per-file table)
 
-    def test_every_reference_file_has_a_budget_and_fits_it(self):
-        self.assertEqual(sorted(validate.reference_files(ROOT)), sorted(validate.REFERENCE_BUDGETS))
-        self.assertEqual(validate.reference_budget_errors(ROOT), [])
+    def test_a_file_above_its_ceiling_is_a_note_not_a_failure(self):
+        root = self.candidate()
+        for words, noted in ((validate.REFERENCE_CEILING, False), (validate.REFERENCE_CEILING + 1, True)):
+            with self.subTest(words=words):
+                (root / "skills/workflow/LONG-NOTES.md").write_text("word " * words, encoding="utf-8")
+                self.assertFalse(any("LONG-NOTES.md" in e for e in validate.validate_package(root)))
+                self.assertEqual(any("skills/workflow/LONG-NOTES.md" in n and "default ceiling" in n
+                                     for n in validate.package_notes(root)), noted)
 
-    def test_formerly_copied_reference_files_have_budgets(self):
-        # D1: these skills are our own text now, so their reference files are budgeted like every other skill's.
-        files = validate.reference_files(ROOT)
-        for name in ("tdd/tests.md", "simple-english/references/rule-catalog.md", "domain-modeling/GLOSSARY-FORMAT.md"):
-            self.assertIn(name, validate.REFERENCE_BUDGETS)
-            self.assertIn(name, files)
-
-    def test_a_reference_file_at_its_ceiling_passes_and_one_word_more_fails(self):
-        for extra, fails in ((0, False), (1, True)):
-            with self.subTest(extra=extra):
-                root = self.candidate()
-                path = root / "skills/workflow/TASK-FOLDER.md"
-                room = validate.REFERENCE_BUDGETS["workflow/TASK-FOLDER.md"] - len(path.read_text(encoding="utf-8").split())
-                self.assertGreaterEqual(room, 0)  # an existing overage would make the one-word case pass by accident
-                append(path, "extra " * (room + extra))
-                errors = [e for e in validate.validate_package(root)
-                          if "skills/workflow/TASK-FOLDER.md" in e and "word budget" in e]
-                self.assertEqual(bool(errors), fails, errors)
-
-    def test_reference_file_without_a_budget_fails(self):
+    def test_a_new_reference_file_needs_no_validator_edit(self):
         root = self.candidate()
         (root / "skills/workflow/NEW-NOTES.md").write_text("A new reference file.\n", encoding="utf-8")
-        errors = validate.validate_package(root)
-        self.assertTrue(any("skills/workflow/NEW-NOTES.md" in e and "no word budget" in e for e in errors), errors)
+        self.assertEqual(validate.validate_package(root), [])
 
     # Repeated paragraphs (advisory)
 
@@ -101,18 +86,18 @@ class ValidateBudgetTests(unittest.TestCase):
         # A rejected synonym is never also an identifier that keeps its form.
         self.assertFalse(set(vocabulary.avoid) & {i.casefold() for i in vocabulary.identifiers})
 
-    def test_the_synonym_switch_is_on(self):
-        self.assertIs(validate.SYNONYMS_FAIL, True)
+    def test_the_synonym_switch_is_off(self):
+        # G4 (REDESIGN.md §10): CONTEXT.md is a glossary; its _Avoid_ lists are advice, not a parser registry.
+        self.assertIs(validate.SYNONYMS_FAIL, False)
 
-    def test_planted_synonym_fails_validation(self):
+    def test_planted_synonym_is_a_note(self):
         root = self.candidate()
         append(root / "skills/workflow/RULES.md", "Hand the search to a sub-agent.")
         findings = validate.synonym_findings(root)
         self.assertTrue(any("'sub-agent'" in n and "'subagent'" in n and "skills/workflow/RULES.md:" in n
                             for n in findings), findings)
-        errors = validate.validate_package(root)
-        self.assertTrue(any("'sub-agent'" in e and "skills/workflow/RULES.md:" in e for e in errors), errors)
-        self.assertFalse(any("sub-agent" in n for n in validate.package_notes(root)))  # an error, not also a note
+        self.assertFalse(any("sub-agent" in e for e in validate.validate_package(root)))
+        self.assertTrue(any("'sub-agent'" in n for n in validate.package_notes(root)))
 
     def test_synonym_fails_only_when_the_switch_is_on(self):
         root = self.candidate()
@@ -142,7 +127,7 @@ class ValidateBudgetTests(unittest.TestCase):
         self.assertEqual(sorted(findings), ["synonym 'sub-agent' (use 'subagent') in skills/tdd/SKILL.md",
                                             "synonym 'sub-agent' (use 'subagent') in skills/tdd/tests.md"])
 
-    def test_command_line_fails_on_a_synonym_and_prints_notes(self):
+    def test_command_line_fails_on_a_repeat_and_prints_synonym_notes(self):
         root = self.candidate()
         append(root / "skills/workflow/RULES.md", "Hand the search to a sub-agent.\n\n" + REPEAT)
         append(root / "skills/ui-design/KIT.md", REPEAT)
@@ -150,7 +135,7 @@ class ValidateBudgetTests(unittest.TestCase):
                                 capture_output=True, text=True, encoding="utf-8",
                                 env={**os.environ, "PYTHONUTF8": "1"})
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn("FAIL: synonym 'sub-agent'", result.stderr)
+        self.assertIn("NOTE: synonym 'sub-agent'", result.stdout)
         self.assertIn("FAIL: repeated paragraph", result.stderr)
 
 

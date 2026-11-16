@@ -4,7 +4,18 @@ from pathlib import Path
 import tempfile
 import unittest
 
-import test_plain_reply_hook as stop
+import importlib.util as _util
+from pathlib import Path as _Path
+
+_spec = _util.spec_from_file_location("read_evidence_under_test",
+                                      _Path(__file__).resolve().parents[1] / "hooks/read_evidence.py")
+evidence = _util.module_from_spec(_spec)
+_spec.loader.exec_module(evidence)  # T20: the read-evidence library the removed Stop hook held
+
+
+def unread(path) -> str:
+    """The required files a loaded phase hasn't read in this context, as the library reports them."""
+    return json.dumps(evidence.unread_files(_Path(path)))
 
 
 GUIDE = 'D:/workflow-axa/skills/grilling/SKILL.md'
@@ -29,9 +40,7 @@ class ReadEvidenceTests(unittest.TestCase):
         rows.append({'type': 'assistant', 'message': {'content': [
             {'type': 'text', 'text': 'Questions are ready.'}]}})
         self.path.write_text('\n'.join(json.dumps(row) for row in rows), encoding='utf-8')
-        code, output = stop.fire({'transcript_path': str(self.path)})
-        self.assertEqual(code, 0)
-        return 'grilling/SKILL.md' in output
+        return 'grilling/SKILL.md' in unread(self.path)
 
     def test_printed_literal_python_read_counts(self):
         for code in (f"from pathlib import Path; print(Path('{GUIDE}').read_text())",
@@ -94,4 +103,4 @@ class ReadEvidenceTests(unittest.TestCase):
                 {'type': 'text', 'text': 'Questions are ready.'}]}},
         ]
         self.path.write_text('\n'.join(json.dumps(row) for row in rows), encoding='utf-8')
-        self.assertIn('grilling/SKILL.md', stop.fire({'transcript_path': str(self.path)})[1])
+        self.assertIn('grilling/SKILL.md', unread(self.path))

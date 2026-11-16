@@ -68,7 +68,7 @@ def main(argv: list[str]) -> int:
     elif version(found) > version(installed):
         print(f'STATE: AHEAD project {found} ({name}) > installed {installed}')
         print('The installed rules library is older than the one this project was checked with. Tell the owner '
-              'to update the install (workflow-doctor); keep using the project rules meanwhile.')
+              'to update the install (rule-maker diagnose); keep using the project rules meanwhile.')
     else:
         newer = changes_since(found)
         versions = ', '.join(HEADING.findall(newer))

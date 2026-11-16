@@ -12,7 +12,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-VERSION = "2.5.0"
+VERSION = "2.9.0"
 SOURCE = Path(__file__).resolve().parents[1] / "ARTIFACTS.md"
 START = "<!-- workflow-axa:artifacts:start -->"
 END = "<!-- workflow-axa:artifacts:end -->"
@@ -64,8 +64,12 @@ def read_existing(path: Path) -> bytes | None:
     return path.read_bytes() if path.exists() else None
 
 
+SETTINGS_DEFAULT = b'{\n  "css": "off"\n}\n'
+
+
 def block_text(host: str, policy: Path, digest: str) -> str:
     path = policy.as_posix()
+    settings = (policy.parent / "settings.json").as_posix()
     reference = ("@" + path.replace(" ", "\\ ") if host == "claude"
                  else f"Before generating test/build/device output, read `{path}`. This is a file to read, not an automatic Markdown import.")
     return f"""{START}
@@ -79,6 +83,9 @@ explicitly disposable output under that policy and stricter project rules. Never
 older artifacts or create a new report just to record cleanup. Pass the same boundaries to
 subagents. If the policy is missing or conflicts with local protections, disclose it; preserve
 uncertain files rather than inventing deletion authority. Do not install anything automatically.
+
+Before UI work, read `{settings}`: `"css": "on"` or `"off"` for this machine; missing or invalid
+means off, a project's DESIGN.md may only be stricter, and the shared DESIGN.md says what it allows.
 
 Policy source: workflow-axa {VERSION}; SHA-256 {digest}. Setup/check evidence is not proof of host loading.
 {END}"""
@@ -130,6 +137,11 @@ def build_plan(home: Path, claude_dir: Path, codex_home: Path, host: str) -> lis
     before = read_existing(policy)
     validate_managed_policy(before)
     changes = [Change(policy, before, policy_bytes(source), "shared deployed policy")]
+    # The machine settings file: created with css off only when it is missing; an existing file (whatever it says)
+    # is never touched, so a reinstall or upgrade keeps the owner's value (C-CSS-1).
+    settings = safe_path(home / ".workflow-axa" / "settings.json")
+    current = read_existing(settings)
+    changes.append(Change(settings, current, SETTINGS_DEFAULT if current is None else current, "machine settings"))
     digest = hashlib.sha256(source).hexdigest()
     targets = []
     if host in {"both", "claude"}:
@@ -209,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             print("Applied managed policy/blocks. No project output was inspected or deleted. Start a fresh session and verify loading.")
         else:
             print("\nPREVIEW ONLY — no directories or files written. Proposed managed blocks:\n")
-            for change in changes[1:]:
+            for change in (c for c in changes if c.role.endswith("global instructions")):
                 text = change.after.decode("utf-8")
                 print(str(change.path) + "\n" + text[text.index(START):text.index(END) + len(END)] + "\n")
             print("Review the packaged ARTIFACTS.md as well. Rerun with --apply to merge, or --check to inspect. Existing unrelated bytes are preserved.")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import tempfile
 import unittest
@@ -46,8 +47,21 @@ class ReleaseFromCheckoutTests(unittest.TestCase):
         self.assertIn("MIT License", (ROOT / "LICENSE").read_text(encoding="utf-8"))
         # D1: each formerly copied skill ships with its own MIT LICENSE.
         for name in ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
-                     "implement-spec", "retro", "simple-english"):
+                     ):
             self.assertIn(f"skills/{name}/LICENSE", self.names)
+        # T22: simple-english ships as reference text with its licence; the archived skills do not ship.
+        self.assertIn("skills/workflow/SIMPLE-ENGLISH.md", self.names)
+        self.assertIn("skills/workflow/SIMPLE-ENGLISH.LICENSE", self.names)
+        shipped = (ROOT / "skills/workflow/SIMPLE-ENGLISH.md").read_text(encoding="utf-8")
+        refs = sorted(set(re.findall(r"`(simple-english/[a-z-]+\.md)`", shipped)))
+        self.assertEqual(len(refs), 4, refs)
+        for ref in refs:
+            self.assertIn(f"skills/workflow/{ref}", self.names)
+        for name in ("interrogate", "no-comments", "wait-what"):
+            self.assertIn(f"skills/{name}/SKILL.md", self.names)
+        for name in ("implement-spec", "retro", "simple-english"):
+            self.assertFalse(any(n.startswith(f"skills/{name}/") for n in self.names), name)
+            self.assertFalse(any(n.startswith("docs/archive/") for n in self.names), name)
 
     def test_archived_evaluation_records_are_not_shipped(self):
         for name in ("CANDIDATE-REVIEW.md", "RC3-CASES.md", "CLAUDE-TEST-PROMPT.txt"):

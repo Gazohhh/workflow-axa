@@ -1,6 +1,6 @@
 {
   "name": "workflow-axa",
-  "version": "2.8.0-rc.39",
+  "version": "2.9.0-rc.1",
   "description": "Code-grounded workflow with shared rules audits, source-backed design kits, proactive grilling, visual approval and recoverable tasks.",
   "author": {
     "name": "Gazohhh",
@@ -19,9 +19,7 @@
   "skills": [
     "./skills/workflow",
     "./skills/codebase-map",
-    "./skills/task-status",
-    "./skills/resume-task",
-    "./skills/workflow-doctor",
+    "./skills/resume",
     "./skills/plan-review",
     "./skills/rule-maker",
     "./skills/ui-design",
@@ -35,8 +33,8 @@
     "./skills/writing-for-agents",
     "./skills/codebase-design",
     "./skills/domain-modeling",
-    "./skills/implement-spec",
-    "./skills/retro",
-    "./skills/simple-english"
+    "./skills/interrogate",
+    "./skills/no-comments",
+    "./skills/wait-what"
   ]
 }

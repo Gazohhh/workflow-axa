@@ -16,14 +16,15 @@ class EngineeringRulesTests(unittest.TestCase):
         data=json.loads((RULES/'version.json').read_text())
         for name in ('ENGINEERING.md','VERSIONS.md','data-contracts.md','LIFETIMES.md','RELIABILITY.md','TESTING.md','SECURITY.md','PERFORMANCE.md','COMPATIBILITY.md','PHP.md','LARAVEL.md','RUST.md'):
             self.assertIn(name,data['files']);self.assertIn(name,data['sha256'])
-        self.assertEqual(data['rules_version'],'1.8.8')
+        self.assertEqual(data['rules_version'],'1.9.0')
 
     def test_core_has_no_universal_nesting_or_comment_quota(self):
         text=(RULES/'CORE.md').read_text()
         self.assertIn('No arbitrary universal',text)
         self.assertIn('not authorize a repository-wide cleanup',text)
         self.assertIn('**default**',text)
-        self.assertLessEqual(len(text.split()),650)
+        # 2.9.0 candidate (T11): the owner's comment rules joined the always-loaded core; the CSS copy left it.
+        self.assertLessEqual(len(text.split()),710)
 
     def test_selective_loading_and_rust_boundary(self):
         start=(RULES/'START.md').read_text()

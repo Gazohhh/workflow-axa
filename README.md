@@ -1,27 +1,46 @@
-# Workflow AXA — 2.8.0-rc.39
+# Workflow AXA — 2.9.0-rc.1
 
-**One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, shows a plan report for approval, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or asking for implementation approval.
+**One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, presents an offer and asks one question, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or an offer.
 
 ## Start in 60 seconds
 
 1. Ask what you want built, investigated or reviewed. Existing task records are reused.
 2. For a substantive change, confirm the **behavior agreement**: what works, fails and stays unchanged.
-3. Examine the **plan report** with current/proposed flows, tickets, test plan and real UI-kit references where applicable. Approve the plan; only then can application code change. A small settled change may ask both approvals together.
+3. Read the **offer**: what changes, its paths and protected operations, what stays out and the checks. Answer the one question: *Show review.html first*, *Approve from this summary* or *Change something*. Only an approved offer lets application code change. The plan report, with current/proposed flows and real UI-kit references, is built when you ask for it.
 4. Get a short result: implemented tickets, tests, review, remaining risks and anything requiring human acceptance.
 
 Understand the system: [one-page architecture](docs/ARCHITECTURE.md). Test in new sessions: [fresh-run guide](docs/EVALUATION.md). Installation and migration: [UPGRADE.md](UPGRADE.md). Current proof and limits: [VALIDATION.md](VALIDATION.md).
 
-## Current candidate: simpler routing and reproducible evaluation
+## Current candidate: the offer model and a smaller package
 
-This release keeps 21 registered skills and the same two substantive approval gates. The router now separates read-only inspection from plans, changes and resumes. Grilling prioritizes material choices; a fully settled request may need no questions. Each bundled skill names whether the workflow runs it or only reads it as a reference. The report has optional record-backed text projection for **unapproved drafts**, so agents can stop copying the same ticket prose by hand. These changes have offline tests; live Claude/Codex behavior needs host runs and a separately approved paid usage cap.
+Every change ends with an **offer** and **one question**. A lightweight edit gets the minimal offer (its files, its check and a one-line why); one-ticket work gets one ticket; larger work gets the full ticket list. The hook `hooks/approval.py` reads your answer from the conversation and lets through only the offer's paths and named operations. A later withdrawal or narrowing ends the approval; a stop only pauses it. Tasks approved before the offer model keep their Approval line when you list them with `legacy_inventory.py` at the upgrade ([UPGRADE.md](UPGRADE.md)). The plan report is built only when you ask for it. These changes have offline tests and a few live host runs; what is still unmet is listed in [CHANGELOG.md](CHANGELOG.md).
 
 This repository has no CI workflow; run the checks below from a clone. Nothing here automatically installs a skill, launches a paid model or changes your real projects.
 
 ## Package contents
 
-The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`task-status` for where things stand, `retro` for a look back at past sessions).
+The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`resume` for where things stand).
 
-Full replacement package: **21 skills** (12 workflow-axa skills plus 9 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+Full replacement package: **19 skills** (13 workflow-axa skills plus 6 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+
+**Renamed skills (2.9.0).** No redirect skills are kept; use the new names:
+
+| Old name | Now |
+|---|---|
+| `task-status` | `resume` (status mode) |
+| `resume-task` | `resume` (continue mode; also `handoff`) |
+| `workflow-doctor` | `rule-maker`, diagnose mode |
+| `implement-spec` | `workflow-execute` (the copy is archived in `docs/archive/skills/`) |
+| `retro` | archived; `tools/digest_sessions.py` stays in the source checkout (not in the release ZIP) |
+| `simple-english` | reference text `skills/workflow/SIMPLE-ENGLISH.md`, used by deliver and `/wait-what` |
+
+**New commands (2.9.0).** Only you start these:
+
+- `/interrogate <plan | diff>`: two adversaries try to show a concrete failure; you get reproduced failures, unverified concerns and untested surfaces. It changes nothing.
+- `/no-comments <files | diff>`: a reviewer gives each comment a verdict, you approve one offer, then deletions and reshapes are made without changing behavior.
+- `/wait-what`: the last message again, in plain words, with the pending question unchanged. It never counts as an answer.
+
+`code-review` also checks comments and reader load, and adds a blast-radius step when shared code changes. These ideas were adapted from pstack (interrogate, no-comments, blast radius, minimize reader load) and Matt Pocock's wait-what; no text was copied.
 
 ## This update: `/workflow` routes to four phase skills
 
@@ -30,23 +49,23 @@ Full replacement package: **21 skills** (12 workflow-axa skills plus 9 that bega
 | Phase skill | What it does | Ends with |
 |---|---|---|
 | `workflow-clarify` | Traces real journeys, callers, failure and compatibility paths in current code, then asks only the user decisions that remain open | **Agreement** on behavior, scope, exclusions, journeys, acceptance and assumptions (PLAN plus a chat summary) |
-| `workflow-specify` | Cuts the agreement into vertical tickets with dependencies, ownership, acceptance and test seams | **Implementation approval** of the specification, tickets, test strategy and plan report |
+| `workflow-specify` | Cuts the agreement into vertical tickets with dependencies, ownership, acceptance and test seams | The **offer** and the one question; the owner's answer is the implementation approval |
 | `workflow-execute` | Builds ready tickets, in parallel when their files don't overlap: test-first where agreed, ticket review on Standards and Spec, repair, integration checks, then a whole-feature review | A ticket ledger with evidence, handed to delivery |
 | `workflow-deliver` | Checks every requirement, required check, changed file and review against current evidence; routes defects back instead of fixing them | The delivery record and an honest final report: verified, partial, not verified or waived |
 
-**Two gates, not one.** Agreement permits the detailed plan, never code. Only implementation approval permits application code and tests. A later material change reopens only the affected agreement items or tickets; unrelated approved work continues. Tasks approved under the earlier single gate keep that authority for their recorded scope; nothing is re-asked or rewritten. Genuinely lightweight, exact, low-risk edits keep their short route; a small behavior or architecture change is not lightweight because few files change. Gate definitions: [VISUAL-REVIEW.md](skills/workflow/VISUAL-REVIEW.md).
+**The offer and the one question.** Agreement permits the offer, never code. Only the owner's answer to the one question approves an offer, and only an approved offer permits application code and tests. A later material change reopens only the affected agreement items or tickets; unrelated approved work continues. Tasks approved before the offer model keep that authority for their recorded scope when the owner listed them in the legacy inventory; nothing is re-asked or rewritten. A lightweight edit still gets the minimal offer; a small behavior or architecture change is not lightweight because few files change. Definitions: [VISUAL-REVIEW.md](skills/workflow/VISUAL-REVIEW.md).
 
 **Writing.** Human-facing prose still follows the existing [WRITING.md](skills/workflow/WRITING.md), now with a meaning-preservation check and a cold-reader reconstruction test. Skills and agent instructions follow the bundled `writing-for-agents` for structure. No new writing skill, linter or other dependency is added.
 
 **Central report (optional).** A schema-2 report may carry an additive `task_report` object: request, agreement, specification, per-ticket specifications, decisions, risks, checks, acceptance results and delivery, each citing its source record. PLAN/TODO/FINDINGS/DECISIONS stay authoritative; the report is a dated projection, not approval. For new drafts, `skills/codebase-map/scripts/record_projection.py` can freeze exact headings and labeled tickets into report text and check drift without overwriting a snapshot. Reports without `task_report` render as before. Contract: [TASK-REPORT.md](skills/codebase-map/TASK-REPORT.md).
 
-`workflow-execute` uses the ticket-graph method that the bundled `implement-spec` reference describes. It never branches, commits, merges or touches a tracker. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` (plus `implement-spec` and `retro` as references) ship as separate skills in this package (plugin names `workflow-axa:<name>`). `simple-english` ships the same way; the workflow uses it for every HTML report and delivery message. Each is one text maintained in this package, and each folder keeps its MIT `LICENSE`. The phases load these sibling skills, so a removed skill or a host's same-named command cannot change the workflow. Optional installed specialists named in `skills/workflow/SPECIALISTS.md` (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them, and are checked only when that step runs. This candidate also contains rc.8's Windows verification fixes.
+`workflow-execute` owns ticket execution. It never branches, commits, merges or touches a tracker. The four phase skills read the shared policies in the installed `workflow` folder, so they need the whole package, not a single copied folder. **Bundled specialists.** `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling` ship as separate skills in this package (plugin names `workflow-axa:<name>`). The plain-English rules (formerly `simple-english`) ship as `skills/workflow/SIMPLE-ENGLISH.md`; the workflow uses them for every HTML report and delivery message. Each is one text maintained in this package and keeps its MIT `LICENSE` (VENDORED-SKILLS.md). The phases load these sibling skills, so a removed skill or a host's same-named command cannot change the workflow. Optional installed specialists named in `skills/workflow/SPECIALISTS.md` (`research`, `diagnosing-bugs`, `prototype`, `pr`, `wizard`) block only the step that needs them, and are checked only when that step runs. This candidate also contains rc.8's Windows verification fixes.
 
-## UI policy (2.8, owner decision D14): never write CSS; reuse existing classes
+## UI policy: the CSS switch, off by default; reuse existing classes
 
-Agents never write CSS. They reuse only classes and IDs that already exist in the design kit or the existing code, mirroring the class and tag of the element they imitate, and ask which element to mimic when nothing matches. The full rules, including the plain-HTML exception and ordinary prompts without /workflow, are in the shared [DESIGN.md](skills/rule-maker/rules/DESIGN.md).
+Each machine has one CSS switch in `~/.workflow-axa/settings.json`, and it starts off. While it is off, agents write no CSS, and the hook refuses a styling write. Only your Yes to the exact question turns it on (`python -X utf8 -I <workflow>/scripts/settings.py css on`); a project's DESIGN.md with `css: never` keeps it off there. Either way, agents reuse only classes and IDs that already exist in the design kit or the existing code, mirroring the class and tag of the element they imitate, and ask which element to mimic when nothing matches. The full rules, including the plain-HTML exception and ordinary prompts without /workflow, are in the shared [DESIGN.md](skills/rule-maker/rules/DESIGN.md).
 
-**Every UI-visible change gets a screen diagram** in the plan report: current and proposed screens with the interaction arrows, from real captures when they can be taken safely, otherwise a layout sketch labeled as a sketch. The report's own renderer is a narrow exception for report styling; it gives no permission to style the application.
+**Every UI-visible change gets a screen diagram** in the plan report, whenever one is built: current and proposed screens with the interaction arrows, from real captures when they can be taken safely, otherwise a layout sketch labeled as a sketch. The report's own renderer is a narrow exception for report styling; it gives no permission to style the application.
 
 ## The project kit is real code, not another HTML mockup
 
@@ -67,18 +86,20 @@ Human acceptance stays recorded once. Component edits can refresh current previe
 /workflow-axa:rule-maker audit|setup|update
 /workflow-axa:ui-design <UI task>
 /workflow-axa:ui-design kit-audit|kit-setup|kit-check <area or catalogue>
-/workflow-axa:workflow-doctor
-/workflow-axa:task-status <task>
-/workflow-axa:resume-task <task>
+/workflow-axa:rule-maker diagnose
+/workflow-axa:resume status|continue|handoff <task>
+/workflow-axa:interrogate <plan | diff>
+/workflow-axa:no-comments <files | diff>
+/workflow-axa:wait-what
 /workflow-axa:plan-review <task>
 /workflow-axa:codebase-map explain|current|proposed|compare <scope>
 ```
 
-Plugin syntax is shown; standalone names depend on the host. The main sequence is **rules readiness → find/reuse task → clarify (inspect current code, grilling, agreement) → specify (tickets, test seams, full plan report: implementation approval) → execute (tickets, reviews, integration) → deliver (evidence reconciliation and final report)**. Each phase skill refuses to start without its prerequisites and names the phase that must run first. Kit setup or rule setup does not approve application changes. Backend work does not require a kit.
+Plugin syntax is shown; standalone names depend on the host. The main sequence is **rules readiness → find/reuse task → clarify (inspect current code, grilling, agreement) → specify (tickets, test seams, the offer and the one question: implementation approval) → execute (tickets, reviews, integration) → deliver (evidence reconciliation and final report)**. Each phase skill refuses to start without its prerequisites and names the phase that must run first. Kit setup or rule setup does not approve application changes. Backend work does not require a kit.
 
 ## Install and check
 
-Replace the complete plugin or all **21 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `task-status`, `resume-task`, `workflow-doctor`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design`, `domain-modeling`, `implement-spec`, `retro` and `simple-english`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
+Replace the complete plugin or all **19 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `resume`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling`, and the user commands `interrogate`, `no-comments` and `wait-what`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global

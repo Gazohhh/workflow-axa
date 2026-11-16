@@ -5,7 +5,7 @@ description: "Draw an evidence-linked flowchart or codebase map, or the workflow
 
 # Codebase map
 
-Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screens with actions, decisions and the existing elements each proposed screen copies; kit screens, else captures, else sketches. Every visible change needs it, except the small change route (no plan report); no invented markup/styles. Never call workflow recursively.
+Create offline HTML/SVG in the existing editorial report. Preserve the full report: flow views, change summary, boundaries, tasks, acceptance and evidence. For application UI, add the optional screen-flow view described in [UI-FLOW.md](UI-FLOW.md): connected screens with actions, decisions and the existing elements each proposed screen copies; kit screens, else captures, else sketches. Every visible change needs it whenever a plan report is built (on *Show review.html first* or when the owner asks); no invented markup/styles. Never call workflow recursively.
 
 Explain behavior for a reader new to the project first, technical evidence underneath. Keep risks and unresolved decisions visible.
 

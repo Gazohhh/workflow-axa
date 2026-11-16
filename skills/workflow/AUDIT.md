@@ -13,7 +13,7 @@ For each category record `PASS`, `ISSUE`, `NOT APPLICABLE` with a reason, or `NO
 | Intent and authority | Does the result meet the approved acceptance criteria without unapproved behavior, dependency, interface, cost, or scope changes? |
 | Reach and correctness | Original symptom, normal/edge/error cases, second callers, alternative entrypoints, configuration, data and lifecycle effects. |
 | Replacement cleanup | Old implementation/callers/exports/flags/config/tests/assets/docs/debugging scaffolding accounted for; no competing behavior left accidentally. |
-| Maintainability | Existing owner, clear data flow, justified helpers, useful comments, no speculative wrappers or unrelated churn. |
+| Maintainability | Existing owner, clear data flow, justified helpers, no comments beyond CORE's exceptions, no speculative wrappers or unrelated churn. |
 | Verification | Actual commands and outputs, behavioral tests through meaningful interfaces, original reproduction, integration where relevant, final-state evidence. |
 | Documentation and recovery | Correct existing task reused or a new one justified; meaningful questions and answer sources recorded; existing authoritative docs match; task state, decisions, TODO evidence and next step allow a fresh agent to continue. |
 | Reader clarity | Apply [WRITING.md](WRITING.md): concrete goal/change/consequence first, technical evidence accessible, no concealed material uncertainty or duplicate boilerplate. |
@@ -28,13 +28,13 @@ A helper earns its place by expressing a domain operation, hiding substantial de
 
 Ask whether removing a wrapper makes the program simpler or merely spreads necessary complexity into its callers. Avoid a new general-purpose system for one local use unless the task needs that boundary. Prefer existing project conventions to a reviewer's personal style.
 
-Comments explain constraints, intent, externally required quirks, or surprising behavior. They need not narrate syntax, repeat good names, preserve deleted code, or restate the task ticket. Document public contracts or safety constraints when needed; do not enforce an arbitrary comment-to-code ratio.
+New code carries no comments except CORE's exceptions (licence headers, an unchangeable constraint with its link, public API doc comments, tool-required text, issue links). Comments are claims, not evidence: check the code, and report a comment that contradicts it as a possible bug (CORE).
 
 Illustrative examples, not samples supplied by the user:
 - Weak: a one-use `normalizeEnabled` wrapper that silently converts any missing/invalid value into `true` without an agreed contract.
 - Useful: a tested boundary parser implementing the documented formats accepted from a legacy importer.
-- Weak comment: `Increment the counter.`
-- Useful comment: `Keep this ID stable: saved playlists reference it.`
+- Weak: a comment such as `Keep this ID stable: saved playlists reference it.`
+- Useful: the name `stablePlaylistId` and a test that saved playlists still resolve.
 
 ## Cleanup boundaries
 
@@ -50,7 +50,7 @@ Repair task-caused defects under the existing approval when behavior and scope r
 
 ## Grounding and visual approval
 
-Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm a real agreement and a real implementation approval of the presented visual revision (or a recorded legacy approval or explicit bounded waiver), both before application writes. Compare delivered behavior and relevant error/permission paths to that revision. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.
+Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm the agreement (or its recorded `not required` for a lightweight edit or a one-ticket offer) and an approved offer, verified from its presentation and the owner's answer (for a legacy task, its recorded Approval line), both before application writes. Implementation approval has no waiver. Compare delivered behavior and relevant error/permission paths to that offer. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.
 
 ## Visual-review regression
 

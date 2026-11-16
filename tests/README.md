@@ -9,7 +9,7 @@ python -X utf8 tools/validate.py
 python -X utf8 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-Python 3.10+ and Git are enough for the original/core tests; optional image-comparison tests skip when Pillow is unavailable; no package installation, API account or network is needed. The first command checks this repository's deliberately small metadata format, registration, relative links and core word budget. It is not a general YAML/schema validator. The unit tests check those diagnostics, fixture isolation, all fixture variants, clean/failing baselines, synthetic mixed staging, and the read-only specialist checker. Checker tests cover complete/missing/duplicate/policy-mismatched skills, support files, baseline changes, and honest runtime-status reporting.
+Python 3.10+ and Git are enough for the original/core tests; optional image-comparison tests skip when Pillow is unavailable; no package installation, API account or network is needed. The first command checks this repository's deliberately small metadata format, registration (the skills plugin.json lists), relative links, repeated paragraphs and the documented counts and versions; word ceilings and CONTEXT.md synonyms are advisory NOTE lines. It is not a general YAML/schema validator. `test_package_contract.py` lists the essential skills, hook registrations, LICENSE folders, renderer assets and key tests independently of the manifests, so a deletion that also edits a manifest still fails; a ticket that adds or removes one of them updates that list. The unit tests check those diagnostics, fixture isolation, all fixture variants, clean/failing baselines, synthetic mixed staging, and the read-only specialist checker. Checker tests cover complete/missing/duplicate/policy-mismatched skills, support files, baseline changes, and honest runtime-status reporting.
 
 These are **package/tooling tests, not agent behavioral tests**. They cannot prove documentation-before-code ordering, question quality, approval compliance, code quality, or recovery. Those require actual host runs and inspection of their traces/files. See [SCENARIOS.md](SCENARIOS.md).
 
@@ -57,7 +57,7 @@ Native with/without-plugin scores do not directly compare the old and new workfl
 
 Resolve unauthorized changes, unsafe staging, leaked evidence or false completion before piloting; high-risk failures are not averaged away by a good mean score. Review code simplicity with a human. Add a targeted regression case for each actual failure, then change the smallest relevant instruction rather than adding another generic warning.
 
-Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.8.0-rc.39; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
+Pilot with another teammate on the actual hosts and a cold handoff. Keep a working previous copy and record which version each pilot used. The candidate package version is 2.9.0-rc.1; publishing/tagging/pushing remains a human action, not a side effect of tests. The absence of live model results in this ZIP is stated in [VALIDATION.md](../VALIDATION.md).
 
 
 ## Retained visual and activation checks
@@ -99,7 +99,7 @@ passing feature flow. See E32–E37 in SCENARIOS.md.
 
 `test_global_policy.py` uses disposable user homes to test preview/check no-write behavior, idempotent merges, override selection, CRLF/BOM preservation, custom profiles, modified policy refusal, symlink/junction boundary checks, hardlinks, concurrent edits and untouched project artifacts. The helper is not a filesystem cleaner. Linux filesystem checks are not evidence of Windows junction or native ACL behavior; test the actual target environment before deployment.
 
-B15–B24 in the live-host suite cover policy loading outside workflow, safe reruns/concurrency, required captures, producer retention limits, ownership and delivery preservation. They are authored but NOT RUN. Existing browser output directories remain isolated for safety: use an owned child under one task parent, retain necessary proof, and clean eligible temporary captures after inspection instead of creating an unrelated root each time.
+B15–B29 in the live-host suite (B25–B28: the offer model's minimal offer, one-ticket offer, report only on html-first, and deliver's `unknown`; B29: a fully specified one-ticket request still gets its offer through workflow-specify, found by T26 live run r20) cover policy loading outside workflow, safe reruns/concurrency, required captures, producer retention limits, ownership and delivery preservation. They are authored but NOT RUN. Existing browser output directories remain isolated for safety: use an owned child under one task parent, retain necessary proof, and clean eligible temporary captures after inspection instead of creating an unrelated root each time.
 
 ## Record history and backward compatibility (2.6.0)
 
@@ -107,6 +107,18 @@ B15–B24 in the live-host suite cover policy loading outside workflow, safe rer
 
 The old pending example and historic task records are intentionally unchanged. The new task-overview example uses the same graph geometry with an optional sourced checkpoint/revision log. Inspect both desktop and mobile, the closed/open history disclosure and source links. Do not refresh approved visual baselines merely because a status section was added.
 
+
+## Offer model and package redesign (2.9.0-rc.1)
+
+New test files: `test_approval_hook.py` (the offer checker), `test_offers.py`, `test_settings.py`, `test_shadow_comparison.py`, `test_session_failures.py`, `test_required_reads.py`, `test_flows.py`, `test_rules_pass.py`, `test_package_contract.py`, `test_completion_check.py` (`completion_check.py` baseline, snapshot and check), `test_cutover.py` (no stale text, the registered hook, the legacy route, rollback to rc.39, and `ReleaseNotes`: the current CHANGELOG entry names the removed hooks and the three new skills), `test_new_skills.py`, `test_interrogate_snapshot.py` and `test_stage_candidate.py`. `test_plain_reply_hook.py`, `test_phase_reads_hook.py` and `test_truncated_read_hook.py` are removed with their hooks; docs/RULE-CONTRACTS.md "Removed with their hooks" maps their checks.
+
+One limit was loosened on purpose: `test_engineering_rules.py` lets CORE.md grow from 650 to 710 words, because T11 added the required comment rules (CORE went from 649 to 702 words). Version pins were retargeted for the release: `rules_version` 1.8.8 → 1.9.0 in `test_rules.py` and `test_engineering_rules.py`; the `candidate_version` of the four live-case files under `behavioral/` 2.8.0-rc.39 → 2.9.0-rc.1 (the tests compare it with plugin.json). `test_global_policy.py` reads the policy revision from `global_policy.py`, now 2.9.0.
+
+Known intermittent failure: `test_record_safety.test_parallel_appends_lose_nothing` sometimes leaves `FINDINGS.md.lock` after eight parallel `record.py` appends (about 1 run in 30). It fails the same way on rc.39. Rerun once only when the failure is that test with `['FINDINGS.md.lock'] != []`, and report both runs; never skip it.
+
+## Workflow redesign (2.9.0 candidate)
+
+Task `docs/plans/2026-11-15-workflow-redesign`. `test_session_failures.py` replays the owner's session failures (report waiver, unnumbered plan, task switch on a commit, small changes across sessions and with a new test file) with a guard test per relief. `test_required_reads.py` covers the one required-read parser and `paths=` scoping. `test_flows.py` checks the recipe index (`skills/workflow/flows/`): rows and files match, frontmatter, registered `uses`, and the labelled prompts and behavioural cases in `behavioral/flows.json`, which are observed host runs (NOT_RUN until run). `test_package_contract.py` is the independent package list. `test_docs_consistency.py` covers `verification_summary.py` exit status, tree identity and `--check`. `test_settings.py` covers the machine CSS switch, `test_offers.py` the offer record and `test_approval_hook.py` the offer checker (presentation, answers, history across sessions, CSS, settings). `test_shadow_comparison.py` runs each scenario through both the offer checker and phase_gate and compares the outcomes with its expected table; every difference is classified (`SHADOW_PRINT=1` prints the pairs).
 
 ## Bold approvals and one-run validation (2.8.0-rc.39)
 
@@ -116,9 +128,13 @@ The old pending example and historic task records are intentionally unchanged. T
 
 `test_gate_notes.py` (`StyleNotes`) feeds `hooks/phase_gate.py` a PostToolUse event and checks the styling and small-change notes: a note when an edit adds a style cue or stylesheet rule to an application file, none for Markdown, test files or unchanged styles, and a timing case for very long texts. New classes in `test_gate_regressions.py`: `CheckpointHeadingRegressions` (any "Current checkpoint" heading), `AgreementGateRegressions` (writes wait for the Agreement line on two-gate tasks), `BulkArtifactDeletes` (`git clean` and bulk deletes of `.artifacts`, also inside `bash -c` and `powershell -Command`) and `LinkedWorktreeCopies` (the refusal names a differing PLAN copy). `AltinstarRegressions` gains two pins: requirement IDs such as "D4-R6" are not revisions, and a report named only in an answered approval question counts as presented. The `task` helper in `test_phase_gate_hook.py` adds a default `Agreement (gate one): agreed` line to a two-gate task without one. These tests use synthetic transcripts. They do not show how a live host records a session.
 
+## User commands: interrogate, no-comments, wait-what (2.9.0)
+
+`test_new_skills.py` checks that the three are registered and user-only (in both `SKILL.md` and `agents/openai.yaml`), each contract of REDESIGN §3.8–3.10, code-review's comment, reader-load and blast-radius checks, links that stay inside each skill folder, and no repeated paragraph with CORE. `test_interrogate_snapshot.py` runs `skills/interrogate/scripts/snapshot.py` on temporary Git repositories: a stable id that covers edits, deletions and untracked files; a copy that is byte-equal under `core.autocrlf=true` and leaves the target's `.git` untouched; `fill` of an existing host checkout and its refusals; a link or junction in the checkout replaced, never followed (an outside sentinel stays untouched); the stale check. The phrase checks prove the text says it, not that an agent follows it. That needs an observed run (FINDINGS, T23).
+
 ## Owned skills (2.8.0-rc.37)
 
-`test_owned_skills.py` checks that each formerly copied skill is registered and keeps its `LICENSE`, that the phase skills load their sibling skills, and that no file under `skills/` names where a skill came from. It also covers the session digest script of `retro`. The pattern list of source names sits in the test; a mention in a form the list does not cover passes unnoticed.
+`test_owned_skills.py` checks that each formerly copied skill that still ships is registered and keeps its `LICENSE`, that the archived ones (implement-spec, retro, simple-english) are unregistered with their licences in place, that the phase skills load their sibling skills, and that no file under `skills/` names where a skill came from. It also covers `tools/digest_sessions.py` (formerly retro's script). The pattern list of source names sits in the test; a mention in a form the list does not cover passes unnoticed.
 
 ## Rules readiness (2.7 candidate)
 

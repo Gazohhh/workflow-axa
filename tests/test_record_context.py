@@ -177,12 +177,13 @@ class RecordPolicyContracts(unittest.TestCase):
             self.assertIn(term,text)
 
     def test_utility_modes_remain_bounded(self):
-        text=(ROOT/'skills/task-status/SKILL.md').read_text()
-        self.assertIn('do not implement',text)
-        self.assertIn('without editing',text)
-        text=(ROOT/'skills/resume-task/SKILL.md').read_text()
+        text=(ROOT/'skills/resume/SKILL.md').read_text()  # T21: task-status and resume-task merged
+        status=text.split('## status',1)[1].split('## continue',1)[0]
+        self.assertIn('No edits of any kind',status)
+        self.assertIn('Report contradictions without resolving them',status)
         self.assertIn('no bulk migration',text)
-        self.assertIn('no new plan revision',text.lower())
+        self.assertIn('no new revision for a rerun',text.lower())
+        self.assertIn('writes only when asked',text)
 
 
 class LegacyFixtureTests(unittest.TestCase):

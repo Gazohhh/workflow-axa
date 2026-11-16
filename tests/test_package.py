@@ -29,7 +29,43 @@ class PackageTests(unittest.TestCase):
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly the twenty-one registered workflow-axa SKILL.md files are required.", validate_package(root))
+            self.assertIn("Exactly the 19 SKILL.md files plugin.json registers are required.", validate_package(root))
+
+    def test_malformed_skill_entries_fail_before_any_path_is_read(self):
+        cases = {"/etc/passwd": "is not ./skills/<name>", "./skills/../../outside": "is not ./skills/<name>",
+                 "C:/Windows": "is not ./skills/<name>", 7: "is not ./skills/<name>", None: "is not ./skills/<name>",
+                 "./skills/workflow": "more than once"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            path = root / ".claude-plugin/plugin.json"
+            original = json.loads(path.read_text(encoding="utf-8"))
+            for entry, message in cases.items():
+                with self.subTest(entry=entry):
+                    data = dict(original, skills=original["skills"] + [entry])
+                    path.write_text(json.dumps(data), encoding="utf-8")
+                    errors = validate_package(root)
+                    self.assertTrue(any(message in e for e in errors), errors)
+                    self.assertFalse(any("Missing required file: skills/" in e for e in errors), errors)
+            path.write_text(json.dumps(dict(original, skills=[])), encoding="utf-8")
+            self.assertIn("plugin.json must register its skills as a non-empty list.", validate_package(root))
+
+    def test_a_new_skill_needs_only_its_folder_its_manifest_entry_and_the_stated_counts(self):
+        """G2: no validator edit. The only remaining errors are the docs that state the skill count."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_package(Path(tmp) / "candidate")
+            folder = root / "skills/dummy"
+            (folder / "agents").mkdir(parents=True)
+            (folder / "SKILL.md").write_text('---\nname: dummy\ndescription: "A dummy skill."\n---\n\n# Dummy\n',
+                                             encoding="utf-8")
+            (folder / "agents/openai.yaml").write_text('interface:\n  display_name: "Dummy"\n'
+                                                       '  short_description: "A dummy skill."\n', encoding="utf-8")
+            path = root / ".claude-plugin/plugin.json"
+            data = json.loads(path.read_text(encoding="utf-8"))
+            data["skills"].append("./skills/dummy")
+            path.write_text(json.dumps(data), encoding="utf-8")
+            errors = validate_package(root)
+            self.assertTrue(errors)
+            self.assertTrue(all("states 19 skills" in error for error in errors), errors)
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -97,13 +133,13 @@ class PackageTests(unittest.TestCase):
     def test_registered_utility_skills_exist_and_are_bounded(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
         self.assertEqual(plugin["version"], json.loads((ROOT / "skills/rule-maker/rules/version.json").read_text())["package_version"])
-        for name in ("task-status", "resume-task", "workflow-doctor", "plan-review"):
+        for name in ("resume", "plan-review"):  # T21: task-status, resume-task and workflow-doctor merged
             self.assertIn(f"./skills/{name}", plugin["skills"])
             text=(ROOT/f"skills/{name}/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("---", text)
-        self.assertIn("do not implement", (ROOT/"skills/task-status/SKILL.md").read_text(encoding="utf-8").lower())
+        self.assertIn("no edits of any kind", (ROOT/"skills/resume/SKILL.md").read_text(encoding="utf-8").lower())
         self.assertIn("do not implement", (ROOT/"skills/plan-review/SKILL.md").read_text(encoding="utf-8").lower())
-        self.assertIn("without changing", (ROOT/"skills/workflow-doctor/SKILL.md").read_text(encoding="utf-8").lower())
+        self.assertIn("without changing", (ROOT/"skills/rule-maker/DIAGNOSE.md").read_text(encoding="utf-8").lower())
 
     def test_explain_and_anti_slop_contracts_are_explicit(self):
         workflow=(ROOT/"skills/workflow/SKILL.md").read_text(encoding="utf-8")

@@ -5,11 +5,11 @@ description: "Use for repository features, fixes, refactors, research, plans, au
 
 # Workflow
 
-Route by intent and authority. **Invoke the phase skill §3 selects for changes; inspection stays read-only.** Ask only readiness blockers here. Write for someone new to the project ([WRITING.md](WRITING.md)).
+Route by intent and authority. **Pick the recipe (§3), then invoke the phase skill §4 selects for changes; inspection stays read-only.** Ask only readiness blockers here. Write for someone new to the project ([WRITING.md](WRITING.md)).
 
 ## 1. Check rules readiness
 
-Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rule-maker never ran. If missing: offer setup, limited exception, read-only inspection or stop. Inspection can report rules gaps without setup. UI plans read `../ui-design/SKILL.md`. Never write or offer new CSS; record approved sources and preview/release limits.
+Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rule-maker never ran. If rules are missing or weak: name the gaps and ask *Set up rules now* or *Skip for this task*; read-only work continues meanwhile, writes wait for the answer. Inspection can report rules gaps without setup. UI plans read `../ui-design/SKILL.md`. Write or offer new CSS only when the machine CSS switch is on and the project allows it (`rule-maker/rules/DESIGN.md` rule 1); record approved sources and preview/release limits.
 
 ## 2. Find the task
 
@@ -19,16 +19,25 @@ Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rul
 4. Checkpoint before lengthy discovery; without files disclose what cannot survive.
 5. A message that does not clearly belong to the active task: answer a question without touching records. Before any change, ask "part of <task>, or separate?", checkpoint and offer a fresh session.
 
-## 3. Route
+## 3. Pick the recipe
 
-Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `task-status`, `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read checkpoint Agreement and Approval. Legacy approval covers only its recorded scope. Take the first matching row:
+1. From the request and the code, settle three things: the outcome wanted, whether a change is requested, and whether existing behaviour is preserved, corrected or replaced.
+2. Match them to one row of [flows/INDEX.md](flows/INDEX.md), add its modifiers (UI, Security, Compatibility) and read only that recipe. Say it in one line: "Recipe: bug, plus Compatibility." Load `ui-design` only for the ui recipe or the UI modifier.
+3. **Not sure** means two recipes fit that need different behaviour, permissions or acceptance, or the outcome (or whether a change is wanted) isn't stated. Needing several references is not uncertainty. Then ask once, with the question tool: *Fix something broken · Add or change a feature · Start a new project · Only investigate*, plus Other, recommended answer first with one line why. Never ask small versus complex bug; at most one such question per task.
+4. **Other** with a clear outcome: build the steps from the phases. A vague Other: Inspect first, then ask through `grilling`.
+5. Evidence that points to another recipe midway: say so in one line with the evidence, keep the work done, and add only the steps the new recipe adds.
+
+When something a recipe needs is missing, use [FALLBACKS.md](FALLBACKS.md).
+
+## 4. Route to the phase
+
+Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `resume` (status), `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read the checkpoint Agreement and its Offer. A task the owner listed as a pre-offer approval at the upgrade keeps its Approval line, for its recorded scope only. Take the first matching row:
 
 | Task state | Next skill | Permission |
 |---|---|---|
 | Owner stops, pauses or cancels | `workflow-deliver` partial route | Handoff only; no new implementation or review loop |
 | New goal, changed scope, agreement pending, or new request on existing work | `workflow-clarify` | Investigate and agree behavior; no application edits |
-| Small change approved, same request, undelivered | Edit listed files, then short `workflow-deliver` | Only those files |
-| Agreed; tickets or plan report unapproved | `workflow-specify` | Prepare records/report; stop for approval |
+| Agreed, or agreement not required; no approved offer for the tickets | `workflow-specify` | Prepare records and the offer; stop for the answer |
 | Stopped work handed off, or all tickets terminal; no delivery yet | `workflow-deliver` | Reconcile and report; no fixes |
 | Approved ready ticket, or explicit continuation after Resume recheck | `workflow-execute` | Only the approved scope |
 | Delivery recorded | Report it | No new work |
@@ -36,18 +45,13 @@ Inspect with read-only tools and relevant available specialists: `code-review`, 
 
 Invoke with the skill tool (`workflow-axa:<name>`) or read its SKILL.md whole. The table routes; it does not replace a phase. Missing skills block only their phase.
 
-**Lightweight edit**: exact, low-risk, no observable behavior, architecture, interface, dependency or security change. A visible behavior change, however small and fully specified, is not lightweight: use a small change or both gates (possibly combined). Verify, review per [AUDIT.md](AUDIT.md), then short `workflow-deliver`.
+**Every change** gets an offer and the one question (`workflow-specify` step 5). Make and present it only through `workflow-specify`: it records the offer with `record.py offer create` and shows its canonical block. An offer in your own words, or any other question, can't be approved: the hook refuses the edit that follows. The plan report is built only on *Show review.html first* or when the owner asks for it. One-ticket work, a small visible change included, gets one ticket and its offer.
 
-**Small change**: a visible change to listed existing files, approved by one quoted owner yes without a plan report ([VISUAL-REVIEW.md](VISUAL-REVIEW.md) "Small change"). Unlike a lightweight edit, a user can notice it, so the owner approves it first.
+**Lightweight edit**: exact, low-risk, no observable behavior, architecture, interface, dependency or security change. A visible behavior change, however small and fully specified, is not lightweight: it gets the one-ticket offer. A lightweight edit gets the minimal offer (its files, its check and a one-line why) through `workflow-specify` step 5, and is still asked the one question. After the answer, verify, review once per [AUDIT.md](AUDIT.md), then short `workflow-deliver`.
 
-## 4. The two gates
+## 5. The two gates
 
-Defined in [VISUAL-REVIEW.md](VISUAL-REVIEW.md):
-
-1. **Agreement** on behavior and scope. Permits the detailed plan, not code.
-2. **Implementation approval** of tickets, tests and the plan report. STOP for user approval before application code.
-
-Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
+Agreement, then the offer and the one question: [VISUAL-REVIEW.md](VISUAL-REVIEW.md) owns both. STOP for user approval before application code. Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
 
 ## Always
 

@@ -51,10 +51,10 @@ class GlobalPolicyTests(unittest.TestCase):
         self.assertEqual(self.cli('--check'),1)
         self.assertFalse(self.home.exists())
 
-    def test_apply_creates_only_three_expected_files(self):
+    def test_apply_creates_only_four_expected_files(self):
         self.assertEqual(self.cli('--apply'),0)
         actual={p.relative_to(self.home).as_posix() for p in self.home.rglob('*') if p.is_file()}
-        self.assertEqual(actual,{'.workflow-axa/ARTIFACTS.md','.claude/CLAUDE.md','.codex/AGENTS.md'})
+        self.assertEqual(actual,{'.workflow-axa/ARTIFACTS.md','.workflow-axa/settings.json','.claude/CLAUDE.md','.codex/AGENTS.md'})
         self.assertEqual(self.cli('--check'),0)
 
     def test_apply_is_idempotent_without_backups(self):
@@ -79,7 +79,7 @@ class GlobalPolicyTests(unittest.TestCase):
 
     def test_existing_override_and_base_are_both_updated(self):
         override=self.write('.codex/AGENTS.override.md',b'# Temporary constraints\n')
-        plan=self.plan();self.assertEqual(len(plan),4)
+        plan=self.plan();self.assertEqual(len(plan),5)
         g.apply_plan(plan)
         self.assertTrue(override.read_bytes().startswith(b'# Temporary constraints\n'))
         self.assertIn(g.START,(self.codex/'AGENTS.md').read_text())
@@ -172,7 +172,7 @@ class GlobalPolicyTests(unittest.TestCase):
             with self.subTest(path=path),self.assertRaises(ValueError):g.safe_path(path)
 
     def test_space_escaping_and_codex_plain_read_instruction(self):
-        plan=self.plan();claude=plan[1].after.decode();codex=plan[2].after.decode()
+        plan=self.plan();claude=plan[2].after.decode();codex=plan[3].after.decode()
         self.assertIn('user\\ with\\ spaces',claude)
         self.assertIn('not an automatic Markdown import',codex)
         self.assertNotIn('@'+plan[0].path.as_posix(),codex)
@@ -190,10 +190,29 @@ class GlobalPolicyTests(unittest.TestCase):
             self.assertEqual(g.main(['--home',str(self.home),'--claude-dir',str(altc),'--codex-home',str(altx),'--apply']),0)
         self.assertTrue((altc/'CLAUDE.md').exists());self.assertTrue((altx/'AGENTS.md').exists())
 
+    def test_settings_file_is_created_off_only_when_missing(self):
+        # T12 (C-CSS-1): setup creates css off; an existing file, whatever it says, is never rewritten.
+        g.apply_plan(self.plan())
+        settings=self.home/'.workflow-axa/settings.json'
+        self.assertEqual(json.loads(settings.read_text())['css'],'off')
+        settings.write_text('{"css": "on", "extra": 1}\n')
+        g.apply_plan(self.plan())
+        self.assertEqual(json.loads(settings.read_text()),{'css':'on','extra':1})
+        settings.write_text('not json')
+        g.apply_plan(self.plan())
+        self.assertEqual(settings.read_text(),'not json')  # left as it is; the reader treats it as off
+
+    def test_global_blocks_tell_agents_to_read_the_settings(self):
+        for change in self.plan():
+            if change.role.endswith('global instructions'):
+                with self.subTest(path=change.path):
+                    self.assertIn('settings.json',change.after.decode())
+                    self.assertIn('missing or invalid',change.after.decode())
+
     def test_single_host_does_not_touch_the_other(self):
         g.apply_plan(self.plan('claude'))
         self.assertTrue(self.claude.exists());self.assertFalse(self.codex.exists())
-        self.assertEqual(len(self.plan('codex')),2)
+        self.assertEqual(len(self.plan('codex')),3)
 
     def test_stale_host_block_detected_without_writes(self):
         g.apply_plan(self.plan());p=self.codex/'AGENTS.md'
@@ -231,11 +250,11 @@ class ArtifactInstructionTests(unittest.TestCase):
             self.assertIn(phrase.lower(),text.lower())
 
     def test_six_skills_include_artifact_boundary(self):
-        for skill in ('workflow','codebase-map','resume-task','task-status','workflow-doctor','plan-review'):
-            self.assertIn('artifact',self.text(f'skills/{skill}/SKILL.md').lower(),skill)
+        for path in ('skills/workflow/SKILL.md','skills/codebase-map/SKILL.md','skills/resume/SKILL.md','skills/rule-maker/DIAGNOSE.md','skills/plan-review/SKILL.md'):  # T21 merges
+            self.assertIn('artifact',self.text(path).lower(),path)
 
     def test_doctor_is_read_only_and_checks_globals(self):
-        text=self.text('skills/workflow-doctor/SKILL.md')
+        text=self.text('skills/rule-maker/DIAGNOSE.md')  # T21: workflow-doctor became rule-maker diagnose
         self.assertIn('global_policy.py --check',text)
         self.assertIn('never repair them automatically',text)
         self.assertIn('not a new artifact folder',text)

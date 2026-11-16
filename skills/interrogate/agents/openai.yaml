@@ -1,0 +1,5 @@
+interface:
+  display_name: "Interrogate"
+  short_description: "Adversaries try to show a concrete failure of a plan or change; reports reproduced failures, open concerns and untested surfaces."
+policy:
+  allow_implicit_invocation: false

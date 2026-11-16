@@ -10,12 +10,16 @@ Memory is a lead to investigate, not independent authority to replace a current 
 
 Explicit approved project constraints may specialize shared defaults, but unexplained safety, ownership or permission conflicts stop affected actions. Ask only about the actual unresolved decision; reuse settled answers. Do not choose the less restrictive rule or claim that "repo always overrides global" across hosts. Discovery and read-only diagnosis can continue within access rights.
 
+## Protections and preferences
+
+Each rule is either a **protection** (safety, correctness, authority, ownership, verification, or an area a project protects, such as styling) or a **preference** (a default about style or approach). A developer's explicit request for the current task overrides a preference. A protection needs its owner's decision. Changing a protection itself needs the policy owner: the person the project's rules, or these shared rules, name as owner of that rule.
+
 ## Review proposed changes as changes to behavior
 
 Show current rule, proposed rule, reason, affected work and required authority before applying. Formatting or moving a rule must preserve its meaning, links and line endings. An unanswered follow-up leaves that question unresolved, even if another change was approved. Updating shared rules does not silently rewrite repository rules or migrate old records.
 
 Avoid overbroad policies: "always 20 subagents" can conflict with a quiet profiling host; "retain all setups" may have a narrower scope than disposable output cleanup; "ask every choice" can conflict with approved delegated details. Establish scope rather than erasing either instruction. Do not invent work to fill slots or use measurements from an intentionally noisy host as clean performance evidence.
 
-Use normal accurate language such as component, API and service where appropriate. Preserve established domain terms without forcing specialist jargon on nontechnical readers. Comments may be as long as an important safety/API explanation needs; assess runtime impact before demanding performance work. Where existing policy is stricter, propose its change rather than ignore it.
+Use normal accurate language such as component, API and service where appropriate. Preserve established domain terms without forcing specialist jargon on nontechnical readers. A comment CORE allows may be as long as its safety or API explanation needs; assess runtime impact before demanding performance work. Where existing policy is stricter, propose its change rather than ignore it.
 
 Keep resolutions in existing PLAN/DECISIONS or the authoritative policy. No new conflict registry for ordinary work. Pass resolved constraints and unresolved boundaries to workers; a specialist's preferred architecture is not permission to replace them.

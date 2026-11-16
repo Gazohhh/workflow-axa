@@ -24,7 +24,7 @@ High means a wrong approval identity or retained consent can permit a write. Med
 | Medium: original audit, waiting loops | End with Waiting on you while host goal feedback asks for another turn | External goal feedback and workflow Stop corrections had separate continuation paths | Emit no workflow Stop feedback while waiting. Document bounded goals and host recovery | PASS: synthetic silence checks. Live trial observed 30 seconds idle. Other hooks remain outside this hook's control. |
 | Medium: candidate regression, file URI | Replay the saved host Markdown file:///D:/ report link | New workspace parser interpreted part of file: as a drive prefix | Decode supported local file URIs before path matching and invalidate old caches | PASS: red host-derived replay followed by corrected-record and sibling-session replay. Regenerated hook output is offline evidence, not live restart proof. |
 
-The final code is [phase_gate.py](../../hooks/phase_gate.py), [plain_reply.py](../../hooks/plain_reply.py) and [hook registration](../../hooks/hooks.json). Recovery guidance lives in [SETUP](../../skills/workflow/SETUP.md), [TASK-FOLDER](../../skills/workflow/TASK-FOLDER.md) and workflow-doctor. STATE_VERSION 14 invalidates older parser cache entries.
+The final code is [phase_gate.py](../../hooks/phase_gate.py), `hooks/plain_reply.py` (removed in 2.9.0) and [hook registration](../../hooks/hooks.json). Recovery guidance lives in [SETUP](../../skills/workflow/SETUP.md), [TASK-FOLDER](../../skills/workflow/TASK-FOLDER.md) and workflow-doctor. STATE_VERSION 14 invalidates older parser cache entries.
 
 ## Current evidence
 
