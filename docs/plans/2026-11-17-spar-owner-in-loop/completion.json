@@ -18,6 +18,18 @@
       "tests/test_spar.py": "ed70e8542a9642dc",
       "tests/behavioral/spar.json": "4352eaff3c9571a4",
       "tests/README.md": "18d34b4a9d68e17b"
+    },
+    "S3": {
+      "skills/spar/SKILL.md": "ecae049cb78516fd",
+      "tests/behavioral/spar.json": "1d9b42d68aea4aa4",
+      "tests/test_spar.py": "2b23798ed01d9c6a"
+    },
+    "S4": {
+      "tests/test_spar.py": "e1473a9684481fb8"
+    },
+    "S5": {
+      "skills/spar/SKILL.md": "ecae049cb78516fd",
+      "tests/behavioral/spar.json": "1d9b42d68aea4aa4"
     }
   }
 }

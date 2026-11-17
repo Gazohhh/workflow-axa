@@ -5,3 +5,5 @@
 - D2 (by: user, 2026-11-17) Offer #1 approved from the summary (question tool). Approving it also approves the plan.
 
 - D3 (by: user, 2026-11-18) Live check T2: "a. Yes, cap $5 (Recommended)".
+
+- D4 (by: user, 2026-11-18) After the live check (V3): "c. Accept as is". The owner's verdict on a proposal both debaters accepted stays untested live.

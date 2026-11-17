@@ -1,13 +1,13 @@
 # /spar with the owner in the loop
 
 ## Current checkpoint
-- Updated / phase: 2026-11-18; T1 verified and pushed; T2 partial (V3); waiting for the owner on the verdict checkpoint and acceptance
+- Updated / phase: 2026-11-18; delivered as partial (Outcome; owner D4 accepts as is)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: feature; modifiers none. It changes how /spar involves the owner during a spar. Scope: the task. Classification question: not asked
 - Agreement (gate one): agreed. The plan S2 was accepted word for word by GPT-6.2 Sol (FINDINGS S1); the owner approved it with offer #1 (D2)
 - Offer: #1 approved (owner, question tool, 2026-11-17); approving it also approved the plan
-- Implementation: T1 verified (FINDINGS V1, V2; review S2 passed). T2 live check run (V3): four checks pass, the verdict checkpoint was not provoked; $3.89 of $5
-- Verification / owner acceptance: full suite 1543 OK, validate PASS; live check partial (V3); owner acceptance not given
+- Implementation: T1 verified (V1, V2; reviews S4 and S5 passed); T2 partial (V3)
+- Verification / owner acceptance: full suite 1544 OK, validate PASS; live check partial (V3); the owner accepted it as is (D4)
 - Blockers: none
 - Changed files: skills/spar/SKILL.md, T3.md, SPAR-FILE.md; tests/test_spar.py, tests/behavioral/spar.json, tests/README.md. Work happens on D:\workflow-axa main
 
@@ -52,3 +52,19 @@ Agreed design S2 (FINDINGS S1), with the owner's answers D1:
 - Every R8 test exists, fails before its change and passes after.
 - The full suite and validate pass on main.
 - The live replay passes, or each failure is recorded and decided by the owner.
+
+
+## Outcome
+
+Delivered as partial, 2026-11-18, by owner choice (D4: "Accept as is").
+
+- Asked: /spar must run on the owner's feedback, follow sparring rules and use grilling, not decide on its own. Agreed: S2 (R1-R8), accepted by GPT-6.2 Sol and approved by the owner with offer #1.
+- Built: T1 verified. skills/spar/SKILL.md has "Rules of the spar" (the owner decides and judges, no launch on an open owner choice, grilling for sorting and asking, three checkpoints shown before their question, waiting, owner input that binds or can be challenged) and a three-party agreement with a zero-launch verdict; T3.md's briefs carry owner decisions and input; SPAR-FILE.md records the verdict. Tests in tests/test_spar.py (OwnerInTheLoop, evidence looked up per task) and the owner-checkpoints live scenario.
+- Requirements: R1-R7 verified by text tests (V1); live behaviour (V3): R2, R3a, R3b, R4, R6 observed; R3c and R7's verdict not provoked (partial).
+- R8: partial. Tests verified; live replay partial, single model.
+- Checks: full suite 1544 OK (14 skipped), validate PASS, test_spar OK, on the final files.
+- Reviews: fresh Claude subagent, Standards and Spec: S1 failed (15 findings, fixed), S2 passed, S3 failed (evidence lookup), S4 and S5 passed; completion_check: every change reviewed in its current form.
+- Changed files: skills/spar/SKILL.md, T3.md, SPAR-FILE.md; tests/test_spar.py, tests/behavioral/spar.json, tests/README.md; this task's records. Word limits raised on purpose (V2).
+- Limits: the owner's verdict on a proposal both debaters accepted is untested live; no cross-model run (GPT) of the new rules; not released or installed, so the owner's sessions run rc.3 without it.
+- Kept evidence: .artifacts/2026-11-17-spar-owner-in-loop/run1-4.jsonl and settings.json; removable once the owner no longer needs them. Scratch fixture in the session scratchpad.
+- Next safe action: include this in the next release when the owner asks.

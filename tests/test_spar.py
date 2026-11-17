@@ -336,8 +336,6 @@ class Scenarios(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
         for required in self.REQUIRED:
             self.assertIn(required, ids)
-        findings = text(ROOT / "docs/plans/2026-11-17-spar-skill/FINDINGS.md") + text(
-            ROOT / "docs/plans/2026-11-17-spar-owner-in-loop/FINDINGS.md")
         for case in self.data["scenarios"]:
             with self.subTest(case=case["id"]):
                 self.assertEqual(case["mode"], "live-host")
@@ -347,8 +345,23 @@ class Scenarios(unittest.TestCase):
                     self.assertTrue(case.get("candidate"))
                     cited = re.findall(r"\b([OV]\d+)\b", case.get("evidence", ""))
                     self.assertTrue(cited)
+                    findings = text(self.findings_of(case.get("evidence", "")))
                     for line in cited:
                         self.assertRegex(findings, rf"(?m)^- {line}\b")
+
+    @staticmethod
+    def findings_of(evidence: str) -> Path:
+        """Evidence ids are looked up in the task the evidence names; without a name, the /spar skill's own task."""
+        named = re.search(r"docs/plans/[\w.-]+", evidence)
+        return ROOT / (named.group(0) if named else "docs/plans/2026-11-17-spar-skill") / "FINDINGS.md"
+
+    def test_evidence_ids_are_looked_up_in_the_named_task_only(self):
+        case = next(c for c in self.data["scenarios"] if c["id"] == "owner-checkpoints")
+        self.assertEqual(self.findings_of(case["evidence"]),
+                         ROOT / "docs/plans/2026-11-17-spar-owner-in-loop/FINDINGS.md")
+        self.assertRegex(text(self.findings_of(case["evidence"])), r"(?m)^- V3 T2 live check")
+        self.assertEqual(self.findings_of("O4: no task named"),
+                         ROOT / "docs/plans/2026-11-17-spar-skill/FINDINGS.md")
 
     def test_no_scenario_prescribes_the_answer(self):
         for case in self.data["scenarios"]:

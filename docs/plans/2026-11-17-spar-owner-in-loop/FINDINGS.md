@@ -16,3 +16,8 @@
   - Owner choices as they come up (R3b): PASS. Before the last two launches it stopped for five owner choices (four lettered with recommendations, one plain fact question), each making sense without codes.
   - Verdict checkpoint (R3c, R7): NOT PROVOKED. Helper B accepted the synthesis S1, helper A rejected it with one amendment, and the budget was spent; the conclusion said "Not agreed yet", so model consensus was not claimed, but no proposal had both acceptances, so the owner's verdict on a shared proposal was not shown. The conclusion asked "Which version do you take forward?" with S1 and S2 explained in the same message.
   - Not proven: a cross-model run in T3 Code; the verdict checkpoint.
+
+- Review S3: fresh Claude subagent (independent) failed: the nit and the PARTIAL result were right, but the evidence lookup joined both tasks' FINDINGS, so a "V3" in the older task could satisfy the new scenario.
+- Review S4: same reviewer (independent) passed: each scenario's evidence ids are looked up only in the FINDINGS of the task its evidence names, with a test that pins it.
+
+- Review S5: same reviewer (independent) passed: skills/spar/SKILL.md and tests/behavioral/spar.json, unchanged since S3, where the reviewer judged both right (S3 points 2 and 3); S3 failed only on tests/test_spar.py, fixed in S4.

@@ -5,7 +5,7 @@ T1 is built test first. T2 runs after T1, and only after the owner's OK and a co
 | Ticket | What | Status | Depends on |
 |---|---|---|---|
 | T1 | /spar text: rules of the spar, owner checkpoints, waiting, owner verdict, with tests | Verified | — |
-| T2 | Live replay of a spar with the owner in the loop | Not started | T1 |
+| T2 | Live replay of a spar with the owner in the loop | Partial, accepted as is (D4) | T1 |
 
 ### T1 — /spar text: rules of the spar, owner checkpoints, waiting, owner verdict
 Status: Verified
@@ -24,7 +24,8 @@ Documents: tests/README.md.
 How to verify: `cd tests && python -X utf8 -m unittest test_spar` (new tests fail first, then pass); the full suite; `python -X utf8 -I tools/validate.py`.
 
 ### T2 — Live replay of a spar with the owner in the loop
-Status: Not started
+Status: Partial, accepted as is (D4)
+Evidence: FINDINGS V3: four live checks pass; the verdict checkpoint was not provoked
 
 What needs to happen: R8's live replay, after the owner's OK and a cost cap.
 
