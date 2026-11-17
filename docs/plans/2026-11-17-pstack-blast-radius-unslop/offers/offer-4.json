@@ -91,9 +91,14 @@
   },
   "hash": "82aa57b13c102a54",
   "display": "",
-  "state": "draft",
+  "state": "approved",
   "presentation_decision": "chat",
-  "decision": null,
+  "decision": {
+    "session": "da68293a-7df3-413e-ba5a-8fc81f9a9ccc",
+    "turn": "54cd6ba4-cf07-45f9-8924-12f07da39884",
+    "presentation": "0412aa8c-0137-4605-b241-202e184563cf",
+    "recorded": "2026-11-17T12:41:16+00:00"
+  },
   "supersedes": 3,
   "superseded_by": null
 }
