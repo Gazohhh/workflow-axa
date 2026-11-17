@@ -53,7 +53,7 @@ This table is ours, not the ASD dictionary. It maps the words AI-generated docs 
 | navigate (metaphorical) | go to |
 | boasts, features (as a verb) | has |
 | serves as, stands as | is |
-| substrate, wedge, nexus, scaffolding, ratchet, north star, flywheel (metaphorical) | (the concrete word, see Unslop 26 in SIMPLE-ENGLISH.md) |
+| substrate, wedge, nexus, scaffolding, ratchet, north star, flywheel (metaphorical) | (the concrete word, see Unslop 26 in WRITING.md) |
 | nestled, in the heart of | (delete, then give the location or the fact) |
 | bustling | busy |
 | that being said, notwithstanding | but |

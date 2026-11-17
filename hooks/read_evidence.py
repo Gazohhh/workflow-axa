@@ -21,9 +21,9 @@ TDD = 'tdd/SKILL.md'
 CODE_REVIEW = 'code-review/SKILL.md'
 READS = {
     'workflow-clarify': ('grilling/SKILL.md',) + UI[:2],
-    'workflow-specify': ('codebase-map/TASK-REPORT.md', 'workflow/SIMPLE-ENGLISH.md', 'codebase-map/FLOWCHART-DESIGN.md') + UI[:2] + (UI[3],),
+    'workflow-specify': ('codebase-map/TASK-REPORT.md', 'workflow/WRITING.md', 'codebase-map/FLOWCHART-DESIGN.md') + UI[:2] + (UI[3],),
     'workflow-execute': ('workflow/AUDIT.md', TDD, CODE_REVIEW) + UI[:3],
-    'workflow-deliver': ('workflow/SIMPLE-ENGLISH.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md', UI[3]),
+    'workflow-deliver': ('workflow/WRITING.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md', UI[3]),
 }
 
 

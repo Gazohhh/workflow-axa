@@ -1,5 +1,7 @@
 # SPAR.md: the record of a spar
 
+Write SPAR.md and the conclusion for a person, as `../workflow/WRITING.md` says.
+
 Read by `/spar` at the start.
 
 ## Where it lives
@@ -57,7 +59,7 @@ At every ending except a cancel, show the conclusion before the handoff question
 1. The outcome: agreed, a labelled recommendation, or competing approaches (for until agreement: agreement, deadlock or the cap), and whether the owner can act now.
 2. The recommendation, or each competing approach, in a few bullets with its reasons.
 3. Blockers and open dissent; none is dropped to keep it short.
-4. The owner's decisions.
+4. The owner's decisions. A decision still needed is asked through grilling's "How to ask", never as a list of labels such as "O1-O5" whose meaning depends on codes.
 5. The uncertainty that could change the decision, and its cheapest test.
 6. Where SPAR.md is, with its revision, or "not saved" for a conversation-only spar.
 

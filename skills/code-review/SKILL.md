@@ -87,7 +87,7 @@ If the spec is missing, skip the Spec axis and note this in the final report.
 
 ### 4b. Blast radius
 
-Run this step when anything outside the diff reads what changed: an exported symbol, a shared module, a schema or DB column, an API or JSON shape, a wire or file format, a configuration key, a feature flag, saved data, timing or lifecycle, a dependency version. Follow [BLAST-RADIUS.md](BLAST-RADIUS.md) on the diff. When the task records list safety assumptions with their checks, prove those, and reopen any assumption that the implementation or new evidence changes or contradicts. Put the result under `## Standards` as its own item, "Blast radius". When nothing outside the diff reads what changed, the item says "none" with the boundary trace that shows it. This step reports only.
+Run this step when anything outside the diff reads what changed: an exported symbol, a shared module, a schema or DB column, an API or JSON shape, a wire or file format, a configuration key, a feature flag, saved data, timing or lifecycle, a dependency version, or deleting or replacing a function its callers use, private ones included. Follow [BLAST-RADIUS.md](BLAST-RADIUS.md) on the diff. When the task records list safety assumptions with their checks, prove those, and reopen any assumption that the implementation or new evidence changes or contradicts. Put the result under `## Standards` as its own item, "Blast radius". When nothing outside the diff reads what changed, the item says "none" with the boundary trace that shows it. This step reports only.
 
 ### 5. Aggregate
 

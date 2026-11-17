@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # No comments
 
+Write the final report for a person, as `../workflow/WRITING.md` says.
+
 Code and tests are what run. A comment is a claim nobody tests. The comment rules live in `../rule-maker/rules/CORE.md` ("New code carries no comments" and "Comments are claims, not evidence"); this skill applies them to a scope the user picks. Its approved offer is the approved change CORE requires before comments are cleaned: only the comments the offer names change.
 
 **Scope:** `/no-comments <files|diff>`. Without an argument, the scope is the current diff against the base branch.

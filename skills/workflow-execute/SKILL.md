@@ -5,6 +5,8 @@ description: "Implement approved tickets, verify and review them, then deliver w
 
 # Workflow execute
 
+Write progress updates and ticket summaries for a person, as `../workflow/WRITING.md` says.
+
 Build the approved tickets until each is verified, then review the whole feature.
 
 Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never substitute another installed copy.

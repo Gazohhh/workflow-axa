@@ -5,6 +5,8 @@ description: "Sharpen a project's domain terms and decisions. Use when a term, o
 
 # Domain Modeling
 
+Write glossary entries and ADRs for a person, as `../workflow/WRITING.md` says.
+
 Actively build and sharpen the project's domain model as you design. Use this skill when a term, owner or domain boundary is unclear or being changed: challenge terms, invent edge-case scenarios, and write the glossary and decisions down the moment they crystallise. Merely *reading* the glossary for vocabulary is a one-line habit any skill can do; this skill is for changing the model, not just consuming it.
 
 ## File structure

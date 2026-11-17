@@ -6,6 +6,7 @@ import html
 import importlib.util
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 
@@ -274,8 +275,15 @@ class TaskReportTests(unittest.TestCase):
         section = self.data["task_report"]["sections"][0]
         section["text"] = "We ensure it works; it isn't hard. " + " ".join(["One short sentence."] * 7)
         problems = [problem for path, problem in helper.prose_issues(self.data) if path == f'task_report.sections[{section["id"]}].text']
-        for expected in ("semicolon", "words to replace: ensure", "contraction", "paragraph of"):
+        for expected in ("semicolon", "paragraph of"):
             self.assertTrue(any(expected in problem for problem in problems), (expected, problems))
+        # Owner Q3 (docs/plans/2026-11-17-plain-owner-questions R2, T4): a contraction and "ensure" are suggestions,
+        # reported as notes, never as problems that hold the report back.
+        for suggestion in ("ensure", "contraction"):
+            self.assertFalse(any(suggestion in problem for problem in problems), (suggestion, problems))
+        notes = [note for path, note in helper.prose_notes(self.data) if path == f'task_report.sections[{section["id"]}].text']
+        for suggestion in ("ensure", "contraction"):
+            self.assertTrue(any(suggestion in note for note in notes), (suggestion, notes))
 
     def test_expected_red_check_is_shown_as_such_and_allows_complete(self):
         report = self.delivery()
@@ -611,7 +619,23 @@ class WordingTests(unittest.TestCase):
         self.data["understanding"] = "The list changes; the old order isn't kept."
         problems = [problem for path, problem in helper.prose_issues(self.data) if path == "understanding"]
         self.assertTrue(any("semicolon" in p for p in problems), problems)
-        self.assertTrue(any("contraction" in p for p in problems), problems)
+        self.assertFalse(any("contraction" in p for p in problems), problems)
+        notes = [note for path, note in helper.prose_notes(self.data) if path == "understanding"]
+        self.assertTrue(any("contraction" in n for n in notes), notes)
+
+    def test_a_ban_brought_back_is_caught(self):
+        """R9: a checker changed back to treat "ensure" as a word to replace must show up as a problem."""
+        helper = self.helper()
+        self.data["understanding"] = "We ensure the list isn't slow."
+        clean = [p for _, p in helper.prose_issues(self.data)]
+        self.assertFalse(any("ensure" in p or "contraction" in p for p in clean), clean)
+        original = helper.PLAIN_WORDS
+        try:
+            helper.PLAIN_WORDS = re.compile(original.pattern.replace("(", "(ensure|", 1), re.I)
+            mutated = [p for _, p in helper.prose_issues(self.data)]
+        finally:
+            helper.PLAIN_WORDS = original
+        self.assertTrue(any("ensure" in p for p in mutated), mutated)
 
     def test_approved_task_report_is_refused_for_replacement(self):
         extended(self.data)
@@ -624,14 +648,16 @@ class WordingTests(unittest.TestCase):
             renderer.unpresented(output, self.root, self.data)
 
     def test_wording_docs_agree_on_uncertainty_words_and_replacing_drafts(self):
-        simple = (ROOT / "skills/workflow/SIMPLE-ENGLISH.md").read_text(encoding="utf-8")
         writing = (ROOT / "skills/workflow/WRITING.md").read_text(encoding="utf-8")
-        self.assertIn("uncertainty, permission or a proposal", simple)
-        self.assertIn("never just delete", simple)
-        self.assertIn("must, may, must not", writing.lower())
-        self.assertIn("uncertainty, permission or a proposal", writing)
-        self.assertIsNone(helper_contraction(writing), "WRITING.md uses a contraction")
-        for path in ("skills/workflow/SIMPLE-ENGLISH.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
+        rules = writing.split("## Documents and reports", 1)[1].split("\n## ", 1)[0]
+        meaning = writing.split("## Keep the meaning", 1)[1].split("\n## ", 1)[0]
+        for part in (rules, meaning):
+            self.assertIn("uncertainty, permission or a proposal", part)
+            self.assertIn("never just delete", part)
+        self.assertIn("must, may, must not", meaning.lower())
+        own_prose = "\n".join(l for l in writing.splitlines() if not l.startswith((">", "Before:")))
+        self.assertIsNone(helper_contraction(own_prose), "WRITING.md uses a contraction outside a quoted bad example")
+        for path in ("skills/workflow/WRITING.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
             text = (ROOT / path).read_text(encoding="utf-8")
             self.assertIn("--replace-unpresented", text, path)
             self.assertNotIn("then render a new file", text, path)

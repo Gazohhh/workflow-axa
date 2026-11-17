@@ -209,7 +209,7 @@ class AgreementSeven(unittest.TestCase):
 
     def test_r41_the_command_can_state_all_three_and_the_card_holds_the_cap(self):
         self.has("[quick|normal|thorough|N|until agreement <cap>] [<A> vs <B>] [keep a SPAR.md|conversation only]",
-                 "Until agreement (cap 30; another cap through Other)")
+                 "Until agreement (cap 30, at most the launches left; another cap through Other)")
         self.has("Call `orchestrator_capabilities` once, before the start card",
                  "the card's debater field offers the menu below instead; no separate question", where=self.t3)
         self.assertNotIn("before the frame is final", self.t3)
@@ -223,6 +223,10 @@ class AgreementSeven(unittest.TestCase):
                  "When fewer launches remain than the next step needs, the cap is reached",
                  "never past the cap without the owner's OK", "A cap limits launches, not money",
                  "Until agreement ends only on agreement, deadlock or the cap, a cancel, or a debater that can't continue")
+
+    def test_the_card_offers_only_the_launches_left_and_a_new_cap_is_above_those_used(self):
+        """docs/plans/2026-11-17-plain-owner-questions T9: run 5's card offered cap 30 when the owner had 20 left."""
+        self.has("at least 6, and never more than the owner has left", "A new cap must exceed the launches used.")
 
     def test_r42_continuing_and_one_model_never_pick_their_own_budget(self):
         self.has("**Continue sparring**: ask for more effort or a new cap with the start card's choices; an effort's "

@@ -60,6 +60,26 @@ def _root_relative(entry: str) -> bool:
         and not re.match(r"^[A-Za-z]:", entry) and all(part not in ("", ".", "..") for part in parts)
 
 
+CODE_FIRST = re.compile(r"^\s*(C(?:-[A-Z]+)+-\d+|[A-Z]{1,3}\d+(?:[.-]\d+)?"
+                        r"|(?i:offer|agreement|ticket|revision)\s+#?\d+)\b")
+RECORD_CODE_FIRST = re.compile(r"^\s*(C(?:-[A-Z]+)+-\d+|(?i:offer|agreement|ticket|revision)\s+#?\d+"
+                               r"|[A-Z]{1,2}\d+(?=:|,|-[A-Z]{1,2}\d))")
+
+
+def id_first(text: str) -> str | None:
+    """The code a question or text starts with (O1, T6, S2, C-OFFER-8, "Agreement 7", "Offer #2"), or None when it
+    starts with words. The owner reads the meaning first; a code may follow it as a reference."""
+    found = CODE_FIRST.match(text)
+    return found.group(1) if found else None
+
+
+def record_code_first(text: str) -> str | None:
+    """The narrower test an offer's behaviour must pass: only an unmistakable record code at the start ("Offer #2",
+    "Agreement 7", C-OFFER-8, "T1:", "R41-R44"), so a product name such as S3 or H1 never blocks an offer."""
+    found = RECORD_CODE_FIRST.match(text)
+    return found.group(1) if found else None
+
+
 def canonical_fields(data: dict) -> dict:
     """The canonical part of an input, validated: behaviour is text, the lists are lists of text, paths are
     root-relative (a folder ends with `/`, `*` and `**` are globs)."""
@@ -71,6 +91,10 @@ def canonical_fields(data: dict) -> dict:
     behaviour = data.get("behaviour")
     if not isinstance(behaviour, str) or not behaviour.strip():
         raise OfferError("behaviour must say, in words, what changes")
+    code = record_code_first(behaviour)
+    if code:
+        raise OfferError(f"behaviour starts with the code \"{code}\": put the meaning first and the code after it, "
+                         "as a reference (meaning first)")
     out = {"behaviour": behaviour.strip()}
     for key in LISTS:
         value = data.get(key, [])
@@ -148,7 +172,7 @@ def now() -> str:
 
 def new_offer(folder: pathlib.Path, canonical: dict, display: str, supersedes: int | None = None) -> dict:
     ids = [o["id"] for o in all_offers(folder)]
-    offer = {"schema": 1, "presentation_format": 2, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
+    offer = {"schema": 1, "presentation_format": 3, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
              "canonical": canonical, "hash": offer_hash(canonical), "display": display, "state": "draft",
              "presentation_decision": None, "decision": None, "supersedes": supersedes, "superseded_by": None}
     save(folder, offer, new=True)
@@ -308,7 +332,8 @@ def _prose(value: str) -> str:
 
 
 def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool = False) -> str:
-    """Format 2: the offer as a readable message, generated so the agent only copies it. Every canonical field is shown
+    """Formats 2 and 3: the offer as a readable message (format 3 opens with "What you are asked to approve" and keeps
+    the id in the footer), generated so the agent only copies it. Every canonical field is shown
     (empty lists as "None."; delegation and parent sections only when set), values escaped so they render as written,
     then the one question, the answer forms (not in the question tool's variant) and a footer that names the offer,
     its hash, its task and its workspace. The hook compares it exactly; `rendering()` stays the frozen format 1."""
@@ -317,7 +342,8 @@ def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool
     def section(title: str, items: list[str]) -> list[str]:
         return [f"### {title}", ""] + ([f"- {item}" for item in items] or ["- None."]) + [""]
 
-    lines = [f"## Offer #{offer['id']}", ""]
+    title = f"## Offer #{offer['id']}" if offer.get("presentation_format", 1) in (1, 2) else "## What you are asked to approve"
+    lines = [title, ""]
     lines += section("What will change", [_prose(c["behaviour"])])
     lines += section("Files allowed to change", [_code(p) for p in c["paths"]])
     lines += section("Protected actions", [_code(o) for o in c["operations"]])

@@ -1039,12 +1039,12 @@ def main() -> int:
             out.write(result)
         print(f'{"REPLACED" if replacing else "RENDERED"}: {args.output.resolve()}')
         print('Artifact creation does not approve or start implementation.')
-        for path, problem in issues:  # SIMPLE-ENGLISH.md advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
+        for path, problem in issues:  # WRITING.md advice; fix the JSON, then render again (--replace-unpresented if not yet shown)
             print(f'PLAIN ENGLISH: {path}: {problem}')
         for path, note in notes:
             print(f'PLAIN ENGLISH NOTE: {path}: {note}')
         if issues:
-            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with ../workflow/SIMPLE-ENGLISH.md, then render into the same file with --replace-unpresented.')
+            print(f'PLAIN ENGLISH: {len(issues)} problem(s). Rewrite those fields with ../workflow/WRITING.md, then render into the same file with --replace-unpresented.')
         if args.open and issues:
             print('NOT OPENED: wording problems remain. Opening would show the report to the user. Fix them first, then render again with --open.')
         elif args.open:

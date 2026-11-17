@@ -126,7 +126,7 @@ class WaitWhat(unittest.TestCase):
                        "present the same offer again exactly as `workflow-specify` step 5 says",
                        "If that offer was superseded or revoked, say so instead", "Never rebuild, shorten or change an offer",
                        "Repeat any other pending question word for word",
-                       "only reading `CONTEXT.md` and `../workflow/SIMPLE-ENGLISH.md`",
+                       "only reading `CONTEXT.md` and `../workflow/WRITING.md`",
                        "No new work, no edits, no records", "`/wait-what` is not an answer"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, body)

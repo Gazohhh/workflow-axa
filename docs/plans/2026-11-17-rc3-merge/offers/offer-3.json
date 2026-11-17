@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 3,
+  "task": "2026-11-17-rc3-merge",
+  "created": "2026-11-17T18:16:20+00:00",
+  "canonical": {
+    "behaviour": "Cleanup after the push (D8, Q2 answered a): main D:/workflow-axa is at bcb76ec, level with origin/main, clean, and passes (1512 tests OK, validate PASS). Remove the extra worktree D:/workflow-axa-redesign (its commit is on main; only ignored scratch output remains there) with `git worktree remove --force`, then `git worktree prune`; delete the pilot copies D:/workflow-axa-spar-pilot/run1-run5 (their findings are in the task records; run 5's SPAR.md is in docs/plans/2026-11-17-rc3-merge/run5-SPAR.md). Record the result in this task.",
+    "paths": [
+      "docs/plans/2026-11-17-rc3-merge/"
+    ],
+    "operations": [
+      "delete D:/workflow-axa-spar-pilot/run1-run5",
+      "git worktree prune",
+      "git worktree remove"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no commit or push in this step",
+      "no other file, folder or branch is deleted",
+      "the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "before removing the worktree: `git -C D:/workflow-axa-redesign status --short` shows nothing tracked as changed",
+      "each pilot folder is checked to be a pilot copy before it is deleted"
+    ],
+    "checks": [
+      "D:/workflow-axa-spar-pilot holds no run folder",
+      "git status on main stays clean",
+      "git worktree list shows only D:/workflow-axa"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "d45b6d37af235ec7",
+  "display": "Remove the extra worktree and the pilot copies",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "36f46162-cbe7-48c2-b11a-cc9045494a47",
+    "presentation": "509fa180-0c55-4b98-9d0e-f5b7ae7f0204",
+    "recorded": "2026-11-17T18:20:08+00:00"
+  },
+  "supersedes": 2,
+  "superseded_by": null
+}

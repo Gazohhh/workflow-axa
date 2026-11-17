@@ -19,6 +19,6 @@ The user didn't follow your last message. Say the same thing again, more clearly
 
 Limits:
 
-- Tool calls: only reading `CONTEXT.md` and `../workflow/SIMPLE-ENGLISH.md`, when they aren't loaded yet, and `record.py offer present` for a pending offer, which only prints it. If either is missing, the bullets above are enough.
+- Tool calls: only reading `CONTEXT.md` and `../workflow/WRITING.md`, when they aren't loaded yet, and `record.py offer present` for a pending offer, which only prints it. If either is missing, the bullets above are enough.
 - No new work, no edits, no records. No offer or decision changes.
 - `/wait-what` is not an answer. A pending offer stays pending, and only the answer after its re-presentation counts.

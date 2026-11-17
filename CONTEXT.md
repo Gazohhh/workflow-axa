@@ -73,7 +73,7 @@ What a change can break outside itself, beyond the callers a search lists. Code-
 A fact a change is safe because of, such as "this call only drops cache entries that nothing reads". Before the diff exists it is a safety assumption with the check that could falsify it. Review proves it on the evidence ladder (step 1 stated, step 5 reproduced) or marks it unproven.
 
 **Unslop check**:
-The required writing check that removes the patterns that make text read as machine-written, run before the cold-reader check. It never changes application UI copy, error messages or translations, and "Keep the meaning" wins over every tell. Owner: `skills/workflow/WRITING.md`; tells: `skills/workflow/SIMPLE-ENGLISH.md`.
+The required writing check that removes the patterns that make text read as machine-written, run before the cold-reader check. It never changes application UI copy, error messages or translations, and "Keep the meaning" wins over every tell. Owner of the rules and the tells: `skills/workflow/WRITING.md`.
 
 **Spar**:
 A session the user starts with `/spar`: a fresh Claude and GPT spar with the owner about an idea or a decision until the owner can choose a next move. It is its own skill, not part of the workflow, though it can be used during a task. Its optional record, when the owner keeps one, is `docs/spar/<date>-<topic>/SPAR.md`. Turning it into a workflow plan is the owner's choice at the end, as `skills/spar/SKILL.md` step 5 and `SPAR-FILE.md` "Where it lives" say. It never plans the HOW in tickets or implements.
@@ -173,4 +173,36 @@ Each rule below is stated in several files today. The owner file states it in fu
 | Name only files you opened | `skills/workflow/RULES.md` |
 | The blast-radius method (safety facts, where grep stops, evidence ladder, probes) | `skills/code-review/BLAST-RADIUS.md` |
 | The Unslop check: when it runs and what it never changes | `skills/workflow/WRITING.md` |
-| The Unslop tells | `skills/workflow/SIMPLE-ENGLISH.md` |
+| The Unslop tells | `skills/workflow/WRITING.md` |
+
+## Places that write for a person
+
+Each place below writes text a person reads, and points to `skills/workflow/WRITING.md` for how to write it. None restates the rules. A test keeps this list and the pointers in step.
+
+| Place | What it writes |
+|---|---|
+| `skills/grilling/SKILL.md` | Every decision question to the owner |
+| `skills/spar/SKILL.md` | The start card, frame line, progress lines, conclusion and handoff question |
+| `skills/spar/SPAR-FILE.md` | A kept SPAR.md and the conclusion |
+| `skills/wait-what/SKILL.md` | The plain explanation |
+| `skills/resume/SKILL.md` | Status and handoff |
+| `skills/rule-maker/AUDIT.md` | Audit proposals and findings |
+| `skills/rule-maker/DIAGNOSE.md` | Diagnose results |
+| `skills/ui-design/SKILL.md` | Kit findings and report content; application UI copy stays excluded |
+| `skills/interrogate/SKILL.md` | The three lists |
+| `skills/code-review/SKILL.md` | The review report |
+| `skills/code-review/BLAST-RADIUS.md` | The impact report |
+| `skills/plan-review/SKILL.md` | Plan findings |
+| `skills/codebase-map/SKILL.md` | Report text |
+| `skills/codebase-map/TASK-REPORT.md` | Task report prose fields |
+| `skills/codebase-map/scripts/render_report.py` | Its plain-English advice |
+| `skills/workflow-clarify/SKILL.md` | The agreement request |
+| `skills/workflow-specify/SKILL.md` | Tickets, the offer inputs and the one question |
+| `skills/workflow-execute/SKILL.md` | Progress and ticket summaries |
+| `skills/workflow-deliver/SKILL.md` | Delivery records and the final reply |
+| `skills/workflow/SKILL.md` | Route notices |
+| `skills/workflow/TASK-FOLDER.md` | Task records and handoffs |
+| `skills/workflow/VISUAL-REVIEW.md` | Review report text |
+| `skills/writing-for-agents/SKILL.md` | Which Unslop tells apply to agent documents |
+| `skills/domain-modeling/SKILL.md` | Glossary entries and ADRs |
+| `skills/no-comments/SKILL.md` | Its final report |

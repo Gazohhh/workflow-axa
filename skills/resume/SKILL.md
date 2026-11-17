@@ -5,6 +5,8 @@ description: "Pick up an existing workflow task: report where it really stands (
 
 # Resume
 
+Write the status and the handoff for a person, as `../workflow/WRITING.md` says.
+
 Work from the records and the code, not from memory. Write for someone new to the project. Pick the mode from the request: **status** ("where are we?"), **continue** ("continue", "pick up", "resume"), **handoff** ("write a handoff"). No mode stated: status.
 
 ## Find and reconcile (every mode)

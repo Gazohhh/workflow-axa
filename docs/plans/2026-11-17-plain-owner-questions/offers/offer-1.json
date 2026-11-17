@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-plain-owner-questions",
+  "created": "2026-11-17T18:30:11+00:00",
+  "canonical": {
+    "behaviour": "Build the agreed plan of docs/plans/2026-11-17-plain-owner-questions (R1-R10, tickets T0-T10; GPT-6.1 Sol and the coordinator both accept it). Approving this offer also approves the plan. In plain words: every common writing rule moves into one file, skills/workflow/WRITING.md, and its check keeps the name Unslop; SIMPLE-ENGLISH.md keeps only its strict modes, credit and licence and points to WRITING.md; fixed word swaps and the contraction ban become suggestions everywhere they are enforced today; every place that writes something a person reads points to WRITING.md; every decision question leads with its meaning, uses numbered lettered choices with a recommendation, and keeps codes only as a reference at the end; a request to rewrite or simplify text uses the rules with no task files; a change only counts as small after it says what depends on it; the /spar start card offers only the launches left. Each ticket is built test first. The two report-read hooks are changed in a temporary separate copy (D:/workflow-axa-hook-candidate) and copied back only after their tests pass, because this session runs the hooks from D:/workflow-axa. After the full suite, validate and a review by GPT-6.1 Sol and a fresh Claude pass, the work is committed and pushed to main. Live checks are not part of this offer: they get their own question with a cap.",
+    "paths": [
+      ".artifacts/2026-11-17-plain-owner-questions/",
+      "AGENTS.md",
+      "CONTEXT.md",
+      "README.md",
+      "VENDORED-SKILLS.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-plain-owner-questions/",
+      "hooks/phase_gate.py",
+      "hooks/read_evidence.py",
+      "skills/code-review/BLAST-RADIUS.md",
+      "skills/code-review/SKILL.md",
+      "skills/codebase-map/SKILL.md",
+      "skills/codebase-map/TASK-REPORT.md",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/codebase-map/scripts/task_report.py",
+      "skills/domain-modeling/SKILL.md",
+      "skills/grilling/SKILL.md",
+      "skills/interrogate/SKILL.md",
+      "skills/no-comments/SKILL.md",
+      "skills/plan-review/SKILL.md",
+      "skills/resume/SKILL.md",
+      "skills/rule-maker/AUDIT.md",
+      "skills/rule-maker/DIAGNOSE.md",
+      "skills/spar/",
+      "skills/ui-design/SKILL.md",
+      "skills/wait-what/SKILL.md",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow-deliver/SKILL.md",
+      "skills/workflow-execute/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/SIMPLE-ENGLISH.md",
+      "skills/workflow/SKILL.md",
+      "skills/workflow/TASK-FOLDER.md",
+      "skills/workflow/VISUAL-REVIEW.md",
+      "skills/workflow/WRITING.md",
+      "skills/workflow/scripts/offers.py",
+      "skills/workflow/simple-english/",
+      "skills/writing-for-agents/SKILL.md",
+      "tests/"
+    ],
+    "operations": [
+      "delete D:/workflow-axa-hook-candidate",
+      "git commit",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to application UI copy, error messages or translations, or to Strict mode's rules",
+      "no change to old task records, archives, quoted owner answers or already-presented approvals",
+      "no hook that judges writing",
+      "no live or paid run; those get their own question with a cap",
+      "no version bump, CHANGELOG or release; rc.3 is a separate step",
+      "the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "SKILL.md of /spar stays under 1,300 words",
+      "T0's sorted list is recorded before any other file changes",
+      "each ticket's new tests fail before its change and pass after; no assertion is deleted to get a pass",
+      "the commit and push only after the full suite, validate and the review by GPT-6.1 Sol and a fresh Claude pass",
+      "the hooks change only in D:/workflow-axa-hook-candidate until their tests pass there; the copy is deleted afterwards"
+    ],
+    "checks": [
+      "every R9 check in one test entry point",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py",
+      "review: GPT-6.1 Sol and a fresh Claude Opus 5.5, until both pass"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "513c2bb8f61f127d",
+  "display": "Build the plain-writing plan",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "d3d8f257-6683-4c90-9935-1d61cb737b68",
+    "presentation": "c3033a24-a0ae-4309-8e7c-6ecf99705e78",
+    "recorded": "2026-11-17T19:21:45+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

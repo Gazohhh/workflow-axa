@@ -133,7 +133,7 @@ class ApprovalHookCase(unittest.TestCase):
     def presented(self, rows=None, offer=None):
         rows = rows or Rows().router()
         offer = offer or offers.load(self.folder, self.offer["id"])
-        if offer.get("presentation_format") == 2:
+        if offer.get("presentation_format", 1) != 1:
             rows.say("Here is the offer.\n\n" + offers.presentation(offer, self.folder))
             return rows
         rows.say("Here is the offer:\n\n```\n" + self.rendering(offer) + "\n```\n\nShow review.html first · Approve "

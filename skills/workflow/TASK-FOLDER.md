@@ -1,5 +1,7 @@
 # Task records
 
+Write every record for a person, as `WRITING.md` says.
+
 Where a task's records live, what goes in each file, and how to pick a task up again. The records (PLAN, TODO, FINDINGS, DECISIONS) are the source of truth; reports and chat are projections of them.
 
 ## Find the task before creating one

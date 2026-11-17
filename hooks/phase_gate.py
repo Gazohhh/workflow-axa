@@ -2273,7 +2273,7 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
 
 # Report guides (round v3), unchanged
 
-REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'workflow/SIMPLE-ENGLISH.md', 'codebase-map/FLOWCHART-DESIGN.md')
+REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'workflow/WRITING.md', 'codebase-map/FLOWCHART-DESIGN.md')
 UI_GUIDE = 'codebase-map/UI-FLOW.md'
 
 

@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Interrogate
 
+Write the three lists for a person, as `../workflow/WRITING.md` says.
+
 The question: **can an adversary show a concrete failure of this plan or change?** Grilling asks the user about decisions, plan-review judges scope, and code-review checks standards and spec. This skill tries to break the thing.
 
 Only the user starts it (`/interrogate <plan file | diff>`). A project may list risk triggers; the workflow then recommends this skill and never runs it unasked.

@@ -5,6 +5,8 @@ description: "Use for any application UI work (behavior-only included), in workf
 
 # UI: reuse, do not invent
 
+Write kit findings and reports for a person, as `../workflow/WRITING.md` says; application UI copy is not changed by those rules.
+
 Read `../rule-maker/rules/DESIGN.md` (the installed sibling skill) and [CONTRACT.md](CONTRACT.md). This is a permission/selection skill, not a designer or another implementation workflow. The normal rules-readiness gate, grilling, plan review and implementation approval remain in force.
 
 ## 1. Establish the surface and decision

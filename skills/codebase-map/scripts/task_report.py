@@ -183,7 +183,10 @@ def validate(data, sources, api):
 
 
 
-PLAIN_WORDS = re.compile(r"\b(ensure|leverage|utilize|robust|seamless(?:ly)?|comprehensive|crucial|simply)\b", re.I)
+PLAIN_WORDS = re.compile(r"\b(leverage|utilize|robust|seamless(?:ly)?|comprehensive|crucial|simply)\b", re.I)
+# Owner Q3 (docs/plans/2026-11-17-plain-owner-questions R2): fixed swaps and the contraction ban are suggestions.
+SUGGESTED_SWAPS = re.compile(r"\b(ensure)\b", re.I)
+SUGGESTION_NOTE = "a suggestion only; keep the word when the plainer one would change the meaning"
 # Audit E16: these words carry uncertainty, permission or a proposal. Replacing or deleting them can turn
 # "it could be the cache" into a false certainty, so they get a note that keeps the meaning, not a problem.
 MEANING_WORDS = re.compile(r"\b(should|would|may|might|could)\b", re.I)
@@ -231,6 +234,11 @@ def prose_notes(data):
         words = sorted({m.group(0).lower() for m in MEANING_WORDS.finditer(text)})
         if words:
             notes.append((path, f'{", ".join(words)}: {MEANING_NOTE}'))
+        swaps = sorted({m.group(0).lower() for m in SUGGESTED_SWAPS.finditer(text)})
+        if swaps:
+            notes.append((path, f'{", ".join(swaps)} ("make sure that" may read plainer): {SUGGESTION_NOTE}'))
+        if CONTRACTION.search(text):
+            notes.append((path, f"contraction (the full form may read plainer): {SUGGESTION_NOTE}"))
     return notes
 
 
@@ -248,8 +256,6 @@ def prose_issues(data):
         words = sorted({m.group(0).lower() for m in PLAIN_WORDS.finditer(text)})
         if words:
             found.append("words to replace: " + ", ".join(words))
-        if CONTRACTION.search(text):
-            found.append("contraction")
         for paragraph in text.split("\n\n"):
             sentences = [s for s in re.split(r"(?<=[.!?])\s+", paragraph.strip()) if s]
             long = [s for s in sentences if len(s.split()) > 25]

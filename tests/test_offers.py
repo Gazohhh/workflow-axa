@@ -131,7 +131,7 @@ class FormatTwo(unittest.TestCase):
         self.task.mkdir(parents=True)
 
     def test_the_vat_offer_reads_as_a_plain_message(self):
-        offer = offers.create(self.task, BASE)
+        offer = dict(offers.create(self.task, BASE), presentation_format=2)  # format 2 stays word for word
         self.assertEqual(offers.presentation(offer), "\n".join([
             "## Offer #1", "",
             "### What will change", "", "- Round VAT per line, not per invoice", "",
@@ -276,8 +276,8 @@ class RecordCommandLine(unittest.TestCase):
                                             capture_output=True, text=True, encoding="utf-8")
             self.assertIn("offer #1 draft", run("create", str(task), str(source)).stdout)
             shown = run("present", str(task), "1")
-            self.assertIn("## Offer #1", shown.stdout)
-            self.assertTrue(shown.stdout.startswith("CSS: off (machine setting; display only)\n\n## Offer #1"))
+            self.assertIn("## What you are asked to approve", shown.stdout)
+            self.assertTrue(shown.stdout.startswith("CSS: off (machine setting; display only)\n\n## What you are asked to approve"))
             self.assertIn("Reply **approve**", shown.stdout)
             asked = run("present", str(task), "1", "--question").stdout
             self.assertNotIn("Reply **approve**", asked)

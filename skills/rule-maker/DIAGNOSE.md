@@ -1,5 +1,7 @@
 # Diagnose the installation (rule-maker diagnose mode)
 
+Write the diagnosis for a person, as `../workflow/WRITING.md` says.
+
 Read-only: it repairs nothing. Formerly the workflow-doctor skill (merged into rule-maker in 2.9.0).
 
 

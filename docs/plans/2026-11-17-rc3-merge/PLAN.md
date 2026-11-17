@@ -1,7 +1,7 @@
 # Merge the pstack work into the redesign worktree before rc.3
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; T1-T3 verified; the merge is in the worktree, uncommitted until the rc.3 step
+- Updated / phase: 2026-11-17; done: merged, pushed (bcb76ec), cleaned up (FINDINGS V4)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: migration; modifiers none — moves the worktree's base from c5e954b to pstack's 00ac3ae and keeps every uncommitted change; scope: the task; classification question: not asked
 - Agreement (gate one): not required — the owner's decisions D1-D4 and run 5's agreed fix list (SPAR.md S2) set the behaviour

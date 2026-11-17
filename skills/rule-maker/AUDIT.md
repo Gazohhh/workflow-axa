@@ -1,5 +1,7 @@
 # Full rules audit versus task readiness
 
+Write proposals and findings for a person, as `../workflow/WRITING.md` says.
+
 Use this procedure for a requested audit of project/agent rules. Ordinary task readiness remains a bounded check of the next task, not a certificate for the entire repository. `audit` defaults to the supplied project/rules scope, read-only; explicitly narrow it when the user asks.
 
 ## Inspect the effective sources

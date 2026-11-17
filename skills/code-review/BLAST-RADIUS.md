@@ -1,5 +1,7 @@
 # Blast radius
 
+Write the impact report for a person, as `../workflow/WRITING.md` says.
+
 Find what a change breaks outside itself, and prove the facts its safety rests on by running code. A writeup that sounds right is worth nothing on its own: it reads as convincing whether or not it is true.
 
 Callers are the input, not the result. Anyone can list them with a search. The job is the breakage a search does not show.

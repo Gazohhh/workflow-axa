@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: "Use for repository features, fixes, refactors, research, plans, audits and task resumption, including ordinary prompts. Find the task, check rules, route to the phase skill its records require: clarify, specify, execute or deliver. Explain-only stays read-only."
+description: "Use for repository features, fixes, refactors, research, plans, audits and task resumption, including ordinary prompts, and when asked to write, rewrite or simplify text a person reads. Find the task, check rules, route to the phase skill its records require: clarify, specify, execute or deliver. Explain-only stays read-only."
 ---
 
 # Workflow
@@ -14,7 +14,7 @@ Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rul
 ## 2. Find the task
 
 1. State repository, branch and local changes; protect user edits.
-2. Intent: **Inspect** (explain, research, diagnose, audit, review) is read-only with no gates or new records. **Plan** needs agreement and specification, never code. **Change** or later "fix it" uses the gates. **Resume** reconciles existing authority.
+2. Intent: **Inspect** (explain, research, diagnose, audit, review) is read-only with no gates or new records. **Plan** needs agreement and specification, never code. **Change** or later "fix it" uses the gates. **Resume** reconciles existing authority. **Write** (write, rewrite or simplify a text a person reads, with no change to the repository): read `WRITING.md`, return the text, and create no task records, offer or gates; compare the rewrite with the source part by part (`WRITING.md` "Keep the meaning"), so "may skip" stays "may skip". A question or a chat message is not a Write request.
 3. Before creating any task folder or Plan, Change or Resume records, follow [TASK-FOLDER.md](TASK-FOLDER.md). A new chat is not a new task. When related work might match, invoke `workflow-clarify`, which asks "separate task or revision?" with its first questions. Provisional identity is not approval.
 4. Checkpoint before lengthy discovery; without files disclose what cannot survive.
 5. A message that does not clearly belong to the active task: answer a question without touching records. Before any change, ask "part of <task>, or separate?", checkpoint and offer a fresh session.
@@ -49,7 +49,7 @@ Invoke with the skill tool (`workflow-axa:<name>`) or read its SKILL.md whole. T
 
 **Every change** gets an offer and the one question (`workflow-specify` step 5). Make and present it only through `workflow-specify`: it records the offer with `record.py offer create` and shows the presentation `record.py offer present` prints. An offer in your own words, or any other question, can't be approved: the hook refuses the edit that follows. The plan report is built only on *Show review.html first* or when the owner asks for it. One-ticket work, a small visible change included, gets one ticket and its offer.
 
-**Lightweight edit**: exact, low-risk, no observable behavior, architecture, interface, dependency or security change. A visible behavior change, however small and fully specified, is not lightweight: it gets the one-ticket offer. Neither is an edit that fires the blast-radius trigger in code-review step 4b (an exported symbol, schema, API shape, configuration key, saved data and the rest of that list); a docs fix whose text only tests read stays lightweight, and its check runs those tests. A lightweight edit gets the minimal offer (its files, its check and a one-line why) through `workflow-specify` step 5, and is still asked the one question. After the answer, verify, review once per [AUDIT.md](AUDIT.md), then short `workflow-deliver`.
+**Lightweight edit**: exact, low-risk, no observable behavior, architecture, interface, dependency or security change. A visible behavior change, however small and fully specified, is not lightweight: it gets the one-ticket offer. Neither is an edit that fires the blast-radius trigger in code-review step 4b (an exported symbol, schema, API shape, configuration key, saved data and the rest of that list); a docs fix whose text only tests read stays lightweight, and its check runs those tests. Before an edit is called lightweight, its one-line why names what outside the diff reads what changes, or "nothing", checked against that trigger list. A lightweight edit gets the minimal offer (its files, its check and a one-line why) through `workflow-specify` step 5, and is still asked the one question. After the answer, verify, review once per [AUDIT.md](AUDIT.md), then short `workflow-deliver`.
 
 ## 5. The two gates
 

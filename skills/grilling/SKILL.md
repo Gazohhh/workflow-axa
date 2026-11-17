@@ -51,7 +51,9 @@ a. <option>  b. <option>
 ➡️ Recommended: a, <its trade-off>
 ```
 
-Ask a fact or access request plainly, and DESIGN.md rule 4's question in its exact wording, with its same-tag list and no recommendation. Ask through the host's structured multiple-choice question tool when it has one, otherwise as the same lettered list in chat, never in the background, where answers can't reach it. Write each question for someone new to the project (`../workflow/WRITING.md`).
+The title and first sentence carry the meaning: what the owner decides and what each answer does. A code (a decision, ticket, synthesis or contract id such as D31, T6, S2) appears only after the meaning, as a reference, and the question still makes sense with every code removed.
+
+A fact or access request is asked plainly, without options, and DESIGN.md rule 4's question in its exact wording, with its same-tag list and no recommendation; both also make sense without codes. Ask through the host's structured multiple-choice question tool when it has one, otherwise as the same lettered list in chat, never in the background, where answers can't reach it. Write each question for someone new to the project (`../workflow/WRITING.md`).
 
 ## Break it before stopping
 

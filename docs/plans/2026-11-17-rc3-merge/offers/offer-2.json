@@ -86,9 +86,9 @@
   },
   "hash": "9e625932a9a678fe",
   "display": "Rewrite VALIDATION.md, push to main, clean up",
-  "state": "draft",
+  "state": "superseded",
   "presentation_decision": null,
   "decision": null,
   "supersedes": 1,
-  "superseded_by": null
+  "superseded_by": 3
 }
