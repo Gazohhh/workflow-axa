@@ -15,6 +15,6 @@ Find the first place the system goes wrong, prove it, and fix it there.
 4. **Complex branch** (cause unknown or intermittent, whatever else is clear): rank falsifiable hypotheses, run the probe that separates them best, and shrink the failure to its minimum. After two fixes that share one assumption have failed, test that assumption directly before a third fix.
 5. **Regression test first** with `tdd`: write it and see it fail before changing the code.
 6. **Fix the root cause** until that test passes. Add a guard only when the state it handles is legitimate. A root cause outside the approved scope is a new or revised plan, never a silent widening.
-7. **Review** with `code-review`; when the fix touches code others depend on, name what could break outside the diff and run the check that proves the key fact.
+7. **Review** with `code-review`; its step 4b proves the safety facts (`../../code-review/BLAST-RADIUS.md`).
 
 **Done when:** the reproduction passes, the regression test went red then green (or the recorded alternative evidence), and the review found nothing open.

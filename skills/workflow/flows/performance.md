@@ -13,7 +13,7 @@ Make it measurably faster or lighter, and be sure the number means what it seems
 2. **Baseline.** Measure before touching anything, with the same workload you will measure after.
 3. **Explain the number.** Find what limits it and rule out measuring something else (warm-up, caching, the harness itself).
 4. **Isolate the cost** with a profile or a focused benchmark.
-5. **Change in this order:** don't do it, do it once, do less, do it later, do it cheaper.
+5. **Change in this order**, after stating the behaviour that must not change: don't do it, do it once, do less, do it later, do it cheaper. A cache, deferral, batching or reorder gets `../../code-review/BLAST-RADIUS.md` for stale data, order and teardown.
 6. **Remeasure** the same workload; keep correctness tests green (`tdd`) and review with `code-review`.
 
 No representative environment: record Measurement-limited analysis and label where the numbers came from.

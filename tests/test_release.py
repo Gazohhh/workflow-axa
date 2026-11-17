@@ -52,6 +52,8 @@ class ReleaseFromCheckoutTests(unittest.TestCase):
         # T22: simple-english ships as reference text with its licence; the archived skills do not ship.
         self.assertIn("skills/workflow/SIMPLE-ENGLISH.md", self.names)
         self.assertIn("skills/workflow/SIMPLE-ENGLISH.LICENSE", self.names)
+        for licence in ("skills/code-review/BLAST-RADIUS.LICENSE", "skills/workflow/UNSLOP.LICENSE"):
+            self.assertIn(licence, self.names)
         shipped = (ROOT / "skills/workflow/SIMPLE-ENGLISH.md").read_text(encoding="utf-8")
         refs = sorted(set(re.findall(r"`(simple-english/[a-z-]+\.md)`", shipped)))
         self.assertEqual(len(refs), 4, refs)

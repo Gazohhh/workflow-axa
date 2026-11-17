@@ -149,13 +149,146 @@ class CodeReviewChecks(unittest.TestCase):
 
     def test_blast_radius_step(self):
         body = flat("code-review")
-        for phrase in ("### 4b. Blast radius", "Search for the callers outside the diff",
-                       "prove the key safety fact by running code", "standing diagnostic allowance",
-                       "`python -X utf8 -I ../interrogate/scripts/snapshot.py id <repo>`",
-                       "mark the safety claim unverified", "Put the result under `## Standards` as its own item",
-                       "This step reports only"):
+        for phrase in ("### 4b. Blast radius", "[BLAST-RADIUS.md](BLAST-RADIUS.md)",
+                       "anything outside the diff reads what changed",
+                       "Put the result under `## Standards` as its own item, \"Blast radius\"",
+                       "reopen any assumption that the implementation or new evidence changes or contradicts",
+                       "the item says \"none\" with the boundary trace that shows it", "This step reports only"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, body)
+        self.assertNotIn("Search for the callers outside the diff", body)
+
+
+class ImpactQuestionRouting(unittest.TestCase):
+    """Live runs L1 and L2: a plain "what could this break?" never loaded the method. The description routes it."""
+
+    def test_description_names_impact_questions(self):
+        front = text("code-review").split("---", 2)[1]
+        description = json.loads(re.search(r"\ndescription: (\"[^\n]+\")\n", front)[1])
+        self.assertIn("what could this change break?", description)
+        metadata = (ROOT / "skills/code-review/agents/openai.yaml").read_text(encoding="utf-8")
+        self.assertIn("what could this change break", metadata)
+
+    def test_an_impact_question_follows_the_method_alone(self):
+        body = flat("code-review")
+        self.assertIn("## Impact questions", text("code-review"))
+        for phrase in ("skips the two axes", "[BLAST-RADIUS.md](BLAST-RADIUS.md)", "no two-axis review", "report only"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, body.split("## Impact questions", 1)[1][:600])
+
+    def test_metadata_still_validates(self):
+        self.assertEqual([], [e for e in validate_package(ROOT) if "code-review" in e])
+
+
+MIT_BODY = """Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE."""
+
+
+def assert_mit_licence(case: unittest.TestCase, relative: str, holder: str) -> None:
+    """The whole file, whitespace-collapsed, equals the standard MIT text for this holder."""
+    expected = " ".join(f"MIT License\n\nCopyright (c) 2026 {holder}\n\n{MIT_BODY}".split())
+    case.assertEqual(expected, " ".join((ROOT / relative).read_text(encoding="utf-8").split()), relative)
+
+
+class BlastRadiusMethod(unittest.TestCase):
+    """skills/code-review/BLAST-RADIUS.md owns the method (agreement 1, R1)."""
+
+    def body(self) -> str:
+        return " ".join((ROOT / "skills/code-review/BLAST-RADIUS.md").read_text(encoding="utf-8").split())
+
+    def test_method_parts(self):
+        body = self.body()
+        for phrase in ("Callers are the input, not the result", "**Find the safety facts.**", "no cap",
+                       "## Evidence ladder", "say which step it reached",
+                       "## Where grep stops", "pinned version", "local patch", "async order", "teardown",
+                       "JSON or API shape", "DB column", "wire or file format", "another language", "config key",
+                       "feature flag", "saved data", "downstream", "its `copy` command", "never start it yourself",
+                       "Reproduced in an isolated running instance of the application",
+                       "**Risks**", "**Cleared**", "**Before you merge**",
+                       "boundary trace", "standing diagnostic allowance",
+                       "`python -X utf8 -I ../interrogate/scripts/snapshot.py id <repo>`",
+                       "unproven", "`/interrogate`", "reports only",
+                       "## Planning, with no diff yet", "## Asked directly"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, body)
+
+    def test_no_multi_model_step_and_no_source_name(self):
+        body = self.body().lower()
+        for word in ("arena", "models", "pstack", "upstream"):
+            with self.subTest(word=word):
+                self.assertNotIn(word, body)
+
+    def test_licence_travels_with_the_text(self):
+        assert_mit_licence(self, "skills/code-review/BLAST-RADIUS.LICENSE", "Lauren Tan")
+
+    def test_no_paragraph_repeats_between_the_step_and_the_method(self):
+        self.assertEqual([], [n for n in repeat_notes(ROOT) if "BLAST-RADIUS.md" in n])
+
+
+POINTER = re.compile(r"`((?:\.\./)+[\w./-]+\.md)`")
+
+
+def pointer_targets(relative: str, name: str) -> list[Path]:
+    """Code-form pointers (`../x/Y.md`) in a skill file that end in `name`, resolved from that file's folder.
+    validate.py checks Markdown links only, so these need their own check."""
+    path = ROOT / relative
+    return [(path.parent / found).resolve() for found in POINTER.findall(path.read_text(encoding="utf-8"))
+            if found.endswith(name)]
+
+
+class BlastRadiusRouting(unittest.TestCase):
+    """Planning and routing points name the method (agreement 1, R3, R4, R12; TODO T2)."""
+
+    PHRASES = {
+        "skills/workflow-clarify/SKILL.md": ("**Safety assumptions**", "each with the check that could falsify it"),
+        "skills/workflow-specify/SKILL.md": ("each safety assumption from clarify",),
+        "skills/plan-review/SKILL.md": ("records no safety assumptions",),
+        "skills/workflow/SKILL.md": ("blast-radius trigger in code-review step 4b", "a docs fix whose text only tests read stays lightweight"),
+        "skills/workflow/flows/INDEX.md": ("\"what could this break\"", "**Compatibility**"),
+        "skills/workflow-execute/SKILL.md": ("step 4b", "again on the whole diff"),
+        "skills/workflow/AUDIT.md": ("a tool, test, validator or other document reads",),
+        "skills/workflow-deliver/SKILL.md": ("a \"Blast radius\" result", "open Risks and unproven safety facts"),
+    }
+    POINTED = ("skills/workflow-clarify/SKILL.md", "skills/workflow/flows/INDEX.md", "skills/workflow/AUDIT.md")
+
+    def test_each_point_names_its_part(self):
+        for relative, phrases in self.PHRASES.items():
+            body = " ".join((ROOT / relative).read_text(encoding="utf-8").split())
+            for phrase in phrases:
+                with self.subTest(file=relative, phrase=phrase):
+                    self.assertIn(phrase, body)
+
+    def test_the_compatibility_modifier_requires_the_method(self):
+        index = (ROOT / "skills/workflow/flows/INDEX.md").read_text(encoding="utf-8")
+        line = next(l for l in index.splitlines() if l.startswith("- **Compatibility**"))
+        self.assertIn("BLAST-RADIUS.md", line)
+
+    def test_pointers_resolve(self):
+        method = (ROOT / "skills/code-review/BLAST-RADIUS.md").resolve()
+        for relative in self.POINTED:
+            with self.subTest(file=relative):
+                targets = pointer_targets(relative, "BLAST-RADIUS.md")
+                self.assertTrue(targets, "no code-form pointer to BLAST-RADIUS.md")
+                self.assertEqual({method}, set(targets))
+        for path in sorted((ROOT / "skills").rglob("*.md")):
+            for target in pointer_targets(path.relative_to(ROOT).as_posix(), "BLAST-RADIUS.md"):
+                with self.subTest(file=path.relative_to(ROOT).as_posix()):
+                    self.assertEqual(method, target)
 
 
 if __name__ == "__main__":

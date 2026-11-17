@@ -50,6 +50,7 @@ KEY_FILES = (
     "skills/rule-maker/rules/START.md", "skills/rule-maker/rules/CORE.md", "skills/rule-maker/rules/READINESS.md",
     "skills/rule-maker/rules/DESIGN.md", "skills/rule-maker/rules/version.json",
     "tools/digest_sessions.py", "skills/workflow/SIMPLE-ENGLISH.md", "skills/workflow/SIMPLE-ENGLISH.LICENSE", "skills/rule-maker/scripts/required_reads.py", "skills/workflow/flows/INDEX.md", "skills/workflow/FALLBACKS.md", "skills/workflow/scripts/settings.py", "skills/workflow/scripts/offers.py", "hooks/approval.py", "hooks/read_evidence.py", "skills/workflow-deliver/scripts/completion_check.py", "skills/workflow/scripts/legacy_inventory.py", "skills/workflow/flows/TEMPLATE.md",
+    "skills/code-review/BLAST-RADIUS.md", "skills/code-review/BLAST-RADIUS.LICENSE", "skills/workflow/UNSLOP.LICENSE",
 )
 
 

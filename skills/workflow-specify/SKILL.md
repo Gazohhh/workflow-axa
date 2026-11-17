@@ -38,7 +38,7 @@ Done when the graph has no cycles, every requirement and acceptance item has a t
 
 ## 3. Name the bigger checks
 
-List checks for each group of dependent tickets and whole-feature checks against the agreement: other callers, compatibility, failure journeys. Say what can't be checked and why. Without a test runner, a headless Edge or Chrome probe page can click (`--dump-dom`). Name what each check needs (server, port, device, account) and ask for it in step 5, so a needed check is never dropped silently at delivery.
+List checks for each group of dependent tickets and whole-feature checks against the agreement: other callers, compatibility, failure journeys, and each safety assumption from clarify as the check that could falsify it. Say what can't be checked and why. Without a test runner, a headless Edge or Chrome probe page can click (`--dump-dom`). Name what each check needs (server, port, device, account) and ask for it in step 5, so a needed check is never dropped silently at delivery.
 
 ## 4. Challenge it (when large or risky)
 
@@ -46,7 +46,7 @@ Run `plan-review` in a fresh context and resolve its findings. A behavior questi
 
 ## 5. Implementation approval
 
-First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Then write the **offer** (the minimal offer for a lightweight edit, one ticket's paths for one-ticket work): a JSON file with the behaviour summary, the paths the tickets may change, the operations (only protected actions, each by its exact name: `git commit` when asked, `git push`, an MCP tool's name; never a check), exclusions, conditions and required checks, and create it with `python -X utf8 -I <workflow>/scripts/record.py offer create <task-folder> <file.json>`. The owner doesn't see tool output: only the offer as `record.py offer present` prints it, in your reply or as a question's own text, counts as presented. Copy that output unchanged; never rewrite, shorten, translate or escape it.
+First compare every ticket with the agreement line by line (behavior, timing, data, failures, assumptions); any difference is an agreement change (step 4). Then write the **offer** (the minimal offer for a lightweight edit, one ticket's paths for one-ticket work): a JSON file with the behaviour summary, the paths the tickets may change, the operations (only protected actions, each by its exact name: `git commit` when asked, `git push`, an MCP tool's name; never a check), exclusions, conditions and required checks. Run the Unslop check of `../workflow/WRITING.md` on its prose, then create it with `python -X utf8 -I <workflow>/scripts/record.py offer create <task-folder> <file.json>`. The owner doesn't see tool output: only the offer as `record.py offer present` prints it, in your reply or as a question's own text, counts as presented. Copy that output unchanged; never rewrite, shorten, translate or escape it.
 
 Present it with **the one question**, which has three answers: *Show review.html first*, *Approve from this summary*, *Change something*. When the change touches saved data, auth, a public interface, a migration, deletion, money, more than one owner or visible UI, recommend the report and say why in plain words. Present it one way:
 

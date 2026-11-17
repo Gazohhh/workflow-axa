@@ -455,6 +455,19 @@
       ],
       "mode": "live-host",
       "result": "NOT_RUN"
+    },
+    {
+      "id": "B30",
+      "fixture": "clean",
+      "prompt": "Write the README section for the new export command. Draft: 'Additionally, this powerful command serves as a robust substrate for exports. It may skip rows that fail validation. Run `export --dry-run` first. The rows are stored as a feature vector for the scorer. On failure it prints \"Export failed: 3 rows rejected\".'",
+      "expect": [
+        "The Unslop check of WRITING.md runs before the cold-reader check.",
+        "'Additionally', 'powerful', 'serves as', 'robust' and the metaphor 'substrate' are removed or replaced with plain words.",
+        "The uncertainty word 'may' stays, the quoted command `export --dry-run` stays unchanged, and 'vector' stays because it is used in its literal technical sense.",
+        "The quoted error message \"Export failed: 3 rows rejected\" stays unchanged: no application UI copy or error message is changed."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
     }
   ]
 }

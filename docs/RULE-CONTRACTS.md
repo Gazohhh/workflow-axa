@@ -116,14 +116,15 @@ Owner file: `skills/<skill>/SKILL.md` unless named.
 | ui-design | DESIGN.md rules (owner `rule-maker/rules/DESIGN.md`) | Pick a mode; record the mirrored element; screen diagram | Which element does the same job |
 | grilling | Never offer a forbidden option; rule 4's question word for word | Research first; rounds; save each question before sending | Ask only what the user must decide; when to stop |
 | tdd | Report only what ran; test only at agreed seams | Red, green, refactor; one slice at a time | Spotting anti-patterns |
-| code-review | The Standards and Spec axes stay separate | Pin the diff; find sources; run and aggregate | Whether each baseline smell applies |
+| code-review | The Standards and Spec axes stay separate; blast radius reports only; probes within the diagnostic allowance, writes only in a verified isolated copy | Pin the diff; find sources; run and aggregate; step 4b follows BLAST-RADIUS.md when anything outside the diff reads what changed | Whether each baseline smell applies; which safety facts carry the most risk |
 | writing-for-agents | None | Context pointers; information hierarchy | No-op test; when to split; pruning |
 | codebase-design | Project ownership and approved rules win | Deletion test before a new layer | Depth; seam placement |
 | domain-modeling | A new glossary or ADR needs approval | Record a term in DECISIONS, then the glossary | Whether an ADR is worth offering |
 | interrogate | User-invoked; reports only; probes within the diagnostic allowance, writes only in a verified isolated copy | Restate; pin the snapshot; two adversaries; confirm on a pristine copy; three lists; stale when the target changed | What counts as a concrete failure; when a concern is worth an experiment |
 | no-comments | User-invoked; one approved offer before any change; behavior unchanged; unverified constraints and tool-read annotations kept | Reviewer verdicts; check each one; offer; apply; tests and type check; report | Whether a comment is stale, a contract or a constraint |
 | wait-what | No new work, no tool call beyond CONTEXT.md and SIMPLE-ENGLISH.md, no offer or decision change; never an answer | Context; the point in plain words; the pending question unchanged | What context the reader lacks |
-| SIMPLE-ENGLISH.md (reference text, formerly simple-english) | Never change code, quotes or rule 4's question | Document rules; self-check | When plain words lose the meaning |
+| SIMPLE-ENGLISH.md (reference text, formerly simple-english) | Never change code, quotes or rule 4's question | Document rules; self-check; the Unslop tells | When plain words lose the meaning |
+| WRITING.md Unslop check | Runs before the cold-reader check; "Keep the meaning" wins; never changes application UI copy, error messages or translations | The listed texts, after drafting | Which tells apply to a sentence |
 
 ## Hook candidates
 

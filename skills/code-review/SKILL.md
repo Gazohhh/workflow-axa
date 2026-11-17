@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Review a diff on two separate axes, Standards and Spec. Use for a task's changes, a branch, a pull request or uncommitted work."
+description: "Review a diff on two separate axes, Standards and Spec. Use for a task's changes, a branch, a pull request or uncommitted work. Also use for \"what could this change break?\" about a diff, a symbol or a planned change: the blast-radius method, report only."
 ---
 
 Two-axis review of a diff:
@@ -11,6 +11,10 @@ Two-axis review of a diff:
 The axes stay separate so one axis's findings don't mask the other's; then this skill aggregates their findings.
 
 This package's `code-review` (plugin name `workflow-axa:code-review`) is the reviewer the workflow means. A host's built-in command or another installed skill with the same name is a different tool.
+
+## Impact questions
+
+A question such as "what could this change break?" about a diff, a symbol or a planned change, with no review requested, skips the two axes. Follow [BLAST-RADIUS.md](BLAST-RADIUS.md) alone: no two-axis review, report only, no edits and no task records.
 
 ## Process
 
@@ -70,6 +74,7 @@ Run each axis in a fresh subagent when the host has them: issue both calls toget
 
 - The diff (in a task: the changed and untracked files) and any commits.
 - The list of standards-source files you found in step 3, **plus the smell baseline and the comment and reader-load checks from step 3** pasted in full (the subagent has no other access to them).
+- When the diff changes prose (docs, Markdown, comments), the Unslop check of `../workflow/WRITING.md` and the tells it lists, pasted in full. Each tell is advisory, never a hard violation.
 - The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
 **Spec prompt** should include:
@@ -82,7 +87,7 @@ If the spec is missing, skip the Spec axis and note this in the final report.
 
 ### 4b. Blast radius
 
-Run this step when the diff changes code that other code depends on: an exported symbol, a shared module, a schema, a configuration key. Search for the callers outside the diff, name them, and say what could break for each. Then prove the key safety fact by running code: a test or a probe. A probe follows the standing diagnostic allowance (`../rule-maker/rules/OPERATIONS.md`); one that writes runs in an isolated copy: pin the working tree with `python -X utf8 -I ../interrogate/scripts/snapshot.py id <repo>`, then make and verify the copy with its `copy` command, as `../interrogate/SKILL.md` steps 1 and 2 describe. When running it is not possible or not allowed, report the experiment that would prove the fact and mark the safety claim unverified. Put the result under `## Standards` as its own item, "Blast radius". This step reports only.
+Run this step when anything outside the diff reads what changed: an exported symbol, a shared module, a schema or DB column, an API or JSON shape, a wire or file format, a configuration key, a feature flag, saved data, timing or lifecycle, a dependency version. Follow [BLAST-RADIUS.md](BLAST-RADIUS.md) on the diff. When the task records list safety assumptions with their checks, prove those, and reopen any assumption that the implementation or new evidence changes or contradicts. Put the result under `## Standards` as its own item, "Blast radius". When nothing outside the diff reads what changed, the item says "none" with the boundary trace that shows it. This step reports only.
 
 ### 5. Aggregate
 

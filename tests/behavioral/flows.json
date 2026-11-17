@@ -31,6 +31,7 @@
     {"prompt": "Update AGENTS.md with the new test command.", "recipe": "docs-tests", "modifiers": []},
     {"prompt": "How does the label printing flow work from button to printer?", "recipe": "inspect", "modifiers": []},
     {"prompt": "Why did we choose Ionic for this app?", "recipe": "inspect", "modifiers": []},
+    {"prompt": "What could renaming the status column on orders break?", "recipe": "inspect", "modifiers": []},
     {"prompt": "Make it better.", "recipe": "ask", "modifiers": []},
     {"prompt": "Look at the dashboard.", "recipe": "ask", "modifiers": []}
   ],
@@ -121,5 +122,22 @@
     {"id": "R-other", "mode": "live-host", "result": "NOT_RUN",
      "scenario": "A clear Other and a vague Other.",
      "expect": ["A clear outcome assembles the phases; a vague one starts with Inspect, then focused grilling; neither repeats the classification menu."]}
+  ],
+  "blast_radius_cases": [
+    {"id": "BR-hidden-consumer", "mode": "live-host", "result": "NOT_RUN",
+     "scenario": "A diff renames a field in an API response; a nightly export job in another repository reads that JSON key and no search in this repository finds it.",
+     "expect": ["Code-review step 4b runs and follows code-review/BLAST-RADIUS.md: callers are the input, and the report looks where grep stops (JSON shape, other repositories).", "The export job is named as a Risk with file:line or the search that found it, likelihood, cost and the check that catches it."]},
+    {"id": "BR-denied-probe", "mode": "live-host", "result": "NOT_RUN",
+     "scenario": "Proving the safety fact needs a probe that writes to a shared database the standing diagnostic allowance does not cover.",
+     "expect": ["The probe is not run; the fact is marked unproven with the experiment that would prove it.", "Delivery lists the unproven fact under limitations."]},
+    {"id": "BR-local-none", "mode": "live-host", "result": "NOT_RUN",
+     "scenario": "A private helper inside one module is renamed, and nothing outside the module reads it.",
+     "expect": ["The blast-radius result is \"none\" with a boundary trace of what the change reads and writes; \"it is local\" alone does not count.", "No extra probe or report beyond that trace."]},
+    {"id": "BR-inspect-question", "mode": "live-host", "result": "NOT_RUN",
+     "scenario": "The owner asks in plain words: \"What could renaming the status column on orders break?\"",
+     "expect": ["The router takes Inspect, follows code-review/BLAST-RADIUS.md in its planning form for a symbol without a diff, and reports only.", "No task folder, no records and no edits."]},
+    {"id": "BR-combined-tickets", "mode": "live-host", "result": "NOT_RUN",
+     "scenario": "Two tickets each pass their own review, but together they change a cache key and its reader's expiry.",
+     "expect": ["The whole-feature review runs step 4b again on the whole diff and finds the combined break that no single ticket review showed."]}
   ]
 }

@@ -20,7 +20,7 @@ USER_ONLY: set[str] = set()
 # LICENSE files are exempt: the MIT licence requires its copyright notice to stay with the copied text.
 SOURCE_MENTIONS = re.compile(
     r"mattpocock|matt-pocock|Matt Pocock|\bMatt's\b|\bMatt\b|AminBlg|SimpleEnglish|Bundled with workflow-axa"
-    r"|workflow-axa adaptation|\bupstream\b|cathrynlavery|\bLavery\b",
+    r"|workflow-axa adaptation|\bupstream\b|cathrynlavery|\bLavery\b|pstack|Lauren Tan|cursor/plugins",
     re.IGNORECASE,
 )
 # Lower-case only: the compatibility file DIAGRAM-DESIGN.md keeps its name.
@@ -55,6 +55,23 @@ class OwnedSkillTests(unittest.TestCase):
             for path in paths:
                 self.assertIn(path, text, skill)
             self.assertNotRegex(text, r"installed `(grilling|tdd|code-review)`", skill)
+
+    def test_the_pattern_covers_every_credited_source(self):
+        """The blast-radius method and the Unslop tells (VENDORED-SKILLS.md) are covered by the same rule."""
+        for line in ("adapted from pstack", "by Lauren Tan", "see github.com/cursor/plugins"):
+            with self.subTest(line=line):
+                self.assertTrue(SOURCE_MENTIONS.search(line), line)
+
+    def test_credits_name_both_new_licences_without_new_skills(self):
+        sys.path.insert(0, str(ROOT / "tools"))
+        from validate import licence_files, licensed_skills
+        files = licence_files(ROOT)
+        for path in ("skills/code-review/BLAST-RADIUS.LICENSE", "skills/workflow/UNSLOP.LICENSE"):
+            with self.subTest(path=path):
+                self.assertIn(path, files)
+                self.assertTrue((ROOT / path).is_file())
+        self.assertEqual(["code-review", "codebase-design", "domain-modeling", "grilling", "implement-spec", "retro",
+                          "simple-english", "tdd", "writing-for-agents"], licensed_skills(ROOT))
 
     def test_no_file_under_skills_names_where_a_skill_came_from(self):
         hits = []

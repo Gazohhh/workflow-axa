@@ -66,6 +66,15 @@ For a change a user sees on screen: who uses it, in what situation, their goal a
 **Interrogation**:
 An adversarial check the user starts with `/interrogate`: other agents try to show a concrete failure of a plan or a pinned change. A failure counts only when another agent reproduces it on a pristine copy. It reports and changes nothing.
 
+**Blast radius**:
+What a change can break outside itself, beyond the callers a search lists. Code-review step 4b reports it on a diff, planning records it as safety assumptions, and "what could this break?" asks for it directly. Method: `skills/code-review/BLAST-RADIUS.md`.
+
+**Safety fact**:
+A fact a change is safe because of, such as "this call only drops cache entries that nothing reads". Before the diff exists it is a safety assumption with the check that could falsify it. Review proves it on the evidence ladder (step 1 stated, step 5 reproduced) or marks it unproven.
+
+**Unslop check**:
+The required writing check that removes the patterns that make text read as machine-written, run before the cold-reader check. It never changes application UI copy, error messages or translations, and "Keep the meaning" wins over every tell. Owner: `skills/workflow/WRITING.md`; tells: `skills/workflow/SIMPLE-ENGLISH.md`.
+
 **Comment debt**:
 A misleading or stale comment outside the lines an approved change edits. It is listed in FINDINGS, not fixed; `/no-comments` is how the user cleans it up.
 
@@ -159,3 +168,6 @@ Each rule below is stated in several files today. The owner file states it in fu
 | Read instruction files whole | `skills/workflow/SKILL.md` |
 | What a check does not prove (loading, compliance) | `docs/EVALUATION.md` |
 | Name only files you opened | `skills/workflow/RULES.md` |
+| The blast-radius method (safety facts, where grep stops, evidence ladder, probes) | `skills/code-review/BLAST-RADIUS.md` |
+| The Unslop check: when it runs and what it never changes | `skills/workflow/WRITING.md` |
+| The Unslop tells | `skills/workflow/SIMPLE-ENGLISH.md` |

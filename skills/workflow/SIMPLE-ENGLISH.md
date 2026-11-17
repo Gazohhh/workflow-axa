@@ -57,6 +57,34 @@ After: The pods restarted and the queue lost its leader for a short time. It rec
 
 The report renderer checks every report before writing. It prints `PLAIN ENGLISH:` problems and `PLAIN ENGLISH NOTE:` lines for modals, skipping quoted text. Problems never block it; `--open` waits. Until the user sees the report, re-render into the same file with `--replace-unpresented`.
 
+## Unslop tells
+
+WRITING.md runs these as its Unslop check, together with the self-check above. A bare rule number means that rule of The Document. Each tell keeps the number of its source list. That list has no tells 1, 2, 4, 6 or 21, and this package does not adopt Unslop 24. A tell that a rule here already covers names that rule and adds nothing else. Headings written before this table stay as they are until their section changes for another reason.
+
+| Tell | What to do |
+|---|---|
+| Unslop 3 | Rule 4. |
+| Unslop 5 | Name the source of a claim ("the Postgres docs say"). Without a source, state the claim with its evidence or mark it unverified. No "experts believe". |
+| Unslop 7, 31 | Rule 10 and `simple-english/word-swaps.md`. |
+| Unslop 8 | Write "is" or "has", not "serves as", "stands as", "boasts" or "features". |
+| Unslop 9, 10, 23, 25 | Rule 10. |
+| Unslop 11 | Rule 8. |
+| Unslop 12 | Write "from X to Y" only when X and Y sit on a real scale. |
+| Unslop 13 | Rule 7. En dashes and hyphens used as dashes count too. So do parentheses that wrap an aside where a dash would go. A short definition in parentheses, as The Reply rule 4 shows, stays. |
+| Unslop 14 | A colon introduces a list, an example or the detail that explains the words before it. It never stands in for a connector such as "and", "so" or "because". |
+| Unslop 15, 16, 18 | Rule 11. |
+| Unslop 17 | Write new headings in sentence case. |
+| Unslop 19 | Use straight quotes. |
+| Unslop 20, 22 | The Reply, rule 5. |
+| Unslop 24 | Not adopted. "One hedge at most" deletes uncertainty that carries meaning. Rule 5 and WRITING.md "Keep the meaning" apply instead. |
+| Unslop 26 | No abstract metaphor noun (substrate, wedge, vector, nexus, primitive, harness, surface, scaffolding, paradigm, ratchet, north star, flywheel) where a concrete word exists. A word used in its literal technical sense stays: a math vector, a test harness, a language primitive. |
+| Unslop 27 | Say what it does. Name the mechanism or the number. Delete a sentence that states no fact about this project and could appear unchanged in another project's docs. A general statement that rule 2 keeps stays. |
+| Unslop 28 | Rule 1. |
+| Unslop 29 | Rule 4. |
+| Unslop 30 | Cut an adverb that adds no fact, or use a stronger verb. Give the number when there is one. |
+| Unslop 32 | No metaphor, aphorism, personified code ("the function wants") or figurative verb where a literal phrase exists. |
+| Unslop 33 | Rule 6. Spell out arrows and abbreviations in prose. |
+
 ## Modes
 
 Plain is the default and is all of the above. Reports and workflow messages use Plain only. Strict applies when the user names STE, ASD-STE100, or compliance: read `simple-english/strict-vocabulary.md` before you draft the document, and say once that no tool guarantees compliance. The reply stays Plain in every mode.

@@ -14,11 +14,11 @@ The router picks one recipe from this table, plus any modifiers, then loads only
 | migration | data, schema, protocol, dependency upgrade or deployment change with existing consumers | [migration.md](migration.md) |
 | docs-tests | only documentation, agent instructions or tests change | [docs-tests.md](docs-tests.md) |
 
-**Router only (no file):** *Inspect* (explain, review, audit, diagnose without changing anything) answers with cited evidence: "how" traces the runtime path, "why" cites history (git log, DECISIONS). *Other* with a clear outcome assembles steps from the common process; a vague *Other* starts with Inspect.
+**Router only (no file):** *Inspect* (explain, review, audit, diagnose without changing anything) answers with cited evidence: "how" traces the runtime path, "why" cites history (git log, DECISIONS), "what could this break" follows `../../code-review/BLAST-RADIUS.md` and reports only. *Other* with a clear outcome assembles steps from the common process; a vague *Other* starts with Inspect.
 
 **Modifiers**, added to any recipe:
 - **UI**: anything a user sees on screen. Load `ui-design` before dependent planning.
 - **Security**: authentication, secrets, permissions, untrusted input. Load the rules library's SECURITY module.
-- **Compatibility**: saved data, public interfaces, versions others depend on. Load COMPATIBILITY; keep a deprecation path for public interfaces.
+- **Compatibility**: saved data, public interfaces, versions others depend on. Load COMPATIBILITY; keep a deprecation path for public interfaces; record and prove the safety assumptions with `../../code-review/BLAST-RADIUS.md`.
 
 **Adding a flow:** copy [TEMPLATE.md](TEMPLATE.md), add one row here, and add its labelled prompts and behavioural case to `tests/behavioral/flows.json`. The validator checks that rows and files match and that every skill a recipe uses is registered.

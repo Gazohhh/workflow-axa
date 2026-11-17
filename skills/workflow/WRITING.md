@@ -45,6 +45,19 @@ Words that carry uncertainty, permission or a proposal (may, might, could, shoul
 
 Write chat messages and reports with [SIMPLE-ENGLISH.md](SIMPLE-ENGLISH.md) (Plain mode).
 
+## Unslop
+
+A required check. Run it after drafting, together with the self-check in [SIMPLE-ENGLISH.md](SIMPLE-ENGLISH.md), and before the cold-reader check. It removes the patterns that make text read as machine-written. The tells are listed in SIMPLE-ENGLISH.md "Unslop tells", and their vocabulary is in `simple-english/word-swaps.md`. Run it on:
+
+- Offer inputs, the prose fields of the offer file, before `record.py offer create`. The presented offer text is never edited.
+- Substantial plans and FINDINGS prose.
+- The delivery chat report.
+- Human-facing docs, such as a README or a guide.
+- Changed prose in a code review.
+- Commit and PR text, when you are asked to write it.
+
+"Keep the meaning" wins over every tell. A tell never removes an uncertainty word, a condition or the text SIMPLE-ENGLISH rule 2 protects. The check never changes application UI copy, error messages or translations. Changing the text an application shows its users is the owner's decision. A README or a guide is a doc, not application text.
+
 ## Cold-reader check
 
 Before presenting a plan report, a substantial plan or a final report, reread it as someone who missed the conversation. Can they explain the goal, what changes, what stays the same, the decision asked of them and how completion is checked? Can a developer find the evidence? Check each claim against it: "the full suite passes" names any failures it already had; "every finding is fixed" counts the open ones; "what works now" lists only what a check showed.

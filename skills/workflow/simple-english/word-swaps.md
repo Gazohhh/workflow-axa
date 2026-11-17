@@ -41,17 +41,19 @@ This table is ours, not the ASD dictionary. It maps the words AI-generated docs 
 | revolutionize | change |
 | showcase, underscore, emphasize | show |
 | foster, empower, bolster | help, support, let |
-| harness | use |
+| harness (metaphorical) | use |
 | enhance | improve |
 | elevate | increase |
-| furthermore, moreover | also |
+| furthermore, moreover, additionally | also |
 | in conclusion, in summary, at the end of the day | (delete) |
 | embark, endeavor | start, try |
 | meticulous, meticulously | careful, carefully |
 | holistic | full |
 | paradigm | model |
 | navigate (metaphorical) | go to |
-| boasts | has |
+| boasts, features (as a verb) | has |
+| serves as, stands as | is |
+| substrate, wedge, nexus, scaffolding, ratchet, north star, flywheel (metaphorical) | (the concrete word, see Unslop 26 in SIMPLE-ENGLISH.md) |
 | nestled, in the heart of | (delete, then give the location or the fact) |
 | bustling | busy |
 | that being said, notwithstanding | but |

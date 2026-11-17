@@ -161,6 +161,40 @@ class FlowPromptTests(unittest.TestCase):
                 self.assertEqual((case["mode"], case["result"]), ("live-host", "NOT_RUN"))
                 self.assertTrue(case["scenario"] and case["expect"])
 
+    def test_each_recipe_names_the_blast_radius_method_where_its_steps_meet_it(self):
+        """Agreement 1 R5: every recipe except new-project points to the method, by a path that resolves."""
+        method = (ROOT / "skills/code-review/BLAST-RADIUS.md").resolve()
+        steps = {"bug": ("Review",), "feature": ("Trace the journeys and callers", "Check the integration"),
+                 "ui": ("other screens", "at least one of them"), "refactor": ("Map the contract", "Prove equivalence"),
+                 "migration": ("Inventory consumers", "Prepare"), "performance": ("must not change", "cache"),
+                 "architecture": ("Where grep stops", "no proof"), "docs-tests": ("Check the real contract", "Validate")}
+        for name in RECIPES:
+            text = (FLOWS / f"{name}.md").read_text(encoding="utf-8")
+            found = re.findall(r"`((?:\.\./)+code-review/BLAST-RADIUS\.md)`", text)
+            with self.subTest(recipe=name):
+                if name == "new-project":
+                    self.assertEqual([], found)
+                    continue
+                self.assertTrue(found)
+                self.assertEqual({method}, {(FLOWS / f).resolve() for f in found})
+                lines = [l for l in text.splitlines() if "BLAST-RADIUS.md" in l]
+                for word in steps[name]:
+                    self.assertTrue(any(word in l for l in lines), f"{name}: no pointer line mentions {word!r}")
+
+    def test_blast_radius_cases_are_observed_runs_only(self):
+        """Agreement 1 R10/R12: hidden consumers, denied probes, local changes, the Inspect question, combined tickets."""
+        ids = [c["id"] for c in self.data["blast_radius_cases"]]
+        self.assertEqual(len(ids), len(set(ids)))
+        for required in ("BR-hidden-consumer", "BR-denied-probe", "BR-local-none", "BR-inspect-question",
+                         "BR-combined-tickets"):
+            self.assertIn(required, ids)
+        for case in self.data["blast_radius_cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertEqual((case["mode"], case["result"]), ("live-host", "NOT_RUN"))
+                self.assertTrue(case["scenario"] and case["expect"])
+        inspect = [p["prompt"] for p in self.data["prompts"] if p["recipe"] == "inspect"]
+        self.assertIn("What could renaming the status column on orders break?", inspect)
+
     def test_labels_name_a_recipe_or_a_router_mode_and_nothing_counts_as_run(self):
         allowed = set(RECIPES) | {"inspect", "ask"}
         for prompt in self.data["prompts"]:

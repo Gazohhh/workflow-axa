@@ -23,6 +23,7 @@ A **journey** is one actor getting one outcome: trigger → steps → what they 
 4. **State and timing**: remembered after closing or across devices; applies now or on the next action.
 5. **Limits**: allowed dependencies or cost, target environments, privacy, stated exclusions.
 6. **Purpose and screen** (UI only): the **purpose statement** (`workflow/TASK-FOLDER.md` Agreement). A missing part that would change the result becomes a step 2 question; never invent product intent. Then each new element, the existing one doing that job for that user (`file:line`, tag, classes, why) and what `python -X utf8 -I ../ui-design/scripts/class_rules.py <project-root> <classes>` prints. A `[needs context]` rule, or a layout difference shown by `--compare <from-parent> <into-parent>`, means no match: ask DESIGN.md rule 4's question.
+7. **Safety assumptions**: when anything outside the change reads what it touches, the facts its safety rests on, each with the check that could falsify it, found with the planning form of `../code-review/BLAST-RADIUS.md`. Nothing outside reads it: record "none" with the boundary trace.
 
 Find related documents through the AGENTS.md index and `python -X utf8 -I ../rule-maker/scripts/docs_check.py <project-root> --changed <named or traced files>` (`../rule-maker/DOCS.md`). Read those first; record them and suspected contradictions in FINDINGS (E-IDs).
 
