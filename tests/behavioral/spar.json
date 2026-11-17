@@ -30,7 +30,7 @@
         "Each consequential choice ends answered, deferred or blocking."
       ],
       "rules": [
-        "when an answer changes the direction",
+        "as soon as it becomes askable",
         "never a questionnaire at the end"
       ],
       "prescribed_answer": null,
@@ -194,6 +194,24 @@
       "prescribed_answer": null,
       "evidence": "O4: S1 rejected, S2 accepted as written by both; ended as agreement after 10 of 30 launches; the cap was not passed.",
       "candidate": "c5e954b3:a0b21668"
+    },
+    {
+      "id": "owner-checkpoints",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "/spar with an idea where a choice only the owner can make comes up after the openings; the owner answers it with a reason, then both debaters accept one proposal (docs/plans/2026-11-17-spar-owner-in-loop R8).",
+      "process_checks": [
+        "After the openings the owner first reads both opening cases and the pivotal disagreement, then is asked for a view; no launch happens before the answer.",
+        "The owner's choice is asked when it comes up, numbered, with lettered options and a trade-off, and it makes sense with every project id removed.",
+        "Both next briefs carry the owner's answer as a decision and the owner's reasoning for the debaters to engage with.",
+        "At the verdict the owner first sees the full text both debaters accepted, then is asked; model consensus alone is never reported as agreement."
+      ],
+      "rules": [
+        "No launch whose brief depends on an open owner choice",
+        "a message the owner can read before the question tool opens",
+        "both debaters accepted; the owner's verdict is pending"
+      ],
+      "prescribed_answer": null
     }
   ],
   "history": [

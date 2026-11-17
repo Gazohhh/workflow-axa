@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "base": "3dcf3d0743662c0111dc16de3fddad3b1fbf03d1",
+  "dirty": {},
+  "snapshots": {
+    "S1": {
+      "skills/spar/SKILL.md": "0479a130817ef6f5",
+      "skills/spar/T3.md": "9e1ac00df1b504ea",
+      "skills/spar/SPAR-FILE.md": "79384a5624fb72bb",
+      "tests/test_spar.py": "5f897cc68cf52bae",
+      "tests/behavioral/spar.json": "4352eaff3c9571a4",
+      "tests/README.md": "18d34b4a9d68e17b"
+    },
+    "S2": {
+      "skills/spar/SKILL.md": "85323d336c657364",
+      "skills/spar/T3.md": "6261f7d9cce622cd",
+      "skills/spar/SPAR-FILE.md": "c25b3596877aa428",
+      "tests/test_spar.py": "ed70e8542a9642dc",
+      "tests/behavioral/spar.json": "4352eaff3c9571a4",
+      "tests/README.md": "18d34b4a9d68e17b"
+    }
+  }
+}

@@ -82,9 +82,9 @@ class Contract(unittest.TestCase):
                  "the uncertainty most likely to change the decision", "the cheapest credible test",
                  "\"no material uncertainty\"")
 
-    def test_r34_the_owner_is_asked_when_direction_changes(self):
-        self.has("when an answer changes the direction", "never a questionnaire at the end",
-                 "answered, deferred by the owner, or blocking", "Research what is objective")
+    def test_r34_the_owner_is_asked_as_soon_as_a_choice_is_askable(self):
+        self.has("as soon as it becomes askable", "never a questionnaire at the end",
+                 "answered, delegated with limits, deferred by the owner, or blocking", "Research what is objective")
 
     def test_r35_the_coordinators_labelled_recommendation(self):
         self.has("labelled \"coordinator's synthesis\"", "An unreviewed synthesis stays labelled unreviewed")
@@ -102,7 +102,7 @@ class Contract(unittest.TestCase):
                  "self-critique", where=self.t3)
 
     def test_r38_how_it_ends(self):
-        self.has("Agreement: both debaters accepted the exact text of the same proposal id", "never fake agreement",
+        self.has("Agreement: both debaters and the owner accepted the exact text of the same proposal id", "never fake agreement",
                  "proceed, investigate, defer or abandon", "A cancel stops the debaters and asks nothing more")
 
     def test_r39_conclusion_first_then_the_handoff(self):
@@ -184,8 +184,9 @@ class Contract(unittest.TestCase):
                 self.assertNotEqual(gate.control_intent(label), "pause")
 
     def test_the_skill_stays_small(self):
-        self.assertLess(len(self.skill.split()), 1300)
-        self.assertLess(len(self.t3.split()), 1100)
+        """Raised on purpose for docs/plans/2026-11-17-spar-owner-in-loop: its rules added about 370 words."""
+        self.assertLess(len(self.skill.split()), 1700)
+        self.assertLess(len(self.t3.split()), 1200)
         self.assertLess(len(self.file.split()), 900)
 
 
@@ -222,7 +223,8 @@ class AgreementSeven(unittest.TestCase):
                  "of the current best proposal, labelled S<n>", "Count every launch, failed ones and replacements too",
                  "When fewer launches remain than the next step needs, the cap is reached",
                  "never past the cap without the owner's OK", "A cap limits launches, not money",
-                 "Until agreement ends only on agreement, deadlock or the cap, a cancel, or a debater that can't continue")
+                 "Until agreement ends only on agreement, deadlock or the cap, the owner's own direction (dissent "
+                 "recorded), a cancel, or a debater that can't continue")
 
     def test_the_card_offers_only_the_launches_left_and_a_new_cap_is_above_those_used(self):
         """docs/plans/2026-11-17-plain-owner-questions T9: run 5's card offered cap 30 when the owner had 20 left."""
@@ -238,7 +240,7 @@ class AgreementSeven(unittest.TestCase):
     def test_r43_agreed_means_the_exact_same_text(self):
         self.has("accepted the exact text of the same proposal id, without conditions or blockers",
                  "An accept with amendments rejects that version", "Any later edit voids the acceptance",
-                 "the last version both accepted")
+                 "the last version the debaters accepted")
         self.has("accept it as written, or reject it", "A replacement debater judges the current text itself",
                  where=self.t3)
         self.assertEqual(self.t3.lower().count("an accept with amendments is a reject"), 2)
@@ -247,12 +249,82 @@ class AgreementSeven(unittest.TestCase):
         self.assertEqual(self.t3.count("Justified disagreement is success; a changed position needs its reason."), 3)
 
 
+class OwnerInTheLoop(unittest.TestCase):
+    """docs/plans/2026-11-17-spar-owner-in-loop R1-R8: the owner decides and judges; the spar stops for the owner."""
+
+    skill, t3, file = text(SKILL), text(T3), text(FILE)
+
+    def has(self, *phrases, where=None):
+        body = self.skill if where is None else where
+        for phrase in phrases:
+            with self.subTest(phrase=phrase[:60]):
+                self.assertIn(phrase, body)
+
+    def test_r1_roles_and_the_launch_rule(self):
+        self.has("## Rules of the spar",
+                 "The owner decides and judges; the two debaters argue; you moderate, check evidence and never decide "
+                 "for the owner", "No launch whose brief depends on an open owner choice",
+                 "and none while continuing would be unsafe")
+        self.has("state the strongest argument for the other side before you rebut it", where=self.t3)
+
+    def test_r2_grilling_before_the_openings(self):
+        self.has("Before the openings, run one grilling round on the frontier of unsettled choices that shape the "
+                 "opening brief", "a settled brief needs no question",
+                 "With \"no interview\", show labelled options and leave them open")
+
+    def test_r3_three_checkpoints_shown_before_the_question(self):
+        self.has("a message the owner can read before the question tool opens",
+                 "then ask in plain language and grilling's form",
+                 "(a) after the openings, always: both opening cases, the disagreement most likely to change the outcome, "
+                 "and an open \"your view?\"", "as soon as it becomes askable", "there is no fixed number of these stops",
+                 "(c) the verdict: the exact proposal both debaters accepted, in full, with any remaining dissent",
+                 "The owner may ask for a pause after every round or waive the optional ones",
+                 "\"Spar with me only\" has no debaters, so (a) and (c) don't apply")
+        self.assertNotIn("Pause only when an owner decision blocks the next step", self.skill)
+
+    def test_r4_the_spar_waits(self):
+        self.has("Wait for the owner's view or an explicit \"I have no feedback on the openings\" before the next launch",
+                 "that answer clears this pause only, not an open owner choice",
+                 "silence spends no launches", "\"Record answers\" what a reply settles",
+                 "\"carry on\" releases an optional pause only",
+                 "answered, delegated with limits, deferred by the owner, or blocking",
+                 "after a deferral only work independent of it continues")
+        self.has("launch the next round only as SKILL.md \"Rules of the spar\" allows", where=self.t3)
+
+    def test_r5_sorting_points_to_grilling(self):
+        self.has("with grilling (`../grilling/SKILL.md`): its table (\"Sort what you found\") says what you look up and "
+                 "what only the owner decides", "\"How to ask\" how to ask", "Research what is objective")
+
+    def test_r6_owner_decisions_bind_owner_opinions_are_challenged(self):
+        self.has("An owner decision binds and goes into the next briefs as a decision",
+                 "never into the opening brief", "may push back with reasons",
+                 "a factual claim of the owner is checked like any other")
+        self.has("Owner input since your last position:", "push back with reasons where you disagree", where=self.t3)
+        self.has("Owner decisions so far (decisions only, no owner preference):", where=self.t3)
+        self.has("Owner input since your last position: <as in the exchange brief>", where=self.t3)
+        self.assertEqual(self.t3.count("new ones marked; they bind"), 2)
+
+    def test_r7_agreed_needs_the_owner_and_the_verdict_costs_no_launch(self):
+        self.has("Agreement: both debaters and the owner accepted the exact text of the same proposal id",
+                 "even when the last launches are spent; it costs no launch",
+                 "both debaters accepted; the owner's verdict is pending",
+                 "The owner may instead choose a direction over both debaters, with their dissent recorded",
+                 "starts another exchange only with a concrete issue and at least four launches left",
+                 "the last version the debaters accepted is kept, and the owner's verdict is asked again",
+                 "the owner's own direction (dissent recorded)")
+        self.has("the owner's verdict on each proposal both debaters accepted",
+                 "or agreed by both debaters and the owner", "the owner's direction over the debaters' dissent",
+                 where=self.file)
+        self.assertNotIn("Agreement: both debaters accepted the exact text", self.skill)
+        self.assertNotIn("or agreed by both.", self.file)
+
+
 class Scenarios(unittest.TestCase):
     """A8: live process scenarios; a result other than NOT_RUN names its evidence and candidate."""
 
     REQUIRED = ("real-idea", "owner-direction", "labelled-synthesis", "budget-spent", "one-model", "cancel",
                 "record-choice", "handoff-in-task",
-                "handoff", "spar-file", "start-card", "until-agreement")
+                "handoff", "spar-file", "start-card", "until-agreement", "owner-checkpoints")
     RESULTS = ("NOT_RUN", "OBSERVED", "PARTIAL", "FAILED", "NOT_PROVOKED")
 
     def setUp(self):

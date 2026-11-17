@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 1,
+  "task": "2026-11-17-spar-owner-in-loop",
+  "created": "2026-11-17T22:52:54+00:00",
+  "canonical": {
+    "behaviour": "/spar brings the owner into the spar instead of only handing over a result. It gets short written rules: the owner decides and judges, the two models argue, the coordinator moderates and never decides for the owner, and no next round may depend on a choice the owner has not made. Before the models start, it asks only what is still unclear about the goal, success, limits and trade-offs. It always stops after the opening positions, shows both and the disagreement that matters most, and waits for the owner's view or \"no feedback\". It asks each choice only the owner can make as soon as it comes up, with no fixed number of stops. The owner's decisions bind both models; the owner's opinions and claims can be challenged with reasons. \"Agreed\" means both models and the owner accept the exact same text, shown in full first; asking for that costs no launches, and the owner may overrule both with their objection recorded. Every question is plain and makes sense without codes. Tests pin these rules; a live run, with the owner's OK and a cost cap first, checks them. Then one commit and a push to main.",
+    "paths": [
+      ".artifacts/2026-11-17-spar-owner-in-loop/",
+      "docs/plans/2026-11-17-spar-owner-in-loop/",
+      "skills/spar/SKILL.md",
+      "skills/spar/SPAR-FILE.md",
+      "skills/spar/T3.md",
+      "tests/README.md",
+      "tests/behavioral/spar.json",
+      "tests/test_spar.py"
+    ],
+    "operations": [
+      "git commit",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to the grilling skill or to any hook",
+      "no release or install; that is a separate step",
+      "the live run starts only after the owner's OK and a cost cap"
+    ],
+    "conditions": [
+      "the full suite and validate pass before the commit",
+      "the new tests fail before the change and pass after"
+    ],
+    "checks": [
+      "cd tests && python -X utf8 -m unittest test_spar",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "d5c4fdbe9e458b67",
+  "display": "/spar with the owner in the loop",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "7b23a4b4-cf37-4e30-b273-ea50af07fc10",
+    "presentation": "4edc5057-a9f7-4375-9021-3cfd8a4bd696",
+    "recorded": "2026-11-17T22:54:00+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

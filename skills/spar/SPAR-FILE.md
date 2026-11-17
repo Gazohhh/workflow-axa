@@ -26,7 +26,7 @@ Scale each section to the discussion: short entries, or "none identified". It is
 # Spar: <topic>
 
 ## Current position
-Revision <n>, <date>. The idea in one line. The current recommendation, labelled: coordinator recommendation, or a debater's, or agreed by both. What the owner chose. The next move.
+Revision <n>, <date>. The idea in one line. The current recommendation, labelled: coordinator recommendation, or a debater's, or "both debaters accepted; the owner's verdict is pending", or agreed by both debaters and the owner. What the owner chose. The next move.
 
 ## Intent and boundaries
 The desired outcome in the owner's words. Constraints. Success criteria.
@@ -41,7 +41,7 @@ Each option: its strongest honest case, its strongest objection, and who holds w
 Each decisive challenge, piece of evidence or revision, and its effect.
 
 ## Owner decisions
-Each choice: answered (with the reason), deferred by the owner, or blocking.
+Each choice: answered (with the reason), delegated with limits, deferred by the owner, or blocking. The owner's view at each checkpoint, and the owner's verdict on each proposal both debaters accepted.
 
 ## Open questions and dissent
 Each one: why it matters, and what would resolve it. The uncertainty most likely to change the decision, with its cheapest credible test.
@@ -56,7 +56,7 @@ Keep three labels apart wherever a view is stated: coordinator recommendation, e
 
 At every ending except a cancel, show the conclusion before the handoff question. In T3 Code, send it with `send_to_user`; elsewhere, write it before the question. Keep it short, in this order:
 
-1. The outcome: agreed, a labelled recommendation, or competing approaches (for until agreement: agreement, deadlock or the cap), and whether the owner can act now.
+1. The outcome: agreed by both debaters and the owner, the owner's direction over the debaters' dissent, a labelled recommendation, or competing approaches (for until agreement: agreement, deadlock or the cap; "both debaters accepted; the owner's verdict is pending" while it is), and whether the owner can act now.
 2. The recommendation, or each competing approach, in a few bullets with its reasons.
 3. Blockers and open dissent; none is dropped to keep it short.
 4. The owner's decisions. A decision still needed is asked through grilling's "How to ask": numbered, with lettered options and "Recommended: <letter>" and its trade-off, never as a list of labels such as "O1-O5" whose meaning depends on codes.
