@@ -61,7 +61,7 @@
   },
   "hash": "09a515d9aea92dfc",
   "display": "Release 2.9.0-rc.3 and install it",
-  "state": "approved",
+  "state": "superseded",
   "presentation_decision": null,
   "decision": {
     "session": "a278e242-cfe9-401d-af90-967e6288ba99",
@@ -70,5 +70,5 @@
     "recorded": "2026-11-17T20:34:57+00:00"
   },
   "supersedes": null,
-  "superseded_by": null
+  "superseded_by": 2
 }

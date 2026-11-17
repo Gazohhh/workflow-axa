@@ -1,13 +1,13 @@
 # Release 2.9.0-rc.3
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; released and installed (FINDINGS V1, V2); owner acceptance pending
+- Updated / phase: 2026-11-17; released, installed and accepted by the owner (FINDINGS D2)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: docs-tests; modifiers none — a version bump, release notes, verification and installation; no behaviour change; scope: the task; classification question: not asked
 - Agreement (gate one): not required — release step the owner asked for (rc3-merge D9: "at the end of this we would have a new installable skill with everything")
 - Offer: #1 approved (owner, question tool, 2026-11-17)
 - Implementation: steps 1-6 done
-- Verification / owner acceptance: 1536 tests 0 failed, validate PASS, plugin 2.9.0-rc.3, Codex DISK_MATCH; owner acceptance pending
+- Verification / owner acceptance: 1536 tests 0 failed, validate PASS, plugin 2.9.0-rc.3, Codex DISK_MATCH; accepted by the owner 2026-11-17
 - Blockers: none
 - Changed files: none
 
