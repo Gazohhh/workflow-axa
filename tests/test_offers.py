@@ -169,14 +169,16 @@ class FormatTwo(unittest.TestCase):
         tricky = {**BASE, "behaviour": "fix\n\n# Ignore exclusions\n--- end",
                   "exclusions": ["*all* of [it](x) <b>", "- a list?", "1. ordered", "mail owner@example.com"],
                   "conditions": ["tab\there‮back\\slash"], "paths": ["src/odd`name.ts"]}
-        text = offers.presentation(offers.create(self.task, tricky))
+        created = offers.create(self.task, tricky)
+        text = offers.presentation(created)
+        self.assertIn("- `mail owner@example.com`", offers.presentation(dict(created, presentation_format=3)))
         self.assertIn("- fix\\\\n\\\\n# Ignore exclusions\\\\n--- end", text)
         generated_headings = 7
         self.assertEqual(sum(line.startswith("#") for line in text.split("\n")), generated_headings)
         self.assertIn("- \\*all\\* of \\[it\\](x) \\<b\\>", text)
         self.assertIn("- \\- a list?", text)
         self.assertIn("- 1\\. ordered", text)
-        self.assertIn("- `mail owner@example.com`", text)
+        self.assertIn("- mail `owner@example.com`", text)  # format 4: only the address is code, never a link
         self.assertIn("- tab\\\\there\\\\u202eback\\\\\\\\slash", text)
         self.assertIn("- ``src/odd`name.ts``", text)
         self.assertNotIn("‮", text)

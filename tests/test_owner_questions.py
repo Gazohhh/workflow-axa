@@ -74,6 +74,33 @@ class CodesComeAfterTheMeaning(unittest.TestCase):
         self.assertIn("never as a list of labels such as \"O1-O5\"", spar_file)
 
 
+class AnAddressDoesNotTurnTheOfferIntoCode(unittest.TestCase):
+    """docs/plans/2026-11-17-offer-link-words: one address in the text turned the whole paragraph into a code block."""
+
+    TEXT = "Run claude plugin update workflow-axa@gazohhh and read https://example.com/notes before the push."
+
+    def make(self, tmp):
+        task = Path(tmp) / "docs/plans/2026-11-17-x"
+        task.mkdir(parents=True)
+        return offers.create(task, offer_input(self.TEXT))
+
+    def test_only_the_address_words_are_code_in_a_new_offer(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            offer = self.make(tmp)
+            self.assertEqual(offer["presentation_format"], 4)
+            line = next(l for l in offers.presentation(offer).splitlines() if l.startswith("- Run"))
+            self.assertEqual(line, "- Run claude plugin update `workflow-axa@gazohhh` and read "
+                                   "`https://example.com/notes` before the push.")
+
+    def test_older_offers_render_exactly_as_before(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            offer = dict(self.make(tmp), presentation_format=3)
+            line = next(l for l in offers.presentation(offer).splitlines() if "Run" in l)
+            self.assertEqual(line, "- `" + self.TEXT + "`")
+
+
 class RewriteRequestsUseTheRules(unittest.TestCase):
     """R7 and owner Q2 (pstack L5): a request to write, rewrite or simplify text, with no code change, reaches
     WRITING.md and creates nothing else."""

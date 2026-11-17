@@ -172,7 +172,7 @@ def now() -> str:
 
 def new_offer(folder: pathlib.Path, canonical: dict, display: str, supersedes: int | None = None) -> dict:
     ids = [o["id"] for o in all_offers(folder)]
-    offer = {"schema": 1, "presentation_format": 3, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
+    offer = {"schema": 1, "presentation_format": 4, "id": (max(ids) + 1) if ids else 1, "task": folder.resolve().name, "created": now(),
              "canonical": canonical, "hash": offer_hash(canonical), "display": display, "state": "draft",
              "presentation_decision": None, "decision": None, "supersedes": supersedes, "superseded_by": None}
     save(folder, offer, new=True)
@@ -331,6 +331,25 @@ def _prose(value: str) -> str:
     return re.sub(r"^(\d+)([.)])", r"\1\\\2", escaped)
 
 
+def _prose_words(value: str) -> str:
+    """Format 4 prose: like `_prose`, but only the words that look like a link or an address are shown as code, so
+    one address no longer turns the whole text into a code block and still never becomes a clickable link."""
+    if not LINK_LIKE.search(value):
+        return _prose(value)
+    out = []
+    for part in re.split(r"(\s+)", value):
+        if not part or part.isspace():
+            out.append(_visible(part))
+        elif LINK_LIKE.search(part):
+            out.append(_code(part))
+        else:
+            out.append("".join("\\" + ch if ch in MARKDOWN_SPECIAL else ch for ch in _visible(part)))
+    text = "".join(out)
+    if text[:1] in ("#", "+", "-", "="):
+        return "\\" + text
+    return re.sub(r"^(\d+)([.)])", r"\1\\\2", text)
+
+
 def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool = False) -> str:
     """Formats 2 and 3: the offer as a readable message (format 3 opens with "What you are asked to approve" and keeps
     the id in the footer), generated so the agent only copies it. Every canonical field is shown
@@ -338,22 +357,23 @@ def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool
     then the one question, the answer forms (not in the question tool's variant) and a footer that names the offer,
     its hash, its task and its workspace. The hook compares it exactly; `rendering()` stays the frozen format 1."""
     c = offer["canonical"]
+    prose = _prose_words if offer.get("presentation_format", 1) >= 4 else _prose
 
     def section(title: str, items: list[str]) -> list[str]:
         return [f"### {title}", ""] + ([f"- {item}" for item in items] or ["- None."]) + [""]
 
     title = f"## Offer #{offer['id']}" if offer.get("presentation_format", 1) in (1, 2) else "## What you are asked to approve"
     lines = [title, ""]
-    lines += section("What will change", [_prose(c["behaviour"])])
+    lines += section("What will change", [prose(c["behaviour"])])
     lines += section("Files allowed to change", [_code(p) for p in c["paths"]])
     lines += section("Protected actions", [_code(o) for o in c["operations"]])
     if c["delegable_paths"]:
         lines += section("Delegable files", [_code(p) for p in c["delegable_paths"]])
     if c["delegable_operations"]:
         lines += section("Delegable protected actions", [_code(o) for o in c["delegable_operations"]])
-    lines += section("Excluded", [_prose(e) for e in c["exclusions"]])
-    lines += section("Conditions", [_prose(e) for e in c["conditions"]])
-    lines += section("Required checks", [_prose(e) for e in c["checks"]])
+    lines += section("Excluded", [prose(e) for e in c["exclusions"]])
+    lines += section("Conditions", [prose(e) for e in c["conditions"]])
+    lines += section("Required checks", [prose(e) for e in c["checks"]])
     for key, title in (("parent", "Parent offer"), ("parent_provenance", "Parent approval provenance")):
         if c[key] is not None:
             lines += section(title, [_code(json.dumps(c[key], ensure_ascii=False, sort_keys=True, separators=(",", ":")))])

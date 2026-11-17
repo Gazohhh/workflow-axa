@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "presentation_format": 3,
+  "id": 1,
+  "task": "2026-11-17-offer-link-words",
+  "created": "2026-11-17T20:34:20+00:00",
+  "canonical": {
+    "behaviour": "Keep offer text readable when it contains a link or an address. Today one value with \"@\", \"://\" or \"www.\" in it turns a whole \"What will change\" paragraph into a code block. New offers (presentation format 4) show only those words as code and the rest as normal text, so no address becomes a clickable link. Offers already made render exactly as before, so no presented or approved offer changes. Test first, one review by GPT-6.1 Sol, then a commit and push to main; the rc.3 release then continues.",
+    "paths": [
+      "docs/plans/2026-11-17-offer-link-words/",
+      "skills/workflow/scripts/offers.py",
+      "tests/test_offers.py",
+      "tests/test_owner_questions.py"
+    ],
+    "operations": [
+      "git commit",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to how formats 1 to 3 render",
+      "no change to the hook or to which answers count",
+      "the release steps (version, CHANGELOG, VALIDATION, install) stay in the release task"
+    ],
+    "conditions": [
+      "the full suite and validate pass before the commit",
+      "the new tests fail before the change"
+    ],
+    "checks": [
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_approval_hook.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_offers.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "125c32b902b62d3b",
+  "display": "Offer text with an address stays readable",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "ac5739be-ef1b-4781-86b4-0d16373886a5",
+    "presentation": "b1ff8531-3f44-4b7e-a860-5b98caf5d577",
+    "recorded": "2026-11-17T20:34:57+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}
