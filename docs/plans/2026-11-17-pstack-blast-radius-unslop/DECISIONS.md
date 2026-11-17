@@ -20,3 +20,11 @@
 - D11 — Live run L4 (owner answer: "Run L4 with --add-dir (Recommended)"), 2026-11-17: identical to L3 plus `--add-dir D:/workflow-axa`, cap $3, no retries. Commit and push only if P1-P4 pass. Offer #3's condition names L3, so a passing L4 is presented as offer #4 before any git write. by: user.
 
 - D12 — Offer #4 (82aa57b13c102a54) answered 2026-11-17 with "Approve from this summary" (question tool). Commit on main and push after the full-suite rerun passes. by: user. Presentation decision: chat.
+
+- D13 — Open items (owner, 2026-11-17: "do the things that are still open").
+  - Two live runs, $3 cap each, $6 in total, no retries: L5 Unslop (B30) and L6 feature recipe safety assumptions. Answer: "Two runs, $6 total (Recommended)".
+  - The merge with D:/workflow-axa-redesign and rc.3 are left to that session; this task writes a handoff note. Answer: "Leave to that session (Recommended)".
+  - Reinstall the Codex copies in ~/.agents/skills from bedafd7, with a backup and the read-only installation audit. Answer: "Yes, reinstall now (Recommended)".
+  - These go to offer #5. by: user.
+
+- D14 — Offer #5 (89fff7cf484c6c8b) answered 2026-11-17 with "Approve from this summary" (question tool). by: user. Presentation decision: chat.

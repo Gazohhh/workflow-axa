@@ -184,3 +184,48 @@ Release-step notes: there is no version bump, CHANGELOG, UPGRADE or VALIDATION e
   - Not shown by L4: the order of the report sections differs from BLAST-RADIUS.md (Safety facts after Cleared), which is a judgement detail. The Unslop check and the recipe and planning pointers were not exercised live (B30 and BR-* except the Inspect-question case stay NOT_RUN).
 
 - W1 (final) — Full suite on the final files after the routing fix (2026-11-17, HEAD c5e954b plus diff hash 68152abc9d7fb465, the same before and after): Ran 1440 tests in 483.2 s, OK (skipped=14). The baseline had 1421. validate PASS. completion_check: every change was reviewed in its current form (final reviews S16 for the routing fix, S14 for the rest).
+
+- L5 — Live run, Unslop (case B30), 2026-11-17 (D13/D14).
+  - Setup: a fresh clean fixture <scratchpad>/live/l5; the owner's real settings; --add-dir D:/workflow-axa; --permission-mode acceptEdits; git writes denied; cap $3; claude-opus-5-5. The B30 prompt asks for the section in the reply, with no file edits. Transcript: <scratchpad>/live/run-L5.jsonl.
+  - Cost and size: $1.63, 3 turns.
+  - Calls: 2 Bash reads of the fixture. No Skill call and no read of WRITING.md or SIMPLE-ENGLISH.md.
+  - Result: FAIL.
+    - U1 FAIL: no Unslop source was read.
+    - U2 pass: "Additionally", "powerful", "serves as", "robust" and "substrate" are gone.
+    - U3 FAIL in part: `export --dry-run`, "feature vector" and "Export failed: 3 rows rejected" stayed, but "It may skip rows" became "Rows that fail validation are skipped", plus a TODO. That is the exact meaning loss WRITING "Keep the meaning" forbids.
+    - U4 pass: the fixture is unchanged.
+  - Finding: a writing request with no repository change does not reach the workflow, so the Unslop check (owned by WRITING.md) never applies. The owner's global ~/.claude/skills/unslop ("Must always apply") did not fire either.
+- L6 — Live run, feature recipe (2026-11-17).
+  - Setup: as L5, fixture <scratchpad>/live/l6, prompt "Make the player screen use the shared format_score so both screens show the same score.". Transcript: <scratchpad>/live/run-L6.jsonl.
+  - Cost and size: $1.84, 12 turns.
+  - Calls: Skill workflow-axa:workflow, then reads of RULES.md and READINESS.md, the fixture sources, then Skill workflow-axa:workflow-specify ("Lightweight edit, minimal offer"). After that, `record.py offer create --help` was refused by the -p permission prompt.
+  - Result: PARTIAL.
+    - F1 partial: the router ran and chose the refactor recipe ("same output, one owner for score formatting"), which is defensible because the player output does not change. It then took the lightweight-edit route straight to specify, so clarify, and with it trace item 7, never ran.
+    - F2 FAIL: it stated the safety fact ("_legacy_score has the same body as format_score, so this changes no score the player shows today") and named the unittest check, but BLAST-RADIUS.md was not used.
+    - F3 pass: no application file changed. It stopped and asked.
+  - Open question for a follow-up: is moving ownership of formatting (deleting the player's own copy) really "lightweight"? workflow/SKILL.md §4 excludes architecture changes from lightweight edits, while step 4b's trigger list does not fire for a private helper. The harness refusal of record.py is a test-setup limit (acceptEdits does not allow Bash python), not a product finding.
+- Live spend for offer #5: L5 $1.63 + L6 $1.84 = $3.47 of $6. Session total: $6.55.
+- Codex reinstall (offer #5 item 4), 2026-11-17.
+  - Build: `tools/build_release.py --output .artifacts/2026-11-17-pstack-blast-radius-unslop` from package files equal to bedafd7. 212 files, workflow-axa-2.9.0-rc.2.zip; the name keeps rc.2 until the version bump. SHA-256 d2b44c38a1118e5e97ca9fe0918e910ac4d85ad903a899843578097b52941c4e.
+  - Before replacing: none of the 19 folders in ~/.agents/skills is a link or junction. A diff of the installed copies against the new build showed only this task's files, so there were no local edits to keep.
+  - Backup: the full copy is in <scratchpad>/codex/backup. Replaced: all 19 folders. Afterwards installed == new build (diff -rq, __pycache__ ignored).
+  - Audit: `audit_installation.py --check-global` from ~/.agents/skills/rule-maker reports state DISK_MATCH, missing [], no multiple copies, and both global references (~/.claude/CLAUDE.md, ~/.codex/AGENTS.md) MATCH. host_loading, compliance and enforcement are NOT_VERIFIED, as designed.
+  - Retention: the backup and the ZIP may be deleted after owner acceptance. The ZIP is in the git-ignored .artifacts folder of this task.
+
+## Handoff to the redesign session (D:/workflow-axa-redesign)
+
+For whoever resumes "New Skills & Architecture". That worktree is detached at c5e954b with 52 uncommitted files, and main is now bedafd7.
+
+1. Before rebasing, back up the worktree's diff and untracked files: `git diff > <owned scratch>/redesign.patch`, plus copies of the untracked files.
+2. Move the worktree onto bedafd7 and reapply the edits. Expected conflicts:
+   - CONTEXT.md: this task added the terms Blast radius, Safety fact and Unslop check before "**Comment debt**", and three Rule owners rows at the end of that table.
+   - docs/RULE-CONTRACTS.md: the code-review row is extended. The SIMPLE-ENGLISH row gains "the Unslop tells". A new row "WRITING.md Unslop check" follows it.
+   - tests/README.md: a new section sits before "## User commands: interrogate, no-comments, wait-what (2.9.0)".
+   - tests/test_owned_skills.py: SOURCE_MENTIONS gains `pstack|Lauren Tan|cursor/plugins`, plus two tests. The new skills/spar/* text must not name a source.
+   - tests/test_package_contract.py: KEY_FILES gains skills/code-review/BLAST-RADIUS.md, BLAST-RADIUS.LICENSE and skills/workflow/UNSLOP.LICENSE. EXPECTED_SKILLS is untouched.
+   - skills/workflow-clarify/SKILL.md: this task added trace item 7 only. The step 3 /spar bullet is yours.
+   - README.md: this task changed only the blast-radius paragraph (around :43) and the **Writing.** paragraph. The skill counts and /spar lines are yours.
+   - skills/code-review/SKILL.md: a new description, an "## Impact questions" section, step 4b, and a Standards-prompt bullet.
+3. Check the /spar text against the new WRITING.md "## Unslop" check and the SIMPLE-ENGLISH.md "## Unslop tells".
+4. Rerun the full suite and validate. Recheck any completion_check baselines that recorded c5e954b.
+5. rc.3: one version bump for both tasks. The CHANGELOG text for this task is "Summary for the rc.3 CHANGELOG (R11)" above. After the bump, reinstall the Codex copies again so the version label matches.

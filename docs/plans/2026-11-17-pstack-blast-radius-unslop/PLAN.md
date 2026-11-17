@@ -1,15 +1,15 @@
 # Adopt pstack blast-radius and unslop
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; publishing (commit and push under offer #4)
+- Updated / phase: 2026-11-17; delivered — awaiting owner acceptance (offer #5 items done)
 - Recipe: docs-tests; modifiers none — only agent instructions, reference docs, credits and test fixtures change; no hook or script behaviour; scope: the task (proposed); classification question: not asked
 - Agreement (gate one): agreed — agreement 1 as revised (R1–R12), 2026-11-17, owner answered "Agree"; DECISIONS D1
-- Offer: #4 (82aa57b13c102a54), owner answered "Approve from this summary" 2026-11-17 (DECISIONS D12); supersedes #3, #2 and #1
+- Offer: #5 (89fff7cf484c6c8b), owner answered "Approve from this summary" 2026-11-17 (DECISIONS D14); supersedes #1-#4
 - Implementation: implemented (T1-T5 verified)
-- Verification / owner acceptance: verified (full suite 1440 OK on the final files; validate PASS; live run L4 PASS); other live cases NOT_RUN; owner acceptance pending
+- Verification / owner acceptance: verified (full suite 1440 OK; validate PASS); live: L4 PASS (impact question), L5 FAIL (Unslop not reached), L6 PARTIAL (lightweight route skipped the safety assumptions); Codex install DISK_MATCH; owner acceptance pending
 - Blockers: none
 - Changed files: 34 tracked and 3 new files, all on the offer #1 path list (git diff --name-only HEAD; new: skills/code-review/BLAST-RADIUS.md, skills/code-review/BLAST-RADIUS.LICENSE, skills/workflow/UNSLOP.LICENSE); task records in this folder
-- Next safe action: after the push, reinstall the Claude and Codex copies from Git (a separate step, owner OK needed), then the rc.3 release step and the merge with D:/workflow-axa-redesign
+- Next safe action: owner decides on follow-ups (a) Unslop reach, (b) the lightweight boundary; the redesign session rebases and does rc.3 (FINDINGS handoff)
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa, branch main, clean at start (HEAD c5e954b)
@@ -110,3 +110,13 @@ Delivered 2026-11-17 (agreement 1, offer #1).
 - A6 is now partly proven live: BR-inspect-question passed in L4. The other BR-* cases and B30 stay NOT_RUN.
 - Final checks: full suite 1440 OK (skipped=14), validate PASS, completion_check exits 0.
 - Publication: offer #4 (D12). One commit on main and a push to origin/main.
+
+
+### Outcome update — open items (2026-11-17, offer #5)
+
+- Live L5 (Unslop) FAILED: a writing request that changes no repository file never reaches the workflow, so the Unslop check did not apply, and "may skip" lost its "may". L6 (feature) was PARTIAL: the router ran and chose refactor plus a lightweight edit, so clarify item 7 and BLAST-RADIUS.md were skipped, and no file changed. Spend for offer #5: $3.47 of $6.
+- Codex copies reinstalled from bedafd7. The audit reports DISK_MATCH, and the global references MATCH.
+- Merge and rc.3 are handed to the redesign session (FINDINGS "Handoff to the redesign session").
+- Follow-ups proposed to the owner (not built):
+  - (a) how the Unslop check reaches writing requests outside a workflow task;
+  - (b) whether an ownership move such as deleting a duplicate formatter may count as a lightweight edit, which would skip the safety-assumption step.

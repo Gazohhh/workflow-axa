@@ -91,7 +91,7 @@
   },
   "hash": "82aa57b13c102a54",
   "display": "",
-  "state": "approved",
+  "state": "superseded",
   "presentation_decision": "chat",
   "decision": {
     "session": "da68293a-7df3-413e-ba5a-8fc81f9a9ccc",
@@ -100,5 +100,5 @@
     "recorded": "2026-11-17T12:41:16+00:00"
   },
   "supersedes": 3,
-  "superseded_by": null
+  "superseded_by": 5
 }

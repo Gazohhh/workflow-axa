@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 5,
+  "task": "2026-11-17-pstack-blast-radius-unslop",
+  "created": "2026-11-17T12:47:47+00:00",
+  "canonical": {
+    "behaviour": "Close the open items of the published change (bedafd7). (1) Live run L5, Unslop (case B30): a fresh synthetic fixture, your real settings plus --add-dir D:/workflow-axa, --permission-mode acceptEdits, git writes denied, cap $3. The prompt asks for a README section drafted in the reply from a sloppy draft. It passes when (U1) the session reads WRITING.md or SIMPLE-ENGLISH.md from D:/workflow-axa, (U2) 'Additionally', 'powerful', 'serves as', 'robust' and 'substrate' are gone, (U3) 'may', `export --dry-run`, 'vector' and \"Export failed: 3 rows rejected\" stay unchanged, and (U4) no fixture file outside a task folder changes. (2) Live run L6, feature recipe: the same setup and cap. Prompt: \"Make the player screen use the shared format_score so both screens show the same score.\" It passes when (F1) the workflow router picks the feature recipe and clarify runs, (F2) the reply or FINDINGS records safety assumptions for the changed callers, each with the check that could falsify it, using BLAST-RADIUS.md, and (F3) no application file changes before approval. A failed run is reported, never rerun on my own. (3) A handoff note in this task's FINDINGS for the redesign session: the five overlapping files, the clarify and README hunks, and what to rerun after its rebase. That session owns the merge and rc.3. (4) Reinstall the Codex copies: build the release ZIP from the clean bedafd7 tree into .artifacts, back up the 19 folders in ~/.agents/skills to the session scratchpad, replace them from the ZIP, then run the read-only installation audit. The Claude plugin already reads D:/workflow-axa. (5) Record the results, fix the stale PLAN phase line, then commit only this task's records on main and push.",
+    "paths": [
+      "docs/plans/2026-11-17-pstack-blast-radius-unslop/"
+    ],
+    "operations": [
+      "git commit",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "No change to Claude settings, the Claude plugin cache or global CLAUDE.md",
+      "No change to skills/, hooks/, tests/, tools/ or any package file",
+      "No edit of D:/workflow-axa-redesign or its uncommitted work",
+      "No live run beyond L5 and L6, and no rerun, without asking",
+      "No version bump or release records (rc.3 belongs to the redesign session)"
+    ],
+    "conditions": [
+      "Each live run is capped at $3 with --max-budget-usd",
+      "The Codex reinstall keeps a backup of the 19 replaced folders until the audit passes",
+      "The commit holds only this task's records; the message ends with the Co-Authored-By line"
+    ],
+    "checks": [
+      "After the push, git status is clean and main equals origin/main",
+      "L5 judged on U1-U4 and L6 on F1-F3, each recorded in FINDINGS with cost and transcript path",
+      "audit_installation.py run from the reinstalled ~/.agents/skills reports the expected 19 skills at the new content"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "89fff7cf484c6c8b",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "da68293a-7df3-413e-ba5a-8fc81f9a9ccc",
+    "turn": "8f35fdca-9f78-4590-8dc4-083e62e61297",
+    "presentation": "9d9d029a-2964-4c61-8772-d516d6a7ce7e",
+    "recorded": "2026-11-17T12:50:42+00:00"
+  },
+  "supersedes": 4,
+  "superseded_by": null
+}
