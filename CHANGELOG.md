@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.9.0-rc.3 — /spar, plain owner questions, one writing rule set, blast radius (2026-11-17)
+
+**Questions you answer read plainly.** Every question to the owner starts with what is being decided and what each answer does. A code such as D31 or T6 appears only after that, as a reference, and the question still makes sense without it. Decisions come as numbered questions with lettered options and a recommendation with its trade-off; a plain fact question stays plain. New offers open with "What you are asked to approve", keep the offer number in the footer, and show only an address or link word as code instead of the whole text. An offer whose text starts with a record code ("Offer #2", "Agreement 7", "T1:") is refused until it leads with its meaning.
+
+**One writing rule set.** `skills/workflow/WRITING.md` now holds every common writing rule: who reads, plain words, document and chat rules, the self-check and the Unslop tells. Its Unslop check runs on every new or changed text a person reads: tickets, plans, findings, decisions, offers, reports, SPAR.md, docs and chat. History, quoted owner answers and approved offers stay word for word. `SIMPLE-ENGLISH.md` keeps only its Strict and CHECK modes, credit and licence. Fixed word swaps (such as "make sure that" for "verify") and the contraction ban are now suggestions; keeping the meaning comes first. The report checker shows them as notes and no longer holds a report back for them. The 25 places that write for a person point to WRITING.md (CONTEXT.md "Places that write for a person"). A request to rewrite or simplify a text now uses these rules and creates no task files.
+
+**/spar, a new skill you start yourself.** A fresh Claude and GPT spar about an idea or a decision until you can choose a next move. One start card asks only what your command left out: how long (quick, normal, thorough, or until agreement with a launch cap you choose), which two models, and whether to keep a SPAR.md in `docs/spar/`. "Agreed" means both models accepted the exact same text. At the end you choose: turn it into a workflow plan, investigate first, continue, or leave it.
+
+**Blast radius and the Unslop check (adapted from pstack by Lauren Tan, MIT).** `skills/code-review/BLAST-RADIUS.md` finds what a change can break outside itself, proves each safety fact on a 1 to 5 evidence ladder or marks it unproven, and ends with the cheapest check before merging. Planning records the safety assumptions, and every recipe names the method at its own step. A change counts as lightweight only after it names what outside the change depends on it; replacing a function other code uses is never lightweight.
+
+**Approval fixes.**
+- An approval in one checkout no longer allows changes in another checkout of the same repository.
+- Clicking an approval button lifts a "wait for my approval" pause.
+- A button answer counts when the host drops the question's final line break; an answer that could belong to two questions counts for nothing.
+- The workflow starts on any request to change, move or delete code or files, small ones included.
+
+**Checked:** the full suite and validate; reviews by GPT and a fresh Claude for each part; live runs of /spar (runs 4 and 5) and five live checks of the plain-question and writing behaviour.
+
+**Not yet tried live, or known limits:**
+- /spar: turning a kept SPAR.md into a plan, cancelling halfway, one-model mode, and a cross-model run in T3 Code since the start card changed.
+- The worktree guard refuses removing a named worktree even with an approved offer, and an offer's operation names must match the hook's names exactly ("git push", "git worktree").
+- A review agent delegated through T3 Code can write its brief into the session, where the hook reads it as a new owner message and pauses an approval.
+- An offer that starts with a product name followed by a colon or comma (such as "S3: ...") is refused.
+
+Task records: docs/plans/2026-11-17-spar-skill, 2026-11-17-worktree-guard, 2026-11-17-approval-button-unpause, 2026-11-17-question-answer-whitespace, 2026-11-17-pstack-blast-radius-unslop, 2026-11-17-plain-owner-questions, 2026-11-17-offer-link-words and 2026-11-17-release-rc3.
+
 ## 2.9.0-rc.2 — readable offers, a visible recipe and a delegate-report fix (2026-11-16)
 
 Fixes from the first live use of 2.9.0-rc.1 (a long T3 Code session on the workflow-paperclip quotations task):

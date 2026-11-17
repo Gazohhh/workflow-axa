@@ -1,7 +1,7 @@
 # An approval answer is lost when the question ends in a line break
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; T1 verified; delivery with the other rc.3 tasks
+- Updated / phase: 2026-11-17; T1 verified; delivery with the other rc.3 tasks; shipped in 2.9.0-rc.3 (2026-11-17, docs/plans/2026-11-17-release-rc3)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: bug; plus Compatibility: answers in existing transcripts keep their meaning; scope: the task; classification question: not asked
 - Agreement (gate one): not required — one-ticket offer (D1)

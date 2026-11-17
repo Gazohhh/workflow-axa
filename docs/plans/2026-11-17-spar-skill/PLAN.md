@@ -1,7 +1,7 @@
 # /spar: cross-model sparring before planning
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; T11 implemented and in review (S15-S19); T6 continues on the rebuilt candidate
+- Updated / phase: 2026-11-17; T11 implemented and in review (S15-S19); T6 continues on the rebuilt candidate; shipped in 2.9.0-rc.3 (2026-11-17, docs/plans/2026-11-17-release-rc3)
 - Rules: READY (AGENTS.md project rules: validate, tests, boundaries, release permissions; shared START, CORE, READINESS)
 - Recipe: feature; modifiers none — a new user-invoked skill in the package, feeding the existing workflow phases; scope: the task; classification question: not asked
 - Agreement (gate one): agreement 7 additions agreed (D35, R41-R44); agreement 6 agreed (D25), revised by D26 and D28 (approved with offers #6 and #7, D27, D29, D32); D18 and D19 superseded by agreement 6; D31 confirmed by the owner (docs/plans/2026-11-17-rc3-merge D1); agreements 3-5 kept where agreement 6 doesn't replace them

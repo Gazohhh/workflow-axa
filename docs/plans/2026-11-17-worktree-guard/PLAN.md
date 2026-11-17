@@ -1,7 +1,7 @@
 # An approval covers only the session's own worktree
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; execute: T1 test first
+- Updated / phase: 2026-11-17; execute: T1 test first; shipped in 2.9.0-rc.3 (2026-11-17, docs/plans/2026-11-17-release-rc3)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: bug (fix something broken); plus Security: an approval must never authorise writes in a checkout it wasn't given for — an offer approved in the main checkout lets edits and git commands through in a linked worktree; scope: the task; classification question: not asked (the owner named it a bug fix)
 - Agreement (gate one): not required — one-ticket offer, behaviour decided by the owner (D1)

@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.0-rc.2
+# Upgrade to workflow-axa 2.9.0-rc.3
+
+## Upgrade to 2.9.0-rc.3 (from 2.9.0-rc.2)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP; `spar` is a new, 20th skill folder. Then start new sessions. Offers already made keep their exact page; new offers use the new page that opens with "What you are asked to approve". The writing rules moved from `SIMPLE-ENGLISH.md` into `WRITING.md`, and the report hooks now require a full read of `WRITING.md`; a session that loaded the old copy picks this up when it restarts.
 
 ## Upgrade to 2.9.0-rc.2 (from 2.9.0-rc.1)
 

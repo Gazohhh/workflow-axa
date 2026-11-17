@@ -1,7 +1,7 @@
 # Owner questions in plain words, and one writing rule set
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; the plan is written and GPT is checking it; you approve it once GPT and the coordinator both accept it
+- Updated / phase: 2026-11-17; the plan is written and GPT is checking it; you approve it once GPT and the coordinator both accept it; shipped in 2.9.0-rc.3 (2026-11-17, docs/plans/2026-11-17-release-rc3)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: feature; modifiers none. It changes how every skill writes what a person reads and how it asks the owner to decide. Scope: the task. Classification question: not asked
 - Agreement (gate one): proposed. The design was agreed in a spar (FINDINGS S1, both models accepted S7) and the owner chose to turn it into this plan (D4); the owner approves the plan once GPT and the coordinator both accept it (D5)

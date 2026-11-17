@@ -1,7 +1,7 @@
 # Adopt pstack blast-radius and unslop
 
 ## Current checkpoint
-- Updated / phase: 2026-11-17; delivered — awaiting owner acceptance (offer #5 items done)
+- Updated / phase: 2026-11-17; delivered — awaiting owner acceptance (offer #5 items done); shipped in 2.9.0-rc.3 (2026-11-17, docs/plans/2026-11-17-release-rc3)
 - Recipe: docs-tests; modifiers none — only agent instructions, reference docs, credits and test fixtures change; no hook or script behaviour; scope: the task (proposed); classification question: not asked
 - Agreement (gate one): agreed — agreement 1 as revised (R1–R12), 2026-11-17, owner answered "Agree"; DECISIONS D1
 - Offer: #5 (89fff7cf484c6c8b), owner answered "Approve from this summary" 2026-11-17 (DECISIONS D14); supersedes #1-#4
