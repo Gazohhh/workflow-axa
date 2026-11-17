@@ -1,0 +1,2674 @@
+{
+  "schema_version": 2,
+  "title": "/spar: Claude and GPT debate a decision before planning",
+  "revision": "plan-r1",
+  "mode": "compare",
+  "state": "awaiting-approval",
+  "report_kind": "review",
+  "snapshot": {
+    "repository": "workflow-axa, candidate worktree D:\\workflow-axa-redesign",
+    "branch": "Detached at c5e954b, the same commit as main. The task folder is new and not committed.",
+    "basis": "Built from the task records PLAN.md, TODO.md, FINDINGS.md, DECISIONS.md and offers/offer-1.json. Nothing is built yet. The current flow comes from the manual practice recorded in FINDINGS E8."
+  },
+  "understanding": "You get /spar, a command that lets a fresh Claude and GPT debate one decision, with you as the third participant. It settles WHAT and WHY, then hands the HOW to /workflow.",
+  "write_paths": [
+    ".artifacts/2026-11-17-spar-skill/",
+    ".claude-plugin/plugin.json",
+    "CONTEXT.md",
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/RULE-CONTRACTS.md",
+    "docs/plans/2026-11-17-spar-skill/",
+    "skills/grilling/SKILL.md",
+    "skills/spar/",
+    "skills/workflow-clarify/SKILL.md",
+    "skills/workflow/SPECIALISTS.md",
+    "skills/workflow/scripts/settings.py",
+    "tests/README.md",
+    "tests/behavioral/spar.json",
+    "tests/test_owned_skills.py",
+    "tests/test_package.py",
+    "tests/test_package_contract.py",
+    "tests/test_settings.py",
+    "tests/test_spar.py"
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Only you start /spar, with `/spar <problem> [depth]`. It decides WHAT and WHY for one decision. /workflow decides HOW. /spar never implements.",
+      "origin": "PLAN.md Agreement R1. DECISIONS D3. Owner revision 2, items 8 and 9."
+    },
+    {
+      "id": "R2",
+      "text": "/spar reuses existing skills and owns only the debate. grilling asks your questions. workflow-clarify step 1 finds the facts inside a task. codebase-design judges architecture weakness, and domain-modeling handles terms. `research` and `diagnosing-bugs` are used only when installed, read-only, and they never fix anything.",
+      "origin": "PLAN.md Agreement R2. Owner revision 2, item 6. FINDINGS E12, E13."
+    },
+    {
+      "id": "R3",
+      "text": "/spar challenges the foundations in proportion to the decision. It writes down the premises that the code, docs, tests and past decisions give it. It tests the premises the decision depends on and marks each one checked, contradicted or unverified. It names weaknesses, debt, and whether a refactor must come first.",
+      "origin": "PLAN.md Agreement R3. Owner revision 2, item 3."
+    },
+    {
+      "id": "R4",
+      "text": "Two fresh debaters, a fresh Claude subagent and GPT through T3 Code, get the same frame and criteria. In the blind opening, neither sees the other. The coordinator argues no side. It frames the decision, checks objections and evidence, compares, and records.",
+      "origin": "PLAN.md Agreement R4. DECISIONS D5. Owner revision 2, item 4."
+    },
+    {
+      "id": "R5",
+      "text": "Depth is quick (1), standard (3), deep (5), a number, or until-agreement. It counts the exchanges after the opening. The default is standard, saved as `spar.default_depth` in `~/.workflow-axa/settings.json` through settings.py. The command overrides it.",
+      "origin": "PLAN.md Agreement R5. DECISIONS D8. Owner revision 2, item 1."
+    },
+    {
+      "id": "R6",
+      "text": "A round makes progress only with new discriminating evidence, a reasoned resolution, or a revision that fixes a named weakness. One exchange without progress stops the debate as stalled, and a repeated objection without new grounds is not progress. Before the coordinator calls a round stalled, it looks for a targeted question to you that could unblock it, and asks that question. Evidence that nobody can get makes the point unverifiable and sends it to you. An open decision of yours pauses the debate that depends on it. You stop the debate in plain words, which also cancels running delegates, and a late result cannot restart it.",
+      "origin": "PLAN.md Agreement R6. DECISIONS D6, D10. Owner revision 2, item 2."
+    },
+    {
+      "id": "R7",
+      "text": "Agreement means that both debaters judged the same proposal version and closed its material objections with reasons. A switch to the other side's already reviewed proposal needs no extra round. A mix of both is a new version that both must review. Nobody forces consensus.",
+      "origin": "PLAN.md Agreement R7. FINDINGS S1 O1, S4 C4. Owner revision 2, items 4 and 6."
+    },
+    {
+      "id": "R8",
+      "text": "You are the third participant. The agent researches and checks objective technical questions and never asks you about them. When requirements, priorities, trade-offs or acceptable risk are unclear, grilling asks you instead of the models guessing. No question is asked when evidence already settles the point. Questions reopen when the debate finds a new unknown. After your answer, each side revises its position or says why the answer does not change it.",
+      "origin": "PLAN.md Agreement R8. DECISIONS D10. Owner revision 2, item 5."
+    },
+    {
+      "id": "R9",
+      "text": "GPT is reached through the real capability list of T3 Code and `delegate_task`, with a new task for each exchange and `task_cancel` on stop. When GPT is unavailable or the capability check fails, the coordinator says so and asks you how to proceed. It never substitutes another model by itself. A failed check is reported as a failure, never as \"GPT absent\". With no second agent at all, it reports that sparring is not available.",
+      "origin": "PLAN.md Agreement R9. DECISIONS D10, which replaces D2 and D7. Owner revision 2, item 7."
+    },
+    {
+      "id": "R10",
+      "text": "/spar works for any kind of decision: features, changes, bugs, architecture, refactoring, tooling and general technical choices. It works with or without a codebase or task.",
+      "origin": "PLAN.md Agreement R10. Owner revision 2, item 10."
+    },
+    {
+      "id": "R11",
+      "text": "The coordinator is neutral but active. It argues no side, but it checks the cited evidence of each objection itself before it marks the objection resolved. It challenges agreement that rests on no evidence, because two \"agree\" answers without reasons are not agreement. It sends the gap back as an objection.",
+      "origin": "PLAN.md Agreement R11. DECISIONS D9."
+    },
+    {
+      "id": "R12",
+      "text": "Foundation checks sort every premise into a verified fact, an unverified assumption or a contradiction. Passing tests show behavior, not that the architecture is right. Where premises are weak, the result shows the evidence and the alternatives and recommends one. The alternatives are refactor first, investigate first, or build on it as is. When that choice changes scope or priorities, grilling asks you. /spar refactors nothing.",
+      "origin": "PLAN.md Agreement R12. DECISIONS D9, D10."
+    },
+    {
+      "id": "R14",
+      "text": "Unresolved objections are never dismissed. Each one is either a technical disagreement, reported with both positions and their evidence, or a decision that belongs to you, asked through grilling.",
+      "origin": "PLAN.md Agreement R14. DECISIONS D10."
+    },
+    {
+      "id": "R13",
+      "text": "The amount of research and foundation checking follows the complexity and risk of the decision, not the debate depth. A quick debate on a risky decision still gets a full foundation check. A deep debate on a simple decision adds no research that it does not need.",
+      "origin": "PLAN.md Agreement R13. DECISIONS D9."
+    }
+  ],
+  "boundaries": [
+    "The hooks, the offer model and the approvals stay as they are.",
+    "workflow-specify keeps the HOW: the plan, the approval view and the offer.",
+    "plan-review and /interrogate stay separate. /spar never runs them.",
+    "Only the task owner writes task records. Debaters only read and return findings.",
+    "No skill or file is removed.",
+    "The main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched. All work happens in the worktree D:/workflow-axa-redesign.",
+    "No Git commit or push. The release is a separate step."
+  ],
+  "open_decisions": [],
+  "sources": [
+    {
+      "id": "plan",
+      "path": "docs/plans/2026-11-17-spar-skill/PLAN.md",
+      "role": "plan"
+    },
+    {
+      "id": "todo",
+      "path": "docs/plans/2026-11-17-spar-skill/TODO.md",
+      "role": "todo"
+    },
+    {
+      "id": "findings",
+      "path": "docs/plans/2026-11-17-spar-skill/FINDINGS.md",
+      "role": "findings"
+    },
+    {
+      "id": "decisions",
+      "path": "docs/plans/2026-11-17-spar-skill/DECISIONS.md",
+      "role": "decisions"
+    },
+    {
+      "id": "offer",
+      "path": "docs/plans/2026-11-17-spar-skill/offers/offer-1.json",
+      "role": "offer"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "GPT is reachable through the T3 Code tool `delegate_task` with the codex provider and the model gpt-6-astra. Each round is a new `delegate_task`. Outside T3 Code no such tool exists.",
+      "kind": "runtime",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E1",
+      "limits": "Observed in T3 Code on 2026-11-16. Not observed in other hosts."
+    },
+    {
+      "id": "E2",
+      "claim": "interrogate and no-comments use a different model through T3 Code when available, otherwise a fresh subagent, and label which one. Both are user-invoked.",
+      "kind": "static",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E2 (skills/interrogate/SKILL.md:22, skills/no-comments/SKILL.md:15)",
+      "limits": "Read from the skill text, as recorded in FINDINGS."
+    },
+    {
+      "id": "E3",
+      "claim": "grilling already owns the questions to you: research first, rounds of lettered questions with a recommendation, saved before sending, and stop rules.",
+      "kind": "static",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E3",
+      "limits": "Read from skills/grilling/SKILL.md, as recorded in FINDINGS."
+    },
+    {
+      "id": "E4",
+      "claim": "workflow-clarify owns the agreement (steps 1 to 4), then workflow-specify makes tickets and the offer.",
+      "kind": "static",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E4",
+      "limits": "Read from the skill text, as recorded in FINDINGS."
+    },
+    {
+      "id": "E5",
+      "claim": "plan-review, interrogate and codebase-design critique or judge a plan. None proposes an approach or debates alternatives between models. The Overlap table shows the cross-model debate as the only gap.",
+      "kind": "static",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E5 and its correction, and the Overlap table",
+      "limits": "codebase-design DESIGN-IT-TWICE.md compares competing interface designs, which is narrower."
+    },
+    {
+      "id": "E7",
+      "claim": "A new user-invoked skill needs plugin.json registration, agents/openai.yaml with `allow_implicit_invocation: false`, a SPECIALISTS.md row, a CONTEXT.md term, README, CHANGELOG and tests.",
+      "kind": "static",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E7",
+      "limits": "Read from tools/validate.py and the package, as recorded in FINDINGS."
+    },
+    {
+      "id": "E8",
+      "claim": "Today's manual practice: Claude drafted, GPT-6 Astra critiqued in rounds, each round a new brief with the previous findings, until both agreed. You were asked only the decisions. A topic took 2 to 3 rounds.",
+      "kind": "runtime",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Evidence, E8",
+      "limits": "One session on 2026-11-16, recorded by the agent."
+    },
+    {
+      "id": "S3",
+      "claim": "GPT designed /spar blind, without Claude's sealed position. Both designs share the frame, the blind opening, the ledger and the stop rules. GPT proposed two fresh debaters and a comparing coordinator.",
+      "kind": "design",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Spar rounds, S3",
+      "limits": "A design debate, not a test of built behavior."
+    },
+    {
+      "id": "S4",
+      "claim": "In the cross-examination round both sides agreed on proposal v4. Agreement binds to the version that both reviewed. Grilling keeps questions in the conversation when there are no task records.",
+      "kind": "design",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md Spar rounds, S4 (C1 to C5)",
+      "limits": "A design debate, not a test of built behavior."
+    },
+    {
+      "id": "S5",
+      "claim": "A fresh plan review found gaps in contract checks, scenario coverage and ticket fields. All findings were accepted and the TODO was revised.",
+      "kind": "design",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md S5",
+      "limits": "Review of the plan text only."
+    },
+    {
+      "id": "S6",
+      "claim": "After fixes, the plan re-check by GPT-6 Astra passed and found the plan ready for your approval.",
+      "kind": "design",
+      "sources": [
+        "findings"
+      ],
+      "locator": "FINDINGS.md S6",
+      "limits": "Review of the plan text only."
+    },
+    {
+      "id": "F1",
+      "claim": "The approval hook keeps a plan-only pause after an approval given with the question tool, because paused() in hooks/approval.py changes only on typed messages. Every write is refused until you type a continue.",
+      "kind": "static",
+      "sources": [
+        "findings",
+        "plan"
+      ],
+      "locator": "FINDINGS.md F1. PLAN.md Current checkpoint, Blockers",
+      "limits": "Read from the hook and seen in this session. The fix is outside this plan."
+    },
+    {
+      "id": "D4",
+      "claim": "You chose that the result goes into the agreement in PLAN.md as an Approach part, and the rounds go to FINDINGS.",
+      "kind": "design",
+      "sources": [
+        "decisions"
+      ],
+      "locator": "DECISIONS.md D4",
+      "limits": "A recorded decision, not built behavior."
+    },
+    {
+      "id": "D5",
+      "claim": "You chose two fresh debaters every time, with a coordinator that only frames, compares and records.",
+      "kind": "design",
+      "sources": [
+        "decisions"
+      ],
+      "locator": "DECISIONS.md D5",
+      "limits": "A recorded decision, not built behavior."
+    },
+    {
+      "id": "D8",
+      "claim": "You chose that the blind opening always runs, depth counts the exchanges after it, and the default is saved through settings.py.",
+      "kind": "design",
+      "sources": [
+        "decisions"
+      ],
+      "locator": "DECISIONS.md D8",
+      "limits": "A recorded decision, not built behavior."
+    },
+    {
+      "id": "D9",
+      "claim": "You agreed agreement 2 with additions: an active neutral coordinator, three premise classes, research scaled to risk, and tests beyond the happy path.",
+      "kind": "design",
+      "sources": [
+        "decisions"
+      ],
+      "locator": "DECISIONS.md D9",
+      "limits": "A recorded decision, not built behavior."
+    },
+    {
+      "id": "D10",
+      "claim": "You made /spar an interactive sparring skill with you as the third participant. A missing GPT leads to a question to you. Tests check the process, not fixed answers. D10 replaces D2 and D7.",
+      "kind": "design",
+      "sources": [
+        "decisions"
+      ],
+      "locator": "DECISIONS.md D10",
+      "limits": "A recorded decision, not built behavior."
+    },
+    {
+      "id": "D11",
+      "claim": "You answered offer #1 (b0b0fa425dd9a16c) with \"Approve from this summary\", which also agreed to agreement 3.",
+      "kind": "design",
+      "sources": [
+        "decisions",
+        "offer"
+      ],
+      "locator": "DECISIONS.md D11. offers/offer-1.json hash b0b0fa425dd9a16c",
+      "limits": "A recorded answer. The offer file still shows state draft."
+    },
+    {
+      "id": "D12",
+      "claim": "After approving offer #1, you asked to see the plan before the build and asked for the hook bug F1 to be fixed. F1 becomes a separate task. D12 also explains the three adjustments against four additions in D9.",
+      "kind": "design",
+      "sources": [
+        "decisions",
+        "plan"
+      ],
+      "locator": "DECISIONS.md D12. PLAN.md Current checkpoint, Offer",
+      "limits": "A recorded decision, not built behavior."
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A1",
+      "text": "/spar is registered and user-invoked only in both hosts. tools/validate.py passes.",
+      "requirements": [
+        "R1"
+      ],
+      "verification": "Run `python -X utf8 -I tools/validate.py`. It must pass with 20 skills. tests/test_spar.py looks for `disable-model-invocation: true` and `allow_implicit_invocation: false`."
+    },
+    {
+      "id": "A2",
+      "text": "Tests pin the contract of the skill. They cover the depth names and counting, the progress rule, the outcome order, the labels and the WHAT/HOW boundary. They also cover no implementation, the no-task path, and how settings.py reads, sets and defaults `spar.default_depth`.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "R14",
+        "R13"
+      ],
+      "verification": "tests/test_spar.py holds one contract check for each requirement (TODO T3). tests/test_settings.py covers the setting (TODO T1). New cases fail first, then pass, under `python -X utf8 -m unittest discover -s tests -p \"test_spar.py\"` and `-p \"test_settings.py\"`."
+    },
+    {
+      "id": "A3",
+      "text": "The no-records rule of grilling, the /spar row in SPECIALISTS.md and the Approach part in the agreement of workflow-clarify are in place and tested.",
+      "requirements": [
+        "R1",
+        "R2",
+        "R8"
+      ],
+      "verification": "Run `python -X utf8 -m unittest discover -s tests -p \"test_owned_skills.py\"` and `-p \"test_spar.py\"`, then tools/validate.py."
+    },
+    {
+      "id": "A4",
+      "text": "A live T3 Code run on a small real decision shows the frame and a blind opening by a fresh Claude and GPT. It also shows at most the chosen number of exchanges, one outcome from the list, and records only inside a task. Until it runs, it stays NOT_RUN.",
+      "requirements": [
+        "R4",
+        "R5",
+        "R6",
+        "R9",
+        "R10"
+      ],
+      "verification": "T6 run 1 at quick depth, with at most 4 debater launches, only after your OK. The agent reads the transcript and records each point as observed (with the quote), not provoked, or failed."
+    },
+    {
+      "id": "A5",
+      "text": "The tests check the decision process, not predetermined conclusions. Scenarios stage uncertainty, false consensus, stagnation, unresolved objections, missing GPT and a questionable existing architecture. They look for a skill that recognizes uncertainty, researches what is objective, and asks you only relevant questions, and none when evidence settles the point. They also look for a skill that uses your answers, revises or defends positions with reasons, and reports remaining disagreement. No scenario prescribes the recommended answer.",
+      "requirements": [
+        "R3",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R11",
+        "R12",
+        "R14"
+      ],
+      "verification": "T4 writes the scenarios in tests/behavioral/spar.json with result NOT_RUN. T6 runs them live, each batch only after your OK, and records each one as observed, not provoked, or failed. The \"capability check failed\" case stays NOT VERIFIED unless it happens by itself."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Save and read the default debate depth",
+      "kind": "requested",
+      "reason": "/spar needs a saved default depth that the command can override without saving (D8).",
+      "requirements": [
+        "R5"
+      ],
+      "evidence": [
+        "D8",
+        "S3"
+      ],
+      "acceptance": [
+        "A2"
+      ],
+      "areas": [
+        "skills/workflow/scripts/settings.py",
+        "tests/test_settings.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T2",
+      "title": "Let grilling keep questions in the conversation when there are no task records",
+      "kind": "requested",
+      "reason": "Today grilling always writes FINDINGS and DECISIONS. A /spar without a task must write no files (FINDINGS S4 C3, S5).",
+      "requirements": [
+        "R8"
+      ],
+      "evidence": [
+        "E3",
+        "S4",
+        "S5"
+      ],
+      "acceptance": [
+        "A3"
+      ],
+      "areas": [
+        "skills/grilling/SKILL.md",
+        "tests/test_owned_skills.py",
+        "docs/RULE-CONTRACTS.md (grilling row)"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "T3",
+      "title": "Add the /spar skill and plug it into the workflow",
+      "kind": "requested",
+      "reason": "This is the only new part. No existing skill debates alternatives between models (FINDINGS E5, Overlap).",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "R14",
+        "R13"
+      ],
+      "evidence": [
+        "E1",
+        "E2",
+        "E5",
+        "E7",
+        "S4"
+      ],
+      "acceptance": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "areas": [
+        "skills/spar/ (new)",
+        ".claude-plugin/plugin.json",
+        "skills/workflow/SPECIALISTS.md",
+        "skills/workflow-clarify/SKILL.md",
+        "CONTEXT.md",
+        "docs/RULE-CONTRACTS.md (/spar row)",
+        "tests/test_spar.py (new)",
+        "tests/test_package.py",
+        "tests/test_package_contract.py"
+      ],
+      "depends_on": [
+        "T1",
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Stage the process scenarios and pin the rules they rely on",
+      "kind": "requested",
+      "reason": "You asked for proof beyond the happy path, as a check of the process, not of fixed answers (D9, D10). The records give no requirement IDs for T4. Its requirement links are inferred from the text of A5.",
+      "requirements": [
+        "R3",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R11",
+        "R12",
+        "R14"
+      ],
+      "evidence": [
+        "D10",
+        "S5"
+      ],
+      "acceptance": [
+        "A5",
+        "A2"
+      ],
+      "areas": [
+        "tests/behavioral/spar.json (new)",
+        "tests/test_spar.py"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Update the package documents for the new skill",
+      "kind": "requested",
+      "reason": "A new user-invoked skill must appear in the README, the architecture doc and the tests guide, and the skill counts change to 20 (FINDINGS E7).",
+      "requirements": [
+        "R1"
+      ],
+      "evidence": [
+        "E7"
+      ],
+      "acceptance": [
+        "A1"
+      ],
+      "areas": [
+        "README.md",
+        "docs/ARCHITECTURE.md",
+        "tests/README.md"
+      ],
+      "depends_on": [
+        "T3"
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Observe /spar live: one real decision and the staged scenarios",
+      "kind": "requested",
+      "reason": "Only a live run shows how a model follows the skill text (FINDINGS S5, DECISIONS D10). The records give no requirement IDs for T6. Its requirement links are inferred from the text of A4 and A5.",
+      "requirements": [
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9",
+        "R10",
+        "R11",
+        "R12",
+        "R14"
+      ],
+      "evidence": [
+        "E1",
+        "D10",
+        "S6"
+      ],
+      "acceptance": [
+        "A4",
+        "A5"
+      ],
+      "areas": [
+        "D:/workflow-axa-spar-pilot/<run>/ (outside every checkout, removed after the evidence is recorded)",
+        "docs/plans/2026-11-17-spar-skill/FINDINGS.md (observations)",
+        "tests/behavioral/spar.json (results)"
+      ],
+      "depends_on": [
+        "T3",
+        "T4",
+        "T5"
+      ]
+    }
+  ],
+  "default_view": "proposed",
+  "comparison": [
+    {
+      "label": "You plan a decision with GPT",
+      "current": "You hold the Claude and GPT discussion by hand. Each round is started separately until both models agree (FINDINGS E8).",
+      "proposed": "You type /spar. A fresh Claude and GPT debate the decision, and you answer only the questions that belong to you.",
+      "requirements": [
+        "R1",
+        "R4",
+        "R8",
+        "R9"
+      ],
+      "evidence": [
+        "E8",
+        "E1"
+      ],
+      "tasks": [
+        "T3"
+      ]
+    },
+    {
+      "label": "Two models say they agree",
+      "current": "No rule stops two models from agreeing without evidence. The cross-model debate exists only by hand (FINDINGS Overlap).",
+      "proposed": "Agreement counts only when both judged the same version. The coordinator checks the evidence and sends an unsupported agreement back as an objection.",
+      "requirements": [
+        "R7",
+        "R11"
+      ],
+      "evidence": [
+        "E5",
+        "D9"
+      ],
+      "tasks": [
+        "T3",
+        "T4"
+      ]
+    },
+    {
+      "label": "GPT is not reachable",
+      "current": "No sparring skill exists. Other skills, such as interrogate, fall back to a fresh subagent without asking you (FINDINGS E2).",
+      "proposed": "/spar says that GPT is missing or that the check failed, and asks you how to proceed. It never switches models by itself.",
+      "requirements": [
+        "R9"
+      ],
+      "evidence": [
+        "E2",
+        "D10"
+      ],
+      "tasks": [
+        "T3",
+        "T6"
+      ]
+    },
+    {
+      "label": "Questions without task files",
+      "current": "grilling always saves questions in FINDINGS and choices in DECISIONS.",
+      "proposed": "Without task records, the questions, options, answers and sources stay in the conversation, and no files are written.",
+      "requirements": [
+        "R8",
+        "R10"
+      ],
+      "evidence": [
+        "E3",
+        "S4"
+      ],
+      "tasks": [
+        "T2"
+      ]
+    }
+  ],
+  "task_report": {
+    "phase": "planning",
+    "screen_change": "none",
+    "agreement": {
+      "status": "approved",
+      "revision": "agreement 3",
+      "response": "Approve from this summary",
+      "source": "decisions",
+      "locator": "DECISIONS.md D11",
+      "summary": "You agreed to agreement 3 when you answered offer #1 with \"Approve from this summary\" (D11). PLAN.md records agreement 3 as agreed. It is agreement 2 with your D10 changes. You are the third participant, and a missing GPT leads to a question to you."
+    },
+    "attention": [
+      {
+        "text": "Approval hook bug F1: a button approval does not lift an earlier \"Do not implement until I approve that plan\" pause. You asked for a fix, and it becomes a separate task (D12).",
+        "source": "findings",
+        "locator": "FINDINGS.md F1. DECISIONS.md D12"
+      },
+      {
+        "text": "The live runs in T6 cost up to 26 debater launches and 8 coordinator sessions. Each batch runs only after your OK right before it.",
+        "source": "todo",
+        "locator": "TODO.md T6, Technical details"
+      }
+    ],
+    "sections": [
+      {
+        "id": "request",
+        "title": "Context and scope",
+        "source": "plan",
+        "locator": "PLAN.md Goal. FINDINGS.md E1, E5, E8 and Overlap",
+        "text": "Today you hold planning discussions between Claude and GPT by hand. In the session of 2026-11-16, Claude drafted an approach and GPT-6 Astra critiqued it in rounds. Each round was a new brief with the previous findings, until both agreed. You were asked only the decisions, and a topic took 2 to 3 rounds (FINDINGS E8).\n\nNo skill in the package proposes an approach and debates alternatives between models. plan-review, interrogate and codebase-design critique a plan or judge seams (FINDINGS E5). The way to reach GPT exists: the T3 Code tool `delegate_task` (FINDINGS E1).\n\nYour request asked for a reusable /spar skill that replaces the manual discussions with structured, evidence-based sparring. It must reuse existing skills, use at most 3 debate rounds by default, and never force consensus. It must never implement without approval, must work for any project and language, and must keep token use down.\n\nThis plan builds /spar and hands its result to /workflow for planning and approval."
+      },
+      {
+        "id": "goals",
+        "title": "Goals",
+        "source": "plan",
+        "locator": "PLAN.md Agreement, Requirements and Acceptance",
+        "text": "You can type `/spar <problem> [depth]` in both hosts. Only you can start it. The model never starts it by itself (R1, A1).\n\nA fresh Claude and GPT write blind opening positions. Then they exchange objections for the chosen depth: quick 1, standard 3, deep 5, a number, or until-agreement. The default comes from your settings.json (R4, R5).\n\nThe debate ends with one named outcome and a result. The result names the recommended approach, its evidence, rejected alternatives, risks, foundation changes, unresolved objections, your decisions and who debated (R6, R7, step 7).\n\nYou are asked only what belongs to you: requirements, priorities, trade-offs or acceptable risk. Objective facts are researched instead (R8).\n\nInside a task, the result becomes the Approach part of the agreement, and /workflow continues with the HOW. Without a task, no files are written (R1, R10).\n\nWhen GPT is not reachable, /spar tells you and asks how to proceed (R9).\n\nLive runs show how a model follows the skill, in one real decision and in staged scenarios (A4, A5)."
+      },
+      {
+        "id": "non-goals",
+        "title": "Non-goals",
+        "source": "plan",
+        "locator": "PLAN.md Agreement, Not included, R1 and R12. offer-1.json exclusions. FINDINGS.md F1",
+        "text": "/spar does not plan the HOW. Files, interfaces, tests, the plan and the approval stay with workflow-specify (R1).\n\n/spar never implements and never refactors, even when it finds a weak foundation. It shows the evidence and the alternatives instead (R1, R12).\n\nSparring never starts automatically. The workflow may recommend /spar for high-stakes work, but it never runs it (D3).\n\nNo separate SPAR.md. The result lives in the agreement or in the conversation (D4).\n\nNo third judge model, no code or experiments run during a debate, and no prototypes.\n\nNo change to T3 Code.\n\nThe fix for the approval hook bug (FINDINGS F1) is not part of this plan. You asked for it, and it becomes a separate task (D12).\n\nNo version bump and no CHANGELOG entry in this task. The release is a separate step."
+      },
+      {
+        "id": "specification",
+        "title": "Overview",
+        "source": "plan",
+        "locator": "PLAN.md Agreement, What happens (steps 1 to 8) and Changes to the package",
+        "text": "/spar is one small skill with one reference file. `skills/spar/SKILL.md` holds the steps. `skills/spar/T3.md` holds the T3 Code parts: the capability check, the debater brief, the ledger format and cancel. The skill owns only the debate. It uses grilling, workflow-clarify step 1, codebase-design and domain-modeling for everything else (R2).\n\nThe coordinator is the model you talk to. It first frames the decision in one sentence, with 3 to 6 criteria, the depth and the two debaters. Then it checks the premises that the decision depends on. Each premise becomes a verified fact, an unverified assumption or a contradiction (R3, R12). The amount of checking follows the risk of the decision, not the depth (R13).\n\nYou are the third participant. If something only you can decide blocks the frame or the debate, the coordinator asks you through grilling. Objective facts are researched and never asked (R8).\n\nIn the blind opening, a fresh Claude subagent and GPT get the same brief and write one position each. Neither sees the other. Each position has a recommendation, the rejected alternatives, the foundation weaknesses and the strongest uncertainty (R4).\n\nIn each exchange, both debaters get the latest position of the other side and the objection ledger. The ledger lists objections with stable IDs, each one open, resolved, needs you, or unverifiable. Each debater returns its strongest objection with evidence, its replies and what it changed. The coordinator argues no side. It checks the cited evidence itself, challenges agreement without evidence, and writes one progress line per round (R11).\n\nThe debate ends with one outcome, and the first match wins: cancelled, unavailable or interrupted, target changed, needs you, agreed, stalled, limit reached. Agreed needs both debaters to judge the same proposal version (R7). Stalled comes only after the coordinator found no question to you that could unblock the round (R6). Real disagreement is reported and never forced into agreement (R14).\n\nThe result lists the recommended approach, its evidence and the rejected alternatives. It also lists risks, required foundation changes, unresolved objections, your decisions, who debated, whether it was cross-model, and the outcome. Inside a task, the rounds go to FINDINGS, your choices go to DECISIONS, and the result becomes the Approach part of the agreement (D4). Then workflow-clarify asks you to agree, and workflow-specify plans the HOW. Without a task, the result stays in the conversation.\n\nIf GPT is missing or the T3 Code capability check fails, the coordinator says so and asks you how to proceed. One option you can choose is a fresh helper of the same model, labelled \"single model, fresh context, not cross-model\" (R9). You can stop the debate in plain words at any time, which also cancels running delegates (R6).\n\nThe main trade-off is cost against independence. Each exchange launches two fresh debaters, so the coordinator does not anchor the debate. This doubles the model runs per round (D5, FINDINGS S4 C1)."
+      },
+      {
+        "id": "decisions",
+        "title": "Alternatives considered",
+        "source": "decisions",
+        "locator": "DECISIONS.md D1 to D12. FINDINGS.md Questions Q1 to Q9",
+        "text": "D1: /spar is a new skill that you start, and it owns only the debate. It plugs into workflow-clarify. You chose it over an option inside workflow-clarify and over a standalone skill with its own document. It keeps one small skill for the only new part.\n\nD3: Only you start /spar. The workflow may recommend it for high-stakes work but never runs it. You chose this over the workflow running it by itself, because each round costs model runs.\n\nD4: The result goes into the agreement in PLAN.md as an Approach part, and the rounds go to FINDINGS. You chose this over a separate SPAR.md, so that there is one agreement and one approval.\n\nD5: Two fresh debaters always run, a fresh Claude subagent and GPT. The coordinator only frames, compares and records. You chose this over the coordinator debating as the Claude side, which halves the runs but weakens independence.\n\nD6: until-agreement has no pauses and no ceiling. It writes a progress line each round and stops on no progress, repeated arguments, missing evidence, an open decision of yours or your stop. You chose this over a pause every 5 rounds. A number as depth gives a budget when you want one.\n\nD8: The blind opening always runs, and depth counts the exchanges after it. The default is standard, saved through settings.py, and the command overrides it without saving. You chose this over counting the opening as a round.\n\nD2 and D7, superseded by D10: a missing GPT first led to an automatic fresh helper of the same model, with a label. D10 replaced this. Now the coordinator asks you how to proceed, and that helper is one option you can choose.\n\nD9: You agreed agreement 2 with four additions. Your words said \"three final adjustments\" and then added a fourth about the tests (D12). The coordinator is neutral but active. Foundation checks separate facts, assumptions and contradictions. Research scales with risk, not with depth. Tests cover the failure cases, not only the happy path.\n\nD10: You answered Q9 with neither option. /spar is an interactive sparring skill, not a decision engine, and you are the third participant. The tests check the decision process, not predetermined answers. Unclear priorities, trade-offs or risk go to you through grilling.\n\nD11: You answered offer #1 (b0b0fa425dd9a16c) with \"Approve from this summary\", which also agreed to agreement 3. The report was recommended then and not chosen.\n\nD12: After that approval, you asked to see the plan before the build (\"also let me first see the plan before we build\"). This report answers that request, and offer #1 is asked again, so the agent waits for your OK on it. You also asked for the hook bug F1 to be fixed (\"That bug needs fixing\"). It becomes a separate task."
+      },
+      {
+        "id": "risks",
+        "title": "Cross-cutting concerns",
+        "source": "findings",
+        "locator": "FINDINGS.md S5, F1. TODO.md T4, T6",
+        "text": "Live behavior is proven only in T6. Offline tests show that the skill text states each rule. They cannot show that a model follows it (FINDINGS S5).\n\nThe skill depends on how well a model follows its text. Debaters may still agree without evidence or repeat themselves. The checks of the coordinator (R11) and the T6 scenarios address this, but they observe behavior and do not guarantee it.\n\nCost: T6 can use up to 26 debater launches and 8 coordinator sessions. Each batch runs only after your OK right before it, and you may stop after any batch. No research agents run, and no retry happens without your OK. Subscription limits apply. Each normal /spar exchange also launches two debaters.\n\nThe approval hook has a bug (FINDINGS F1). An approval given with the button of the question tool does not lift an earlier \"Do not implement until I approve that plan\" pause. Every write is then refused until you type a continue. This offer excludes hooks, so the fix becomes a separate task that you asked for (D12).\n\nThe \"capability check failed\" case cannot be staged safely. It stays NOT VERIFIED unless it happens by itself (TODO T6)."
+      },
+      {
+        "id": "testing",
+        "title": "How it is tested",
+        "source": "todo",
+        "locator": "TODO.md T1 to T6, How to verify. offer-1.json checks",
+        "text": "Offline contract tests run in the normal suite. tests/test_spar.py pins one rule for each requirement, and tests/test_settings.py covers the depth setting. tests/test_owned_skills.py covers the new case of grilling. tools/validate.py must pass with 20 skills. Tests come first in T1 to T4.\n\nLive process scenarios run only in ticket T6, in T3 Code, on disposable pilot projects outside every checkout. They stage situations such as unclear priorities, false consensus, stagnation, missing GPT and a questionable architecture. Each one is recorded as observed, not provoked, or failed. No scenario prescribes the recommended answer (A5, D10).\n\nGPT-6 Astra and a fresh Opus review the skill text until both agree. At the end the full suite runs with `python -X utf8 -m unittest discover -s tests -p \"test_*.py\"`."
+      }
+    ],
+    "tickets": [
+      {
+        "task": "T1",
+        "source": "todo",
+        "locator": "TODO.md T1",
+        "specification": "settings.py learns one more setting, `spar.default_depth`. You set it with `settings.py spar depth <quick|standard|deep|until-agreement|N>`, and `settings.py show` prints it. The css switch and any unknown keys stay unchanged. Only settings.py and tests/test_settings.py change. Tests come first.",
+        "expected": "A missing value reads as standard. An invalid saved value reads as standard with a notice. An invalid value on the command line is refused with the allowed values. N is a whole number from 1 upward."
+      },
+      {
+        "task": "T2",
+        "source": "todo",
+        "locator": "TODO.md T2",
+        "specification": "grilling gets one added case: no task records, or no writes allowed (Inspect, or a /spar without a task). Then the exact questions, options, recommendations, answers and sources stay in the conversation. Its rounds, question format and stop rules stay the same. Its LICENSE and credit stay as they are. The grilling row of docs/RULE-CONTRACTS.md names the new case. A contract test comes first.",
+        "expected": "Grilling inside a task records exactly as today. Grilling without task records creates no files. \"Record answers\" and the `by: agent` DECISIONS line both name the conversation instead."
+      },
+      {
+        "task": "T3",
+        "source": "todo",
+        "locator": "TODO.md T3",
+        "specification": "Create `skills/spar/SKILL.md` with `disable-model-invocation: true`. It runs the eight steps of agreement 3: frame, foundations, owner questions, blind opening, exchanges, end, result and handoff. It reads the bundled skills by path and names `research` and `diagnosing-bugs` only as optional external specialists. It copies none of their rules.\n\n`skills/spar/T3.md` holds the capability check and its three answers, the debater brief, the ledger format, one new task per exchange, and `task_cancel` on stop. /spar reads it on every run. `skills/spar/agents/openai.yaml` sets `allow_implicit_invocation: false`, and `.claude-plugin/plugin.json` registers `./skills/spar`.\n\nSPECIALISTS.md gets a /spar row: started by you, recommended for high-stakes choices, never run by the workflow. Step 3 of workflow-clarify accepts an optional Approach part from /spar. CONTEXT.md gets the term \"Spar\", and docs/RULE-CONTRACTS.md gets a /spar row. The current skill count goes from 19 to 20. The hooks, the offer model, workflow-specify, plan-review and interrogate do not change.",
+        "expected": "tests/test_spar.py holds one contract check for each requirement, written before the skill. GPT-6 Astra and a fresh Opus review the skill text until both agree."
+      },
+      {
+        "task": "T4",
+        "source": "todo",
+        "locator": "TODO.md T4",
+        "specification": "Write `tests/behavioral/spar.json`. Every scenario has `mode: live-host` and `result: NOT_RUN` until it is observed. Each scenario has a staged situation, the process checks to observe, and an explicit \"no prescribed answer\". The scenarios cover unclear priorities, a disputed objective fact, false consensus, stagnation and unresolved objections. They also cover missing GPT, a questionable existing architecture, no codebase or task, and cancel during a run.\n\nA test in tests/test_spar.py reads the file. It looks for every scenario, for no prescribed answer, and for each named rule in the skill text. This is authored coverage only. Nothing here counts as observed behavior.",
+        "expected": "False consensus: \"agreed\" is reported only after the gap is closed with evidence. Otherwise the gap stays an open objection under another outcome. Stagnation: the coordinator first looks for a question to you that could unblock the debate. It reports \"stalled\" with both positions only when no such question exists."
+      },
+      {
+        "task": "T5",
+        "source": "todo",
+        "locator": "TODO.md T5",
+        "specification": "README lists /spar with the other user commands and says 20 skills. docs/ARCHITECTURE.md places /spar before the agreement of workflow-clarify (WHAT and WHY) and workflow-specify after it (HOW). tests/README.md names tests/test_spar.py and tests/behavioral/spar.json and says that the scenarios are live-only. The CHANGELOG entry is written at release, not here.",
+        "expected": "tools/validate.py passes its count and link checks, and the full suite passes."
+      },
+      {
+        "task": "T6",
+        "source": "todo",
+        "locator": "TODO.md T6",
+        "specification": "The agent builds a ZIP of the candidate with tools/build_release.py. For each run, a new project under D:/workflow-axa-spar-pilot/<run>/ gets the 20 skill folders in `.claude/skills/`, and a T3 Code thread opened on it loads them. Each run records the snapshot id of the source worktree. It also records the transcript line that shows /spar loaded from that project, not from the installed plugin.\n\nRun 1 is a real decision that you pick, at quick depth. Runs 2 to 6 stage unclear priorities, a disputed fact outside any task, and false consensus. They also stage stagnation at standard depth and questionable architecture on a small sample repository. Run 7 is missing GPT in a Claude Code CLI session, and run 8 is a cancel during run 2.\n\nThe total cap is 26 debater launches and 8 coordinator sessions. No research agents run, and no retry happens without your OK. Each batch runs only after your OK right before it. The pilot folders are removed after the evidence is recorded, except a run kept as evidence of a failure.",
+        "expected": "Each scenario is recorded against its own T4 process checks as observed (with the quote), not provoked, or failed. The \"capability check failed\" case cannot be staged safely and stays NOT VERIFIED unless it happens by itself."
+      }
+    ],
+    "checks": [],
+    "acceptance_results": []
+  },
+  "graphs": [
+    {
+      "id": "proposed",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "/spar",
+      "title": "What happens when you type /spar",
+      "description": "This runs when you type /spar with a decision. The exchanges are in the next view.",
+      "width": 880,
+      "height": 976,
+      "nodes": [
+        {
+          "id": "P1",
+          "label": "You type /spar",
+          "note": "a decision, optional depth",
+          "x": 96,
+          "y": 16,
+          "width": 288,
+          "height": 72,
+          "shape": "start",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P2",
+          "label": "Coordinator frames it",
+          "note": "criteria, depth, debaters,\nand a premise check",
+          "x": 80,
+          "y": 120,
+          "width": 320,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4",
+            "D9"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P3",
+          "label": "Something only\nyou can decide?",
+          "note": "",
+          "x": 112,
+          "y": 240,
+          "width": 256,
+          "height": 160,
+          "shape": "decision",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D10"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "P4",
+          "label": "You answer through grilling",
+          "note": "facts are researched, not asked",
+          "x": 480,
+          "y": 280,
+          "width": 320,
+          "height": 80,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3",
+            "D10"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P5",
+          "label": "Claude and GPT open blind",
+          "note": "both fresh, same brief,\nneither sees the other",
+          "x": 80,
+          "y": 448,
+          "width": 320,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S3",
+            "D5"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "P6",
+          "label": "Both debaters exchange",
+          "note": "rounds up to the depth",
+          "x": 80,
+          "y": 568,
+          "width": 320,
+          "height": 72,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P7",
+          "label": "Inside a\ntask?",
+          "note": "",
+          "x": 144,
+          "y": 672,
+          "width": 192,
+          "height": 160,
+          "shape": "decision",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4",
+            "D4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P8",
+          "label": "Result goes to the task",
+          "note": "agreement Approach, then /workflow",
+          "x": 480,
+          "y": 712,
+          "width": 336,
+          "height": 80,
+          "shape": "result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D4",
+            "E4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "P9",
+          "label": "Result stays in the chat",
+          "note": "no files, /workflow can use it",
+          "x": 96,
+          "y": 880,
+          "width": 288,
+          "height": 80,
+          "shape": "result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "P1",
+          "to": "P2",
+          "points": [
+            [
+              240,
+              88
+            ],
+            [
+              240,
+              120
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "P2",
+          "to": "P3",
+          "points": [
+            [
+              240,
+              208
+            ],
+            [
+              240,
+              240
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "P3",
+          "to": "P4",
+          "points": [
+            [
+              368,
+              320
+            ],
+            [
+              480,
+              320
+            ]
+          ],
+          "label": "Yes",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            424,
+            304
+          ]
+        },
+        {
+          "from": "P3",
+          "to": "P5",
+          "points": [
+            [
+              240,
+              400
+            ],
+            [
+              240,
+              448
+            ]
+          ],
+          "label": "No",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            272,
+            428
+          ]
+        },
+        {
+          "from": "P4",
+          "to": "P5",
+          "points": [
+            [
+              640,
+              360
+            ],
+            [
+              640,
+              492
+            ],
+            [
+              400,
+              492
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "P5",
+          "to": "P6",
+          "points": [
+            [
+              240,
+              536
+            ],
+            [
+              240,
+              568
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "P6",
+          "to": "P7",
+          "points": [
+            [
+              240,
+              640
+            ],
+            [
+              240,
+              672
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "P7",
+          "to": "P8",
+          "points": [
+            [
+              336,
+              752
+            ],
+            [
+              480,
+              752
+            ]
+          ],
+          "label": "Yes",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            408,
+            736
+          ]
+        },
+        {
+          "from": "P7",
+          "to": "P9",
+          "points": [
+            [
+              240,
+              832
+            ],
+            [
+              240,
+              880
+            ]
+          ],
+          "label": "No",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "label_position": [
+            272,
+            860
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exchange",
+      "kind": "proposed",
+      "purpose": "flow",
+      "tab": "One exchange",
+      "title": "What happens in each exchange",
+      "description": "This runs once for each exchange after the blind opening, until an ending applies or you say stop.",
+      "width": 880,
+      "height": 944,
+      "nodes": [
+        {
+          "id": "X1",
+          "label": "Each debater answers",
+          "note": "objection, replies, changes",
+          "x": 96,
+          "y": 16,
+          "width": 288,
+          "height": 72,
+          "shape": "start",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X2",
+          "label": "Coordinator checks evidence",
+          "note": "updates the objection ledger",
+          "x": 80,
+          "y": 120,
+          "width": 320,
+          "height": 72,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D9"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X3",
+          "label": "Agreed on the\nsame version?",
+          "note": "",
+          "x": 128,
+          "y": 224,
+          "width": 224,
+          "height": 160,
+          "shape": "decision",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4",
+            "D9"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "X4",
+          "label": "Debate ends: agreed",
+          "note": "result goes to the handoff",
+          "x": 480,
+          "y": 264,
+          "width": 320,
+          "height": 80,
+          "shape": "result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X5",
+          "label": "Something only\nyou can decide?",
+          "note": "",
+          "x": 112,
+          "y": 432,
+          "width": 256,
+          "height": 160,
+          "shape": "decision",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D10"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "X6",
+          "label": "You answer through grilling",
+          "note": "both sides get your answer",
+          "x": 480,
+          "y": 472,
+          "width": 320,
+          "height": 80,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3",
+            "D10"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X7",
+          "label": "Real progress\nthis round?",
+          "note": "",
+          "x": 128,
+          "y": 640,
+          "width": 224,
+          "height": 160,
+          "shape": "decision",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4",
+            "D10"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X8",
+          "label": "Next exchange starts",
+          "note": "if rounds are left, otherwise\nends: limit reached",
+          "x": 480,
+          "y": 676,
+          "width": 320,
+          "height": 88,
+          "shape": "result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D8"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "X9",
+          "label": "Debate ends: stalled",
+          "note": "both positions reported",
+          "x": 96,
+          "y": 848,
+          "width": 288,
+          "height": 72,
+          "shape": "result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "D10"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "X1",
+          "to": "X2",
+          "points": [
+            [
+              240,
+              88
+            ],
+            [
+              240,
+              120
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "X2",
+          "to": "X3",
+          "points": [
+            [
+              240,
+              192
+            ],
+            [
+              240,
+              224
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "X3",
+          "to": "X4",
+          "points": [
+            [
+              352,
+              304
+            ],
+            [
+              480,
+              304
+            ]
+          ],
+          "label": "Yes",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            416,
+            288
+          ]
+        },
+        {
+          "from": "X3",
+          "to": "X5",
+          "points": [
+            [
+              240,
+              384
+            ],
+            [
+              240,
+              432
+            ]
+          ],
+          "label": "No",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            272,
+            412
+          ]
+        },
+        {
+          "from": "X5",
+          "to": "X6",
+          "points": [
+            [
+              368,
+              512
+            ],
+            [
+              480,
+              512
+            ]
+          ],
+          "label": "Yes",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            424,
+            496
+          ]
+        },
+        {
+          "from": "X5",
+          "to": "X7",
+          "points": [
+            [
+              240,
+              592
+            ],
+            [
+              240,
+              640
+            ]
+          ],
+          "label": "No",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            272,
+            620
+          ]
+        },
+        {
+          "from": "X6",
+          "to": "X8",
+          "points": [
+            [
+              640,
+              552
+            ],
+            [
+              640,
+              676
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "X7",
+          "to": "X8",
+          "points": [
+            [
+              352,
+              720
+            ],
+            [
+              480,
+              720
+            ]
+          ],
+          "label": "Yes",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            416,
+            704
+          ]
+        },
+        {
+          "from": "X7",
+          "to": "X9",
+          "points": [
+            [
+              240,
+              800
+            ],
+            [
+              240,
+              848
+            ]
+          ],
+          "label": "No",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            272,
+            828
+          ]
+        }
+      ]
+    },
+    {
+      "id": "current",
+      "kind": "current",
+      "purpose": "flow",
+      "tab": "Today",
+      "title": "How a planning debate with GPT happens today",
+      "description": "This runs each time you want a second model to challenge a plan, before you start /workflow.",
+      "width": 880,
+      "height": 672,
+      "nodes": [
+        {
+          "id": "C1",
+          "label": "You ask Claude",
+          "note": "a planning question",
+          "x": 136,
+          "y": 24,
+          "width": 288,
+          "height": 72,
+          "shape": "start",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C2",
+          "label": "Claude drafts an approach",
+          "note": "",
+          "x": 128,
+          "y": 128,
+          "width": 304,
+          "height": 72,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C3",
+          "label": "GPT critiques the draft",
+          "note": "a new brief each round,\nstarted by hand",
+          "x": 128,
+          "y": 232,
+          "width": 304,
+          "height": 88,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8",
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C4",
+          "label": "Both models\nagree?",
+          "note": "",
+          "x": 184,
+          "y": 352,
+          "width": 192,
+          "height": 160,
+          "shape": "decision",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C5",
+          "label": "You make the choices",
+          "note": "only the open decisions",
+          "x": 528,
+          "y": 392,
+          "width": 288,
+          "height": 80,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C6",
+          "label": "Claude revises the draft",
+          "note": "answers the critique",
+          "x": 128,
+          "y": 560,
+          "width": 304,
+          "height": 72,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "C7",
+          "label": "You start /workflow",
+          "note": "it plans and asks for approval",
+          "x": 528,
+          "y": 560,
+          "width": 288,
+          "height": 80,
+          "shape": "result",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8",
+            "E4"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "C1",
+          "to": "C2",
+          "points": [
+            [
+              280,
+              96
+            ],
+            [
+              280,
+              128
+            ]
+          ],
+          "label": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C2",
+          "to": "C3",
+          "points": [
+            [
+              280,
+              200
+            ],
+            [
+              280,
+              232
+            ]
+          ],
+          "label": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C3",
+          "to": "C4",
+          "points": [
+            [
+              280,
+              320
+            ],
+            [
+              280,
+              352
+            ]
+          ],
+          "label": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C4",
+          "to": "C5",
+          "points": [
+            [
+              376,
+              432
+            ],
+            [
+              528,
+              432
+            ]
+          ],
+          "label": "Yes",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "label_position": [
+            452,
+            416
+          ]
+        },
+        {
+          "from": "C4",
+          "to": "C6",
+          "points": [
+            [
+              280,
+              512
+            ],
+            [
+              280,
+              560
+            ]
+          ],
+          "label": "No",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "label_position": [
+            312,
+            540
+          ]
+        },
+        {
+          "from": "C6",
+          "to": "C3",
+          "points": [
+            [
+              128,
+              596
+            ],
+            [
+              64,
+              596
+            ],
+            [
+              64,
+              276
+            ],
+            [
+              128,
+              276
+            ]
+          ],
+          "label": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": []
+        },
+        {
+          "from": "C5",
+          "to": "C7",
+          "points": [
+            [
+              672,
+              472
+            ],
+            [
+              672,
+              560
+            ]
+          ],
+          "label": "",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8",
+            "E4"
+          ],
+          "tasks": []
+        }
+      ]
+    },
+    {
+      "id": "context",
+      "kind": "proposed",
+      "purpose": "structure",
+      "tab": "Parts",
+      "title": "Where /spar sits among the parts around it",
+      "description": "This shows what passes between you, the coordinator, the two debaters, the reused skills and the files during one /spar run.",
+      "width": 880,
+      "height": 688,
+      "nodes": [
+        {
+          "id": "Y",
+          "label": "You",
+          "note": "start, answer, stop",
+          "x": 296,
+          "y": 32,
+          "width": 288,
+          "height": 80,
+          "shape": "start",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E8"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "K",
+          "label": "Coordinator (/spar)",
+          "note": "frames, checks, records",
+          "x": 296,
+          "y": 280,
+          "width": 288,
+          "height": 96,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S4",
+            "D9"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": true
+        },
+        {
+          "id": "CL",
+          "label": "Fresh Claude",
+          "note": "subagent",
+          "x": 24,
+          "y": 280,
+          "width": 176,
+          "height": 96,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [
+            "S3",
+            "D5"
+          ],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "G",
+          "label": "GPT via\nT3 Code",
+          "note": "delegate_task",
+          "x": 680,
+          "y": 280,
+          "width": 176,
+          "height": 96,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E1"
+          ],
+          "tasks": [],
+          "highlight": false
+        },
+        {
+          "id": "ST",
+          "label": "Your settings.json",
+          "note": "spar.default_depth",
+          "x": 24,
+          "y": 480,
+          "width": 224,
+          "height": 80,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "D8"
+          ],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": false
+        },
+        {
+          "id": "SK",
+          "label": "Reused skills",
+          "note": "",
+          "x": 280,
+          "y": 480,
+          "width": 320,
+          "height": 176,
+          "shape": "group",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [
+            "E3",
+            "E4"
+          ],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "highlight": false,
+          "items": [
+            "grilling: no-records case",
+            "workflow-clarify: Approach part",
+            "workflow-specify: the HOW"
+          ]
+        },
+        {
+          "id": "TR",
+          "label": "Task records",
+          "note": "PLAN, FINDINGS, DECISIONS",
+          "x": 632,
+          "y": 480,
+          "width": 224,
+          "height": 80,
+          "shape": "action",
+          "basis": "observed",
+          "change": "unchanged",
+          "evidence": [
+            "E4"
+          ],
+          "tasks": [],
+          "highlight": false
+        }
+      ],
+      "edges": [
+        {
+          "from": "Y",
+          "to": "K",
+          "points": [
+            [
+              400,
+              112
+            ],
+            [
+              400,
+              280
+            ]
+          ],
+          "label": "/spar, answers",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            336,
+            200
+          ]
+        },
+        {
+          "from": "K",
+          "to": "Y",
+          "points": [
+            [
+              480,
+              280
+            ],
+            [
+              480,
+              112
+            ]
+          ],
+          "label": "asks, reports",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            544,
+            200
+          ]
+        },
+        {
+          "from": "K",
+          "to": "CL",
+          "points": [
+            [
+              296,
+              312
+            ],
+            [
+              200,
+              312
+            ]
+          ],
+          "label": "brief",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            248,
+            296
+          ]
+        },
+        {
+          "from": "CL",
+          "to": "K",
+          "points": [
+            [
+              200,
+              352
+            ],
+            [
+              296,
+              352
+            ]
+          ],
+          "label": "position",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            248,
+            336
+          ]
+        },
+        {
+          "from": "K",
+          "to": "G",
+          "points": [
+            [
+              584,
+              312
+            ],
+            [
+              680,
+              312
+            ]
+          ],
+          "label": "brief",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            632,
+            296
+          ]
+        },
+        {
+          "from": "G",
+          "to": "K",
+          "points": [
+            [
+              680,
+              352
+            ],
+            [
+              584,
+              352
+            ]
+          ],
+          "label": "position",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            632,
+            336
+          ]
+        },
+        {
+          "from": "K",
+          "to": "ST",
+          "points": [
+            [
+              336,
+              376
+            ],
+            [
+              336,
+              440
+            ],
+            [
+              136,
+              440
+            ],
+            [
+              136,
+              480
+            ]
+          ],
+          "label": "default depth",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T1",
+            "T3"
+          ],
+          "label_position": [
+            236,
+            424
+          ]
+        },
+        {
+          "from": "K",
+          "to": "SK",
+          "points": [
+            [
+              440,
+              376
+            ],
+            [
+              440,
+              480
+            ]
+          ],
+          "label": "uses by path",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T2",
+            "T3"
+          ],
+          "label_position": [
+            500,
+            468
+          ]
+        },
+        {
+          "from": "K",
+          "to": "TR",
+          "points": [
+            [
+              544,
+              376
+            ],
+            [
+              544,
+              440
+            ],
+            [
+              744,
+              440
+            ],
+            [
+              744,
+              480
+            ]
+          ],
+          "label": "rounds, result",
+          "basis": "proposed",
+          "change": "added",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "label_position": [
+            644,
+            424
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "kind": "proposed",
+      "purpose": "delivery",
+      "tab": "Build order",
+      "title": "In what order the tickets are built",
+      "description": "This applies after you give your OK on this plan. T1 and T2 can run side by side, and so can T4 and T5.",
+      "width": 880,
+      "height": 648,
+      "nodes": [
+        {
+          "id": "AP",
+          "label": "You approve this plan",
+          "note": "",
+          "x": 296,
+          "y": 16,
+          "width": 288,
+          "height": 64,
+          "shape": "start",
+          "basis": "proposed",
+          "change": "unchanged",
+          "evidence": [],
+          "tasks": [],
+          "highlight": false,
+          "precondition": "approval"
+        },
+        {
+          "id": "B1",
+          "label": "T1 Default depth",
+          "note": "settings.py",
+          "x": 96,
+          "y": 128,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T1"
+          ],
+          "highlight": false,
+          "task_id": "T1"
+        },
+        {
+          "id": "B2",
+          "label": "T2 Grilling rule",
+          "note": "questions stay in the chat",
+          "x": 496,
+          "y": 128,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T2"
+          ],
+          "highlight": false,
+          "task_id": "T2"
+        },
+        {
+          "id": "B3",
+          "label": "T3 The /spar skill",
+          "note": "SKILL.md, T3.md, registration",
+          "x": 296,
+          "y": 264,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ],
+          "highlight": false,
+          "task_id": "T3"
+        },
+        {
+          "id": "B4",
+          "label": "T4 Process scenarios",
+          "note": "tests/behavioral/spar.json",
+          "x": 96,
+          "y": 400,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T4"
+          ],
+          "highlight": false,
+          "task_id": "T4"
+        },
+        {
+          "id": "B5",
+          "label": "T5 Package documents",
+          "note": "README, ARCHITECTURE, tests",
+          "x": 496,
+          "y": 400,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T5"
+          ],
+          "highlight": false,
+          "task_id": "T5"
+        },
+        {
+          "id": "B6",
+          "label": "T6 Live observation",
+          "note": "real decision and scenarios",
+          "x": 296,
+          "y": 536,
+          "width": 288,
+          "height": 88,
+          "shape": "action",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T6"
+          ],
+          "highlight": false,
+          "task_id": "T6"
+        }
+      ],
+      "edges": [
+        {
+          "from": "AP",
+          "to": "B1",
+          "points": [
+            [
+              400,
+              80
+            ],
+            [
+              400,
+              104
+            ],
+            [
+              240,
+              104
+            ],
+            [
+              240,
+              128
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T1"
+          ]
+        },
+        {
+          "from": "AP",
+          "to": "B2",
+          "points": [
+            [
+              480,
+              80
+            ],
+            [
+              480,
+              104
+            ],
+            [
+              640,
+              104
+            ],
+            [
+              640,
+              128
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T2"
+          ]
+        },
+        {
+          "from": "B1",
+          "to": "B3",
+          "points": [
+            [
+              240,
+              216
+            ],
+            [
+              240,
+              240
+            ],
+            [
+              400,
+              240
+            ],
+            [
+              400,
+              264
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "B2",
+          "to": "B3",
+          "points": [
+            [
+              640,
+              216
+            ],
+            [
+              640,
+              240
+            ],
+            [
+              480,
+              240
+            ],
+            [
+              480,
+              264
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T3"
+          ]
+        },
+        {
+          "from": "B3",
+          "to": "B4",
+          "points": [
+            [
+              376,
+              352
+            ],
+            [
+              376,
+              376
+            ],
+            [
+              240,
+              376
+            ],
+            [
+              240,
+              400
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T4"
+          ]
+        },
+        {
+          "from": "B3",
+          "to": "B5",
+          "points": [
+            [
+              504,
+              352
+            ],
+            [
+              504,
+              376
+            ],
+            [
+              640,
+              376
+            ],
+            [
+              640,
+              400
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T5"
+          ]
+        },
+        {
+          "from": "B3",
+          "to": "B6",
+          "points": [
+            [
+              440,
+              352
+            ],
+            [
+              440,
+              536
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T6"
+          ]
+        },
+        {
+          "from": "B4",
+          "to": "B6",
+          "points": [
+            [
+              240,
+              488
+            ],
+            [
+              240,
+              512
+            ],
+            [
+              392,
+              512
+            ],
+            [
+              392,
+              536
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T6"
+          ]
+        },
+        {
+          "from": "B5",
+          "to": "B6",
+          "points": [
+            [
+              640,
+              488
+            ],
+            [
+              640,
+              512
+            ],
+            [
+              488,
+              512
+            ],
+            [
+              488,
+              536
+            ]
+          ],
+          "label": "",
+          "basis": "proposed",
+          "change": "modified",
+          "evidence": [],
+          "tasks": [
+            "T6"
+          ]
+        }
+      ]
+    }
+  ]
+}

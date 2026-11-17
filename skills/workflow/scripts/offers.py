@@ -454,7 +454,8 @@ def main(argv: list[str]) -> int:
                 raise OfferError(f"offer #{args.id} is {offer['state']}; present the current offer")
             print(css_line(args.root))
             print()
-            print(presentation(offer, folder, question=args.question))
+            text = presentation(offer, folder, question=args.question)
+            print(text.strip() if args.question else text, end="" if args.question else "\n")
             return 0
         elif args.command == "presentation":
             offer = set_presentation(folder, args.id, args.decision)

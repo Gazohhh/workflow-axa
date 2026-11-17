@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-worktree-guard",
+  "created": "2026-11-17T10:11:33+00:00",
+  "canonical": {
+    "behaviour": "The approval hook refuses every project write, file edit or git command, whose target is in a different worktree of the repository than the one the session started in, with a message naming both folders and saying to start or move the session there. Writes in the session's own worktree, task records and output behave as today. An approval given in one checkout no longer covers another.",
+    "paths": [
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-worktree-guard/",
+      "hooks/approval.py",
+      "skills/workflow/VISUAL-REVIEW.md",
+      "tests/test_approval_hook.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to covers(), the offer model, decide(), Project.contains() or root_of()",
+      "no git commit or push; the release is a separate step",
+      "the full per-worktree offer lookup (F2) is a later task",
+      "the main checkout D:/workflow-axa and the installed plugin stay untouched"
+    ],
+    "conditions": [
+      "GPT-6 Astra reviews the code until it agrees",
+      "test first: the new linked-worktree cases fail before the fix",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "cd tests && python -X utf8 -m unittest test_approval_hook",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "7b023fa57fd3672e",
+  "display": "Approvals stay in their own worktree",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "25ed406c-8c28-4ce0-8534-977f114e4404",
+    "presentation": "99f6c78b-2aac-4321-9aab-921a2bdc24dc",
+    "recorded": "2026-11-17T10:47:26+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

@@ -35,6 +35,7 @@
     "./skills/domain-modeling",
     "./skills/interrogate",
     "./skills/no-comments",
-    "./skills/wait-what"
+    "./skills/wait-what",
+    "./skills/spar"
   ]
 }

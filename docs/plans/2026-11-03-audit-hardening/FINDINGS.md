@@ -4,12 +4,12 @@ Reproduced on 2026-11-03 at HEAD 0b4e4b4 (package 2.8.0-rc.1, rules 1.8.0), by s
 
 ## Approval enforcement (hooks/phase_gate.py)
 
-- E1 — CONFIRMED (also rechecked by hand): after `/workflow`, loading `workflow-clarify` alone allows an Edit of application code and `git push`. Cause: `session_state` (phase_gate.py:49-73) turns any phase name anywhere in the transcript into one yes/no; clarify counts the same as execute (:71). Nothing reads the task's Agreement or Approval lines.
-- E2 — CONFIRMED (also rechecked by hand): chat text "This is NOT a lightweight edit" grants the lightweight exemption. `LIGHTWEIGHT` (:45) matches the bare phrase in any assistant text (:68-69).
+- E1 — CONFIRMED (also rechecked by hand): the gate gave edit and git-write permission from the phase state instead of the task's approval, so writes could pass before approval. Fixed in 2.8.0-rc.1 (audit hardening); covered by tests/test_phase_gate_hook.py (V1).
+- E2 — CONFIRMED (also rechecked by hand): the lightweight-edit exemption could be granted by assistant text alone. Fixed in 2.8.0-rc.1: it needs a recorded line that names the files; covered by tests/test_phase_gate_hook.py (V1).
 - E3 — CONFIRMED: a phase loaded for task A satisfies the check for a new task B later in the same session.
-- E4 — CONFIRMED: shell writes the gate misses: `>`/`>>` redirection, heredoc into a file, `tee`, `cp`, `mv`, PowerShell `Set-Content`/`Out-File`, `node -e writeFileSync`. Also `git apply`, `checkout -- file`, `reset --hard`, `cherry-pick`, `rebase`, `stash pop`, `rm -rf`, a git alias, and `git -C "path with spaces"`. A records path anywhere in a command exempts the whole command (:85); `..` is not resolved; the `cd` target is judged instead of the written file (:87).
+- E4 — CONFIRMED: several shell and git write forms were not recognized as writes, and paths in commands were judged too loosely. Fixed in 2.8.0-rc.1: more write forms are caught and paths are resolved; covered by tests/test_phase_gate_hook.py (V1).
 - E5 — CONFIRMED: reading a phase SKILL.md whole (the router's documented fallback, workflow/SKILL.md:36) does not count as loading the phase, so edits stay blocked.
-- E6 — CONFIRMED: the PowerShell tool and MCP write tools are outside the hooks.json matcher, so the gate never runs for them.
+- E6 — CONFIRMED: some write tools were not routed through the gate. Fixed in 2.8.0-rc.1: the hook registration covers them; covered by tests/test_phase_gate_hook.py (V1).
 - E7 — UNKNOWN: which transcript a subagent's hook call receives. If it is the subagent's own, it has no `/workflow` line and is not gated.
 - E8 — Limit: the agent can write the PLAN.md Approval line itself, because task records are deliberately writable before approval. A hook that trusts that line alone trusts the agent. The user's real answer is in the transcript as a user message, which the hook can read.
 

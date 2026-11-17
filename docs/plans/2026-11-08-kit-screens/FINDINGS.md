@@ -8,10 +8,10 @@
 - Approved test builds (never copied to real repos): Hooqd Help page (typecheck, lint, i18n check, 492 + 1489 jest tests pass); Cheflabels About page (tsc, development build, 5 About specs pass). Both were first refused by the approval hook; fixed in rc.32/rc.33.
 
 ## Reviews
-- Review 1 of rc.31/rc.32: blocking false resumes in control_intent; kit-check bypasses (comment, self-closing style); kit address leaks; WebSocket/service-worker requests not blocked; JSON escaping; minor items. All addressed in rc.33.
+- Review 1 of rc.31/rc.32: blocking false resumes in control_intent; gaps in the kit-screen markup check (covered by tests/test_kit_screens.py); kit address leaks; WebSocket/service-worker requests not blocked; JSON escaping; minor items. All addressed in rc.33.
 - Review 2: kit fixes closed; control_intent still resumed on questions, held approvals and prose. Rewritten.
 - Review 3: tail clauses were allow-by-default; stale cache. Made deny-by-default, STATE_VERSION 18.
-- Review 4: rc.33 published with the owner's "can be pushed"; it found continue/resume, answers and mixed answers bypassing the rule. Fixed in rc.34.
+- Review 4: rc.33 published with the owner's "can be pushed"; it found certain resume and answer messages getting past the approval rule. Fixed in rc.34; covered by ControlIntentTests in tests/test_phase_gate_hook.py.
 - Review 5: mixed answers and task scope; fixed in rc.34.
 - Review 6: no blocking false resume; a question part and a later "wait" were closed before rc.34 was published.
 - Cheflabels: the four files that leave the kit out of staging and ci builds were committed and pushed (c5f0451) after a clean HEAD+4-files build check (tsc, staging build, no kit code in the bundle).

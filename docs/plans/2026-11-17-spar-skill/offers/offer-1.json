@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-spar-skill",
+  "created": "2026-11-16T23:47:33+00:00",
+  "canonical": {
+    "behaviour": "Build the /spar skill as agreement 3 describes (T1-T6): a small owner-started skill where a fresh Claude and GPT debate one decision with the owner as third participant, deciding WHAT and WHY and handing HOW to /workflow; settings.py saves the default depth; grilling keeps questions in the conversation when there are no task records; the specialists list, clarify's agreement, the docs and the tests know /spar; the failure cases are staged as process scenarios and observed in bounded live runs. Approving this offer also agrees to agreement 3.",
+    "paths": [
+      ".artifacts/2026-11-17-spar-skill/",
+      ".claude-plugin/plugin.json",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-spar-skill/",
+      "skills/grilling/SKILL.md",
+      "skills/spar/",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow/SPECIALISTS.md",
+      "skills/workflow/scripts/settings.py",
+      "tests/README.md",
+      "tests/behavioral/spar.json",
+      "tests/test_owned_skills.py",
+      "tests/test_package.py",
+      "tests/test_package_contract.py",
+      "tests/test_settings.py",
+      "tests/test_spar.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to hooks, the offer model, workflow-specify, plan-review or interrogate",
+      "no git commit or push; the release is a separate step",
+      "no version bump or CHANGELOG entry",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "GPT-6 Astra and a fresh Opus review the skill text and the code until both agree",
+      "each live batch in T6 only after the owner's OK right before it; at most 26 debater launches and 8 coordinator sessions in total; no research agents; no retry without the owner's OK",
+      "pilot projects outside every checkout under D:/workflow-axa-spar-pilot/, removed after the evidence is recorded except failure evidence kept per the shared artifact policy",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "T6 live observations recorded per scenario: observed, not provoked or failed",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py passes with 20 skills",
+      "python -X utf8 -m unittest discover -s tests -p \"test_owned_skills.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_package*.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_settings.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_spar.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "b0b0fa425dd9a16c",
+  "display": "Build /spar (T1-T6), agreement 3",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "c8f2228e-63c6-4f26-95a4-7e12842d7667",
+    "presentation": "3e500a72-d519-4c2b-b728-b126142ee5e4",
+    "recorded": "2026-11-17T00:11:53+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": 2
+}

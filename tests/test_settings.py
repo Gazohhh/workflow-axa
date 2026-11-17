@@ -95,6 +95,47 @@ class SettingsTests(unittest.TestCase):
         out = json.loads(self.cli("show", "--root", str(self.project)).stdout)
         self.assertEqual((out["css"], out["css_allowed_here"], out["project_css_never"]), ("on", True, False))
 
+    def test_spar_default_depth_reads_normal_unless_validly_set_and_maps_old_names(self):
+        self.assertEqual(settings.spar_depth(self.file), ("normal", None))
+        for saved, expected in (("quick", "quick"), ("normal", "normal"), ("thorough", "thorough"), ("standard", "normal"), ("deep", "thorough"),
+                                ("4", "4"), (4, "4")):
+            with self.subTest(saved=saved):
+                self.put(json.dumps({"css": "off", "spar": {"default_depth": saved}}))
+                self.assertEqual(settings.spar_depth(self.file), (expected, None))
+        for saved in ("0", 0, -2, "fast", "", None, True, 2.5, ["deep"], "²", "٣", "１", "9" * 4301, "+3", " 3",
+                      "until-agreement"):
+            with self.subTest(saved=saved):
+                self.put(json.dumps({"spar": {"default_depth": saved}}))
+                depth, notice = settings.spar_depth(self.file)
+                self.assertEqual(depth, "normal")
+                self.assertIn("not a valid depth", notice)
+        self.put('{"spar": "deep"}')
+        self.assertEqual(settings.spar_depth(self.file)[0], "normal")
+
+    def test_spar_depth_command_saves_it_and_keeps_everything_else(self):
+        self.put('{"css": "on", "future": 1, "spar": {"later": true}}')
+        done = self.cli("spar", "depth", "deep")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(json.loads(self.file.read_text(encoding="utf-8")),
+                         {"css": "on", "future": 1, "spar": {"later": True, "default_depth": "thorough"}})
+        self.assertEqual(self.cli("spar", "depth", "7").returncode, 0)
+        self.assertEqual(settings.spar_depth(self.file), ("7", None))
+        for bad in ("0", "fast", "-1", "2.5", "²", "１", "9" * 4301, "until agreement", "until-agreement"):
+            with self.subTest(bad=bad):
+                refused = self.cli("spar", "depth", bad)
+                self.assertNotEqual(refused.returncode, 0)
+                self.assertIn("quick, normal, thorough or a whole number from 1 to 999999", refused.stderr)
+        self.assertEqual(settings.spar_depth(self.file), ("7", None))
+        self.assertEqual(settings.read(self.file)["css"], "on")
+        out = json.loads(self.cli("show").stdout)
+        self.assertEqual(out["spar_default_depth"], "7")
+        self.put('{"css": "on", "spar": {"default_depth": "²"}}')
+        shown = self.cli("show")
+        self.assertEqual(shown.returncode, 0, shown.stderr)
+        out = json.loads(shown.stdout)
+        self.assertEqual((out["css"], out["spar_default_depth"]), ("on", "normal"))
+        self.assertIn("not a valid depth", out["spar_notice"])
+
     def test_no_other_code_parses_the_settings_file(self):
         """One reader: the hooks and record.py import this module instead of reading the file themselves."""
         for path in [*(ROOT / "hooks").glob("*.py"), *(ROOT / "skills").rglob("*.py")]:

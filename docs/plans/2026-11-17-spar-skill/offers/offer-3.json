@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 3,
+  "task": "2026-11-17-spar-skill",
+  "created": "2026-11-17T10:28:28+00:00",
+  "canonical": {
+    "behaviour": "Offer #2 (agreement 3, T1-T6) plus agreement 4 (T7-T9). At the end of a debate outside a task, /spar asks once: save so /workflow can continue later, save and continue with /workflow now, or don't save. Saving writes PLAN, FINDINGS and, if you made a choice, DECISIONS into a task folder; the last message names the file, the outcome and `/workflow continue from <path>`, and says implementation is not approved. Pilot fixes: the frame line is checked before any debater starts; your priorities are asked as soon as they come up; the missing-model menu has all three choices; a security or data-loss finding is told to you at once; the coordinator's own checks follow the existing probe rules. At the depth limit with unchecked versions you are offered one extra exchange, once. Verdicts name exact versions, the result says what would change it, and continuing a saved debate re-checks only what changed. Approving this offer also agrees to agreement 4.",
+    "paths": [
+      ".artifacts/2026-11-17-spar-skill/",
+      ".claude-plugin/plugin.json",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-spar-skill/",
+      "skills/grilling/SKILL.md",
+      "skills/spar/",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow/SPECIALISTS.md",
+      "skills/workflow/scripts/settings.py",
+      "tests/README.md",
+      "tests/behavioral/spar.json",
+      "tests/test_docs_consistency.py",
+      "tests/test_owned_skills.py",
+      "tests/test_package.py",
+      "tests/test_package_contract.py",
+      "tests/test_settings.py",
+      "tests/test_spar.py",
+      "tests/test_ui_design.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to hooks, the offer model, workflow-specify, plan-review or interrogate",
+      "no git commit or push; the release is a separate step",
+      "no version bump or CHANGELOG entry",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "GPT-6 Astra and a fresh Opus review the skill text and the code until both agree",
+      "SKILL.md stays under 1,300 words; the save mechanics live in skills/spar/SAVE.md",
+      "each live batch in T6 only after the owner's OK right before it; at most 26 debater launches and 8 coordinator sessions in total (4 and 2 used); no research agents; no retry without the owner's OK",
+      "pilot projects outside every checkout under D:/workflow-axa-spar-pilot/, removed after the evidence is recorded except failure evidence kept per the shared artifact policy",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "T6 live observations recorded per scenario: observed, not provoked or failed",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py passes with 20 skills",
+      "python -X utf8 -m unittest discover -s tests -p \"test_owned_skills.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_settings.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_spar.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "92c59dc67a5d0617",
+  "display": "/spar saves debates and pilot fixes",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "64d3205a-6887-43fa-b1c4-91bdf682da42",
+    "presentation": "f371f3cb-95a6-4b8c-aa02-d07310754e05",
+    "recorded": "2026-11-17T10:33:48+00:00"
+  },
+  "supersedes": 2,
+  "superseded_by": 4
+}

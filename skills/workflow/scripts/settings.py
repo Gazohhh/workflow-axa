@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """The machine's workflow-axa settings: `~/.workflow-axa/settings.json` (REDESIGN.md §3.6, contract C-CSS-1).
 
-This is the only code that reads the file. Today it holds one switch, `{"css": "on"}` or `{"css": "off"}`:
-- a missing or unreadable file, invalid JSON, a non-object or any other value means **off**;
-- a project can only be stricter: a line `css: never` in its DESIGN.md (root or docs/) turns it off there;
-- `on` lets an approved change include styling; DESIGN.md defines what counts as styling.
+This is the only code that reads the file. It holds two settings:
+- the CSS switch, `{"css": "on"}` or `{"css": "off"}`: a missing or unreadable file, invalid JSON, a non-object or any
+  other value means **off**; a project can only be stricter: a line `css: never` in its DESIGN.md (root or docs/) turns
+  it off there; `on` lets an approved change include styling; DESIGN.md defines what counts as styling;
+- the default debate depth of /spar, `{"spar": {"default_depth": ...}}`: quick, normal, thorough or a
+  whole number from 1 (the old names standard and deep mean normal and thorough); missing means normal, an invalid
+  saved value means normal with a notice. A depth named in
+  the /spar command overrides it without saving.
 
 usage:
   settings.py show [--root PROJECT]        print the machine setting and, with --root, the effective one
   settings.py css on|off                  change the machine setting (the owner runs this, or approves it)
   settings.py init                        create the file with css off, only when it does not exist yet
+  settings.py spar depth <depth>          change the default /spar depth (the owner runs this, or asks for it)
 
 `--file PATH` (or WORKFLOW_AXA_SETTINGS) points at another settings file, for tests. Changing the setting is a
 protected operation: in a workflow session the hook allows an agent to run `css on|off` only after the owner's Yes to
@@ -27,6 +32,10 @@ from pathlib import Path
 
 VALUES = ("on", "off")
 DEFAULT = {"css": "off"}
+DEPTHS = ("quick", "normal", "thorough")
+OLD_DEPTHS = {"standard": "normal", "deep": "thorough"}
+DEPTH_HELP = "quick, normal, thorough or a whole number from 1 to 999999"
+WHOLE = re.compile(r"[1-9][0-9]{0,5}")
 NEVER = re.compile(r"^\s*(?:[-*]\s*)?css\s*:\s*never\b", re.I | re.M)
 FENCE = re.compile(r"^\s*(`{3,}|~{3,})")
 
@@ -49,6 +58,39 @@ def read(path: Path | None = None) -> dict:
         return dict(DEFAULT)
     css = data.get("css")
     return {"css": css if css in VALUES else "off"}
+
+
+def depth_value(value) -> str | None:
+    """A valid /spar depth as text, or None: a named depth, or a whole number from 1 (as a number or digits)."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return str(value) if 1 <= value < 10 ** 6 else None
+    if isinstance(value, str):
+        if value in DEPTHS:
+            return value
+        if value in OLD_DEPTHS:
+            return OLD_DEPTHS[value]
+        if WHOLE.fullmatch(value):
+            return value
+    return None
+
+
+def spar_depth(path: Path | None = None) -> tuple[str, str | None]:
+    """The default /spar effort and, when the saved value isn't valid, a notice saying so (then: normal). The old
+    names standard and deep read as normal and thorough."""
+    try:
+        data = json.loads((path or settings_path()).read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeError):
+        return "normal", None
+    spar = data.get("spar") if isinstance(data, dict) else None
+    if not isinstance(spar, dict) or "default_depth" not in spar:
+        return "normal", None
+    depth = depth_value(spar["default_depth"])
+    if depth is None:
+        return "normal", (f"spar.default_depth {spar['default_depth']!r} is not a valid depth ({DEPTH_HELP}); "
+                          "using normal")
+    return depth, None
 
 
 def project_never(root: Path) -> bool:
@@ -110,10 +152,16 @@ def main(argv: list[str] | None = None) -> int:
     css = sub.add_parser("css")
     css.add_argument("value", choices=VALUES)
     sub.add_parser("init")
+    spar = sub.add_parser("spar")
+    spar.add_argument("setting", choices=("depth",))
+    spar.add_argument("value")
     args = parser.parse_args(argv)
     path = settings_path(args.file)
     if args.command == "show":
-        out = {"file": str(path), "exists": path.is_file(), **read(path)}
+        depth, notice = spar_depth(path)
+        out = {"file": str(path), "exists": path.is_file(), **read(path), "spar_default_depth": depth}
+        if notice:
+            out["spar_notice"] = notice
         if args.root:
             out["project_css_never"] = project_never(args.root)
             out["css_allowed_here"] = css_allowed(args.root, path)
@@ -125,6 +173,18 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         write(path, DEFAULT)
         print(f"CREATED: {path} with css off")
+        return 0
+    if args.command == "spar":
+        depth = depth_value(args.value)
+        if depth is None:
+            print(f"REFUSED: {args.value!r} is not a /spar depth; use {DEPTH_HELP}", file=sys.stderr)
+            return 2
+        try:
+            current = json.loads(path.read_text(encoding="utf-8")).get("spar")
+        except (OSError, ValueError, UnicodeError, AttributeError):
+            current = None
+        write(path, {"spar": {**(current if isinstance(current, dict) else {}), "default_depth": depth}})
+        print(f"/spar now defaults to depth {depth} on this machine ({path})")
         return 0
     write(path, {"css": args.value})
     print(f"css is now {args.value} for every project on this machine ({path})")

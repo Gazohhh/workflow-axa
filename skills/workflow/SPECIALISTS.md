@@ -17,6 +17,7 @@ Separate skills in this package (plugin names `workflow-axa:<name>`). Phases loa
 | The user asks whether an adversary can break a plan or change | `interrogate` (`../interrogate/SKILL.md`) | user-invoked; a project's risk triggers make the workflow recommend it, never run it |
 | The user asks to clean up comments in a scope | `no-comments` (`../no-comments/SKILL.md`) | user-invoked; changes go through one offer |
 | The user types `/wait-what` | `wait-what` (`../wait-what/SKILL.md`) | user-invoked; never an answer |
+| The user wants two models to debate one decision before planning | `spar` (`../spar/SKILL.md`) | user-invoked; recommended for high-stakes choices, never run by the workflow; settles WHAT and WHY, never HOW |
 
 A detailed prompt is not an exemption from grilling; an unchanged approved task is not re-interviewed.
 

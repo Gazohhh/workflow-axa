@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 5,
+  "task": "2026-11-17-spar-skill",
+  "created": "2026-11-17T13:11:29+00:00",
+  "canonical": {
+    "behaviour": "Rebuild /spar around SPAR.md (agreement 6, T11). Starting /spar creates docs/plans/<date>-<topic>/SPAR.md (or uses the task's) and keeps it up to date: current position, intent and success criteria, evidence, options with their best case and objection, what changed our thinking, your decisions, open questions and dissent, and a handoff brief. The flow is understand, explore (independent openings that also challenge the framing), challenge (only the disagreements that change the outcome), decide (the uncertainty most likely to change it, with the cheapest test). You're asked only when an answer changes the direction. The coordinator may recommend, labelled apart from each model's view and your decisions. Effort is a budget with a launch limit; it always ends with a conclusion and a next move. The conclusion comes first, then one question: turn it into a workflow plan (PLAN.md next to SPAR.md), investigate the open uncertainty first, continue sparring, or leave it here. Works with one model too. Nothing is implemented from /spar. Approving this offer also agrees to agreement 6.",
+    "paths": [
+      ".artifacts/2026-11-17-spar-skill/",
+      ".claude-plugin/plugin.json",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-spar-skill/",
+      "skills/grilling/SKILL.md",
+      "skills/spar/",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow/SPECIALISTS.md",
+      "skills/workflow/scripts/settings.py",
+      "tests/README.md",
+      "tests/behavioral/spar.json",
+      "tests/test_docs_consistency.py",
+      "tests/test_owned_skills.py",
+      "tests/test_package.py",
+      "tests/test_package_contract.py",
+      "tests/test_settings.py",
+      "tests/test_spar.py",
+      "tests/test_ui_design.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to hooks, the offer model, workflow-specify, plan-review or interrogate",
+      "no git commit or push; the release is a separate step",
+      "no version bump or CHANGELOG entry",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "GPT-6 Astra and a fresh Opus review the skill text until both agree",
+      "SKILL.md stays under 1,300 words",
+      "each live batch in T6 only after the owner's OK right before it; at most 26 debater launches and 8 coordinator sessions in total (16 and 4 used, counting run 3); no research agents; no retry without the owner's OK",
+      "pilot projects under D:/workflow-axa-spar-pilot/, removed after the evidence is recorded except failure evidence kept per the shared artifact policy; a plugin change for a pilot only with the owner's OK",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "T6 live observations recorded per scenario: observed, partial, failed or not provoked",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_owned_skills.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_settings.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_spar.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "0f6e53e924cb3fa8",
+  "display": "/spar rebuilt around SPAR.md",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "422759c2-f22a-45a6-af47-9a5454a7fac5",
+    "presentation": "074e79c0-3a2c-436d-84af-0c628966ea43",
+    "recorded": "2026-11-17T13:12:22+00:00"
+  },
+  "supersedes": 4,
+  "superseded_by": 6
+}

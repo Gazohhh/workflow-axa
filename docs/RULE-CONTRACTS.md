@@ -39,7 +39,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Action: present the offer (the text `record.py offer present` prints, as the end of the reply), ask the one question (*Show review.html first*, *Approve from this summary*, *Change something*), stop. The hook reads the answer from the conversation; the checkpoint names `Offer: #<id>`.
 - Exceptions: none at the hook. A task in the owner's legacy inventory keeps its `Approval` line, checked by `phase_gate.py`.
 - When blocked: wait; only task records and the report change. Fix a hook refusal by presenting the offer again or through the `resume` skill, never by editing or disabling the hook.
-- Checked by: hook `approval.py` (contracts C-OFFER-1 to C-OFFER-7 below): a write needs an approved offer that lists its path; Git writes and MCP write tools need their operation named in the offer; a later withdrawal or narrowing ends the approval, and a stop only pauses it; offer records change only through `record.py offer`. Tests: `tests/test_approval_hook.py`, `tests/test_offers.py`.
+- Checked by: hook `approval.py` (contracts C-OFFER-1 to C-OFFER-8 below): a write needs an approved offer that lists its path, in the session's own worktree; Git writes and MCP write tools need their operation named in the offer; a later withdrawal or narrowing ends the approval, and a stop only pauses it; offer records change only through `record.py offer`. Tests: `tests/test_approval_hook.py`, `tests/test_offers.py`.
 - Checked for a legacy task: hook `phase_gate.py`, reached through `approval.py`'s dispatch:
   - no `Approval` line: `:1810`; not approving, or "proposed": `:1815`, `:1817`;
   - no quoted words, or a quoted refusal: `:1845`, `:1846`;
@@ -47,7 +47,7 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
   - an `.html` report must exist unless the quote declines one: `:1907`, `:1899`, decline words at `:89`;
   - a write outside the report's `write_paths`: `:2078`; a stopped or paused task: `:2381`;
   - the checkpoint is the section under the first heading of any level whose text starts "Current checkpoint", up to the next heading of the same or a higher level (`:1345`); a `# ` line inside a fenced code block also ends it;
-  - task records and `.artifacts` stay writable: `:65`, `:264`, `:2354`; bulk deletes there are refused (Artifact cleanup).
+  - task records, `.artifacts` and a spar record (`docs/spar/<folder>/SPAR.md`, that file name only) stay writable: `:65`, `:264`, `:2354`; bulk deletes there are refused (Artifact cleanup).
 
   Tests: `tests/test_phase_gate_hook.py`, `tests/test_gate_regressions.py`.
 
@@ -114,7 +114,7 @@ Owner file: `skills/<skill>/SKILL.md` unless named.
 | plan-review | Never implements or approves | Authority; traceability; necessity check | What is unnecessary scope |
 | rule-maker | Apply only an approved proposal; shared library read-only | Audit; apply; check | Which claims to sample; severity |
 | ui-design | DESIGN.md rules (owner `rule-maker/rules/DESIGN.md`) | Pick a mode; record the mirrored element; screen diagram | Which element does the same job |
-| grilling | Never offer a forbidden option; rule 4's question word for word | Research first; rounds; save each question before sending | Ask only what the user must decide; when to stop |
+| grilling | Never offer a forbidden option; rule 4's question word for word | Research first; rounds; save each question before sending (in the conversation when there are no task records) | Ask only what the user must decide; when to stop |
 | tdd | Report only what ran; test only at agreed seams | Red, green, refactor; one slice at a time | Spotting anti-patterns |
 | code-review | The Standards and Spec axes stay separate; blast radius reports only; probes within the diagnostic allowance, writes only in a verified isolated copy | Pin the diff; find sources; run and aggregate; step 4b follows BLAST-RADIUS.md when anything outside the diff reads what changed | Whether each baseline smell applies; which safety facts carry the most risk |
 | writing-for-agents | None | Context pointers; information hierarchy | No-op test; when to split; pruning |
@@ -122,7 +122,8 @@ Owner file: `skills/<skill>/SKILL.md` unless named.
 | domain-modeling | A new glossary or ADR needs approval | Record a term in DECISIONS, then the glossary | Whether an ADR is worth offering |
 | interrogate | User-invoked; reports only; probes within the diagnostic allowance, writes only in a verified isolated copy | Restate; pin the snapshot; two adversaries; confirm on a pristine copy; three lists; stale when the target changed | What counts as a concrete failure; when a concern is worth an experiment |
 | no-comments | User-invoked; one approved offer before any change; behavior unchanged; unverified constraints and tool-read annotations kept | Reviewer verdicts; check each one; offer; apply; tests and type check; report | Whether a comment is stale, a contract or a constraint |
-| wait-what | No new work, no tool call beyond CONTEXT.md and SIMPLE-ENGLISH.md, no offer or decision change; never an answer | Context; the point in plain words; the pending question unchanged | What context the reader lacks |
+| wait-what | No new work, no tool call beyond CONTEXT.md, SIMPLE-ENGLISH.md and `record.py offer present` for a pending offer, no offer or decision change; never an answer | Context; the point in plain words; the pending question unchanged | What context the reader lacks |
+| spar | User-invoked; never implements, no tickets or offers; debaters only read; agreement only when both accept the exact text of one proposal with evidence, never faked; never a silent model substitute; the coordinator's recommendation labelled apart from the debaters' and the owner's; SPAR.md is the record when the owner chooses to keep one ("conversation only" writes nothing); a workflow plan only by the owner's handoff choice, planning only | Understand (intent, criteria, evidence; the frame line before any launch); explore (blind openings that challenge the framing); challenge (outcome-changing disagreements, labelled synthesis); decide (the uncertainty and its cheapest test); conclusion first, then the four-way handoff | When a premise is weak; which objections belong to the owner; whether a round made progress |
 | SIMPLE-ENGLISH.md (reference text, formerly simple-english) | Never change code, quotes or rule 4's question | Document rules; self-check; the Unslop tells | When plain words lose the meaning |
 | WRITING.md Unslop check | Runs before the cold-reader check; "Keep the meaning" wins; never changes application UI copy, error messages or translations | The listed texts, after drafting | Which tells apply to a sentence |
 
@@ -166,6 +167,7 @@ Task `docs/plans/2026-11-15-workflow-redesign` (plan REDESIGN.md v6) replaces th
 | C-OFFER-5 | Approval is a cache over a decision reference re-validated on use; failure fails closed with a diagnosis; a validated approval is never asked again | §3.4 | `tests/test_approval_hook.py` |
 | C-OFFER-6 | A child's derived offer is a checked subset of the parent's delegable scope and inherits exclusions, conditions and checks | §3.4 | `tests/test_offers.py` ChildOffers, `tests/test_approval_hook.py` ChildrenAndRules |
 | C-OFFER-7 | `/wait-what` is a non-answer: it neither approves nor supersedes; its reply re-presents the unchanged offer | §3.4, §3.10 | `tests/test_approval_hook.py` |
+| C-OFFER-8 | Offers are read from the session's worktree and authorise writes only there: a write that reaches another worktree of the same repository is refused, judged where each place really lands and, for shell commands, by every path the command names; Git commands the checker can't place, and changes to the set of worktrees without their own approval, are refused; task records and output there stay writable when reached directly; an independent repository keeps its old handling | §3.4 | `tests/test_approval_hook.py` ApprovalsStayInTheirWorktree |
 | C-RULES-1 | Rules readiness is always checked; only when gaps exist is the owner asked (set up / skip for this task), and adequate rules need no question; skip waives only the named gaps; silence is not skip; only writes wait | §3.5 | `tests/test_approval_hook.py` (pause); T17 (wording) |
 | C-CSS-1 | The machine switch `~/.workflow-axa/settings.json` (missing or invalid means off) is read at each styling write; off blocks styling writes at once; on never widens an offer; a project may only be stricter (`css: never`) | §3.6 | `tests/test_settings.py`, `tests/test_global_policy.py`, `tests/test_approval_hook.py` |
 | C-CSS-2 | Changing the switch is a protected operation allowed only by a recorded Yes to the question naming that exact setting and value | §3.6 | `tests/test_approval_hook.py` |

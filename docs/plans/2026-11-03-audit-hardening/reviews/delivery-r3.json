@@ -135,7 +135,7 @@
   "evidence": [
     {
       "id": "E1",
-      "claim": "After /workflow, loading workflow-clarify alone allows an Edit of application code and git push. session_state turns any phase name in the transcript into one yes or no, and clarify counts the same as execute.",
+      "claim": "The gate gave edit and git-write permission from the phase state instead of the task's approval, so writes could pass before approval. Fixed in 2.8.0-rc.1; covered by tests/test_phase_gate_hook.py.",
       "kind": "runtime",
       "sources": [
         "S3",
@@ -146,7 +146,7 @@
     },
     {
       "id": "E2",
-      "claim": "Chat text \"This is NOT a lightweight edit\" grants the lightweight exemption, because LIGHTWEIGHT matches the bare phrase in any assistant text.",
+      "claim": "The lightweight-edit exemption could be granted by assistant text alone. Fixed in 2.8.0-rc.1; covered by tests/test_phase_gate_hook.py.",
       "kind": "runtime",
       "sources": [
         "S3",
@@ -168,7 +168,7 @@
     },
     {
       "id": "E4",
-      "claim": "The gate misses many shell writes, for example redirection, tee, cp, mv, Set-Content, git apply, git checkout -- file and git reset --hard. A records path anywhere in a command exempts the whole command, and the cd target is judged instead of the written file.",
+      "claim": "Several shell and git write forms were not recognized as writes, and paths in commands were judged too loosely. Fixed in 2.8.0-rc.1; covered by tests/test_phase_gate_hook.py.",
       "kind": "runtime",
       "sources": [
         "S3",
@@ -189,7 +189,7 @@
     },
     {
       "id": "E6",
-      "claim": "The PowerShell tool and MCP write tools are outside the hooks.json matcher, so the gate never runs for them.",
+      "claim": "Some write tools were not routed through the gate. Fixed in 2.8.0-rc.1; covered by tests/test_phase_gate_hook.py.",
       "kind": "static",
       "sources": [
         "S3"

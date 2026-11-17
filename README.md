@@ -21,7 +21,7 @@ This repository has no CI workflow; run the checks below from a clone. Nothing h
 
 The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`resume` for where things stand).
 
-Full replacement package: **19 skills** (13 workflow-axa skills plus 6 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+Full replacement package: **20 skills** (14 workflow-axa skills plus 6 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
 
 **Renamed skills (2.9.0).** No redirect skills are kept; use the new names:
 
@@ -39,6 +39,7 @@ Full replacement package: **19 skills** (13 workflow-axa skills plus 6 that bega
 - `/interrogate <plan | diff>`: two adversaries try to show a concrete failure; you get reproduced failures, unverified concerns and untested surfaces. It changes nothing.
 - `/no-comments <files | diff>`: a reviewer gives each comment a verdict, you approve one offer, then deletions and reshapes are made without changing behavior.
 - `/wait-what`: the last message again, in plain words, with the pending question unchanged. It never counts as an answer.
+- `/spar <idea or decision> [quick|normal|thorough|N|until agreement <cap>] [<A> vs <B>] [keep a SPAR.md|conversation only]`: a fresh Claude and GPT spar with you about an idea or a decision until you can choose a next move. If you choose, it is kept in one readable SPAR.md; at the end you choose to turn it into a workflow plan, investigate an open question first, keep sparring, or leave it. It never implements. Set its default effort (normal until you change it) with `python -X utf8 -I skills/workflow/scripts/settings.py spar depth <effort>`.
 
 `code-review` also checks comments and reader load, and adds a blast-radius step when anything outside the diff reads what changed. That step follows `skills/code-review/BLAST-RADIUS.md`: it proves the facts a change is safe because of as far as running code allows, or marks them unproven, and looks where a search stops. Planning records those safety assumptions, every recipe except new-project names the step, and "what could this break?" gets the same report as an inspection. The interrogate, no-comments, reader-load and wait-what ideas were adapted from pstack and Matt Pocock's skills without copying text. The blast-radius method and the Unslop tells (below) adapt pstack text under its MIT licence ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)).
 
@@ -91,6 +92,7 @@ Human acceptance stays recorded once. Component edits can refresh current previe
 /workflow-axa:interrogate <plan | diff>
 /workflow-axa:no-comments <files | diff>
 /workflow-axa:wait-what
+/workflow-axa:spar <idea or decision> [quick|normal|thorough|N|until agreement <cap>] [<A> vs <B>] [keep a SPAR.md|conversation only]
 /workflow-axa:plan-review <task>
 /workflow-axa:codebase-map explain|current|proposed|compare <scope>
 ```
@@ -99,7 +101,7 @@ Plugin syntax is shown; standalone names depend on the host. The main sequence i
 
 ## Install and check
 
-Replace the complete plugin or all **19 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `resume`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling`, and the user commands `interrogate`, `no-comments` and `wait-what`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
+Replace the complete plugin or all **20 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `resume`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling`, and the user commands `interrogate`, `no-comments`, `wait-what` and `spar`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global

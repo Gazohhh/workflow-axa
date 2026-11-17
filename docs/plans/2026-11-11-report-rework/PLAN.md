@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - Updated / phase: 2026-11-11; implemented, verification passed with limits, waiting for the owner on layout_version
-- Agreement (gate one): agreed; the owner supplied the finished change and its description (C:\Users\Cem\Downloads\report-rework\CHANGES.md) and instructed on 2026-11-11: "Apply report-rework.patch on top of the staged rc.35 work, run the full test suite, and report the result against the baseline."
+- Agreement (gate one): agreed; the owner supplied the finished change and its description (~\Downloads\report-rework\CHANGES.md) and instructed on 2026-11-11: "Apply report-rework.patch on top of the staged rc.35 work, run the full test suite, and report the result against the baseline."
 - Approval (gate two): approved; no plan report from this agent, because the owner wrote the change and its description themselves. The owner's words, 2026-11-11: "The report rework for the second task is already done as a patch. Unzip report-rework.zip and read CHANGES.md first. Apply report-rework.patch on top of the staged rc.35 work, run the full test suite, and report the result against the baseline. Do not rework the report from the old recipe or from plan-r1-v5.html; both are superseded. Set RENDERER_VERSION and layout_version with the release. Then render reference/plan-sample.json in the repository so the hooks/hooks.json hash is real."
 - Implementation: implemented (patch applied, not committed)
 - Verification / owner acceptance: full suite 1020 tests, same 4 old failures, no new one. Sample rendered and checked. Owner acceptance pending
@@ -21,7 +21,7 @@
 
 ## Outcome
 
-Applied 2026-11-11, not committed. `git apply` of C:\Users\Cem\Downloads\report-rework\report-rework.patch on the working tree (staged rc.35 work plus the duplicate guard). Ten files changed, one new file (skills/codebase-map/assets/report-style-plan.css). No edit of my own to the patch content.
+Applied 2026-11-11, not committed. `git apply` of ~\Downloads\report-rework\report-rework.patch on the working tree (staged rc.35 work plus the duplicate guard). Ten files changed, one new file (skills/codebase-map/assets/report-style-plan.css). No edit of my own to the patch content.
 
 Check results
 - Before the patch (guard in place): `python -X utf8 -m unittest discover -s tests -p "test_*.py"`: 1011 tests, 4 failures, 13 skipped.

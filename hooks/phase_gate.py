@@ -76,6 +76,17 @@ TYPED = re.compile(r'<command-name>\s*/(?:workflow-axa:)?(workflow(?:-clarify|-s
                    r'|^\s*/(?:workflow-axa:)?(workflow(?:-clarify|-specify|-execute|-deliver)?)(?![\w-])', re.M)
 RULE_FILE = re.compile(r'(?:^|/)(?:AGENTS|CLAUDE)(?:\.override|\.local)?\.md$|/\.claude/rules/', re.I)
 RECORD = re.compile(r'(?:docs/plans|\.artifacts)(?:/|$)', re.I)
+SPAR_RECORD = re.compile(r'docs/spar/[^/]+/SPAR\.md$', re.I)
+
+
+def plain_file(path: str) -> bool:
+    """The path reaches the file it names: no link on the way, and the file isn't hard-linked to another name."""
+    try:
+        if key(slash(os.path.realpath(path))) != key(slash(os.path.abspath(path))):
+            return False
+        return not os.path.exists(path) or os.stat(path).st_nlink <= 1
+    except (OSError, ValueError):
+        return False
 # A task path may sit inside markdown emphasis (`**docs/plans/x**`, `_docs/plans/x_`): Putten, 2026-11-07.
 TASK_PATH = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=[*_]*(?:/|$|[\s"\'`),;]))')
 TASK_NAMED = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)(?=[*_]*(?:/|$|[\s"\'`),;.]))|(?<![\w/-])(\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)')
@@ -295,6 +306,8 @@ class Project:
         tree = self.root_of(path)
         if RECORD.match(relative(path, tree)):
             return True
+        if SPAR_RECORD.match(relative(path, tree)):
+            return plain_file(path)
         return (bool(self.root) and key(tree) != key(self.root) and under(path, self.root)
                 and bool(re.match(r'\.artifacts(?:/|$)', relative(path, self.root), re.I))
                 and not (self.common and common_dir(tree) == self.common))

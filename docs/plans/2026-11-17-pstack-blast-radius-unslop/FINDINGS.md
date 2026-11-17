@@ -214,10 +214,10 @@ Release-step notes: there is no version bump, CHANGELOG, UPGRADE or VALIDATION e
 
 ## Handoff to the redesign session (D:/workflow-axa-redesign)
 
-For whoever resumes "New Skills & Architecture". That worktree is detached at c5e954b with 52 uncommitted files, and main is now bedafd7.
+For whoever resumes "New Skills & Architecture". That worktree is detached at c5e954b with 52 uncommitted files, and main is now 00ac3ae (corrected 2026-11-17 by docs/plans/2026-11-17-rc3-merge: this note first said bedafd7, one commit behind).
 
 1. Before rebasing, back up the worktree's diff and untracked files: `git diff > <owned scratch>/redesign.patch`, plus copies of the untracked files.
-2. Move the worktree onto bedafd7 and reapply the edits. Expected conflicts:
+2. Move the worktree onto 00ac3ae and reapply the edits. Expected conflicts:
    - CONTEXT.md: this task added the terms Blast radius, Safety fact and Unslop check before "**Comment debt**", and three Rule owners rows at the end of that table.
    - docs/RULE-CONTRACTS.md: the code-review row is extended. The SIMPLE-ENGLISH row gains "the Unslop tells". A new row "WRITING.md Unslop check" follows it.
    - tests/README.md: a new section sits before "## User commands: interrogate, no-comments, wait-what (2.9.0)".

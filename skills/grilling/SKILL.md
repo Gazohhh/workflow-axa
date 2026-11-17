@@ -30,7 +30,7 @@ Finding _facts_ is your job, never the user's. Research first. Derive questions 
 | **Recommendation** | Your proposal | Never counts as a decision |
 | **Delegated detail** | An implementation choice inside agreed scope that nobody using the product could notice | Project convention, a recorded delegation, or a stated assumption |
 
-A change to what users already see (layout, spacing, wording, timing, defaults), or a visible detail of new output that product intent, risk or an agreed result depends on, is an open choice, never a delegated detail or a stated assumption, unless a decision, approved policy or explicit bounded delegation already settles it; other new-output details are plain engineering choices. Record each choice you made in DECISIONS marked `by: agent`.
+A change to what users already see (layout, spacing, wording, timing, defaults), or a visible detail of new output that product intent, risk or an agreed result depends on, is an open choice, never a delegated detail or a stated assumption, unless a decision, approved policy or explicit bounded delegation already settles it; other new-output details are plain engineering choices. Record each choice you made in DECISIONS marked `by: agent`, or, with no task records, when writes aren't allowed or during `/spar` (as Record answers says), state it there instead; during `/spar` it is a coordinator recommendation or an assumption, never an Owner decision.
 
 Code shows current behavior, not intent. A diagram, silence or a half-answered batch is not a decision. A behavior the request deliberately changes is the point of the work; an unexplained conflict between request, code and docs is a question.
 
@@ -69,6 +69,8 @@ For complex work, cover actor/caller, outcome, failure, state/timing, compatibil
 Escalate instead of looping when only the user can decide, two rounds bring nothing new, a capability is missing or the budget is reached. Research may end with open choices written down; implementation may not.
 
 ## Record answers
+
+During `/spar`, questions and answers go into its SPAR.md (Owner decisions; open ones in Open questions), as `../spar/SPAR-FILE.md` says; a "conversation only" spar keeps them in the conversation. Outside `/spar`, when there are no task records or writes aren't allowed (an Inspect request), nothing is written: the questions, with their exact options, letters and recommendation, the answers and their sources stay in the conversation, and a pending question is repeated unchanged. Otherwise (not `/spar`):
 
 The task owner saves answers as they arrive, so a partial reply survives an interruption: a short decision check in FINDINGS (journey or area, item, answer and source, or open question) and material choices in DECISIONS. Save every open question **before you send it, with its exact options, letters and recommendation**, so a later session can read a reply like "Q1 a" without the chat. Changed a question while writing? Update the saved copy first: saved and sent options and recommendations match exactly. No transcript and no separate questions file.
 

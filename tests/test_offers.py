@@ -279,7 +279,9 @@ class RecordCommandLine(unittest.TestCase):
             self.assertIn("## Offer #1", shown.stdout)
             self.assertTrue(shown.stdout.startswith("CSS: off (machine setting; display only)\n\n## Offer #1"))
             self.assertIn("Reply **approve**", shown.stdout)
-            self.assertNotIn("Reply **approve**", run("present", str(task), "1", "--question").stdout)
+            asked = run("present", str(task), "1", "--question").stdout
+            self.assertNotIn("Reply **approve**", asked)
+            self.assertEqual(asked, asked.strip())
             self.assertIn("approved", run("approve", str(task), "1", "--session", "s", "--turn", "t", "--presentation", "p").stdout)
             self.assertIn("#1 approved", run("list", str(task)).stdout)
             self.assertEqual(run("approve", str(task), "1", "--session", "s", "--turn", "t", "--presentation", "p").returncode, 1)

@@ -3,7 +3,7 @@
 Owner request (2026-11-12): "Sure fix what needs fixing and testing" (the open items listed at the end of task 2026-11-12-approval-gate-false-refusals).
 
 ## Facts
-- Not fixable now: the empty fixture folder C:\Users\Cem\gate-fixture-rc38 and plugin cache versions rc.34-rc.36 are held by running Claude sessions (the fixture session and two sessions started 2026-11-11 12:59).
+- Not fixable now: the empty fixture folder ~\gate-fixture-rc38 and plugin cache versions rc.34-rc.36 are held by running Claude sessions (the fixture session and two sessions started 2026-11-11 12:59).
 - Not fixable by the agent: the two Hooqd tasks need the owner's own agreement words on their Agreement lines (never invented).
 - E8 (task 2026-11-12-approval-gate-false-refusals): approvals given in an AskUserQuestion answer in the same assistant message as the presentation, and a typed answer wrapped in bold (`**Approve r1, no report**`), were not accepted; cause not confirmed.
 - E10/E11: approvals recorded in the main checkout are not accepted in a linked worktree, for the owner session and for subagents. This matches the owner's rule "never share main-checkout approvals with isolated worktrees automatically".

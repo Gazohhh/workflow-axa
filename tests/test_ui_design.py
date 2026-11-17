@@ -224,7 +224,7 @@ class UiDiffTests(unittest.TestCase):
 class UiPolicyContractTests(unittest.TestCase):
     def test_ui_design_registered_once_among_the_skills(self):
         data=json.loads((ROOT/'.claude-plugin/plugin.json').read_text())
-        self.assertEqual(len(data['skills']),19)  # T21: three skills merged into resume and rule-maker
+        self.assertEqual(len(data['skills']),20)  # T21 merged three skills into resume and rule-maker; spar added
         self.assertEqual(data['skills'].count('./skills/ui-design'),1)
 
     def test_strict_modes_and_no_kit_invention(self):

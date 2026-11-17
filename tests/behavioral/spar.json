@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "format": "Live-host process scenarios for /spar after agreement 6 (docs/plans/2026-11-17-spar-skill, A8: rebuilt around SPAR.md). Each stages a situation and lists the process to observe; none prescribes the recommended answer, and disagreement may remain. A NOT_RUN scenario is never a pass; a recorded result (OBSERVED, PARTIAL, FAILED, NOT_PROVOKED) names its evidence and the candidate it ran on. `history` keeps the scenarios and results of the earlier designs (agreements 3-5) unchanged.",
+  "scenarios": [
+    {
+      "id": "real-idea",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "An idea the owner brings, effort quick, in T3 Code with GPT available.",
+      "process_checks": [
+        "The frame is one plain **Spar:** line with the effort and its launch limit, shown before any launch.",
+        "Both openings are blind and each challenges the framing.",
+        "The spar ends with a conclusion and a next move the owner can choose."
+      ],
+      "rules": [
+        "**Spar:** <idea> · effort <effort> (at most <n> launches) · <A> vs <B>",
+        "doing nothing, a simpler way, or whether the need is real"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O3: frame shown once before launches; both openings blind and challenged the framing (a quick start already existed); conclusion and next move.",
+      "candidate": "c5e954b3:d3e1c77a"
+    },
+    {
+      "id": "owner-direction",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "setup": "An idea whose best direction depends on the owner's priority.",
+      "process_checks": [
+        "The owner is asked when the answer changes the direction, with the trade-off and an attributed recommendation; no questionnaire at the end.",
+        "Each consequential choice ends answered, deferred or blocking."
+      ],
+      "rules": [
+        "when an answer changes the direction",
+        "never a questionnaire at the end"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O3: direction questions asked with recommendations. O4: the five owner decisions came as labels with ids, not grilling questions.",
+      "candidate": "c5e954b3:d3e1c77a, c5e954b3:a0b21668"
+    },
+    {
+      "id": "labelled-synthesis",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "setup": "Debaters converge on parts but not all of the idea.",
+      "process_checks": [
+        "The coordinator's synthesis is labelled and kept apart from each debater's assessment and the owner's decisions; an unreviewed one stays labelled unreviewed."
+      ],
+      "rules": [
+        "labelled \"coordinator's synthesis\"",
+        "An unreviewed synthesis stays labelled unreviewed"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O3: S1-S3 labelled coordinator's synthesis and S3 called unreviewed, but the outcome line said both models agree before either saw S3.",
+      "candidate": "c5e954b3:d3e1c77a"
+    },
+    {
+      "id": "budget-spent",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Effort quick on an idea with open disagreement.",
+      "process_checks": [
+        "The launch limit is respected; more effort is asked with the issue it would settle.",
+        "The spent budget still gives a partial conclusion and a recommended next move."
+      ],
+      "rules": [
+        "an explicit launch limit",
+        "a partial conclusion and a recommended next move"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "one-model",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "GPT not available; the owner picks Spar with me only.",
+      "process_checks": [
+        "The assistant spars with the owner, its self-critique labelled; it is never called cross-model."
+      ],
+      "rules": [
+        "**Spar with me only**",
+        "self-critique"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "cancel",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "During an exchange, the owner says stop.",
+      "process_checks": [
+        "Running debaters are cancelled; a late result is ignored; the partial position is recorded; nothing more is asked."
+      ],
+      "rules": [
+        "A cancel stops the debaters and asks nothing more"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "handoff",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "A spar that reaches a conclusion; the owner picks Turn this into a workflow plan.",
+      "process_checks": [
+        "The conclusion is shown before the one handoff question with its four answers.",
+        "/workflow starts a new task in docs/plans/ whose PLAN links the SPAR.md, taking the Handoff brief as the Approach; nothing is implemented."
+      ],
+      "rules": [
+        "\"Turn this into a workflow plan\" · \"Investigate <the uncertainty> first\" · \"Continue sparring\" · \"Leave it here\"",
+        "whose PLAN links the SPAR.md revision"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O3: conclusion via send_to_user, then the four-way question; Continue sparring stated the new budget.",
+      "candidate": "c5e954b3:d3e1c77a"
+    },
+    {
+      "id": "spar-file",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Any saved spar.",
+      "process_checks": [
+        "When the owner chose to keep one, SPAR.md exists from the start in docs/spar/<date>-<topic>/, has the eight sections scaled to the discussion, raises its revision with each meaningful step and is not a transcript."
+      ],
+      "rules": [
+        "`docs/spar/<date>-<topic>/SPAR.md`",
+        "never a transcript",
+        "Revision <n>"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "record-choice",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "/spar without saying whether to keep a record; the owner picks Conversation only, then later Turn this into a workflow plan.",
+      "process_checks": [
+        "At the start, one question: Keep a SPAR.md or Conversation only, with a one-line recommendation.",
+        "A conversation-only spar writes nothing until the owner picks the plan; then SPAR.md is written first and the plan links it."
+      ],
+      "rules": [
+        "\"Keep a SPAR.md\" · \"Conversation only\"",
+        "write SPAR.md first, since the plan links it"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O3: asked once at the start; conversation only wrote nothing.",
+      "candidate": "c5e954b3:d3e1c77a"
+    },
+    {
+      "id": "handoff-in-task",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "/spar during an agreed workflow task on an idea that changes its agreed scope; the owner picks Turn this into a workflow plan.",
+      "process_checks": [
+        "The task's FINDINGS links the SPAR.md; the checkpoint is unchanged while sparring.",
+        "Only after the owner's plan choice, the checkpoint shows the proposed revision and keeps the previous next step; workflow-clarify of that task continues with the Handoff brief, and no new task folder is created."
+      ],
+      "rules": [
+        "Leave the task's checkpoint as it is while sparring",
+        "continue that task's workflow-clarify with the Handoff brief"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "start-card",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "/spar with only an idea (no effort, debaters or record), in T3 Code with GPT and Claude available.",
+      "process_checks": [
+        "One card asks effort, debaters and record before any launch.",
+        "The saved default effort is preselected, not used silently.",
+        "A command that states all three gets no card."
+      ],
+      "rules": [
+        "asks only what the command did not state",
+        "No debater starts before the owner answers"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O4: one card set effort, debaters and record before any launch; the saved default was not used silently.",
+      "candidate": "c5e954b3:a0b21668"
+    },
+    {
+      "id": "until-agreement",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "/spar with an idea where the debaters start apart; the owner picks Until agreement with a cap.",
+      "process_checks": [
+        "The coordinator asks for the cap and never passes it without the owner's OK.",
+        "Agreed is claimed only when both accepted the exact text of the same proposal id.",
+        "The ending is reported as agreement, deadlock or the cap."
+      ],
+      "rules": [
+        "The cap comes from the command or the start card",
+        "accepted the exact text of the same proposal id, without conditions or blockers"
+      ],
+      "prescribed_answer": null,
+      "evidence": "O4: S1 rejected, S2 accepted as written by both; ended as agreement after 10 of 30 launches; the cap was not passed.",
+      "candidate": "c5e954b3:a0b21668"
+    }
+  ],
+  "history": [
+    {
+      "id": "real-decision",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O1 (run 1, T3 Code): checks 2-4 held; check 1 unmet, the frame line was given in prose (R18 addresses it)",
+      "candidate": "snapshot c5e954b3:4e9c1722 (before agreement 4)",
+      "setup": "A small real decision the owner picks, depth quick, in T3 Code with GPT available.",
+      "process_checks": [
+        "The frame line names the decision, the depth and both debaters with their models.",
+        "The foundations sort premises into verified facts, unverified assumptions and contradictions.",
+        "A fresh Claude and GPT write blind openings; one exchange follows; one ending is reported.",
+        "No files are written outside the task, and nothing is implemented."
+      ],
+      "rules": [
+        "two fresh debaters: a fresh Claude and GPT",
+        "neither sees the other's position",
+        "/spar never implements"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "uncertain-priorities",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "A decision whose best answer depends on a priority the request doesn't state (for example speed of delivery against long-term cost).",
+      "process_checks": [
+        "The skill recognises that the choice depends on the owner's priority instead of guessing it.",
+        "It asks one relevant question through grilling, with options and a recommendation, saying why it matters.",
+        "Both debaters receive the answer, and each revises its position or explains why the answer doesn't change it."
+      ],
+      "rules": [
+        "The owner is the third participant",
+        "revises its position or says why the answer doesn't change it"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "objective-fact",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Outside any task: the debaters disagree on a fact the code or a document can settle (for example whether a function has other callers).",
+      "process_checks": [
+        "The coordinator checks the fact itself and asks the owner nothing about it.",
+        "The objection is marked resolved only after the evidence was checked.",
+        "No task folder or record is written."
+      ],
+      "rules": [
+        "Research what is objective",
+        "Ask nothing when evidence already settles it.",
+        "Without a task, nothing is written"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "false-consensus",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O1: converged but unjudged versions were not called agreement; the staged no-evidence brief has not run",
+      "candidate": "snapshot c5e954b3:4e9c1722 (before agreement 4)",
+      "setup": "A brief that invites both debaters to agree quickly on a proposal whose key claim has no evidence yet.",
+      "process_checks": [
+        "The coordinator notices the agreement rests on no evidence and sends the gap back as an objection.",
+        "The outcome is agreed only after the gap is closed with evidence; otherwise it ends under another outcome with the gap listed."
+      ],
+      "rules": [
+        "agreement without evidence is not agreement",
+        "send the gap back as an objection",
+        "both debaters judged the same proposal version"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "stagnation",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Depth standard; a disagreement where both sides tend to repeat their arguments.",
+      "process_checks": [
+        "A repeated objection without new grounds is counted as no progress.",
+        "Before calling the debate stalled, the coordinator checks whether one owner question could unblock it, and asks it if so.",
+        "If it ends stalled, both positions and their evidence are reported."
+      ],
+      "rules": [
+        "A closed objection reopens only on new grounds.",
+        "Before calling a round stalled, check whether one question to the owner could unblock it"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "unresolved-objections",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Observed in the false-consensus, stagnation and questionable-architecture runs: objections still open at the end.",
+      "process_checks": [
+        "Each open objection is classed as a technical disagreement or a decision that belongs to the owner.",
+        "Owner decisions are asked; technical disagreements go into the result with both positions."
+      ],
+      "rules": [
+        "a technical disagreement",
+        "a decision that belongs to the owner"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "missing-gpt",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O7 (run 7, CLI): asked the owner, no substitute; the third choice \"try again later\" was missing (fixed by R20); the failed-check variant was not provoked",
+      "candidate": "snapshot c5e954b3:4e9c1722 (before agreement 4)",
+      "setup": "A Claude Code CLI session in the pilot project, where no T3 Code tool exists.",
+      "process_checks": [
+        "The skill says GPT through T3 Code isn't available and asks the owner how to proceed.",
+        "It doesn't start a debate with another model on its own.",
+        "A failed capability check, if it happens, is reported as a failure, not as GPT being absent."
+      ],
+      "rules": [
+        "ask the owner how to proceed",
+        "Never substitute a model on your own",
+        "A failed check is a failure, never \"GPT absent\""
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "questionable-architecture",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O1: a recorded premise was disproven by a check and reported with its evidence; the staged sample repository has not run",
+      "candidate": "snapshot c5e954b3:4e9c1722 (before agreement 4)",
+      "setup": "A small sample repository whose documentation and tests describe a design the code contradicts, and a request to extend it.",
+      "process_checks": [
+        "The contradiction is reported with its evidence; passing tests are not taken as proof the design is right.",
+        "The alternatives (refactor first, investigate first, build on it as is) are given with their evidence.",
+        "When the choice changes scope or priorities, the owner is asked; nothing is refactored."
+      ],
+      "rules": [
+        "Passing tests show behaviour, not that the architecture is right.",
+        "refactor first, investigate first, or build on it as is",
+        "/spar never refactors"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "no-task",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O1 and O7 (runs 1 and 7, not the staged objective-fact run): no task folder, record or project file written; run 1 left only a check's disposable scratch output; unmet: the save choice did not exist on that candidate",
+      "candidate": "snapshot c5e954b3:4e9c1722 (before agreement 4)",
+      "setup": "Observed in any run outside a workflow task (planned: the objective-fact run).",
+      "process_checks": [
+        "No task folder, record or project file is written, only a check's disposable output; questions and the result stay in the conversation until the owner chooses to save."
+      ],
+      "rules": [
+        "Without a task, nothing is written",
+        "nothing is written except a check's disposable output (section 2)"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "cancel",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "During the uncertain-priorities run's exchange, the owner says stop.",
+      "process_checks": [
+        "Running debaters are cancelled; a late result starts nothing.",
+        "The outcome is cancelled, with the partial result kept.",
+        "No save question is asked and no other phase starts; choosing an end option in a menu elsewhere is not treated as a cancel."
+      ],
+      "rules": [
+        "`task_cancel`",
+        "ask no save question and start no other phase"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "save-question",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O2 (run 2a): the question was asked once and the save wrote PLAN, FINDINGS and DECISIONS; unmet: the result reached the owner only after the question (R28 addresses it)",
+      "candidate": "snapshot c5e954b3:18faaf55 (agreement 4)",
+      "setup": "A standalone debate (no task) that reaches an ending; the owner answers \"Save so /workflow can continue later\".",
+      "process_checks": [
+        "The short result, ending in \"Not saved yet\", is shown before the save question.",
+        "The three-answer save question is asked once, after the result.",
+        "The saved folder holds PLAN.md and FINDINGS.md (DECISIONS.md only with a material owner choice), written through record.py; no TODO and no offer.",
+        "The last message names the PLAN, the outcome and `/workflow continue from <path>`, and says implementation is not approved."
+      ],
+      "rules": [
+        "\"Save so /workflow can continue later\" · \"Save and continue with /workflow now\" · \"Don't save\"",
+        "No TODO, no offer, no transcript",
+        "Implementation is not approved"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "continue-from-saved",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "A new session in the same project: the owner types `/workflow continue from <the saved PLAN>`.",
+      "process_checks": [
+        "workflow-clarify starts on the saved task with the Approach part taken from the saved PLAN.",
+        "It asks only what is still open, and nothing is approved or implemented before the plan's offer."
+      ],
+      "rules": [
+        "Saving is not agreement",
+        "starts `../workflow-clarify/SKILL.md` on the saved task and approves nothing"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "early-owner-question",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "evidence": "FINDINGS O2 (run 2a): two owner priorities were asked before the exchange and put into both briefs (failed earlier on the old candidate, O1)",
+      "candidate": "snapshot c5e954b3:18faaf55 (agreement 4)",
+      "setup": "A decision that depends on the owner's release timing or scope, which the request doesn't state.",
+      "process_checks": [
+        "The priority is asked through grilling as soon as it is named (before the launch or right after the round that names it), not only in the result.",
+        "Both debaters' next briefs carry the answer."
+      ],
+      "rules": [
+        "Ask an owner priority (timing, scope, acceptable risk) as soon as it is named"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "extra-exchange",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "evidence": "FINDINGS O2 (run 2a): offered once with its cost and run on the owner's choice; unmet: it produced new unjudged versions (R26 makes it a closing assessment of fixed proposals)",
+      "candidate": "snapshot c5e954b3:18faaf55 (agreement 4)",
+      "setup": "Depth quick; both debaters revise in the only exchange, so the last versions are unjudged.",
+      "process_checks": [
+        "The outcome says limit reached with the last versions \"revised, not jointly checked\".",
+        "The owner is offered one closing assessment once, with its cost; nothing runs without the answer; no second offer.",
+        "The closing assessment judges the named, fixed proposals; an amendment stays unreviewed and replaces nothing."
+      ],
+      "rules": [
+        "offer once: \"Check <A> and <B> together (one closing assessment, two launches) · End with this result\"",
+        "never automatic",
+        "Proposals to judge (fixed)"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "usable-result",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "A standalone debate whose answer depends on several owner choices and where the models may still disagree at the end.",
+      "process_checks": [
+        "Consequential owner choices are asked during the debate, in batches of at most 4, each saying what it changes; none is left as a to-do.",
+        "The short result comes first: outcome and handoff state, recommendation or attributed competing approaches, blockers, decisions marked answered, deferred or blocking, and \"Not saved yet\".",
+        "With competing approaches, the owner is asked once to take one or leave it open; a choice is recorded as the owner's selection.",
+        "The frame is one plain **Spar:** line, shown once."
+      ],
+      "rules": [
+        "After every round, including the last",
+        "only after the short result is shown",
+        "recorded as the owner's selection, never as model agreement",
+        "**Spar:** <decision> · depth <depth> · <A> vs <B>"
+      ],
+      "prescribed_answer": null
+    }
+  ]
+}

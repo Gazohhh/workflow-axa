@@ -17,6 +17,7 @@ EXPECTED_SKILLS = (
     "ui-design", "workflow-clarify", "workflow-specify", "workflow-execute", "workflow-deliver", "grilling", "tdd",
     "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
     "interrogate", "no-comments", "wait-what",  # T23
+    "spar",
 )
 # (event, hook script) pairs hooks/hooks.json registers.
 EXPECTED_HOOKS = {

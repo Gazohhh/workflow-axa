@@ -45,6 +45,7 @@ The source-of-truth is the existing task folder: `PLAN.md` (scope/authority), `T
 | Code flow or report | `codebase-map` | Diagram requests, plan and delivery reports |
 | UI selection / component reuse | `ui-design` | Application screen changes: reuse the existing kit first; with the CSS switch on and the project's DESIGN.md allowing it, styling within the approved offer; otherwise ask which existing element to mimic |
 | Undecided behavior | `grilling` through `workflow-clarify` | After reading existing code and known decisions |
+| A decision worth a cross-model debate | `spar` (user-invoked) | Only when the owner types `/spar`: two fresh models debate the WHAT and WHY with the owner as the third participant; the result becomes the agreement's Approach, and `workflow-specify` keeps the HOW |
 | Architecture owner/interface | `codebase-design` / `domain-modeling` | A seam, responsibility or term is genuinely disputed |
 | Build tests | `tdd` | An approved ticket has testable behavior |
 | Verify code and standards | `code-review` | A changed diff, not another identical review |

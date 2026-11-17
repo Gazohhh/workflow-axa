@@ -1,0 +1,2014 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dYQaQROLB4Iv+MeYozxq/vQfGln46K+lDwZ2sFYBcZo='; style-src 'unsafe-inline'; img-src 'none'; frame-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>/spar: Claude and GPT debate a decision before planning</title><style>/* ==========================================================================
+   Review report — editorial, white, lean
+   ========================================================================== */
+
+/* Tokens
+   ========================================================================== */
+:root {
+  --color-bg: #fff;
+  --color-ink: #1f2330;
+  --color-muted: #545d6e;   /* 6.6:1 on white */
+  --color-faint: #6b7280;   /* 4.8:1 on white, minimum for small text */
+  --color-line: #e4e6ea;
+  --color-line-strong: #1f2330;
+  --color-wash: #f7f8f9;
+  --color-accent: #b5401c;  /* 5.4:1 on white */
+  --color-accent-soft: #fbf1ec;
+  --color-accent-line: #efd2c6;
+  --color-ok: #2b6535;
+  --color-ok-soft: #e8f2ea;
+  --color-ok-line: #cfe0d2;
+
+  --font-sans: 'Geist', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, monospace;
+
+  --measure: 70ch;
+  --radius: 6px;
+  --toc-width: 200px;
+  --gap: 48px;
+  --sticky-offset: 20px;
+
+  color-scheme: light;
+}
+
+/* Base
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--sticky-offset);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font: 15px/1.6 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-line);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+code,
+.code {
+  font: 12.5px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.muted,
+small {
+  color: var(--color-muted);
+}
+
+.visually-hidden,
+.sr-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  padding: 10px 14px;
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: #fff;
+}
+
+/* Page frame
+   ========================================================================== */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px 48px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 0 12px;
+  border-bottom: 1px solid var(--color-line);
+  font: 11px/1.5 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-faint);
+}
+
+.masthead strong {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* Report header
+   ========================================================================== */
+.report-header {
+  padding: 28px 0 32px;
+}
+
+.report-title {
+  max-width: 26ch;
+  margin: 0 0 10px;
+  font: 400 clamp(32px, 3.6vw, 46px)/1.08 var(--font-serif);
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.report-lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.status {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent);
+  font-size: 14px;
+}
+
+.status--approved {
+  border-left-color: var(--color-ok);
+}
+
+.status__tag {
+  flex: none;
+  font: 500 11px/1.6 var(--font-mono);
+  letter-spacing: .04em;
+  color: var(--color-accent);
+}
+
+.status--approved .status__tag {
+  color: var(--color-ok);
+}
+
+/* At-a-glance facts */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 28px 0 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.facts__item {
+  min-width: 0;
+  padding: 14px 18px 14px 0;
+}
+
+.facts__item + .facts__item {
+  padding-left: 18px;
+  border-left: 1px solid var(--color-line);
+}
+
+.facts dt {
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.facts dd a {
+  text-decoration: none;
+}
+
+.facts__value--attention {
+  color: var(--color-accent);
+}
+
+/* Layout: sticky contents beside the report
+   ========================================================================== */
+.layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.toc {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 28px 0;
+}
+
+.toc__title {
+  margin: 0 0 8px;
+  font: 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  font-size: 13px;
+}
+
+.toc__list > li {
+  counter-increment: toc;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  padding: 5px 0;
+  color: var(--color-muted);
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.toc__link::before {
+  content: counter(toc, decimal-leading-zero);
+  font: 11px/1.75 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.toc__link:hover {
+  color: var(--color-ink);
+}
+
+.toc__link[aria-current='true'] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.toc__link[aria-current='true']::before {
+  color: var(--color-accent);
+}
+
+.toc__flag {
+  display: block;
+  grid-column: 2;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.toc__extra {
+  display: block;
+  margin-top: 14px;
+  padding: 5px 0 5px 20px;
+  font-size: 13px;
+  color: var(--color-faint);
+}
+
+/* Sections
+   ========================================================================== */
+.content {
+  counter-reset: section;
+}
+
+.section {
+  padding-top: 32px;
+  counter-increment: section;
+}
+
+.section + .section {
+  margin-top: 40px;
+  border-top: 1px solid var(--color-line);
+}
+
+.section__title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px;
+  font: 400 30px/1.15 var(--font-serif);
+  letter-spacing: -.01em;
+}
+
+.section__title::before {
+  content: counter(section, decimal-leading-zero);
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+}
+
+.section__summary {
+  max-width: var(--measure);
+  margin: 0 0 20px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.section h3,
+.subhead {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section p {
+  max-width: var(--measure);
+  margin: 0 0 10px;
+}
+
+.block + .block {
+  margin-top: 24px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.columns > * {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.columns p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.list > li {
+  margin: 3px 0;
+  padding-left: 2px;
+}
+
+.list > li::marker {
+  color: var(--color-faint);
+}
+
+.list--check,
+.list--keep {
+  padding-left: 0;
+  list-style: none;
+}
+
+.list--check > li,
+.list--keep > li {
+  position: relative;
+  padding: 7px 0 7px 26px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.list--check > li:last-child,
+.list--keep > li:last-child {
+  border-bottom: 0;
+}
+
+.list--check > li::before,
+.list--keep > li::before {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font: 600 10px/1 var(--font-sans);
+}
+
+.list--check > li::before {
+  content: '✓';
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+.list--keep > li::before {
+  content: '=';
+  background: var(--color-wash);
+  color: var(--color-muted);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+.note {
+  max-width: var(--measure);
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.note a {
+  color: var(--color-accent);
+}
+
+/* Diagrams
+   ========================================================================== */
+.review {
+  position: relative;
+}
+
+.viewbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.view-tabs,
+.zoom-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.zoom-tabs {
+  gap: 14px;
+}
+
+.control-name {
+  display: none;
+}
+
+.view-tabs label,
+.zoom-tabs label {
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.view-tabs label {
+  font-weight: 500;
+}
+
+.zoom-tabs label {
+  font: 11px/44px var(--font-mono);
+}
+
+.view-tabs label:hover,
+.zoom-tabs label:hover {
+  color: var(--color-ink);
+}
+
+.figures {
+  --scale: 1;
+}
+
+#zoom-125:checked ~ .figures {
+  --scale: 1.25;
+}
+
+#zoom-150:checked ~ .figures {
+  --scale: 1.5;
+}
+
+#zoom-fit:checked ~ .figures .map {
+  width: 100%;
+  min-width: 0;
+}
+
+.panel {
+  display: none;
+  margin: 0;
+}
+
+.figure-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0 2px;
+}
+
+.figure-head h3 {
+  margin: 0;
+}
+
+.figure-head span {
+  font: 11px var(--font-mono);
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.figure-description {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.canvas {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-wash);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+
+.canvas.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.map {
+  display: block;
+  width: calc(var(--board-width) * var(--scale));
+  min-width: calc(var(--board-width) * var(--scale));
+  height: auto;
+}
+
+.node-shape {
+  fill: #fff;
+  stroke: var(--color-ink);
+  stroke-width: 1.1;
+}
+
+.start .node-shape,
+.result .node-shape {
+  fill: #eef0f3;
+  stroke: var(--color-muted);
+}
+
+.focal .node-shape {
+  fill: var(--color-accent-soft);
+  stroke: var(--color-accent);
+  stroke-width: 1.3;
+}
+
+.node.inferred .node-shape,
+.node.unknown .node-shape,
+.connector.inferred,
+.connector.unknown {
+  stroke-dasharray: 5 4;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 1.3;
+}
+
+.map marker path {
+  fill: var(--color-faint);
+}
+
+.node-title {
+  font: 600 18px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.node-note {
+  font: 13px var(--font-sans);
+  fill: var(--color-muted);
+}
+
+.node-item {
+  font: 15px var(--font-sans);
+  fill: var(--color-ink);
+}
+
+.arrow-label rect {
+  fill: var(--color-wash);
+}
+
+.edge-label {
+  font: 10px var(--font-mono);
+  letter-spacing: 1px;
+  fill: var(--color-muted);
+}
+
+figcaption {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--color-faint);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  padding: 10px 0 4px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border: 1px solid var(--color-muted);
+  background: #fff;
+}
+
+.legend .legend-start {
+  border-radius: 8px;
+  background: #eef0f3;
+}
+
+.legend .legend-action {
+  border-radius: 2px;
+}
+
+.legend .legend-decision {
+  width: 11px;
+  height: 11px;
+  margin: 0 4px;
+  transform: rotate(45deg);
+}
+
+.legend .legend-focus {
+  border-color: var(--color-accent);
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+}
+
+/* Tables
+   ========================================================================== */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+caption {
+  padding: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: left;
+}
+
+th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--color-line-strong);
+  font: 500 10.5px/1.5 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  vertical-align: bottom;
+}
+
+td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+}
+
+td:last-child,
+th:last-child {
+  padding-right: 0;
+}
+
+.compare th[scope='row'] {
+  width: 32%;
+  font: 500 14px/1.5 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+  vertical-align: top;
+}
+
+.compare td:nth-child(2) {
+  color: var(--color-muted);
+}
+
+.compare .after {
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.tag--changed {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.tag--recommended {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+  color: var(--color-ok);
+}
+
+/* Work order
+   ========================================================================== */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps > li + li::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--color-faint);
+}
+
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.steps a:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+.steps .key {
+  font: 500 12px var(--font-mono);
+}
+
+/* Tickets
+   ========================================================================== */
+.tickets {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.ticket {
+  --stub: 124px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--stub) minmax(0, 1fr);
+  max-width: 880px;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(31 35 48 / 4%);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ticket:hover {
+  border-color: #d3d6dc;
+  box-shadow: 0 2px 8px rgb(31 35 48 / 6%);
+}
+
+.ticket:target {
+  border-color: var(--color-accent);
+}
+
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--stub) - 7px);
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.ticket::before {
+  top: -8px;
+  clip-path: inset(8px 0 0 0);
+}
+
+.ticket::after {
+  bottom: -8px;
+  clip-path: inset(0 0 8px 0);
+}
+
+.ticket__stub {
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 16px;
+  border-right: 1.5px dashed #d3d6dc;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--color-wash);
+  font: 10.5px/1.4 var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__key {
+  display: block;
+  margin-top: 4px;
+  font: 500 24px/1 var(--font-mono);
+  letter-spacing: -.02em;
+  text-transform: none;
+  color: var(--color-ink);
+}
+
+.ticket__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: #fff;
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.ticket__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.ticket__status--in-progress,
+.ticket__status--blocked {
+  border-color: var(--color-accent-line);
+  color: var(--color-accent);
+}
+
+.ticket__status--in-progress::before {
+  border-right-color: transparent;
+}
+
+.ticket__status--blocked::before {
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.ticket__status--done {
+  border-color: var(--color-ok-line);
+  color: var(--color-ok);
+}
+
+.ticket__status--done::before {
+  background: currentColor;
+}
+
+.ticket__main {
+  padding: 16px 20px 0;
+}
+
+.ticket__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ticket__main p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.ticket__facts {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.ticket__facts dt {
+  font: 10.5px/2 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.ticket__facts dd {
+  margin: 0;
+}
+
+.ticket__facts .list > li {
+  margin: 0 0 2px;
+}
+
+.ticket-ref {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-wash);
+  font: 500 12px/1.6 var(--font-mono);
+  text-decoration: none;
+}
+
+.ticket-ref:hover {
+  border-color: var(--color-accent);
+}
+
+/* Checks
+   ========================================================================== */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 880px;
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.progress__bar {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+  height: 6px;
+}
+
+.progress__bar span {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.progress__bar .is-verified {
+  background: var(--color-ok);
+}
+
+.progress__bar .is-failed {
+  background: var(--color-accent);
+}
+
+.checks {
+  max-width: 880px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+
+.check__key {
+  grid-row: 1 / span 2;
+  font: 11px/1.9 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.check__expect {
+  margin: 0;
+  font-weight: 500;
+}
+
+.check__how {
+  grid-column: 2;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.check .state {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+
+.state::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.state--verified {
+  color: var(--color-ok);
+}
+
+.state--verified::before,
+.state--failed::before {
+  background: currentColor;
+}
+
+.state--failed,
+.state--partial {
+  color: var(--color-accent);
+}
+
+/* Risks and open questions
+   ========================================================================== */
+.risks {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.risks > li {
+  position: relative;
+  padding: 8px 0 8px 22px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.risks > li:last-child {
+  border-bottom: 0;
+}
+
+.risks > li::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.questions {
+  max-width: 880px;
+  margin: 28px 0 0;
+  padding: 18px 20px 6px;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.questions__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.questions__head h3 {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.questions__head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.question-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.question {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.question__title {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.question__key {
+  font: 500 12px/1.9 var(--font-mono);
+  color: var(--color-accent);
+}
+
+.options {
+  margin: 0;
+  padding: 0 0 0 30px;
+  list-style: none;
+  counter-reset: option;
+}
+
+.options > li {
+  position: relative;
+  padding: 4px 0 4px 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+  counter-increment: option;
+}
+
+.options > li::before {
+  content: counter(option, lower-alpha);
+  position: absolute;
+  top: 6px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  font: 500 10px/1 var(--font-mono);
+}
+
+.options > .is-recommended {
+  color: var(--color-ink);
+}
+
+.options > .is-recommended::before {
+  border-color: var(--color-ok);
+  background: var(--color-ok);
+  color: #fff;
+}
+
+/* Technical details (appendix)
+   ========================================================================== */
+details {
+  padding: 12px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--color-faint);
+  border-bottom: 1.5px solid var(--color-faint);
+  transform: rotate(-45deg);
+  transition: transform .15s;
+}
+
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+details.appendix {
+  margin-top: 48px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+details.appendix > summary {
+  font: 400 24px/1.2 var(--font-serif);
+}
+
+.appendix-body {
+  padding-top: 14px;
+  font-size: 14px;
+}
+
+.appendix-body section {
+  margin-bottom: 28px;
+}
+
+.appendix-body h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.appendix-body > p.muted {
+  max-width: var(--measure);
+  font-size: 13px;
+}
+
+.appendix .table-scroll table {
+  min-width: 820px;
+  font-size: 12px;
+}
+
+.appendix ol {
+  padding-left: 20px;
+  font-size: 12px;
+}
+
+.appendix ol li {
+  margin: 8px 0;
+}
+
+.appendix blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--color-line);
+  color: var(--color-muted);
+}
+
+.appendix .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  margin: 24px 0;
+}
+
+.appendix .plain {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.appendix .plain li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.evidence {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.evidence p,
+.appendix code {
+  font: 12px/1.7 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* Footer
+   ========================================================================== */
+.report-footer {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+  font: 11px/1.7 var(--font-mono);
+  color: var(--color-faint);
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+/* Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .facts__item:nth-child(4) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 4) {
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+@media (max-width: 960px) {
+  :root {
+    --sticky-offset: 64px;
+  }
+
+  .page {
+    padding: 0 24px 40px;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc {
+    z-index: 5;
+    max-height: none;
+    margin: 0 -24px;
+    padding: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toc__title,
+  .toc__flag,
+  .toc__extra {
+    display: none;
+  }
+
+  .toc__list {
+    display: flex;
+    gap: 20px;
+    padding: 0 24px;
+    white-space: nowrap;
+  }
+
+  .toc__link {
+    display: block;
+    padding: 14px 0 12px; /* 48px touch target */
+    border-bottom: 2px solid transparent;
+  }
+
+  .toc__link::before {
+    margin-right: 6px;
+  }
+
+  .toc__link[aria-current='true'] {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 0 16px 32px;
+  }
+
+  .toc {
+    margin: 0 -16px;
+  }
+
+  .toc__list {
+    padding: 0 16px;
+  }
+
+  .report-title {
+    font-size: 32px;
+  }
+
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .facts__item,
+  .facts__item + .facts__item {
+    padding: 12px 12px 12px 0;
+    border-left: 0;
+  }
+
+  .facts__item:nth-child(n + 3) {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .section__title {
+    font-size: 25px;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .figure-head,
+  .viewbar {
+    display: block;
+  }
+
+  .zoom-tabs {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .compare {
+    min-width: 560px;
+  }
+
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket::before,
+  .ticket::after {
+    display: none;
+  }
+
+  .ticket__stub {
+    grid-row: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1.5px dashed #d3d6dc;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .ticket__key {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .ticket__status {
+    margin-left: auto;
+  }
+
+  .ticket__main {
+    padding: 14px 16px 0;
+  }
+
+  .ticket__facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 10px 16px 14px;
+  }
+
+  .ticket__facts dd {
+    margin-bottom: 8px;
+  }
+
+  .check {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .check .state {
+    grid-column: 2;
+    grid-row: auto;
+    margin-top: 6px;
+  }
+
+  .questions {
+    padding: 16px 16px 4px;
+  }
+
+  .options {
+    padding-left: 0;
+  }
+
+  .appendix .two-col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .toc,
+  .skip-link,
+  .viewbar,
+  .hint {
+    display: none !important;
+  }
+
+  .panel {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  .canvas {
+    overflow: visible;
+  }
+
+  .map {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ticket,
+  .check,
+  .question,
+  .facts {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* Overrides for paragraphs inside components
+   ========================================================================== */
+.section .check__expect,
+.section .question__title {
+  margin: 0;
+}
+
+.section .question__title {
+  margin-bottom: 8px;
+}
+
+.section .check__how {
+  margin: 2px 0 0;
+}
+
+.compare th[scope='row'],
+.compare td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.compare small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.section h3 + .risks,
+.section h3 + .steps {
+  margin-top: 6px;
+}
+
+.section .risks + .questions,
+.section p + h3,
+.section .section__summary + h3 {
+  margin-top: 24px;
+}
+
+.section .ticket__stub {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .steps {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .steps > li + li::before {
+    display: none;
+  }
+}
+
+/* Diagram view and zoom state (generated per report)
+   ========================================================================== */
+#view-after:checked ~ .figures #panel-after {
+  display: block;
+}
+
+#view-after:checked ~ .viewbar label[for='view-after'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-after:focus-visible ~ .viewbar label[for='view-after'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-today:checked ~ .figures #panel-today {
+  display: block;
+}
+
+#view-today:checked ~ .viewbar label[for='view-today'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-today:focus-visible ~ .viewbar label[for='view-today'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#view-order:checked ~ .figures #panel-order {
+  display: block;
+}
+
+#view-order:checked ~ .viewbar label[for='view-order'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+#view-order:focus-visible ~ .viewbar label[for='view-order'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-100:checked ~ .viewbar label[for='zoom-100'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-100:focus-visible ~ .viewbar label[for='zoom-100'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-125:checked ~ .viewbar label[for='zoom-125'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-125:focus-visible ~ .viewbar label[for='zoom-125'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-150:checked ~ .viewbar label[for='zoom-150'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-150:focus-visible ~ .viewbar label[for='zoom-150'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#zoom-fit:checked ~ .viewbar label[for='zoom-fit'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+#zoom-fit:focus-visible ~ .viewbar label[for='zoom-fit'] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Older token names used by ui-review.css, mapped onto report-style.css tokens. */
+:root {
+  --paper: var(--color-bg);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --rule: var(--color-line);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-soft);
+  --sans: var(--font-sans);
+  --serif: var(--font-serif);
+  --mono: var(--font-mono);
+}
+
+/* Additions for the design-doc layout of task reports. report-style.css stays the owner's design, unchanged. */
+
+/* Header callout: the status line and the "Read first" lines in one box. */
+.callout {
+  max-width: var(--measure);
+  margin: 18px 0 0;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+}
+
+.callout .status {
+  max-width: none;
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 0;
+}
+
+.callout .status + .status {
+  border-top: 1px solid var(--color-accent-line);
+}
+
+.callout .status__tag {
+  width: 124px;
+}
+
+.callout:has(.status--approved:only-child) {
+  border-color: var(--color-ok-line);
+  background: var(--color-ok-soft);
+}
+
+/* Fewer tiles than the five-column grid expects: let them share the row. */
+.facts {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Prose directly under a section title keeps the reading measure. */
+.section > p {
+  max-width: var(--measure);
+}
+
+/* Blocks and the diagram area inside "The design". */
+.section .block + .review,
+.section .review + .block,
+.section .section__summary + .block {
+  margin-top: 28px;
+}
+
+/* A diagram that fits the column sits in the middle of its canvas and needs no grab cursor. */
+.review--fit .map {
+  margin: 0 auto;
+}
+
+.review--fit .canvas {
+  cursor: default;
+}
+
+/* Checks listed inside a ticket card. */
+.ticket__facts .checks {
+  max-width: none;
+  margin: 0;
+  border-top: 0;
+}
+
+.ticket__facts .check {
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.ticket__facts .check:first-child {
+  padding-top: 0;
+}
+
+.ticket__facts .check:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.ticket__facts .check--ref .check__how {
+  margin: 0;
+}
+
+/* A list directly under a section title keeps the reading measure too. */
+.section > .list {
+  max-width: var(--measure);
+}
+
+#view-proposed:checked~.figures #panel-proposed{display:block}
+#view-proposed:checked~.viewbar label[for="view-proposed"]{border-color:var(--accent);color:var(--ink)}
+#view-proposed:focus-visible~.viewbar label[for="view-proposed"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-exchange:checked~.figures #panel-exchange{display:block}
+#view-exchange:checked~.viewbar label[for="view-exchange"]{border-color:var(--accent);color:var(--ink)}
+#view-exchange:focus-visible~.viewbar label[for="view-exchange"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-current:checked~.figures #panel-current{display:block}
+#view-current:checked~.viewbar label[for="view-current"]{border-color:var(--accent);color:var(--ink)}
+#view-current:focus-visible~.viewbar label[for="view-current"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-context:checked~.figures #panel-context{display:block}
+#view-context:checked~.viewbar label[for="view-context"]{border-color:var(--accent);color:var(--ink)}
+#view-context:focus-visible~.viewbar label[for="view-context"]{outline:2px solid var(--accent);outline-offset:4px}
+#view-delivery:checked~.figures #panel-delivery{display:block}
+#view-delivery:checked~.viewbar label[for="view-delivery"]{border-color:var(--accent);color:var(--ink)}
+#view-delivery:focus-visible~.viewbar label[for="view-delivery"]{outline:2px solid var(--accent);outline-offset:4px}</style></head><body><a class="skip-link" href="#report">Skip to the report</a>
+<div class="page"><header class="masthead"><strong>workflow-axa, candidate worktree D:\workflow-axa-redesign</strong><span>plan-r1</span></header>
+<main id="report"><header class="report-header"><h1 class="report-title">/spar: Claude and GPT debate a decision before planning</h1>
+<p class="report-lead">You get /spar, a command that lets a fresh Claude and GPT debate one decision, with you as the third participant. It settles WHAT and WHY, then hands the HOW to /workflow.</p>
+<div class="callout"><p class="status status--awaiting-approval"><span class="status__tag">Waiting for you</span><span>Behavior agreed (agreement 3). Waiting for your OK on this plan in the chat. The agent writes no code before you give it.</span></p><p class="status status--attention"><span class="status__tag">Read first</span><span>Approval hook bug F1: a button approval does not lift an earlier &quot;Do not implement until I approve that plan&quot; pause. You asked for a fix, and it becomes a separate task (D12). <a href="#alternatives">See the decisions</a>.</span></p><p class="status status--attention"><span class="status__tag">Read first</span><span>The live runs in T6 cost up to 26 debater launches and 8 coordinator sessions. Each batch runs only after your OK right before it. <a href="#alternatives">See the decisions</a>.</span></p></div>
+<dl class="facts" aria-label="At a glance"><div class="facts__item"><dt>Tickets</dt><dd>6</dd></div><div class="facts__item"><dt>Checks</dt><dd>0 of 5 verified</dd></div></dl></header>
+<div class="layout"><nav class="toc" aria-label="Contents"><p class="toc__title">Contents</p><ol class="toc__list"><li><a class="toc__link" href="#context">Context and scope</a></li><li><a class="toc__link" href="#goals">Goals and non-goals</a></li><li><a class="toc__link" href="#design">The design</a></li><li><a class="toc__link" href="#alternatives">Alternatives considered</a></li><li><a class="toc__link" href="#concerns">Cross-cutting concerns</a></li><li><a class="toc__link" href="#the-work">The work</a></li></ol><a class="toc__extra" href="#technical-details">Reference</a></nav><div class="content" id="task-report"><section class="section" aria-labelledby="context"><h2 class="section__title" id="context">Context and scope</h2><p class="section__summary">You agreed to agreement 3 when you answered offer #1 with &quot;Approve from this summary&quot; (D11). PLAN.md records agreement 3 as agreed. It is agreement 2 with your D10 changes. You are the third participant, and a missing GPT leads to a question to you.</p><p>Today you hold planning discussions between Claude and GPT by hand. In the session of 2026-11-16, Claude drafted an approach and GPT-6 Astra critiqued it in rounds. Each round was a new brief with the previous findings, until both agreed. You were asked only the decisions, and a topic took 2 to 3 rounds (FINDINGS E8).</p><p>No skill in the package proposes an approach and debates alternatives between models. plan-review, interrogate and codebase-design critique a plan or judge seams (FINDINGS E5). The way to reach GPT exists: the T3 Code tool `delegate_task` (FINDINGS E1).</p><p>Your request asked for a reusable /spar skill that replaces the manual discussions with structured, evidence-based sparring. It must reuse existing skills, use at most 3 debate rounds by default, and never force consensus. It must never implement without approval, must work for any project and language, and must keep token use down.</p><p>This plan builds /spar and hands its result to /workflow for planning and approval.</p></section><section class="section" aria-labelledby="goals"><h2 class="section__title" id="goals">Goals and non-goals</h2><div class="columns"><div><h3>Goals</h3><ul class="list"><li>You can type `/spar &lt;problem&gt; [depth]` in both hosts. Only you can start it. The model never starts it by itself (R1, A1).</li><li>A fresh Claude and GPT write blind opening positions. Then they exchange objections for the chosen depth: quick 1, standard 3, deep 5, a number, or until-agreement. The default comes from your settings.json (R4, R5).</li><li>The debate ends with one named outcome and a result. The result names the recommended approach, its evidence, rejected alternatives, risks, foundation changes, unresolved objections, your decisions and who debated (R6, R7, step 7).</li><li>You are asked only what belongs to you: requirements, priorities, trade-offs or acceptable risk. Objective facts are researched instead (R8).</li><li>Inside a task, the result becomes the Approach part of the agreement, and /workflow continues with the HOW. Without a task, no files are written (R1, R10).</li><li>When GPT is not reachable, /spar tells you and asks how to proceed (R9).</li><li>Live runs show how a model follows the skill, in one real decision and in staged scenarios (A4, A5).</li></ul></div><div><h3>Non-goals</h3><ul class="list"><li>/spar does not plan the HOW. Files, interfaces, tests, the plan and the approval stay with workflow-specify (R1).</li><li>/spar never implements and never refactors, even when it finds a weak foundation. It shows the evidence and the alternatives instead (R1, R12).</li><li>Sparring never starts automatically. The workflow may recommend /spar for high-stakes work, but it never runs it (D3).</li><li>No separate SPAR.md. The result lives in the agreement or in the conversation (D4).</li><li>No third judge model, no code or experiments run during a debate, and no prototypes.</li><li>No change to T3 Code.</li><li>The fix for the approval hook bug (FINDINGS F1) is not part of this plan. You asked for it, and it becomes a separate task (D12).</li><li>No version bump and no CHANGELOG entry in this task. The release is a separate step.</li></ul></div></div></section><section class="section" aria-labelledby="design"><h2 class="section__title" id="design">The design</h2><div class="block"><h3>Overview</h3><p>/spar is one small skill with one reference file. `skills/spar/SKILL.md` holds the steps. `skills/spar/T3.md` holds the T3 Code parts: the capability check, the debater brief, the ledger format and cancel. The skill owns only the debate. It uses grilling, workflow-clarify step 1, codebase-design and domain-modeling for everything else (R2).</p><p>The coordinator is the model you talk to. It first frames the decision in one sentence, with 3 to 6 criteria, the depth and the two debaters. Then it checks the premises that the decision depends on. Each premise becomes a verified fact, an unverified assumption or a contradiction (R3, R12). The amount of checking follows the risk of the decision, not the depth (R13).</p><p>You are the third participant. If something only you can decide blocks the frame or the debate, the coordinator asks you through grilling. Objective facts are researched and never asked (R8).</p><p>In the blind opening, a fresh Claude subagent and GPT get the same brief and write one position each. Neither sees the other. Each position has a recommendation, the rejected alternatives, the foundation weaknesses and the strongest uncertainty (R4).</p><p>In each exchange, both debaters get the latest position of the other side and the objection ledger. The ledger lists objections with stable IDs, each one open, resolved, needs you, or unverifiable. Each debater returns its strongest objection with evidence, its replies and what it changed. The coordinator argues no side. It checks the cited evidence itself, challenges agreement without evidence, and writes one progress line per round (R11).</p><p>The debate ends with one outcome, and the first match wins: cancelled, unavailable or interrupted, target changed, needs you, agreed, stalled, limit reached. Agreed needs both debaters to judge the same proposal version (R7). Stalled comes only after the coordinator found no question to you that could unblock the round (R6). Real disagreement is reported and never forced into agreement (R14).</p><p>The result lists the recommended approach, its evidence and the rejected alternatives. It also lists risks, required foundation changes, unresolved objections, your decisions, who debated, whether it was cross-model, and the outcome. Inside a task, the rounds go to FINDINGS, your choices go to DECISIONS, and the result becomes the Approach part of the agreement (D4). Then workflow-clarify asks you to agree, and workflow-specify plans the HOW. Without a task, the result stays in the conversation.</p><p>If GPT is missing or the T3 Code capability check fails, the coordinator says so and asks you how to proceed. One option you can choose is a fresh helper of the same model, labelled &quot;single model, fresh context, not cross-model&quot; (R9). You can stop the debate in plain words at any time, which also cancels running delegates (R6).</p><p>The main trade-off is cost against independence. Each exchange launches two fresh debaters, so the coordinator does not anchor the debate. This doubles the model runs per round (D5, FINDINGS S4 C1).</p></div><section class="review review--fit" aria-label="Design diagrams"><input class="sr-radio" type="radio" name="diagram-view" id="view-proposed" aria-label="/spar" aria-controls="panel-proposed" checked><input class="sr-radio" type="radio" name="diagram-view" id="view-exchange" aria-label="One exchange" aria-controls="panel-exchange" ><input class="sr-radio" type="radio" name="diagram-view" id="view-current" aria-label="Today" aria-controls="panel-current" ><input class="sr-radio" type="radio" name="diagram-view" id="view-context" aria-label="Parts" aria-controls="panel-context" ><input class="sr-radio" type="radio" name="diagram-view" id="view-delivery" aria-label="Build order" aria-controls="panel-delivery" ><div class="viewbar"><div class="view-tabs" role="group" aria-labelledby="view-tabs-name"><span class="control-name" id="view-tabs-name">Show</span><label for="view-proposed">/spar</label><label for="view-exchange">One exchange</label><label for="view-current">Today</label><label for="view-context">Parts</label><label for="view-delivery">Build order</label></div></div><div class="figures"><figure class="panel" id="panel-proposed"><div class="figure-head"><h3>What happens when you type /spar</h3><span>Proposed, not built yet</span></div><p class="figure-description">This runs when you type /spar with a decision. The exchanges are in the next view.</p><div class="canvas" tabindex="0" role="region" aria-label="/spar diagram" data-start-id="node-8-proposed-P1" style="--board-width:880px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="880" height="976" viewBox="0 0 880 976" role="img" aria-labelledby="proposed-title proposed-desc"><title id="proposed-title">What happens when you type /spar</title><desc id="proposed-desc">This runs when you type /spar with a decision. The exchanges are in the next view.</desc><defs><marker id="arrow-proposed" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="P1" data-to="P2" data-points="[[240, 88], [240, 120]]" d="M 240 88 L 240 120" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P2" data-to="P3" data-points="[[240, 208], [240, 240]]" d="M 240 208 L 240 240" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P3" data-to="P4" data-points="[[368, 320], [480, 320]]" d="M 368 320 L 480 320" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P3" data-to="P5" data-points="[[240, 400], [240, 448]]" d="M 240 400 L 240 448" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P4" data-to="P5" data-points="[[640, 360], [640, 492], [400, 492]]" d="M 640 360 L 640 484 Q 640 492 632 492 L 400 492" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P5" data-to="P6" data-points="[[240, 536], [240, 568]]" d="M 240 536 L 240 568" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P6" data-to="P7" data-points="[[240, 640], [240, 672]]" d="M 240 640 L 240 672" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P7" data-to="P8" data-points="[[336, 752], [480, 752]]" d="M 336 752 L 480 752" marker-end="url(#arrow-proposed)"/><path class="connector proposed" data-from="P7" data-to="P9" data-points="[[240, 832], [240, 880]]" d="M 240 832 L 240 880" marker-end="url(#arrow-proposed)"/><g class="arrow-label"><rect x="405.5" y="289" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="424" y="304">YES</text></g><g class="arrow-label"><rect x="257" y="413" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="272" y="428">NO</text></g><g class="arrow-label"><rect x="389.5" y="721" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="408" y="736">YES</text></g><g class="arrow-label"><rect x="257" y="845" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="272" y="860">NO</text></g><g id="node-8-proposed-P1" class="node start proposed " data-id="P1" data-box="96,16,288,72"><title>You type /spar. proposed / added. </title><rect class="node-shape" x="96" y="16" width="288" height="72" rx="20"/><text class="node-title" x="240" y="48" text-anchor="middle">You type /spar</text><text class="node-note" x="240" y="72" text-anchor="middle">a decision, optional depth</text></g><g id="node-8-proposed-P2" class="node action proposed " data-id="P2" data-box="80,120,320,88"><title>Coordinator frames it. proposed / added. </title><rect class="node-shape" x="80" y="120" width="320" height="88" rx="6"/><text class="node-title" x="240" y="150" text-anchor="middle">Coordinator frames it</text><text class="node-note" x="240" y="174" text-anchor="middle">criteria, depth, debaters,</text><text class="node-note" x="240" y="194" text-anchor="middle">and a premise check</text></g><g id="node-8-proposed-P3" class="node decision proposed focal" data-id="P3" data-box="112,240,256,160"><title>Something only
+you can decide?. proposed / added. </title><polygon class="node-shape" points="240,240 368,320 240,400 112,320"/><text class="node-title" x="240" y="314" text-anchor="middle">Something only</text><text class="node-title" x="240" y="338" text-anchor="middle">you can decide?</text></g><g id="node-8-proposed-P4" class="node action proposed " data-id="P4" data-box="480,280,320,80"><title>You answer through grilling. proposed / modified. </title><rect class="node-shape" x="480" y="280" width="320" height="80" rx="6"/><text class="node-title" x="640" y="316" text-anchor="middle">You answer through grilling</text><text class="node-note" x="640" y="340" text-anchor="middle">facts are researched, not asked</text></g><g id="node-8-proposed-P5" class="node action proposed focal" data-id="P5" data-box="80,448,320,88"><title>Claude and GPT open blind. proposed / added. </title><rect class="node-shape" x="80" y="448" width="320" height="88" rx="6"/><text class="node-title" x="240" y="478" text-anchor="middle">Claude and GPT open blind</text><text class="node-note" x="240" y="502" text-anchor="middle">both fresh, same brief,</text><text class="node-note" x="240" y="522" text-anchor="middle">neither sees the other</text></g><g id="node-8-proposed-P6" class="node action proposed " data-id="P6" data-box="80,568,320,72"><title>Both debaters exchange. proposed / added. </title><rect class="node-shape" x="80" y="568" width="320" height="72" rx="6"/><text class="node-title" x="240" y="600" text-anchor="middle">Both debaters exchange</text><text class="node-note" x="240" y="624" text-anchor="middle">rounds up to the depth</text></g><g id="node-8-proposed-P7" class="node decision proposed " data-id="P7" data-box="144,672,192,160"><title>Inside a
+task?. proposed / added. </title><polygon class="node-shape" points="240,672 336,752 240,832 144,752"/><text class="node-title" x="240" y="746" text-anchor="middle">Inside a</text><text class="node-title" x="240" y="770" text-anchor="middle">task?</text></g><g id="node-8-proposed-P8" class="node result proposed " data-id="P8" data-box="480,712,336,80"><title>Result goes to the task. proposed / added. </title><rect class="node-shape" x="480" y="712" width="336" height="80" rx="20"/><text class="node-title" x="648" y="748" text-anchor="middle">Result goes to the task</text><text class="node-note" x="648" y="772" text-anchor="middle">agreement Approach, then /workflow</text></g><g id="node-8-proposed-P9" class="node result proposed " data-id="P9" data-box="96,880,288,80"><title>Result stays in the chat. proposed / added. </title><rect class="node-shape" x="96" y="880" width="288" height="80" rx="20"/><text class="node-title" x="240" y="916" text-anchor="middle">Result stays in the chat</text><text class="node-note" x="240" y="940" text-anchor="middle">no files, /workflow can use it</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div></figcaption></figure><figure class="panel" id="panel-exchange"><div class="figure-head"><h3>What happens in each exchange</h3><span>Proposed, not built yet</span></div><p class="figure-description">This runs once for each exchange after the blind opening, until an ending applies or you say stop.</p><div class="canvas" tabindex="0" role="region" aria-label="One exchange diagram" data-start-id="node-8-exchange-X1" style="--board-width:880px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="880" height="944" viewBox="0 0 880 944" role="img" aria-labelledby="exchange-title exchange-desc"><title id="exchange-title">What happens in each exchange</title><desc id="exchange-desc">This runs once for each exchange after the blind opening, until an ending applies or you say stop.</desc><defs><marker id="arrow-exchange" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="X1" data-to="X2" data-points="[[240, 88], [240, 120]]" d="M 240 88 L 240 120" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X2" data-to="X3" data-points="[[240, 192], [240, 224]]" d="M 240 192 L 240 224" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X3" data-to="X4" data-points="[[352, 304], [480, 304]]" d="M 352 304 L 480 304" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X3" data-to="X5" data-points="[[240, 384], [240, 432]]" d="M 240 384 L 240 432" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X5" data-to="X6" data-points="[[368, 512], [480, 512]]" d="M 368 512 L 480 512" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X5" data-to="X7" data-points="[[240, 592], [240, 640]]" d="M 240 592 L 240 640" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X6" data-to="X8" data-points="[[640, 552], [640, 676]]" d="M 640 552 L 640 676" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X7" data-to="X8" data-points="[[352, 720], [480, 720]]" d="M 352 720 L 480 720" marker-end="url(#arrow-exchange)"/><path class="connector proposed" data-from="X7" data-to="X9" data-points="[[240, 800], [240, 848]]" d="M 240 800 L 240 848" marker-end="url(#arrow-exchange)"/><g class="arrow-label"><rect x="397.5" y="273" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="416" y="288">YES</text></g><g class="arrow-label"><rect x="257" y="397" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="272" y="412">NO</text></g><g class="arrow-label"><rect x="405.5" y="481" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="424" y="496">YES</text></g><g class="arrow-label"><rect x="257" y="605" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="272" y="620">NO</text></g><g class="arrow-label"><rect x="397.5" y="689" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="416" y="704">YES</text></g><g class="arrow-label"><rect x="257" y="813" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="272" y="828">NO</text></g><g id="node-8-exchange-X1" class="node start proposed " data-id="X1" data-box="96,16,288,72"><title>Each debater answers. proposed / added. </title><rect class="node-shape" x="96" y="16" width="288" height="72" rx="20"/><text class="node-title" x="240" y="48" text-anchor="middle">Each debater answers</text><text class="node-note" x="240" y="72" text-anchor="middle">objection, replies, changes</text></g><g id="node-8-exchange-X2" class="node action proposed " data-id="X2" data-box="80,120,320,72"><title>Coordinator checks evidence. proposed / added. </title><rect class="node-shape" x="80" y="120" width="320" height="72" rx="6"/><text class="node-title" x="240" y="152" text-anchor="middle">Coordinator checks evidence</text><text class="node-note" x="240" y="176" text-anchor="middle">updates the objection ledger</text></g><g id="node-8-exchange-X3" class="node decision proposed focal" data-id="X3" data-box="128,224,224,160"><title>Agreed on the
+same version?. proposed / added. </title><polygon class="node-shape" points="240,224 352,304 240,384 128,304"/><text class="node-title" x="240" y="298" text-anchor="middle">Agreed on the</text><text class="node-title" x="240" y="322" text-anchor="middle">same version?</text></g><g id="node-8-exchange-X4" class="node result proposed " data-id="X4" data-box="480,264,320,80"><title>Debate ends: agreed. proposed / added. </title><rect class="node-shape" x="480" y="264" width="320" height="80" rx="20"/><text class="node-title" x="640" y="300" text-anchor="middle">Debate ends: agreed</text><text class="node-note" x="640" y="324" text-anchor="middle">result goes to the handoff</text></g><g id="node-8-exchange-X5" class="node decision proposed focal" data-id="X5" data-box="112,432,256,160"><title>Something only
+you can decide?. proposed / added. </title><polygon class="node-shape" points="240,432 368,512 240,592 112,512"/><text class="node-title" x="240" y="506" text-anchor="middle">Something only</text><text class="node-title" x="240" y="530" text-anchor="middle">you can decide?</text></g><g id="node-8-exchange-X6" class="node action proposed " data-id="X6" data-box="480,472,320,80"><title>You answer through grilling. proposed / modified. </title><rect class="node-shape" x="480" y="472" width="320" height="80" rx="6"/><text class="node-title" x="640" y="508" text-anchor="middle">You answer through grilling</text><text class="node-note" x="640" y="532" text-anchor="middle">both sides get your answer</text></g><g id="node-8-exchange-X7" class="node decision proposed " data-id="X7" data-box="128,640,224,160"><title>Real progress
+this round?. proposed / added. </title><polygon class="node-shape" points="240,640 352,720 240,800 128,720"/><text class="node-title" x="240" y="714" text-anchor="middle">Real progress</text><text class="node-title" x="240" y="738" text-anchor="middle">this round?</text></g><g id="node-8-exchange-X8" class="node result proposed " data-id="X8" data-box="480,676,320,88"><title>Next exchange starts. proposed / added. </title><rect class="node-shape" x="480" y="676" width="320" height="88" rx="20"/><text class="node-title" x="640" y="706" text-anchor="middle">Next exchange starts</text><text class="node-note" x="640" y="730" text-anchor="middle">if rounds are left, otherwise</text><text class="node-note" x="640" y="750" text-anchor="middle">ends: limit reached</text></g><g id="node-8-exchange-X9" class="node result proposed " data-id="X9" data-box="96,848,288,72"><title>Debate ends: stalled. proposed / added. </title><rect class="node-shape" x="96" y="848" width="288" height="72" rx="20"/><text class="node-title" x="240" y="880" text-anchor="middle">Debate ends: stalled</text><text class="node-note" x="240" y="904" text-anchor="middle">both positions reported</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div></figcaption></figure><figure class="panel" id="panel-current"><div class="figure-head"><h3>How a planning debate with GPT happens today</h3><span>As the code works today</span></div><p class="figure-description">This runs each time you want a second model to challenge a plan, before you start /workflow.</p><div class="canvas" tabindex="0" role="region" aria-label="Today diagram" data-start-id="node-7-current-C1" style="--board-width:880px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="880" height="672" viewBox="0 0 880 672" role="img" aria-labelledby="current-title current-desc"><title id="current-title">How a planning debate with GPT happens today</title><desc id="current-desc">This runs each time you want a second model to challenge a plan, before you start /workflow.</desc><defs><marker id="arrow-current" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector observed" data-from="C1" data-to="C2" data-points="[[280, 96], [280, 128]]" d="M 280 96 L 280 128" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C2" data-to="C3" data-points="[[280, 200], [280, 232]]" d="M 280 200 L 280 232" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C3" data-to="C4" data-points="[[280, 320], [280, 352]]" d="M 280 320 L 280 352" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C4" data-to="C5" data-points="[[376, 432], [528, 432]]" d="M 376 432 L 528 432" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C4" data-to="C6" data-points="[[280, 512], [280, 560]]" d="M 280 512 L 280 560" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C6" data-to="C3" data-points="[[128, 596], [64, 596], [64, 276], [128, 276]]" d="M 128 596 L 72 596 Q 64 596 64 588 L 64 284 Q 64 276 72 276 L 128 276" marker-end="url(#arrow-current)"/><path class="connector observed" data-from="C5" data-to="C7" data-points="[[672, 472], [672, 560]]" d="M 672 472 L 672 560" marker-end="url(#arrow-current)"/><g class="arrow-label"><rect x="433.5" y="401" width="37" height="22"/><text class="edge-label" text-anchor="middle" x="452" y="416">YES</text></g><g class="arrow-label"><rect x="297" y="525" width="30" height="22"/><text class="edge-label" text-anchor="middle" x="312" y="540">NO</text></g><g id="node-7-current-C1" class="node start observed " data-id="C1" data-box="136,24,288,72"><title>You ask Claude. observed / unchanged. </title><rect class="node-shape" x="136" y="24" width="288" height="72" rx="20"/><text class="node-title" x="280" y="56" text-anchor="middle">You ask Claude</text><text class="node-note" x="280" y="80" text-anchor="middle">a planning question</text></g><g id="node-7-current-C2" class="node action observed " data-id="C2" data-box="128,128,304,72"><title>Claude drafts an approach. observed / unchanged. </title><rect class="node-shape" x="128" y="128" width="304" height="72" rx="6"/><text class="node-title" x="280" y="170" text-anchor="middle">Claude drafts an approach</text></g><g id="node-7-current-C3" class="node action observed " data-id="C3" data-box="128,232,304,88"><title>GPT critiques the draft. observed / unchanged. </title><rect class="node-shape" x="128" y="232" width="304" height="88" rx="6"/><text class="node-title" x="280" y="262" text-anchor="middle">GPT critiques the draft</text><text class="node-note" x="280" y="286" text-anchor="middle">a new brief each round,</text><text class="node-note" x="280" y="306" text-anchor="middle">started by hand</text></g><g id="node-7-current-C4" class="node decision observed " data-id="C4" data-box="184,352,192,160"><title>Both models
+agree?. observed / unchanged. </title><polygon class="node-shape" points="280,352 376,432 280,512 184,432"/><text class="node-title" x="280" y="426" text-anchor="middle">Both models</text><text class="node-title" x="280" y="450" text-anchor="middle">agree?</text></g><g id="node-7-current-C5" class="node action observed " data-id="C5" data-box="528,392,288,80"><title>You make the choices. observed / unchanged. </title><rect class="node-shape" x="528" y="392" width="288" height="80" rx="6"/><text class="node-title" x="672" y="428" text-anchor="middle">You make the choices</text><text class="node-note" x="672" y="452" text-anchor="middle">only the open decisions</text></g><g id="node-7-current-C6" class="node action observed " data-id="C6" data-box="128,560,304,72"><title>Claude revises the draft. observed / unchanged. </title><rect class="node-shape" x="128" y="560" width="304" height="72" rx="6"/><text class="node-title" x="280" y="592" text-anchor="middle">Claude revises the draft</text><text class="node-note" x="280" y="616" text-anchor="middle">answers the critique</text></g><g id="node-7-current-C7" class="node result observed " data-id="C7" data-box="528,560,288,80"><title>You start /workflow. observed / unchanged. </title><rect class="node-shape" x="528" y="560" width="288" height="80" rx="20"/><text class="node-title" x="672" y="596" text-anchor="middle">You start /workflow</text><text class="node-note" x="672" y="620" text-anchor="middle">it plans and asks for approval</text></g></svg></div><figcaption></figcaption></figure><figure class="panel" id="panel-context"><div class="figure-head"><h3>Where /spar sits among the parts around it</h3><span>Proposed, not built yet</span></div><p class="figure-description">This shows what passes between you, the coordinator, the two debaters, the reused skills and the files during one /spar run.</p><div class="canvas" tabindex="0" role="region" aria-label="Parts diagram" data-start-id="node-7-context-Y" style="--board-width:880px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="880" height="688" viewBox="0 0 880 688" role="img" aria-labelledby="context-title context-desc"><title id="context-title">Where /spar sits among the parts around it</title><desc id="context-desc">This shows what passes between you, the coordinator, the two debaters, the reused skills and the files during one /spar run.</desc><defs><marker id="arrow-context" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="Y" data-to="K" data-points="[[400, 112], [400, 280]]" d="M 400 112 L 400 280" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="Y" data-points="[[480, 280], [480, 112]]" d="M 480 280 L 480 112" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="CL" data-points="[[296, 312], [200, 312]]" d="M 296 312 L 200 312" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="CL" data-to="K" data-points="[[200, 352], [296, 352]]" d="M 200 352 L 296 352" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="G" data-points="[[584, 312], [680, 312]]" d="M 584 312 L 680 312" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="G" data-to="K" data-points="[[680, 352], [584, 352]]" d="M 680 352 L 584 352" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="ST" data-points="[[336, 376], [336, 440], [136, 440], [136, 480]]" d="M 336 376 L 336 432 Q 336 440 328 440 L 144 440 Q 136 440 136 448 L 136 480" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="SK" data-points="[[440, 376], [440, 480]]" d="M 440 376 L 440 480" marker-end="url(#arrow-context)"/><path class="connector proposed" data-from="K" data-to="TR" data-points="[[544, 376], [544, 440], [744, 440], [744, 480]]" d="M 544 376 L 544 432 Q 544 440 552 440 L 736 440 Q 744 440 744 448 L 744 480" marker-end="url(#arrow-context)"/><g class="arrow-label"><rect x="279" y="185" width="114" height="22"/><text class="edge-label" text-anchor="middle" x="336" y="200">/SPAR, ANSWERS</text></g><g class="arrow-label"><rect x="490.5" y="185" width="107" height="22"/><text class="edge-label" text-anchor="middle" x="544" y="200">ASKS, REPORTS</text></g><g class="arrow-label"><rect x="222.5" y="281" width="51" height="22"/><text class="edge-label" text-anchor="middle" x="248" y="296">BRIEF</text></g><g class="arrow-label"><rect x="212" y="321" width="72" height="22"/><text class="edge-label" text-anchor="middle" x="248" y="336">POSITION</text></g><g class="arrow-label"><rect x="606.5" y="281" width="51" height="22"/><text class="edge-label" text-anchor="middle" x="632" y="296">BRIEF</text></g><g class="arrow-label"><rect x="596" y="321" width="72" height="22"/><text class="edge-label" text-anchor="middle" x="632" y="336">POSITION</text></g><g class="arrow-label"><rect x="182.5" y="409" width="107" height="22"/><text class="edge-label" text-anchor="middle" x="236" y="424">DEFAULT DEPTH</text></g><g class="arrow-label"><rect x="450" y="453" width="100" height="22"/><text class="edge-label" text-anchor="middle" x="500" y="468">USES BY PATH</text></g><g class="arrow-label"><rect x="587" y="409" width="114" height="22"/><text class="edge-label" text-anchor="middle" x="644" y="424">ROUNDS, RESULT</text></g><g id="node-7-context-Y" class="node start observed " data-id="Y" data-box="296,32,288,80"><title>You. observed / unchanged. </title><rect class="node-shape" x="296" y="32" width="288" height="80" rx="20"/><text class="node-title" x="440" y="68" text-anchor="middle">You</text><text class="node-note" x="440" y="92" text-anchor="middle">start, answer, stop</text></g><g id="node-7-context-K" class="node action proposed focal" data-id="K" data-box="296,280,288,96"><title>Coordinator (/spar). proposed / added. </title><rect class="node-shape" x="296" y="280" width="288" height="96" rx="6"/><text class="node-title" x="440" y="324" text-anchor="middle">Coordinator (/spar)</text><text class="node-note" x="440" y="348" text-anchor="middle">frames, checks, records</text></g><g id="node-7-context-CL" class="node action proposed " data-id="CL" data-box="24,280,176,96"><title>Fresh Claude. proposed / added. </title><rect class="node-shape" x="24" y="280" width="176" height="96" rx="6"/><text class="node-title" x="112" y="324" text-anchor="middle">Fresh Claude</text><text class="node-note" x="112" y="348" text-anchor="middle">subagent</text></g><g id="node-7-context-G" class="node action observed " data-id="G" data-box="680,280,176,96"><title>GPT via
+T3 Code. observed / unchanged. </title><rect class="node-shape" x="680" y="280" width="176" height="96" rx="6"/><text class="node-title" x="768" y="312" text-anchor="middle">GPT via</text><text class="node-title" x="768" y="336" text-anchor="middle">T3 Code</text><text class="node-note" x="768" y="360" text-anchor="middle">delegate_task</text></g><g id="node-7-context-ST" class="node action proposed " data-id="ST" data-box="24,480,224,80"><title>Your settings.json. proposed / modified. </title><rect class="node-shape" x="24" y="480" width="224" height="80" rx="6"/><text class="node-title" x="136" y="516" text-anchor="middle">Your settings.json</text><text class="node-note" x="136" y="540" text-anchor="middle">spar.default_depth</text></g><g id="node-7-context-SK" class="node group proposed " data-id="SK" data-box="280,480,320,176"><title>Reused skills. proposed / modified. </title><rect class="node-shape" x="280" y="480" width="320" height="176" rx="6"/><text class="node-title" x="304" y="516" text-anchor="start">Reused skills</text><text class="node-item" x="304" y="560">grilling: no-records case</text><text class="node-item" x="304" y="596">workflow-clarify: Approach part</text><text class="node-item" x="304" y="632">workflow-specify: the HOW</text></g><g id="node-7-context-TR" class="node action observed " data-id="TR" data-box="632,480,224,80"><title>Task records. observed / unchanged. </title><rect class="node-shape" x="632" y="480" width="224" height="80" rx="6"/><text class="node-title" x="744" y="516" text-anchor="middle">Task records</text><text class="node-note" x="744" y="540" text-anchor="middle">PLAN, FINDINGS, DECISIONS</text></g></svg></div><figcaption><div class="legend"><span><i class="legend-group" aria-hidden="true"></i>Group</span><span><i class="legend-focus" aria-hidden="true"></i>Focus of the change</span></div></figcaption></figure><figure class="panel" id="panel-delivery"><div class="figure-head"><h3>In what order the tickets are built</h3><span>Order of the work</span></div><p class="figure-description">This applies after you give your OK on this plan. T1 and T2 can run side by side, and so can T4 and T5.</p><div class="canvas" tabindex="0" role="region" aria-label="Build order diagram" data-start-id="node-8-delivery-AP" style="--board-width:880px"><svg class="map" xmlns="http://www.w3.org/2000/svg" width="880" height="648" viewBox="0 0 880 648" role="img" aria-labelledby="delivery-title delivery-desc"><title id="delivery-title">In what order the tickets are built</title><desc id="delivery-desc">This applies after you give your OK on this plan. T1 and T2 can run side by side, and so can T4 and T5.</desc><defs><marker id="arrow-delivery" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="9" markerHeight="7" orient="auto"><path d="M 0 0 L 10 4 L 0 8 Z"/></marker></defs><path class="connector proposed" data-from="AP" data-to="B1" data-points="[[400, 80], [400, 104], [240, 104], [240, 128]]" d="M 400 80 L 400 96 Q 400 104 392 104 L 248 104 Q 240 104 240 112 L 240 128" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="AP" data-to="B2" data-points="[[480, 80], [480, 104], [640, 104], [640, 128]]" d="M 480 80 L 480 96 Q 480 104 488 104 L 632 104 Q 640 104 640 112 L 640 128" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B1" data-to="B3" data-points="[[240, 216], [240, 240], [400, 240], [400, 264]]" d="M 240 216 L 240 232 Q 240 240 248 240 L 392 240 Q 400 240 400 248 L 400 264" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B2" data-to="B3" data-points="[[640, 216], [640, 240], [480, 240], [480, 264]]" d="M 640 216 L 640 232 Q 640 240 632 240 L 488 240 Q 480 240 480 248 L 480 264" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B3" data-to="B4" data-points="[[376, 352], [376, 376], [240, 376], [240, 400]]" d="M 376 352 L 376 368 Q 376 376 368 376 L 248 376 Q 240 376 240 384 L 240 400" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B3" data-to="B5" data-points="[[504, 352], [504, 376], [640, 376], [640, 400]]" d="M 504 352 L 504 368 Q 504 376 512 376 L 632 376 Q 640 376 640 384 L 640 400" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B3" data-to="B6" data-points="[[440, 352], [440, 536]]" d="M 440 352 L 440 536" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B4" data-to="B6" data-points="[[240, 488], [240, 512], [392, 512], [392, 536]]" d="M 240 488 L 240 504 Q 240 512 248 512 L 384 512 Q 392 512 392 520 L 392 536" marker-end="url(#arrow-delivery)"/><path class="connector proposed" data-from="B5" data-to="B6" data-points="[[640, 488], [640, 512], [488, 512], [488, 536]]" d="M 640 488 L 640 504 Q 640 512 632 512 L 496 512 Q 488 512 488 520 L 488 536" marker-end="url(#arrow-delivery)"/><g id="node-8-delivery-AP" class="node start proposed " data-id="AP" data-box="296,16,288,64"><title>You approve this plan. proposed / unchanged. </title><rect class="node-shape" x="296" y="16" width="288" height="64" rx="20"/><text class="node-title" x="440" y="54" text-anchor="middle">You approve this plan</text></g><g id="node-8-delivery-B1" class="node action proposed " data-id="B1" data-box="96,128,288,88"><title>T1 Default depth. proposed / modified. </title><rect class="node-shape" x="96" y="128" width="288" height="88" rx="6"/><text class="node-title" x="240" y="168" text-anchor="middle">T1 Default depth</text><text class="node-note" x="240" y="192" text-anchor="middle">settings.py</text></g><g id="node-8-delivery-B2" class="node action proposed " data-id="B2" data-box="496,128,288,88"><title>T2 Grilling rule. proposed / modified. </title><rect class="node-shape" x="496" y="128" width="288" height="88" rx="6"/><text class="node-title" x="640" y="168" text-anchor="middle">T2 Grilling rule</text><text class="node-note" x="640" y="192" text-anchor="middle">questions stay in the chat</text></g><g id="node-8-delivery-B3" class="node action proposed " data-id="B3" data-box="296,264,288,88"><title>T3 The /spar skill. proposed / modified. </title><rect class="node-shape" x="296" y="264" width="288" height="88" rx="6"/><text class="node-title" x="440" y="304" text-anchor="middle">T3 The /spar skill</text><text class="node-note" x="440" y="328" text-anchor="middle">SKILL.md, T3.md, registration</text></g><g id="node-8-delivery-B4" class="node action proposed " data-id="B4" data-box="96,400,288,88"><title>T4 Process scenarios. proposed / modified. </title><rect class="node-shape" x="96" y="400" width="288" height="88" rx="6"/><text class="node-title" x="240" y="440" text-anchor="middle">T4 Process scenarios</text><text class="node-note" x="240" y="464" text-anchor="middle">tests/behavioral/spar.json</text></g><g id="node-8-delivery-B5" class="node action proposed " data-id="B5" data-box="496,400,288,88"><title>T5 Package documents. proposed / modified. </title><rect class="node-shape" x="496" y="400" width="288" height="88" rx="6"/><text class="node-title" x="640" y="440" text-anchor="middle">T5 Package documents</text><text class="node-note" x="640" y="464" text-anchor="middle">README, ARCHITECTURE, tests</text></g><g id="node-8-delivery-B6" class="node action proposed " data-id="B6" data-box="296,536,288,88"><title>T6 Live observation. proposed / modified. </title><rect class="node-shape" x="296" y="536" width="288" height="88" rx="6"/><text class="node-title" x="440" y="576" text-anchor="middle">T6 Live observation</text><text class="node-note" x="440" y="600" text-anchor="middle">real decision and scenarios</text></g></svg></div><figcaption></figcaption></figure></div></section><div class="block" id="before-after"><h3>Before and after</h3><div class="table-scroll"><table class="compare"><thead><tr><th scope="col">Situation</th><th scope="col">Today</th><th scope="col">After the change</th></tr></thead><tbody><tr><th scope="row">You plan a decision with GPT</th><td>You hold the Claude and GPT discussion by hand. Each round is started separately until both models agree (FINDINGS E8).</td><td class="after">You type /spar. A fresh Claude and GPT debate the decision, and you answer only the questions that belong to you. </td></tr><tr><th scope="row">Two models say they agree</th><td>No rule stops two models from agreeing without evidence. The cross-model debate exists only by hand (FINDINGS Overlap).</td><td class="after">Agreement counts only when both judged the same version. The coordinator checks the evidence and sends an unsupported agreement back as an objection. </td></tr><tr><th scope="row">GPT is not reachable</th><td>No sparring skill exists. Other skills, such as interrogate, fall back to a fresh subagent without asking you (FINDINGS E2).</td><td class="after">/spar says that GPT is missing or that the check failed, and asks you how to proceed. It never switches models by itself. </td></tr><tr><th scope="row">Questions without task files</th><td>grilling always saves questions in FINDINGS and choices in DECISIONS.</td><td class="after">Without task records, the questions, options, answers and sources stay in the conversation, and no files are written. </td></tr></tbody></table></div></div><div class="block" id="constraints"><h3>Constraints</h3><ul class="list--keep"><li>The hooks, the offer model and the approvals stay as they are.</li><li>workflow-specify keeps the HOW: the plan, the approval view and the offer.</li><li>plan-review and /interrogate stay separate. /spar never runs them.</li><li>Only the task owner writes task records. Debaters only read and return findings.</li><li>No skill or file is removed.</li><li>The main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched. All work happens in the worktree D:/workflow-axa-redesign.</li><li>No Git commit or push. The release is a separate step.</li></ul></div></section><section class="section" aria-labelledby="alternatives"><h2 class="section__title" id="alternatives">Alternatives considered</h2><ul class="list"><li>D1: /spar is a new skill that you start, and it owns only the debate. It plugs into workflow-clarify. You chose it over an option inside workflow-clarify and over a standalone skill with its own document. It keeps one small skill for the only new part.</li><li>D3: Only you start /spar. The workflow may recommend it for high-stakes work but never runs it. You chose this over the workflow running it by itself, because each round costs model runs.</li><li>D4: The result goes into the agreement in PLAN.md as an Approach part, and the rounds go to FINDINGS. You chose this over a separate SPAR.md, so that there is one agreement and one approval.</li><li>D5: Two fresh debaters always run, a fresh Claude subagent and GPT. The coordinator only frames, compares and records. You chose this over the coordinator debating as the Claude side, which halves the runs but weakens independence.</li><li>D6: until-agreement has no pauses and no ceiling. It writes a progress line each round and stops on no progress, repeated arguments, missing evidence, an open decision of yours or your stop. You chose this over a pause every 5 rounds. A number as depth gives a budget when you want one.</li><li>D8: The blind opening always runs, and depth counts the exchanges after it. The default is standard, saved through settings.py, and the command overrides it without saving. You chose this over counting the opening as a round.</li><li>D2 and D7, superseded by D10: a missing GPT first led to an automatic fresh helper of the same model, with a label. D10 replaced this. Now the coordinator asks you how to proceed, and that helper is one option you can choose.</li><li>D9: You agreed agreement 2 with four additions. Your words said &quot;three final adjustments&quot; and then added a fourth about the tests (D12). The coordinator is neutral but active. Foundation checks separate facts, assumptions and contradictions. Research scales with risk, not with depth. Tests cover the failure cases, not only the happy path.</li><li>D10: You answered Q9 with neither option. /spar is an interactive sparring skill, not a decision engine, and you are the third participant. The tests check the decision process, not predetermined answers. Unclear priorities, trade-offs or risk go to you through grilling.</li><li>D11: You answered offer #1 (b0b0fa425dd9a16c) with &quot;Approve from this summary&quot;, which also agreed to agreement 3. The report was recommended then and not chosen.</li><li>D12: After that approval, you asked to see the plan before the build (&quot;also let me first see the plan before we build&quot;). This report answers that request, and offer #1 is asked again, so the agent waits for your OK on it. You also asked for the hook bug F1 to be fixed (&quot;That bug needs fixing&quot;). It becomes a separate task.</li></ul></section><section class="section" aria-labelledby="concerns"><h2 class="section__title" id="concerns">Cross-cutting concerns</h2><ul class="risks"><li>Live behavior is proven only in T6. Offline tests show that the skill text states each rule. They cannot show that a model follows it (FINDINGS S5).</li><li>The skill depends on how well a model follows its text. Debaters may still agree without evidence or repeat themselves. The checks of the coordinator (R11) and the T6 scenarios address this, but they observe behavior and do not guarantee it.</li><li>Cost: T6 can use up to 26 debater launches and 8 coordinator sessions. Each batch runs only after your OK right before it, and you may stop after any batch. No research agents run, and no retry happens without your OK. Subscription limits apply. Each normal /spar exchange also launches two debaters.</li><li>The approval hook has a bug (FINDINGS F1). An approval given with the button of the question tool does not lift an earlier &quot;Do not implement until I approve that plan&quot; pause. Every write is then refused until you type a continue. This offer excludes hooks, so the fix becomes a separate task that you asked for (D12).</li><li>The &quot;capability check failed&quot; case cannot be staged safely. It stays NOT VERIFIED unless it happens by itself (TODO T6).</li></ul></section><section class="section" aria-labelledby="the-work"><h2 class="section__title" id="the-work">The work</h2><p class="section__summary">The implementation plan: 6 tickets, built after you approve.</p><div class="block"><h3>How it is tested</h3><p>Offline contract tests run in the normal suite. tests/test_spar.py pins one rule for each requirement, and tests/test_settings.py covers the depth setting. tests/test_owned_skills.py covers the new case of grilling. tools/validate.py must pass with 20 skills. Tests come first in T1 to T4.</p><p>Live process scenarios run only in ticket T6, in T3 Code, on disposable pilot projects outside every checkout. They stage situations such as unclear priorities, false consensus, stagnation, missing GPT and a questionable architecture. Each one is recorded as observed, not provoked, or failed. No scenario prescribes the recommended answer (A5, D10).</p><p>GPT-6 Astra and a fresh Opus review the skill text until both agree. At the end the full suite runs with `python -X utf8 -m unittest discover -s tests -p &quot;test_*.py&quot;`.</p></div><div class="tickets"><article class="ticket" id="spec-T1" aria-labelledby="spec-T1-title"><p class="ticket__stub">Ticket <span class="ticket__key">T1</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T1-title">Save and read the default debate depth</h3><p>settings.py learns one more setting, `spar.default_depth`. You set it with `settings.py spar depth &lt;quick|standard|deep|until-agreement|N&gt;`, and `settings.py show` prints it. The css switch and any unknown keys stay unchanged. Only settings.py and tests/test_settings.py change. Tests come first.</p><p>A missing value reads as standard. An invalid saved value reads as standard with a notice. An invalid value on the command line is refused with the allowed values. N is a whole number from 1 upward.</p></div><dl class="ticket__facts"><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A2"><span class="check__key">A2</span><p class="check__expect">Tests pin the contract of the skill. They cover the depth names and counting, the progress rule, the outcome order, the labels and the WHAT/HOW boundary. They also cover no implementation, the no-task path, and how settings.py reads, sets and defaults `spar.default_depth`.</p><p class="check__how">Checked by: tests/test_spar.py holds one contract check for each requirement (TODO T3). tests/test_settings.py covers the setting (TODO T1). New cases fail first, then pass, under `python -X utf8 -m unittest discover -s tests -p &quot;test_spar.py&quot;` and `-p &quot;test_settings.py&quot;`.</p><span class="state">Not checked</span></li></ol></dd><dt>Touches</dt><dd><code>skills/workflow/scripts/settings.py, tests/test_settings.py</code></dd></dl></article><article class="ticket" id="spec-T2" aria-labelledby="spec-T2-title"><p class="ticket__stub">Ticket <span class="ticket__key">T2</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T2-title">Let grilling keep questions in the conversation when there are no task records</h3><p>grilling gets one added case: no task records, or no writes allowed (Inspect, or a /spar without a task). Then the exact questions, options, recommendations, answers and sources stay in the conversation. Its rounds, question format and stop rules stay the same. Its LICENSE and credit stay as they are. The grilling row of docs/RULE-CONTRACTS.md names the new case. A contract test comes first.</p><p>Grilling inside a task records exactly as today. Grilling without task records creates no files. &quot;Record answers&quot; and the `by: agent` DECISIONS line both name the conversation instead.</p></div><dl class="ticket__facts"><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A3"><span class="check__key">A3</span><p class="check__expect">The no-records rule of grilling, the /spar row in SPECIALISTS.md and the Approach part in the agreement of workflow-clarify are in place and tested.</p><p class="check__how">Checked by: Run `python -X utf8 -m unittest discover -s tests -p &quot;test_owned_skills.py&quot;` and `-p &quot;test_spar.py&quot;`, then tools/validate.py.</p><span class="state">Not checked</span></li></ol></dd><dt>Touches</dt><dd><code>skills/grilling/SKILL.md, tests/test_owned_skills.py, docs/RULE-CONTRACTS.md (grilling row)</code></dd></dl></article><article class="ticket" id="spec-T3" aria-labelledby="spec-T3-title"><p class="ticket__stub">Ticket <span class="ticket__key">T3</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T3-title">Add the /spar skill and plug it into the workflow</h3><p>Create `skills/spar/SKILL.md` with `disable-model-invocation: true`. It runs the eight steps of agreement 3: frame, foundations, owner questions, blind opening, exchanges, end, result and handoff. It reads the bundled skills by path and names `research` and `diagnosing-bugs` only as optional external specialists. It copies none of their rules.</p><p>`skills/spar/T3.md` holds the capability check and its three answers, the debater brief, the ledger format, one new task per exchange, and `task_cancel` on stop. /spar reads it on every run. `skills/spar/agents/openai.yaml` sets `allow_implicit_invocation: false`, and `.claude-plugin/plugin.json` registers `./skills/spar`.</p><p>SPECIALISTS.md gets a /spar row: started by you, recommended for high-stakes choices, never run by the workflow. Step 3 of workflow-clarify accepts an optional Approach part from /spar. CONTEXT.md gets the term &quot;Spar&quot;, and docs/RULE-CONTRACTS.md gets a /spar row. The current skill count goes from 19 to 20. The hooks, the offer model, workflow-specify, plan-review and interrogate do not change.</p><p>tests/test_spar.py holds one contract check for each requirement, written before the skill. GPT-6 Astra and a fresh Opus review the skill text until both agree.</p></div><dl class="ticket__facts"><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T1">T1</a> Save and read the default debate depth <a class="ticket-ref" href="#spec-T2">T2</a> Let grilling keep questions in the conversation when there are no task records</dd><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A1"><span class="check__key">A1</span><p class="check__expect">/spar is registered and user-invoked only in both hosts. tools/validate.py passes.</p><p class="check__how">Checked by: Run `python -X utf8 -I tools/validate.py`. It must pass with 20 skills. tests/test_spar.py looks for `disable-model-invocation: true` and `allow_implicit_invocation: false`.</p><span class="state">Not checked</span></li><li class="check check--ref"><span class="check__key">A2</span><p class="check__how">Listed under <a href="#a-A2">T1</a>. It applies to this ticket too.</p></li><li class="check check--ref"><span class="check__key">A3</span><p class="check__how">Listed under <a href="#a-A3">T2</a>. It applies to this ticket too.</p></li></ol></dd><dt>Touches</dt><dd><code>skills/spar/ (new), .claude-plugin/plugin.json, skills/workflow/SPECIALISTS.md, skills/workflow-clarify/SKILL.md, CONTEXT.md, docs/RULE-CONTRACTS.md (/spar row), tests/test_spar.py (new), tests/test_package.py, tests/test_package_contract.py</code></dd></dl></article><article class="ticket" id="spec-T4" aria-labelledby="spec-T4-title"><p class="ticket__stub">Ticket <span class="ticket__key">T4</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T4-title">Stage the process scenarios and pin the rules they rely on</h3><p>Write `tests/behavioral/spar.json`. Every scenario has `mode: live-host` and `result: NOT_RUN` until it is observed. Each scenario has a staged situation, the process checks to observe, and an explicit &quot;no prescribed answer&quot;. The scenarios cover unclear priorities, a disputed objective fact, false consensus, stagnation and unresolved objections. They also cover missing GPT, a questionable existing architecture, no codebase or task, and cancel during a run.</p><p>A test in tests/test_spar.py reads the file. It looks for every scenario, for no prescribed answer, and for each named rule in the skill text. This is authored coverage only. Nothing here counts as observed behavior.</p><p>False consensus: &quot;agreed&quot; is reported only after the gap is closed with evidence. Otherwise the gap stays an open objection under another outcome. Stagnation: the coordinator first looks for a question to you that could unblock the debate. It reports &quot;stalled&quot; with both positions only when no such question exists.</p></div><dl class="ticket__facts"><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T3">T3</a> Add the /spar skill and plug it into the workflow</dd><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A5"><span class="check__key">A5</span><p class="check__expect">The tests check the decision process, not predetermined conclusions. Scenarios stage uncertainty, false consensus, stagnation, unresolved objections, missing GPT and a questionable existing architecture. They look for a skill that recognizes uncertainty, researches what is objective, and asks you only relevant questions, and none when evidence settles the point. They also look for a skill that uses your answers, revises or defends positions with reasons, and reports remaining disagreement. No scenario prescribes the recommended answer.</p><p class="check__how">Checked by: T4 writes the scenarios in tests/behavioral/spar.json with result NOT_RUN. T6 runs them live, each batch only after your OK, and records each one as observed, not provoked, or failed. The &quot;capability check failed&quot; case stays NOT VERIFIED unless it happens by itself.</p><span class="state">Not checked</span></li><li class="check check--ref"><span class="check__key">A2</span><p class="check__how">Listed under <a href="#a-A2">T1</a>. It applies to this ticket too.</p></li></ol></dd><dt>Touches</dt><dd><code>tests/behavioral/spar.json (new), tests/test_spar.py</code></dd></dl></article><article class="ticket" id="spec-T5" aria-labelledby="spec-T5-title"><p class="ticket__stub">Ticket <span class="ticket__key">T5</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T5-title">Update the package documents for the new skill</h3><p>README lists /spar with the other user commands and says 20 skills. docs/ARCHITECTURE.md places /spar before the agreement of workflow-clarify (WHAT and WHY) and workflow-specify after it (HOW). tests/README.md names tests/test_spar.py and tests/behavioral/spar.json and says that the scenarios are live-only. The CHANGELOG entry is written at release, not here.</p><p>tools/validate.py passes its count and link checks, and the full suite passes.</p></div><dl class="ticket__facts"><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T3">T3</a> Add the /spar skill and plug it into the workflow</dd><dt>Done when</dt><dd><ol class="checks"><li class="check check--ref"><span class="check__key">A1</span><p class="check__how">Listed under <a href="#a-A1">T3</a>. It applies to this ticket too.</p></li></ol></dd><dt>Touches</dt><dd><code>README.md, docs/ARCHITECTURE.md, tests/README.md</code></dd></dl></article><article class="ticket" id="spec-T6" aria-labelledby="spec-T6-title"><p class="ticket__stub">Ticket <span class="ticket__key">T6</span><span class="ticket__status ticket__status--requested">Planned</span></p><div class="ticket__main"><h3 class="ticket__title" id="spec-T6-title">Observe /spar live: one real decision and the staged scenarios</h3><p>The agent builds a ZIP of the candidate with tools/build_release.py. For each run, a new project under D:/workflow-axa-spar-pilot/&lt;run&gt;/ gets the 20 skill folders in `.claude/skills/`, and a T3 Code thread opened on it loads them. Each run records the snapshot id of the source worktree. It also records the transcript line that shows /spar loaded from that project, not from the installed plugin.</p><p>Run 1 is a real decision that you pick, at quick depth. Runs 2 to 6 stage unclear priorities, a disputed fact outside any task, and false consensus. They also stage stagnation at standard depth and questionable architecture on a small sample repository. Run 7 is missing GPT in a Claude Code CLI session, and run 8 is a cancel during run 2.</p><p>The total cap is 26 debater launches and 8 coordinator sessions. No research agents run, and no retry happens without your OK. Each batch runs only after your OK right before it. The pilot folders are removed after the evidence is recorded, except a run kept as evidence of a failure.</p><p>Each scenario is recorded against its own T4 process checks as observed (with the quote), not provoked, or failed. The &quot;capability check failed&quot; case cannot be staged safely and stays NOT VERIFIED unless it happens by itself.</p></div><dl class="ticket__facts"><dt>Depends on</dt><dd><a class="ticket-ref" href="#spec-T3">T3</a> Add the /spar skill and plug it into the workflow <a class="ticket-ref" href="#spec-T4">T4</a> Stage the process scenarios and pin the rules they rely on <a class="ticket-ref" href="#spec-T5">T5</a> Update the package documents for the new skill</dd><dt>Done when</dt><dd><ol class="checks"><li class="check" id="a-A4"><span class="check__key">A4</span><p class="check__expect">A live T3 Code run on a small real decision shows the frame and a blind opening by a fresh Claude and GPT. It also shows at most the chosen number of exchanges, one outcome from the list, and records only inside a task. Until it runs, it stays NOT_RUN.</p><p class="check__how">Checked by: T6 run 1 at quick depth, with at most 4 debater launches, only after your OK. The agent reads the transcript and records each point as observed (with the quote), not provoked, or failed.</p><span class="state">Not checked</span></li><li class="check check--ref"><span class="check__key">A5</span><p class="check__how">Listed under <a href="#a-A5">T4</a>. It applies to this ticket too.</p></li></ol></dd><dt>Touches</dt><dd><code>D:/workflow-axa-spar-pilot/&lt;run&gt;/ (outside every checkout, removed after the evidence is recorded), docs/plans/2026-11-17-spar-skill/FINDINGS.md (observations), tests/behavioral/spar.json (results)</code></dd></dl></article></div></section><details class="appendix" id="technical-details"><summary>Reference: requirements, evidence and sources</summary><div class="appendix-body"><p class="muted">This page is generated from the task records. It approves nothing, it does not show who approved, and it does not prove that a check ran. Waived or unverified work is not a passed check.</p><section><h2>Behavior agreement record</h2><p>Status: <strong>approved</strong> · agreement 3</p><p>Recorded response:</p><blockquote>Approve from this summary</blockquote><small>Source: <a href="#s-decisions">decisions</a>, DECISIONS.md D11</small></section><section><h2>Requirements</h2><div class="table-scroll"><table><thead><tr><th>ID</th><th>Requirement</th><th>Source</th><th>Covered by</th></tr></thead><tbody><tr id="r-R1"><td><strong>R1</strong></td><td>Only you start /spar, with `/spar &lt;problem&gt; [depth]`. It decides WHAT and WHY for one decision. /workflow decides HOW. /spar never implements.</td><td>PLAN.md Agreement R1. DECISIONS D3. Owner revision 2, items 8 and 9.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T5">T5</a><br><a href="#a-A1">A1</a> <a href="#a-A2">A2</a> <a href="#a-A3">A3</a></td></tr><tr id="r-R2"><td><strong>R2</strong></td><td>/spar reuses existing skills and owns only the debate. grilling asks your questions. workflow-clarify step 1 finds the facts inside a task. codebase-design judges architecture weakness, and domain-modeling handles terms. `research` and `diagnosing-bugs` are used only when installed, read-only, and they never fix anything.</td><td>PLAN.md Agreement R2. Owner revision 2, item 6. FINDINGS E12, E13.</td><td><a href="#spec-T3">T3</a><br><a href="#a-A2">A2</a> <a href="#a-A3">A3</a></td></tr><tr id="r-R3"><td><strong>R3</strong></td><td>/spar challenges the foundations in proportion to the decision. It writes down the premises that the code, docs, tests and past decisions give it. It tests the premises the decision depends on and marks each one checked, contradicted or unverified. It names weaknesses, debt, and whether a refactor must come first.</td><td>PLAN.md Agreement R3. Owner revision 2, item 3.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R4"><td><strong>R4</strong></td><td>Two fresh debaters, a fresh Claude subagent and GPT through T3 Code, get the same frame and criteria. In the blind opening, neither sees the other. The coordinator argues no side. It frames the decision, checks objections and evidence, compares, and records.</td><td>PLAN.md Agreement R4. DECISIONS D5. Owner revision 2, item 4.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A4">A4</a></td></tr><tr id="r-R5"><td><strong>R5</strong></td><td>Depth is quick (1), standard (3), deep (5), a number, or until-agreement. It counts the exchanges after the opening. The default is standard, saved as `spar.default_depth` in `~/.workflow-axa/settings.json` through settings.py. The command overrides it.</td><td>PLAN.md Agreement R5. DECISIONS D8. Owner revision 2, item 1.</td><td><a href="#spec-T1">T1</a> <a href="#spec-T3">T3</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A4">A4</a></td></tr><tr id="r-R6"><td><strong>R6</strong></td><td>A round makes progress only with new discriminating evidence, a reasoned resolution, or a revision that fixes a named weakness. One exchange without progress stops the debate as stalled, and a repeated objection without new grounds is not progress. Before the coordinator calls a round stalled, it looks for a targeted question to you that could unblock it, and asks that question. Evidence that nobody can get makes the point unverifiable and sends it to you. An open decision of yours pauses the debate that depends on it. You stop the debate in plain words, which also cancels running delegates, and a late result cannot restart it.</td><td>PLAN.md Agreement R6. DECISIONS D6, D10. Owner revision 2, item 2.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A4">A4</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R7"><td><strong>R7</strong></td><td>Agreement means that both debaters judged the same proposal version and closed its material objections with reasons. A switch to the other side&#x27;s already reviewed proposal needs no extra round. A mix of both is a new version that both must review. Nobody forces consensus.</td><td>PLAN.md Agreement R7. FINDINGS S1 O1, S4 C4. Owner revision 2, items 4 and 6.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R8"><td><strong>R8</strong></td><td>You are the third participant. The agent researches and checks objective technical questions and never asks you about them. When requirements, priorities, trade-offs or acceptable risk are unclear, grilling asks you instead of the models guessing. No question is asked when evidence already settles the point. Questions reopen when the debate finds a new unknown. After your answer, each side revises its position or says why the answer does not change it.</td><td>PLAN.md Agreement R8. DECISIONS D10. Owner revision 2, item 5.</td><td><a href="#spec-T2">T2</a> <a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A3">A3</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R9"><td><strong>R9</strong></td><td>GPT is reached through the real capability list of T3 Code and `delegate_task`, with a new task for each exchange and `task_cancel` on stop. When GPT is unavailable or the capability check fails, the coordinator says so and asks you how to proceed. It never substitutes another model by itself. A failed check is reported as a failure, never as &quot;GPT absent&quot;. With no second agent at all, it reports that sparring is not available.</td><td>PLAN.md Agreement R9. DECISIONS D10, which replaces D2 and D7. Owner revision 2, item 7.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A4">A4</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R10"><td><strong>R10</strong></td><td>/spar works for any kind of decision: features, changes, bugs, architecture, refactoring, tooling and general technical choices. It works with or without a codebase or task.</td><td>PLAN.md Agreement R10. Owner revision 2, item 10.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A4">A4</a></td></tr><tr id="r-R11"><td><strong>R11</strong></td><td>The coordinator is neutral but active. It argues no side, but it checks the cited evidence of each objection itself before it marks the objection resolved. It challenges agreement that rests on no evidence, because two &quot;agree&quot; answers without reasons are not agreement. It sends the gap back as an objection.</td><td>PLAN.md Agreement R11. DECISIONS D9.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R12"><td><strong>R12</strong></td><td>Foundation checks sort every premise into a verified fact, an unverified assumption or a contradiction. Passing tests show behavior, not that the architecture is right. Where premises are weak, the result shows the evidence and the alternatives and recommends one. The alternatives are refactor first, investigate first, or build on it as is. When that choice changes scope or priorities, grilling asks you. /spar refactors nothing.</td><td>PLAN.md Agreement R12. DECISIONS D9, D10.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R14"><td><strong>R14</strong></td><td>Unresolved objections are never dismissed. Each one is either a technical disagreement, reported with both positions and their evidence, or a decision that belongs to you, asked through grilling.</td><td>PLAN.md Agreement R14. DECISIONS D10.</td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T6">T6</a><br><a href="#a-A2">A2</a> <a href="#a-A5">A5</a></td></tr><tr id="r-R13"><td><strong>R13</strong></td><td>The amount of research and foundation checking follows the complexity and risk of the decision, not the debate depth. A quick debate on a risky decision still gets a full foundation check. A deep debate on a simple decision adds no research that it does not need.</td><td>PLAN.md Agreement R13. DECISIONS D9.</td><td><a href="#spec-T3">T3</a><br><a href="#a-A2">A2</a></td></tr></tbody></table></div></section><section><h2>Tickets: reason and evidence</h2><div class="table-scroll"><table><thead><tr><th>Ticket</th><th>Why it is needed</th><th>Evidence</th><th>Depends on</th></tr></thead><tbody><tr id="t-T1"><td><strong>T1</strong></td><td>requested: /spar needs a saved default depth that the command can override without saving (D8).</td><td><a href="#e-D8">D8</a> <a href="#e-S3">S3</a></td><td>—</td></tr><tr id="t-T2"><td><strong>T2</strong></td><td>requested: Today grilling always writes FINDINGS and DECISIONS. A /spar without a task must write no files (FINDINGS S4 C3, S5).</td><td><a href="#e-E3">E3</a> <a href="#e-S4">S4</a> <a href="#e-S5">S5</a></td><td>—</td></tr><tr id="t-T3"><td><strong>T3</strong></td><td>requested: This is the only new part. No existing skill debates alternatives between models (FINDINGS E5, Overlap).</td><td><a href="#e-E1">E1</a> <a href="#e-E2">E2</a> <a href="#e-E5">E5</a> <a href="#e-E7">E7</a> <a href="#e-S4">S4</a></td><td><a href="#spec-T1">T1</a> <a href="#spec-T2">T2</a></td></tr><tr id="t-T4"><td><strong>T4</strong></td><td>requested: You asked for proof beyond the happy path, as a check of the process, not of fixed answers (D9, D10). The records give no requirement IDs for T4. Its requirement links are inferred from the text of A5.</td><td><a href="#e-D10">D10</a> <a href="#e-S5">S5</a></td><td><a href="#spec-T3">T3</a></td></tr><tr id="t-T5"><td><strong>T5</strong></td><td>requested: A new user-invoked skill must appear in the README, the architecture doc and the tests guide, and the skill counts change to 20 (FINDINGS E7).</td><td><a href="#e-E7">E7</a></td><td><a href="#spec-T3">T3</a></td></tr><tr id="t-T6"><td><strong>T6</strong></td><td>requested: Only a live run shows how a model follows the skill text (FINDINGS S5, DECISIONS D10). The records give no requirement IDs for T6. Its requirement links are inferred from the text of A4 and A5.</td><td><a href="#e-E1">E1</a> <a href="#e-D10">D10</a> <a href="#e-S6">S6</a></td><td><a href="#spec-T3">T3</a> <a href="#spec-T4">T4</a> <a href="#spec-T5">T5</a></td></tr></tbody></table></div></section><section><h2>Before and after: evidence</h2><ul class="plain"><li><strong>You plan a decision with GPT</strong>: <a href="#e-E8">E8</a> <a href="#e-E1">E1</a></li><li><strong>Two models say they agree</strong>: <a href="#e-E5">E5</a> <a href="#e-D9">D9</a></li><li><strong>GPT is not reachable</strong>: <a href="#e-E2">E2</a> <a href="#e-D10">D10</a></li><li><strong>Questions without task files</strong>: <a href="#e-E3">E3</a> <a href="#e-S4">S4</a></li></ul></section><section><h2>Where each part comes from</h2><ul class="plain"><li>Context and scope <small>Source: <a href="#s-plan">plan</a>, PLAN.md Goal. FINDINGS.md E1, E5, E8 and Overlap</small></li><li>Goals <small>Source: <a href="#s-plan">plan</a>, PLAN.md Agreement, Requirements and Acceptance</small></li><li>Non-goals <small>Source: <a href="#s-plan">plan</a>, PLAN.md Agreement, Not included, R1 and R12. offer-1.json exclusions. FINDINGS.md F1</small></li><li>Overview <small>Source: <a href="#s-plan">plan</a>, PLAN.md Agreement, What happens (steps 1 to 8) and Changes to the package</small></li><li>Alternatives considered <small>Source: <a href="#s-decisions">decisions</a>, DECISIONS.md D1 to D12. FINDINGS.md Questions Q1 to Q9</small></li><li>Cross-cutting concerns <small>Source: <a href="#s-findings">findings</a>, FINDINGS.md S5, F1. TODO.md T4, T6</small></li><li>How it is tested <small>Source: <a href="#s-todo">todo</a>, TODO.md T1 to T6, How to verify. offer-1.json checks</small></li><li>Read first: Approval hook bug F1: a button approval does not lift an earlier &quot;Do not implement until I approve that plan&quot; pause. You asked for a fix, and it becomes a separate task (D12). <small>Source: <a href="#s-findings">findings</a>, FINDINGS.md F1. DECISIONS.md D12</small></li><li>Read first: The live runs in T6 cost up to 26 debater launches and 8 coordinator sessions. Each batch runs only after your OK right before it. <small>Source: <a href="#s-todo">todo</a>, TODO.md T6, Technical details</small></li><li>Ticket T1 <small>Source: <a href="#s-todo">todo</a>, TODO.md T1</small></li><li>Ticket T2 <small>Source: <a href="#s-todo">todo</a>, TODO.md T2</small></li><li>Ticket T3 <small>Source: <a href="#s-todo">todo</a>, TODO.md T3</small></li><li>Ticket T4 <small>Source: <a href="#s-todo">todo</a>, TODO.md T4</small></li><li>Ticket T5 <small>Source: <a href="#s-todo">todo</a>, TODO.md T5</small></li><li>Ticket T6 <small>Source: <a href="#s-todo">todo</a>, TODO.md T6</small></li></ul></section><section><h2>Evidence and limits</h2><article id="e-E1" class="evidence"><strong>E1 · runtime: GPT is reachable through the T3 Code tool `delegate_task` with the codex provider and the model gpt-6-astra. Each round is a new `delegate_task`. Outside T3 Code no such tool exists.</strong><p>FINDINGS.md Evidence, E1</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Observed in T3 Code on 2026-11-16. Not observed in other hosts.</small></article><article id="e-E2" class="evidence"><strong>E2 · static: interrogate and no-comments use a different model through T3 Code when available, otherwise a fresh subagent, and label which one. Both are user-invoked.</strong><p>FINDINGS.md Evidence, E2 (skills/interrogate/SKILL.md:22, skills/no-comments/SKILL.md:15)</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Read from the skill text, as recorded in FINDINGS.</small></article><article id="e-E3" class="evidence"><strong>E3 · static: grilling already owns the questions to you: research first, rounds of lettered questions with a recommendation, saved before sending, and stop rules.</strong><p>FINDINGS.md Evidence, E3</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Read from skills/grilling/SKILL.md, as recorded in FINDINGS.</small></article><article id="e-E4" class="evidence"><strong>E4 · static: workflow-clarify owns the agreement (steps 1 to 4), then workflow-specify makes tickets and the offer.</strong><p>FINDINGS.md Evidence, E4</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Read from the skill text, as recorded in FINDINGS.</small></article><article id="e-E5" class="evidence"><strong>E5 · static: plan-review, interrogate and codebase-design critique or judge a plan. None proposes an approach or debates alternatives between models. The Overlap table shows the cross-model debate as the only gap.</strong><p>FINDINGS.md Evidence, E5 and its correction, and the Overlap table</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: codebase-design DESIGN-IT-TWICE.md compares competing interface designs, which is narrower.</small></article><article id="e-E7" class="evidence"><strong>E7 · static: A new user-invoked skill needs plugin.json registration, agents/openai.yaml with `allow_implicit_invocation: false`, a SPECIALISTS.md row, a CONTEXT.md term, README, CHANGELOG and tests.</strong><p>FINDINGS.md Evidence, E7</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Read from tools/validate.py and the package, as recorded in FINDINGS.</small></article><article id="e-E8" class="evidence"><strong>E8 · runtime: Today&#x27;s manual practice: Claude drafted, GPT-6 Astra critiqued in rounds, each round a new brief with the previous findings, until both agreed. You were asked only the decisions. A topic took 2 to 3 rounds.</strong><p>FINDINGS.md Evidence, E8</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: One session on 2026-11-16, recorded by the agent.</small></article><article id="e-S3" class="evidence"><strong>S3 · design: GPT designed /spar blind, without Claude&#x27;s sealed position. Both designs share the frame, the blind opening, the ledger and the stop rules. GPT proposed two fresh debaters and a comparing coordinator.</strong><p>FINDINGS.md Spar rounds, S3</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: A design debate, not a test of built behavior.</small></article><article id="e-S4" class="evidence"><strong>S4 · design: In the cross-examination round both sides agreed on proposal v4. Agreement binds to the version that both reviewed. Grilling keeps questions in the conversation when there are no task records.</strong><p>FINDINGS.md Spar rounds, S4 (C1 to C5)</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: A design debate, not a test of built behavior.</small></article><article id="e-S5" class="evidence"><strong>S5 · design: A fresh plan review found gaps in contract checks, scenario coverage and ticket fields. All findings were accepted and the TODO was revised.</strong><p>FINDINGS.md S5</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Review of the plan text only.</small></article><article id="e-S6" class="evidence"><strong>S6 · design: After fixes, the plan re-check by GPT-6 Astra passed and found the plan ready for your approval.</strong><p>FINDINGS.md S6</p><small>Sources: <a href="#s-findings">findings</a><br>Limits: Review of the plan text only.</small></article><article id="e-F1" class="evidence"><strong>F1 · static: The approval hook keeps a plan-only pause after an approval given with the question tool, because paused() in hooks/approval.py changes only on typed messages. Every write is refused until you type a continue.</strong><p>FINDINGS.md F1. PLAN.md Current checkpoint, Blockers</p><small>Sources: <a href="#s-findings">findings</a> <a href="#s-plan">plan</a><br>Limits: Read from the hook and seen in this session. The fix is outside this plan.</small></article><article id="e-D4" class="evidence"><strong>D4 · design: You chose that the result goes into the agreement in PLAN.md as an Approach part, and the rounds go to FINDINGS.</strong><p>DECISIONS.md D4</p><small>Sources: <a href="#s-decisions">decisions</a><br>Limits: A recorded decision, not built behavior.</small></article><article id="e-D5" class="evidence"><strong>D5 · design: You chose two fresh debaters every time, with a coordinator that only frames, compares and records.</strong><p>DECISIONS.md D5</p><small>Sources: <a href="#s-decisions">decisions</a><br>Limits: A recorded decision, not built behavior.</small></article><article id="e-D8" class="evidence"><strong>D8 · design: You chose that the blind opening always runs, depth counts the exchanges after it, and the default is saved through settings.py.</strong><p>DECISIONS.md D8</p><small>Sources: <a href="#s-decisions">decisions</a><br>Limits: A recorded decision, not built behavior.</small></article><article id="e-D9" class="evidence"><strong>D9 · design: You agreed agreement 2 with additions: an active neutral coordinator, three premise classes, research scaled to risk, and tests beyond the happy path.</strong><p>DECISIONS.md D9</p><small>Sources: <a href="#s-decisions">decisions</a><br>Limits: A recorded decision, not built behavior.</small></article><article id="e-D10" class="evidence"><strong>D10 · design: You made /spar an interactive sparring skill with you as the third participant. A missing GPT leads to a question to you. Tests check the process, not fixed answers. D10 replaces D2 and D7.</strong><p>DECISIONS.md D10</p><small>Sources: <a href="#s-decisions">decisions</a><br>Limits: A recorded decision, not built behavior.</small></article><article id="e-D11" class="evidence"><strong>D11 · design: You answered offer #1 (b0b0fa425dd9a16c) with &quot;Approve from this summary&quot;, which also agreed to agreement 3.</strong><p>DECISIONS.md D11. offers/offer-1.json hash b0b0fa425dd9a16c</p><small>Sources: <a href="#s-decisions">decisions</a> <a href="#s-offer">offer</a><br>Limits: A recorded answer. The offer file still shows state draft.</small></article><article id="e-D12" class="evidence"><strong>D12 · design: After approving offer #1, you asked to see the plan before the build and asked for the hook bug F1 to be fixed. F1 becomes a separate task. D12 also explains the three adjustments against four additions in D9.</strong><p>DECISIONS.md D12. PLAN.md Current checkpoint, Offer</p><small>Sources: <a href="#s-decisions">decisions</a> <a href="#s-plan">plan</a><br>Limits: A recorded decision, not built behavior.</small></article></section><details><summary>/spar: steps and links</summary><ol><li><strong>P1: You type /spar</strong>. a decision, optional depth (proposed, added)  Evidence <a href="#e-S4">S4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P2: Coordinator frames it</strong>. criteria, depth, debaters,
+and a premise check (proposed, added)  Evidence <a href="#e-S4">S4</a> <a href="#e-D9">D9</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P3: Something only
+you can decide?</strong>.  (proposed, added)  Evidence <a href="#e-D10">D10</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P4: You answer through grilling</strong>. facts are researched, not asked (proposed, modified)  Evidence <a href="#e-E3">E3</a> <a href="#e-D10">D10</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>P5: Claude and GPT open blind</strong>. both fresh, same brief,
+neither sees the other (proposed, added)  Evidence <a href="#e-S3">S3</a> <a href="#e-D5">D5</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P6: Both debaters exchange</strong>. rounds up to the depth (proposed, added)  Evidence <a href="#e-S4">S4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P7: Inside a
+task?</strong>.  (proposed, added)  Evidence <a href="#e-S4">S4</a> <a href="#e-D4">D4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P8: Result goes to the task</strong>. agreement Approach, then /workflow (proposed, added)  Evidence <a href="#e-D4">D4</a> <a href="#e-E4">E4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>P9: Result stays in the chat</strong>. no files, /workflow can use it (proposed, added)  Evidence <a href="#e-S4">S4</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>P1 → P2</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P2 → P3</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P3 → P4</strong>: Yes (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P3 → P5</strong>: No (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P4 → P5</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P5 → P6</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P6 → P7</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P7 → P8</strong>: Yes (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>P7 → P9</strong>: No (proposed, added)  Evidence —; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li></ol></details><details><summary>One exchange: steps and links</summary><ol><li><strong>X1: Each debater answers</strong>. objection, replies, changes (proposed, added)  Evidence <a href="#e-S4">S4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X2: Coordinator checks evidence</strong>. updates the objection ledger (proposed, added)  Evidence <a href="#e-D9">D9</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X3: Agreed on the
+same version?</strong>.  (proposed, added)  Evidence <a href="#e-S4">S4</a> <a href="#e-D9">D9</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X4: Debate ends: agreed</strong>. result goes to the handoff (proposed, added)  Evidence <a href="#e-S4">S4</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X5: Something only
+you can decide?</strong>.  (proposed, added)  Evidence <a href="#e-D10">D10</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X6: You answer through grilling</strong>. both sides get your answer (proposed, modified)  Evidence <a href="#e-E3">E3</a> <a href="#e-D10">D10</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>X7: Real progress
+this round?</strong>.  (proposed, added)  Evidence <a href="#e-S4">S4</a> <a href="#e-D10">D10</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X8: Next exchange starts</strong>. if rounds are left, otherwise
+ends: limit reached (proposed, added)  Evidence <a href="#e-D8">D8</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X9: Debate ends: stalled</strong>. both positions reported (proposed, added)  Evidence <a href="#e-D10">D10</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>X1 → X2</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X2 → X3</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X3 → X4</strong>: Yes (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X3 → X5</strong>: No (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X5 → X6</strong>: Yes (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X5 → X7</strong>: No (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X6 → X8</strong>: continues (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X7 → X8</strong>: Yes (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>X7 → X9</strong>: No (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li></ol></details><details><summary>Today: steps and links</summary><ol><li><strong>C1: You ask Claude</strong>. a planning question (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C2: Claude drafts an approach</strong>.  (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C3: GPT critiques the draft</strong>. a new brief each round,
+started by hand (observed, unchanged)  Evidence <a href="#e-E8">E8</a> <a href="#e-E1">E1</a>; tasks —.</li><li><strong>C4: Both models
+agree?</strong>.  (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C5: You make the choices</strong>. only the open decisions (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C6: Claude revises the draft</strong>. answers the critique (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C7: You start /workflow</strong>. it plans and asks for approval (observed, unchanged)  Evidence <a href="#e-E8">E8</a> <a href="#e-E4">E4</a>; tasks —.</li><li><strong>C1 → C2</strong>: continues (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C2 → C3</strong>: continues (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C3 → C4</strong>: continues (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C4 → C5</strong>: Yes (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C4 → C6</strong>: No (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C6 → C3</strong>: continues (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>C5 → C7</strong>: continues (observed, unchanged)  Evidence <a href="#e-E8">E8</a> <a href="#e-E4">E4</a>; tasks —.</li></ol></details><details><summary>Parts: steps and links</summary><ol><li><strong>Y: You</strong>. start, answer, stop (observed, unchanged)  Evidence <a href="#e-E8">E8</a>; tasks —.</li><li><strong>K: Coordinator (/spar)</strong>. frames, checks, records (proposed, added)  Evidence <a href="#e-S4">S4</a> <a href="#e-D9">D9</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>CL: Fresh Claude</strong>. subagent (proposed, added)  Evidence <a href="#e-S3">S3</a> <a href="#e-D5">D5</a>; tasks <a href="#t-T3">T3</a>.</li><li><strong>G: GPT via
+T3 Code</strong>. delegate_task (observed, unchanged)  Evidence <a href="#e-E1">E1</a>; tasks —.</li><li><strong>ST: Your settings.json</strong>. spar.default_depth (proposed, modified)  Evidence <a href="#e-D8">D8</a>; tasks <a href="#t-T1">T1</a>.</li><li><strong>SK: Reused skills</strong>.  (proposed, modified)  Evidence <a href="#e-E3">E3</a> <a href="#e-E4">E4</a>; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>TR: Task records</strong>. PLAN, FINDINGS, DECISIONS (observed, unchanged)  Evidence <a href="#e-E4">E4</a>; tasks —.</li><li><strong>Y → K</strong>: /spar, answers (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>K → Y</strong>: asks, reports (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>K → CL</strong>: brief (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>CL → K</strong>: position (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>K → G</strong>: brief (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>G → K</strong>: position (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>K → ST</strong>: default depth (proposed, added)  Evidence —; tasks <a href="#t-T1">T1</a> <a href="#t-T3">T3</a>.</li><li><strong>K → SK</strong>: uses by path (proposed, added)  Evidence —; tasks <a href="#t-T2">T2</a> <a href="#t-T3">T3</a>.</li><li><strong>K → TR</strong>: rounds, result (proposed, added)  Evidence —; tasks <a href="#t-T3">T3</a>.</li></ol></details><details><summary>Build order: steps and links</summary><ol><li><strong>AP: You approve this plan</strong>.  (proposed, unchanged)  Evidence —; tasks —.</li><li><strong>B1: T1 Default depth</strong>. settings.py (proposed, modified)  Evidence —; tasks <a href="#t-T1">T1</a>.</li><li><strong>B2: T2 Grilling rule</strong>. questions stay in the chat (proposed, modified)  Evidence —; tasks <a href="#t-T2">T2</a>.</li><li><strong>B3: T3 The /spar skill</strong>. SKILL.md, T3.md, registration (proposed, modified)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>B4: T4 Process scenarios</strong>. tests/behavioral/spar.json (proposed, modified)  Evidence —; tasks <a href="#t-T4">T4</a>.</li><li><strong>B5: T5 Package documents</strong>. README, ARCHITECTURE, tests (proposed, modified)  Evidence —; tasks <a href="#t-T5">T5</a>.</li><li><strong>B6: T6 Live observation</strong>. real decision and scenarios (proposed, modified)  Evidence —; tasks <a href="#t-T6">T6</a>.</li><li><strong>AP → B1</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T1">T1</a>.</li><li><strong>AP → B2</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T2">T2</a>.</li><li><strong>B1 → B3</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>B2 → B3</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T3">T3</a>.</li><li><strong>B3 → B4</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T4">T4</a>.</li><li><strong>B3 → B5</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T5">T5</a>.</li><li><strong>B3 → B6</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T6">T6</a>.</li><li><strong>B4 → B6</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T6">T6</a>.</li><li><strong>B5 → B6</strong>: continues (proposed, modified)  Evidence —; tasks <a href="#t-T6">T6</a>.</li></ol></details>
+<details class="snapshot"><summary>Inspected snapshot and supplied-source fingerprints</summary><p>workflow-axa, candidate worktree D:\workflow-axa-redesign · Detached at c5e954b, the same commit as main. The task folder is new and not committed.</p>
+<p>Built from the task records PLAN.md, TODO.md, FINDINGS.md, DECISIONS.md and offers/offer-1.json. Nothing is built yet. The current flow comes from the manual practice recorded in FINDINGS E8.</p><p>Generated 2026-11-17T00:05:05.535403+00:00. Hashes cover only these supplied files, including local changes. They do not prove complete code coverage or correctness.</p><div class="table-scroll"><table><thead><tr><th>ID</th><th>Source</th><th>Role</th><th>SHA-256 prefix</th></tr></thead><tbody><tr id="s-plan"><td>plan</td><td><code>docs/plans/2026-11-17-spar-skill/PLAN.md</code></td><td>plan</td><td><code>ead266f539ed9c47…</code></td></tr><tr id="s-todo"><td>todo</td><td><code>docs/plans/2026-11-17-spar-skill/TODO.md</code></td><td>todo</td><td><code>690212e3af0abacc…</code></td></tr><tr id="s-findings"><td>findings</td><td><code>docs/plans/2026-11-17-spar-skill/FINDINGS.md</code></td><td>findings</td><td><code>4b64ac6cada32730…</code></td></tr><tr id="s-decisions"><td>decisions</td><td><code>docs/plans/2026-11-17-spar-skill/DECISIONS.md</code></td><td>decisions</td><td><code>34c0e8143244586d…</code></td></tr><tr id="s-offer"><td>offer</td><td><code>docs/plans/2026-11-17-spar-skill/offers/offer-1.json</code></td><td>offer</td><td><code>171c7f514802fe84…</code></td></tr><tr id="s-report-input"><td>report-input</td><td><code>docs/plans/2026-11-17-spar-skill/reviews/plan-r1.json</code></td><td>projection</td><td><code>b3bbf9b1aaa57df3…</code></td></tr></tbody></table></div></details>
+</div></details></div></div></main><footer class="report-footer"><p>A saved snapshot. Progress belongs in the task records.</p></footer></div>
+<script type="application/json" id="report-manifest">{"schema_version": 1, "tool_version": "2.9.0-rc.2", "layout_version": 3, "style": "workflow-editorial-v1", "revision": "plan-r1", "report_kind": "review", "generated_utc": "2026-11-17T00:05:05.535403+00:00", "sources": [{"id": "plan", "role": "plan", "path": "docs/plans/2026-11-17-spar-skill/PLAN.md", "sha256": "ead266f539ed9c474a2fe0e17848b0b0b2ae26150fbb4c6324cab9f5d84b9f5a"}, {"id": "todo", "role": "todo", "path": "docs/plans/2026-11-17-spar-skill/TODO.md", "sha256": "690212e3af0abaccb0f190fa9d36ef9cb0f07b09e6277d18be9c2e0af6de22b6"}, {"id": "findings", "role": "findings", "path": "docs/plans/2026-11-17-spar-skill/FINDINGS.md", "sha256": "4b64ac6cada3273099eb2894b9006e0980fdb756ece27661c5ba6426470533b1"}, {"id": "decisions", "role": "decisions", "path": "docs/plans/2026-11-17-spar-skill/DECISIONS.md", "sha256": "34c0e8143244586d9d3b1b56d152da9580e37a77caf77f403ccf22c20029f910"}, {"id": "offer", "role": "offer", "path": "docs/plans/2026-11-17-spar-skill/offers/offer-1.json", "sha256": "171c7f514802fe8450bb47fbb4f0e37f10d7248a58f04bf9608f4c3503b4f6f7"}, {"id": "report-input", "role": "projection", "path": "docs/plans/2026-11-17-spar-skill/reviews/plan-r1.json", "sha256": "b3bbf9b1aaa57df3450e18e9aac26f32150be8c9ecf55ad345087d5c2e8edfa8"}], "write_paths": [".artifacts/2026-11-17-spar-skill/", ".claude-plugin/plugin.json", "CONTEXT.md", "README.md", "docs/ARCHITECTURE.md", "docs/RULE-CONTRACTS.md", "docs/plans/2026-11-17-spar-skill/", "skills/grilling/SKILL.md", "skills/spar/", "skills/workflow-clarify/SKILL.md", "skills/workflow/SPECIALISTS.md", "skills/workflow/scripts/settings.py", "tests/README.md", "tests/behavioral/spar.json", "tests/test_owned_skills.py", "tests/test_package.py", "tests/test_package_contract.py", "tests/test_settings.py", "tests/test_spar.py"]}</script><script>'use strict';
+// Native radio inputs and scrolling work without this progressive enhancement.
+function revealAnchor() {
+  const id = location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+  let parent = target.parentElement;
+  while (parent) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+    parent = parent.parentElement;
+  }
+  target.scrollIntoView({block:target.closest('.canvas') ? 'nearest' : 'start', inline:'center'});
+}
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener('click', () => {
+    const target = document.getElementById(anchor.getAttribute('href').slice(1));
+    let parent = target;
+    while (parent) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+      parent = parent.parentElement;
+    }
+  });
+}
+window.addEventListener('hashchange', revealAnchor);
+if (location.hash) revealAnchor();
+function centerEntry(canvas) {
+  if (!canvas.clientWidth) return;
+  const node = document.getElementById(canvas.dataset.startId);
+  if (!node) return;
+  const bounds = node.getBoundingClientRect();
+  const viewport = canvas.getBoundingClientRect();
+  canvas.scrollLeft += bounds.x + bounds.width/2 - viewport.x - viewport.width/2;
+}
+function centerVisibleEntries() {
+  for (const canvas of document.querySelectorAll('.canvas')) centerEntry(canvas);
+}
+for (const input of document.querySelectorAll('.review input[type="radio"]')) {
+  input.addEventListener('change', centerVisibleEntries);
+}
+const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
+  for (const entry of entries) centerEntry(entry.target);
+}) : null;
+for (const canvas of document.querySelectorAll('.canvas')) {
+  // On narrow screens show the entry node, not the diagram's empty left margin.
+  resizeObserver?.observe(canvas);
+  let drag = null;
+  canvas.addEventListener('keydown', event => {
+    const choices = ['100', '125', '150'];
+    const selected = document.querySelector('input[name="diagram-zoom"]:checked');
+    if (!selected) return;  // diagrams that fit the column have no zoom controls
+    let index = choices.indexOf(selected.id.slice(5));
+    let next = null;
+    if (event.key === '+' || event.key === '=') next = choices[Math.min(2, index+1)];
+    else if (event.key === '-') next = choices[Math.max(0, index-1)];
+    else if (event.key.toLowerCase() === 'f') next = 'fit';
+    else if (event.key === '0') next = '100';
+    if (next) {
+      event.preventDefault();
+      const input = document.getElementById('zoom-'+next);
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = {x:event.clientX, scroll:canvas.scrollLeft};
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', event => {
+    if (drag) canvas.scrollLeft = drag.scroll + drag.x-event.clientX;
+  });
+  const stop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  canvas.addEventListener('lostpointercapture', stop);
+}
+
+centerVisibleEntries();
+
+
+// Highlight the contents entry for the section being read.
+(function () {
+  const links = [...document.querySelectorAll('.toc__link')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (!targets.length) return;
+  function update() {
+    const line = Math.min(window.innerHeight * 0.3, 240);
+    let current = targets[0];
+    for (const t of targets) { if (t.getBoundingClientRect().top - line <= 0) current = t; }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = targets[targets.length - 1];
+    for (const a of links) {
+      const on = a.getAttribute('href') === '#' + current.id;
+      a.setAttribute('aria-current', on ? 'true' : 'false');
+      if (on && a.closest('.toc').scrollWidth > a.closest('.toc').clientWidth) {
+        const nav = a.closest('.toc');
+        const r = a.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        if (r.left < n.left || r.right > n.right) nav.scrollLeft += r.left - n.left - 24;
+      }
+    }
+  }
+  let queued = false;
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); } }, {passive:true});
+  window.addEventListener('resize', update);
+  update();
+})();
+
+// Start diagrams on "Fit" when the whole board fits at a readable size.
+(function () {
+  const canvas = document.querySelector('.panel .canvas');
+  const fit = document.getElementById('zoom-fit');
+  if (!canvas || !fit || location.hash) return;
+  const visible = [...document.querySelectorAll('.canvas')].find(c => c.clientWidth);
+  if (!visible) return;
+  const board = parseFloat(getComputedStyle(visible).getPropertyValue('--board-width')) || 0;
+  if (board && visible.clientWidth < board && visible.clientWidth / board >= 0.6) {
+    fit.checked = true;
+    fit.dispatchEvent(new Event('change'));
+  }
+})();
+</script></body></html>

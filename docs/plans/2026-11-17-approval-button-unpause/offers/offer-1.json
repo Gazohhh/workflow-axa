@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-approval-button-unpause",
+  "created": "2026-11-17T00:10:13+00:00",
+  "canonical": {
+    "behaviour": "An offer approval given with the question tool's button (\"Approve from this summary\", also with \"(Recommended)\") or typed as /approve <N> counts as \"continue\" for the session pause, as a typed \"approve\" already does. It lifts a pause only when it answers a question or presentation that carries an offer; other answers lift nothing, and a withdrawal still ends the approval.",
+    "paths": [
+      "docs/plans/2026-11-17-approval-button-unpause/",
+      "hooks/approval.py",
+      "skills/workflow/VISUAL-REVIEW.md",
+      "tests/test_approval_hook.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to control_intent in phase_gate.py, the offer model or the approval rules in decide()",
+      "no git commit or push; the release is a separate step",
+      "the main checkout D:/workflow-axa and the installed plugin stay untouched"
+    ],
+    "conditions": [
+      "GPT-6 Astra reviews the code and the docs until it agrees",
+      "test first: the new cases fail before the fix",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "cd tests && python -X utf8 -m unittest test_approval_hook",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "ae6a296b304207b5",
+  "display": "Button approval lifts the pause",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "10358788-1a41-448c-ad5f-f4758080bfd9",
+    "presentation": "5153cbf4-f565-45c3-afe6-a46ae75237a2",
+    "recorded": "2026-11-17T00:11:53+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

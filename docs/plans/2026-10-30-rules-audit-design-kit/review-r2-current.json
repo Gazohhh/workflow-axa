@@ -6,7 +6,7 @@
   "state": "inspection",
   "snapshot": {
     "repository": "workflow-axa 2.7.0-rc.8 installed from an isolated snapshot; Altinstar and Cheflabels rule files",
-    "branch": "Snapshot = commit 9daf507 plus 19 recorded rc.8 files (provenance 08ad98cc...). Runtime C:/Users/Cem/.agents/skills = 111 files 5003ddfb.... Release ZIP cb822ad2.... Canonical D:/workflow-axa is concurrently owned by the modular 2.8.0-rc.1 task and is not this snapshot.",
+    "branch": "Snapshot = commit 9daf507 plus 19 recorded rc.8 files (provenance 08ad98cc...). Runtime ~/.agents/skills = 111 files 5003ddfb.... Release ZIP cb822ad2.... Canonical D:/workflow-axa is concurrently owned by the modular 2.8.0-rc.1 task and is not this snapshot.",
     "basis": "Disk checks, installed-helper checks, package tests in the isolated snapshot (546 ran = 534 passed + 12 skipped), and four live sessions (three completed, one failed to start). Global, runtime and project files lie outside this report root and are cited through FINDINGS.",
     "limits": "Profiles: T3 Claude Opus 5.5 (~/.claude) and T3 managed Codex gpt-6-astra (~/.codex). Loaded, followed and enforced are only partly observed; the routing added after the sessions is untested live. One machine only: teammates do not get this install automatically. Final independent review: no blocker in installation or project files; live acceptance INCOMPLETE."
   },
@@ -256,7 +256,7 @@
         "A6"
       ],
       "areas": [
-        "C:/Users/Cem/.agents/skills"
+        "~/.agents/skills"
       ],
       "depends_on": [
         "T1"

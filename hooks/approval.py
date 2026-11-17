@@ -18,7 +18,8 @@ proven from the host transcript, never from a stored flag:
   included, approves nothing: the agent writes a narrowed offer.
 - **After approval:** a later owner message that withdraws it ("revoke", "not approved") ends it; one that may narrow
   it (but, except, only, without ...) suspends it until a narrowed offer is approved; a stop pauses all writes until
-  the owner asks to continue, and the approval then holds again.
+  the owner asks to continue, and the approval then holds again. Approving a presented offer continues too: the
+  approve button on its question, or `/approve <N>` as the answer to its presentation (paused()).
 - **`/wait-what`** is a non-answer: only a re-presentation can be answered after it.
 - **History across sessions:** the project's transcripts are the history; nothing else is recorded, so no failed
   note can hide a withdrawal. Each transcript changed since the offer was made yields timed facts (decide); fold()
@@ -36,7 +37,9 @@ Task records and .artifacts stay writable. Errors fail closed for every recognis
 """
 from __future__ import annotations
 
+import glob
 import importlib.util
+import shlex
 import json
 import os
 import re
@@ -146,8 +149,8 @@ def shown(folder: Path, offer: dict) -> Shown:
     return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True))
 
 
-def offer_tasks(text: str, root: Path | None, before: str = "", question: dict | None = None) -> list[tuple[str, bool]]:
-    """The tasks a presentation moves the session to, each with whether it was format 2: only an offer recorded in
+def offer_tasks(text: str, root: Path | None, before: str = "", question: dict | None = None) -> list[tuple[str, bool, int]]:
+    """The tasks a presentation moves the session to, each with whether it was format 2 and the offer's id: only an offer recorded in
     that task of this project, shown exactly as its approval needs (format 2 visibly at the end of its block, after
     `before`, or as a question's own text; format 1 only for an offer recorded before format 2), so a made-up or
     hidden offer never moves the session. `question` is the question-tool question whose strings are `text`."""
@@ -171,7 +174,7 @@ def offer_tasks(text: str, root: Path | None, before: str = "", question: dict |
         else:
             ok = ends_with(before + text, view.text)
         if ok:
-            tasks.append((task, format_2))
+            tasks.append((task, format_2, offer_id))
     return tasks
 
 
@@ -185,6 +188,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
     events: list[Event] = []
     visible_block: list[str] = []
     awaiting_answer: list[Event] = []
+    calls: dict[str, list] = {}
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             entry = json.loads(line)
@@ -211,7 +215,9 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
             awaiting_answer = []
             for block in content:
                 if isinstance(block, dict) and block.get("type") == "tool_result" and not block.get("is_error"):
-                    events.append(Event("answer", uuid, tool_id=str(block.get("tool_use_id")), answers=result["answers"], time=time))
+                    tool_id = str(block.get("tool_use_id"))
+                    events.append(Event("answer", uuid, tool_id=tool_id, answers=result["answers"],
+                                        questions=calls.get(tool_id, []), time=time))
             visible_block = []
             continue
         if entry.get("type") == "assistant" and isinstance(content, list):
@@ -219,13 +225,14 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
             found = offer_tasks(visible, root, "".join(text + "\n\n" for text in visible_block))
             if visible.strip():
                 awaiting_answer = []
-            if any(not format_2 for _, format_2 in found):
+            if any(not format_2 for _, format_2, _ in found):
                 awaiting_answer = []
-            for task, format_2 in found:
+            for task, format_2, _ in found:
                 (awaiting_answer if format_2 else events).append(Event("task", uuid, task, time=time))
             if visible.strip():
                 events.append(Event("text", uuid, visible, time=time))
                 visible_block.append(visible)
+            events += [Event("offer_shown", uuid, str(offer_id), time=time) for _, _, offer_id in found]
             if any(isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") != "AskUserQuestion"
                    for b in content):
                 events.append(Event("tool", uuid, time=time))
@@ -234,13 +241,28 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
                 if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "AskUserQuestion":
                     data = block.get("input") or {}
                     questions = [q for q in data.get("questions", []) if isinstance(q, dict)] if isinstance(data, dict) else []
-                    asked_tasks = [t for q in questions for t, _ in offer_tasks(strings(q), root, question=q)]
-                    if asked_tasks:
+                    asked = [(q, t) for q in questions for t, _, _ in offer_tasks(strings(q), root, question=q)]
+                    if asked:
                         awaiting_answer = []
-                    for task in asked_tasks:
+                    for _, task in asked:
                         events.append(Event("task", uuid, task, time=time))
+                    calls[str(block.get("id"))] = questions
                     events.append(Event("question", uuid, tool_id=str(block.get("id")), questions=questions, time=time))
+                    if asked:
+                        events.append(Event("offer_asked", uuid, tool_id=str(block.get("id")),
+                                            questions=[q for q, _ in asked], time=time))
     return events
+
+
+def answer_to(event: Event, question: str) -> str:
+    """The answer to one asked question. A host may key it by the question without its surrounding whitespace (T3
+    Code drops a final line break); any other difference, two keys that both match, or two questions of the same
+    call that both match, finds nothing."""
+    alike = [q for q in event.questions if str(q.get("question", "")).strip() == question.strip()]
+    if len(alike) > 1:
+        return ""
+    found = [value for key, value in event.answers.items() if isinstance(key, str) and key.strip() == question.strip()]
+    return str(found[0]) if len(found) == 1 else ""
 
 
 def strings(value) -> str:
@@ -329,7 +351,7 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                 last_presented = None
         elif event.kind == "answer" and event.tool_id in asked:
             at, question = asked.pop(event.tool_id)
-            value = RECOMMENDED.sub("", str(event.answers.get(question, "")).strip().lower())
+            value = RECOMMENDED.sub("", answer_to(event, question).strip().lower())
             kind = "approve" if value in APPROVE_BUTTONS else "report" if value in REPORT_BUTTONS else "other"
             out.facts.append([event.time, kind, [event.uuid, at] if kind == "approve" else
                               f"the answer \"{value[:60]}\" to its question is not an approval; write a narrowed offer"])
@@ -565,12 +587,35 @@ def validated(folder: Path, offer: dict, transcript: Path, current: list[Event])
 
 
 def paused(current: list[Event]) -> bool:
-    """An unresumed stop in this session pauses every write; continuing restores the approvals."""
+    """An unresumed stop in this session pauses every write; continuing restores the approvals. Approving a presented
+    offer continues as a typed "approve" does: the approve button on the question that carries a validated offer
+    presentation (read_events' offer_asked), or a typed `/approve <N>` as the answer to offer N's validated presentation
+    (offer_shown, still open: no assistant text and no owner turn since). Any other answer lifts nothing."""
     g, state = gate(), False
+    open_ids: set[int] = set()
+    asked: dict[str, list[str]] = {}
     for event in current:
-        if event.kind == "user":
-            intent = g.control_intent(event.text)
-            state = True if intent == "pause" else False if intent == "resume" else state
+        if event.kind == "text":
+            open_ids = set()
+        elif event.kind == "offer_shown":
+            open_ids.add(int(event.text))
+        elif event.kind == "offer_asked":
+            open_ids = set()
+            asked[event.tool_id] = [str(q.get("question", "")) for q in event.questions]
+        elif event.kind == "answer":
+            open_ids = set()
+            values = {RECOMMENDED.sub("", answer_to(event, q).strip().lower())
+                      for q in asked.get(event.tool_id, [])}
+            state = False if values & APPROVE_BUTTONS else state
+        elif event.kind == "user":
+            slash = command(event.text)
+            typed = SLASH.match(f"/{slash[0]} {slash[1]}") if slash else None
+            if typed and typed[1] == "approve" and int(typed[2]) in open_ids:
+                state = False
+            else:
+                intent = g.control_intent(event.text)
+                state = True if intent == "pause" else False if intent == "resume" else state
+            open_ids = set()
     return state
 
 
@@ -718,7 +763,7 @@ def settings_answer(current: list[Event], value: str) -> str | None:
             answer = None
         elif event.kind == "answer":
             if question and question[1] and event.tool_id == question[1]:
-                value_given = str(event.answers.get(question[2], "")).strip().lower()
+                value_given = answer_to(event, question[2]).strip().lower()
                 answer = (question[0], value_given in YES_WORDS, event.uuid)
             else:
                 answer = None
@@ -933,6 +978,13 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
     bulk = g.bulk_delete(event, targets, project)
     if bulk:
         return bulk
+    redirected = git_elsewhere(event)
+    if redirected:
+        return redirected
+    targets = targets + worktree_changes(event, project)
+    elsewhere = another_worktree(event, targets, project, g)
+    if elsewhere:
+        return elsewhere
     targets = [t for t in targets if t[0] != "path" or (project.contains(t[1]) and not project.is_record(t[1]))]
     if not targets:
         return None
@@ -982,6 +1034,280 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
             return (f"workflow-axa: {label} waits for the rules question of task {waiting[0]['task']} (its checkpoint "
                     "says Rules: NEEDS_SETUP). Read-only work continues; ask the owner to set up rules now or skip "
                     "them for this task, and record the answer.")
+    return None
+
+
+SHELL_TOOLS = ("Bash", "PowerShell")
+GIT_REDIRECT = re.compile(r'(?:^|[\s;&|(])(?:--git-dir|--work-tree)\b'
+                          r'|\bGIT_(?:DIR|WORK_TREE|COMMON_DIR|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES'
+                          r'|NAMESPACE|CONFIG\w*)\s*=|-c\s*core\.(?:worktree|bare)\b', re.I)
+RUN_TIME = r'(?:\$|%\w+%|`)'
+RUN_TIME_REDIRECT = re.compile(r'>\s*\S*' + RUN_TIME)
+WRAPPERS = re.compile(r'^(?:sudo|command|exec|env|nohup|time|builtin)$|^\w+=\S*$', re.I)
+EVERY_ARGUMENT = {"rm", "rmdir", "truncate", "tee", "touch", "dd", "shred", "unlink", "chmod", "chown", "new-item",
+                  "remove-item", "clear-content", "rename-item", "del", "erase", "rd", "mkdir", "md"}
+LAST_ARGUMENT = {"cp", "mv", "install", "rsync", "ln", "mklink", "copy-item", "move-item", "copy", "move", "xcopy",
+                 "robocopy"}
+FIRST_ARGUMENT = {"set-content", "add-content", "out-file"}
+FOLDER_ARGUMENT = {"cd", "pushd", "set-location", "push-location", "sl"}
+WRITE_PROGRAMS = EVERY_ARGUMENT | LAST_ARGUMENT | FIRST_ARGUMENT | {"sed", "git", "bash", "sh", "pwsh", "powershell",
+                                                                    "python", "python3", "py", "node", "perl", "ruby"}
+VALUE_OPTIONS = {"sed": {"-e", "-f", "--expression", "--file"}, "truncate": {"-s", "--size", "-r", "--reference"}, "touch": {"-d", "-t", "-r", "--date", "--reference"},
+                 "mkdir": {"-m", "--mode"}, "md": {"-m"}, "install": {"-m", "-o", "-g", "--mode", "--owner", "--group"}}
+FIRST_IS_NOT_A_FILE = {"chmod", "chown"}
+GIT_READS = {"status", "log", "diff", "show", "blame", "grep", "rev-parse", "ls-files", "ls-tree", "cat-file", "describe",
+             "shortlog", "rev-list", "for-each-ref", "name-rev", "merge-base", "help", "version"}
+INDIRECT_WRITE = re.compile(
+    r'\b(?:bash|sh|zsh|dash|pwsh|powershell)(?:\.exe)?\s+(?:-\w+\s+)*[^\s;&|-]\S*\.(?:sh|ps1)\b'
+    r'|(?:^|[;&|]\s*)(?:source\s+|\.\s+|&\s*)\S+\.(?:sh|ps1)\b'
+    r'|\b(?:python3?|py|node|ruby|perl)(?:\.exe)?\b[^;&|\n]*\s-(?:c|e)\s[^\n]*'
+    r'(?:\.write\(|write_text|write_bytes|writeFile|appendFile|open\([^)]*[\'"][wax+]|unlink|remove\(|rmdir|rename\(|'
+    r'replace\(|shutil\.|rmSync|copyFile|truncate\(|File\.write|IO\.write)', re.I)
+
+
+def shell_words(segment: str) -> list[str]:
+    """The segment's words as a shell splits them: quoted spaces stay inside one word, quotes are removed, and
+    backslashes stay (Windows paths). Unbalanced quotes fall back to splitting on spaces."""
+    lexer = shlex.shlex(segment, posix=True, punctuation_chars=False)
+    lexer.whitespace_split, lexer.escape = True, ""
+    try:
+        return list(lexer)
+    except ValueError:
+        return [re.sub(r'[\'"]', '', w) for w in segment.split()]
+
+
+def program_and_arguments(segment: str) -> tuple[str, list[str]]:
+    """The program a command segment runs and its arguments, quotes removed. Wrappers such as `command`, `env` or
+    `sudo` and their options are skipped, and a full program path counts as its name."""
+    words = shell_words(segment)
+    while words and WRAPPERS.match(words[0]):
+        words = words[1:]
+        while words and words[0].startswith("-"):
+            words = words[1:]
+    if not words:
+        return "", []
+    return re.sub(r'\.exe$', '', words[0].replace("\\", "/").rsplit("/", 1)[-1].lower()), words[1:]
+
+
+def operands(program: str, args: list[str]) -> list[str]:
+    """The arguments that name files, with option values left out."""
+    values = VALUE_OPTIONS.get(program, set())
+    found, skip = [], False
+    for arg in args:
+        if skip:
+            skip = False
+        elif arg in values:
+            skip = True
+        elif not arg.startswith("-"):
+            found.append(arg)
+    return found[1:] if program in FIRST_IS_NOT_A_FILE else found
+
+
+def sed_files(args: list[str]) -> list[str]:
+    """sed's file operands: with -e or -f every operand is a file, else the first operand is the script."""
+    found = operands("sed", args)
+    scripted = any(re.match(r'^-[a-zA-Z]*[ef]$', a) or a.startswith(("--expression", "--file")) for a in args)
+    return found if scripted else found[1:]
+
+
+def git_subcommand(args: list[str]) -> str:
+    skip = False
+    for arg in args:
+        if skip:
+            skip = False
+        elif arg in ("-C", "-c"):
+            skip = True
+        elif not arg.startswith("-"):
+            return arg.lower()
+    return ""
+
+
+def git_folder_at_run_time(args: list[str]) -> bool:
+    """git -C <folder> with a folder known only at run time, running a subcommand that may write."""
+    folder = any(a == "-C" and i + 1 < len(args) and re.search(RUN_TIME, args[i + 1]) for i, a in enumerate(args))
+    return bool(folder) and git_subcommand(args) not in GIT_READS
+
+
+def cannot_place(command: str) -> bool:
+    """A write the checker can't place: its destination is known only at run time, or another program performs it."""
+    if RUN_TIME_REDIRECT.search(command) or INDIRECT_WRITE.search(command):
+        return True
+    segments = [program_and_arguments(s) for s in re.split(r'[;&|\n]+', command)]
+    writes_later = False
+    for program, args in reversed(segments):
+        plain = [a for a in args if not a.startswith("-")]
+        run_time = [bool(re.search(RUN_TIME, a)) for a in plain]
+        files = operands(program, args)
+        if program in EVERY_ARGUMENT and any(re.search(RUN_TIME, a) for a in files):
+            return True
+        if program == "sed" and any(re.match(r'^-[a-zA-Z]*i', a) or a.startswith("--in-place") for a in args) \
+                and any(re.search(RUN_TIME, a) for a in sed_files(args)):
+            return True
+        if program in LAST_ARGUMENT and run_time and run_time[-1]:
+            return True
+        if program in FIRST_ARGUMENT:
+            named = [args[i + 1] for i, a in enumerate(args[:-1]) if a.lower() in ("-path", "-literalpath", "-filepath")]
+            named += [a.split(":", 1)[1] for a in args if re.match(r'^-(?:path|literalpath|filepath):', a, re.I)]
+            if any(re.search(RUN_TIME, a) for a in (named or plain[:1])):
+                return True
+        if program == "git" and git_folder_at_run_time(args):
+            return True
+        if program in FOLDER_ARGUMENT and any(run_time) and writes_later:
+            return True
+        if program == "xargs" and plain and program_and_arguments(" ".join(plain))[0] in WRITE_PROGRAMS:
+            return True
+        if program == "find" and re.search(r'-(?:delete)\b', " ".join(args)):
+            return True
+        if program == "find":
+            for i, a in enumerate(args):
+                if a in ("-exec", "-execdir", "-ok") and i + 1 < len(args) and \
+                        program_and_arguments(args[i + 1])[0] in WRITE_PROGRAMS:
+                    return True
+        reads_only = program == "git" and git_subcommand(args) in GIT_READS
+        writes_later = writes_later or (program in WRITE_PROGRAMS and not reads_only)
+    return False
+WORKTREE_CHANGE = re.compile(r'\bgit\b[^;&|\n]*?\bworktree\s+(add|move|remove|prune|repair|lock|unlock)\b', re.I)
+MAKES_LINK = re.compile(r'\bmklink\b|\bln\b|-ItemType\s+(?:Junction|SymbolicLink|HardLink)\b', re.I)
+PATH_WORD = re.compile(r'''[^\s'"`;&|<>()=]+''')
+
+
+def shell_command(event: dict) -> str:
+    if (event.get("tool_name") or "") not in SHELL_TOOLS:
+        return ""
+    return str((event.get("tool_input") or {}).get("command") or "")
+
+
+def unquoted(command: str) -> str:
+    """The command with quote and escape characters removed, so `git "--git-dir=x"` reads as `git --git-dir=x`."""
+    return re.sub(r'[\'"`^\\]', '', command)
+
+
+def plain_path(path: str) -> str:
+    """The same folder without the Windows extended-length prefix (\\\\?\\ or //?/), so both spellings compare equal."""
+    text = path.replace("\\", "/")
+    if text[:8].upper() == "//?/UNC/":
+        return "//" + text[8:]
+    return text[4:] if text.startswith("//?/") else text
+
+
+def real_path(g, path: str) -> str:
+    try:
+        return plain_path(g.slash(os.path.realpath(plain_path(path))))
+    except (OSError, ValueError):
+        return plain_path(path)
+
+
+def repository_worktrees(common: str) -> list[str]:
+    """Every worktree of the repository: the main one beside the shared git folder, and each linked one it lists."""
+    shared = Path(plain_path(common))
+    found = [str(shared.parent)] if shared.name.lower() == ".git" else []
+    listed = shared / "worktrees"
+    for entry in (listed.iterdir() if listed.is_dir() else []):
+        try:
+            found.append(str(Path((entry / "gitdir").read_text(encoding="utf-8").strip()).parent))
+        except OSError:
+            continue
+    return found
+
+
+def wildcard_reaches(g, path: str, own_tree: str, common: str) -> str | None:
+    """For a path with wildcards (or braces), another worktree inside its fixed part, or holding it."""
+    parts = path.replace("\\", "/").split("/")
+    wild = [i for i, part in enumerate(parts) if any(c in part for c in "*?[{")]
+    if not wild:
+        return None
+    prefix = "/".join(parts[:wild[0]]) or "/"
+    for fixed in {g.key(plain_path(prefix)), g.key(real_path(g, prefix))}:
+        for tree in repository_worktrees(common):
+            other = g.key(real_path(g, tree))
+            if other != g.key(own_tree) and (other == fixed or other.startswith(fixed.rstrip("/") + "/")
+                                             or fixed.startswith(other + "/")):
+                return tree
+    return None
+
+
+def expanded(path: str) -> list[str]:
+    """A path with wildcards, as every folder it can reach: the part up to the last wildcard folder is matched, the
+    rest kept, so a file that doesn't exist yet is still placed."""
+    parts = path.replace("\\", "/").split("/")
+    wild = [i for i, part in enumerate(parts) if any(c in part for c in "*?[")]
+    if not wild:
+        return [path]
+    head, tail = "/".join(parts[:wild[-1] + 1]), parts[wild[-1] + 1:]
+    found = [m.replace("\\", "/") + "".join("/" + p for p in tail) for m in glob.glob(head)]
+    return found + [path]
+
+
+def same_common(g, one: str | None, other: str | None) -> bool:
+    return bool(one and other) and g.key(plain_path(one)) == g.key(plain_path(other))
+
+
+def other_worktrees_exist(own_tree: str, common: str) -> bool:
+    """Linked worktrees are listed under the shared git folder; a linked session always has the main one beside it."""
+    shared = Path(plain_path(common))
+    listed = shared / "worktrees"
+    return (listed.is_dir() and any(listed.iterdir())) or Path(own_tree, ".git").is_file()
+
+
+def git_elsewhere(event: dict) -> str | None:
+    """Git options that move the repository or work tree away from the folder the checker reads are refused (F4)."""
+    command = unquoted(shell_command(event))
+    if not re.search(r'\bgit\b', command, re.I) or not GIT_REDIRECT.search(command):
+        return None
+    return ("workflow-axa: this git command sets --git-dir, --work-tree or GIT_DIR/GIT_WORK_TREE, so the checker can't "
+            "tell which checkout it changes. Use `git -C <folder>` (or run it from that folder) and retry.")
+
+
+def worktree_changes(event: dict, project) -> list:
+    """Adding, moving or removing worktrees changes which checkouts exist: a protected operation of its own."""
+    found = WORKTREE_CHANGE.search(unquoted(shell_command(event)))
+    return [("git", project.root or project.cwd, f"`git worktree {found[1].lower()}`")] if found else []
+
+
+def another_worktree(event: dict, targets: list, project, g) -> str | None:
+    """Offers are read from the session's worktree, so they authorise writes only there (F4). Every place is judged
+    where it really lands (links resolved, the session's own folder too), and a shell command that writes is also
+    judged by every path it names, since the checker can't follow every way a shell reaches a file. Records and output
+    of another worktree stay writable when reached directly. Only worktrees of the session's own repository count."""
+    if not project.root:
+        return None
+    own_root = real_path(g, project.root)
+    own_tree = g.worktree(own_root) or own_root
+    common = g.common_dir(own_tree)
+    if not common:
+        return None
+    command = shell_command(event)
+    if command and cannot_place(command) and other_worktrees_exist(own_tree, common):
+        return ("workflow-axa: this command writes to a place known only while it runs (a variable, command output, "
+                "xargs, find -exec, a script it runs or an inline program), so the checker can't tell which worktree "
+                "it changes; this repository has more than one. Write each destination as an explicit path in a plain "
+                "command and retry.")
+    places = [(where, label, kind == "path") for kind, where, label in targets
+              if kind in ("path", "git") and g.is_absolute(plain_path(where))]
+    only_records = all(kind == "path" and project.is_record(where) for kind, where, _ in targets)
+    if command and targets and (MAKES_LINK.search(command) or not only_records):
+        cwd = str(event.get("cwd") or project.cwd)
+        for word in PATH_WORD.findall(command):
+            word = re.sub(r'^-[\w-]+:', '', word)
+            if ('/' in word or '\\' in word) and '$' not in word:
+                places.append((word if g.is_absolute(word) else g.absolute(word, cwd), f"`{word}` in this command",
+                               False))
+    for where, label, _ in places:
+        tree = wildcard_reaches(g, where, own_tree, common)
+        if tree:
+            return (f"workflow-axa: {label} uses a wildcard that can reach another worktree ({tree}) than this "
+                    f"session's ({project.root}); an approval given here doesn't cover it. Name the files explicitly, "
+                    "or start the session in that worktree and retry.")
+    places = [(each, label, may_be_record) for where, label, may_be_record in places for each in expanded(where)]
+    for where, label, may_be_record in places:
+        real = real_path(g, where)
+        if may_be_record and g.key(real) == g.key(plain_path(where)) and project.is_record(where):
+            continue
+        tree = g.worktree(real)
+        if tree and g.key(tree) != g.key(own_tree) and same_common(g, g.common_dir(tree), common):
+            return (f"workflow-axa: {label} is in another worktree ({tree}) than this session's "
+                    f"({project.root}); an approval given here doesn't cover it. To work there, start the session "
+                    "in that worktree (or move into it, as EnterWorktree does), present its offer there and retry.")
     return None
 
 

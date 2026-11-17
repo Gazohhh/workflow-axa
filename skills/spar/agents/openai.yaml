@@ -1,0 +1,5 @@
+interface:
+  display_name: "Spar"
+  short_description: "Spar with a fresh Claude and GPT about an idea or a decision until you can choose a next move; keep a SPAR.md if you want, then turn it into a workflow plan or not."
+policy:
+  allow_implicit_invocation: false

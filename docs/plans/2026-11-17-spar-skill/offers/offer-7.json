@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 7,
+  "task": "2026-11-17-spar-skill",
+  "created": "2026-11-17T13:55:10+00:00",
+  "canonical": {
+    "behaviour": "Offer #6 (/spar rebuilt around SPAR.md, a separate skill, SPAR.md in docs/spar/) with the owner's correction D28: keeping a SPAR.md is the owner's choice. At the start, unless the command says so, /spar asks once: \"Keep a SPAR.md\" or \"Conversation only\". A conversation-only spar writes nothing; if the owner later chooses \"Turn this into a workflow plan\", SPAR.md is written first, since the plan links it. Approving this offer also agrees to agreement 6 as revised.",
+    "paths": [
+      ".artifacts/2026-11-17-spar-skill/",
+      ".claude-plugin/plugin.json",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-spar-skill/",
+      "hooks/phase_gate.py",
+      "skills/grilling/SKILL.md",
+      "skills/spar/",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow/SPECIALISTS.md",
+      "skills/workflow/scripts/settings.py",
+      "tests/README.md",
+      "tests/behavioral/spar.json",
+      "tests/test_approval_hook.py",
+      "tests/test_docs_consistency.py",
+      "tests/test_owned_skills.py",
+      "tests/test_package.py",
+      "tests/test_package_contract.py",
+      "tests/test_settings.py",
+      "tests/test_spar.py",
+      "tests/test_ui_design.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no git commit or push; the release is a separate step",
+      "no version bump or CHANGELOG entry",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched",
+      "the only hook change: docs/spar/<folder>/SPAR.md counts as a record in hooks/phase_gate.py; no other hook, offer-model, workflow-specify, plan-review or interrogate change"
+    ],
+    "conditions": [
+      "GPT-6 Astra and a fresh Opus review the skill text and the hook change until both agree",
+      "SKILL.md stays under 1,300 words",
+      "each live batch in T6 only after the owner's OK right before it; at most 26 debater launches and 8 coordinator sessions in total (16 and 4 used, counting run 3); no research agents; no retry without the owner's OK",
+      "pilot projects under D:/workflow-axa-spar-pilot/, removed after the evidence is recorded except failure evidence kept per the shared artifact policy; a plugin change for a pilot only with the owner's OK",
+      "test first: a SPAR.md in docs/spar is writable without an offer, any other file there is not",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "T6 live observations recorded per scenario: observed, partial, failed or not provoked",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_approval_hook.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_owned_skills.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_settings.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_spar.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "433135148806b10f",
+  "display": "/spar: SPAR.md is your choice",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "daf63625-b8c4-47cb-9174-971d4c6d9ea1",
+    "presentation": "781310c1-5ea0-419d-9883-04ca91a3bf13",
+    "recorded": "2026-11-17T14:27:11+00:00"
+  },
+  "supersedes": 6,
+  "superseded_by": 8
+}

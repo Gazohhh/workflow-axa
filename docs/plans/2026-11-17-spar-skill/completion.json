@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "base": "c5e954b3fb2bf91b8e3940997f723882cdcc8163",
+  "dirty": {
+    ".claude-plugin/plugin.json": "b3e099af896bb15f",
+    "CONTEXT.md": "3ea29e8c9b92f48d",
+    "README.md": "5833b304325ab95b",
+    "docs/ARCHITECTURE.md": "91681f2adc27b9d6",
+    "docs/RULE-CONTRACTS.md": "d4b3d581281e5426",
+    "hooks/approval.py": "916b0b1fa1b339b7",
+    "skills/grilling/SKILL.md": "88eefcd9ad587b7f",
+    "skills/spar/SKILL.md": "fac062fc02752ce7",
+    "skills/spar/T3.md": "5c06fe5317851e51",
+    "skills/spar/agents/openai.yaml": "c446f479ddeb98fc",
+    "skills/workflow-clarify/SKILL.md": "42f3a7e4ded8898a",
+    "skills/workflow/SPECIALISTS.md": "e92381a0b2fa1fa0",
+    "skills/workflow/VISUAL-REVIEW.md": "9322a9e00f4287bc",
+    "skills/workflow/scripts/settings.py": "46676df14b892c16",
+    "tests/README.md": "34ebcb2ddb79540e",
+    "tests/behavioral/spar.json": "433608b5c76dc02b",
+    "tests/test_approval_hook.py": "a19cc9beb4bc663c",
+    "tests/test_owned_skills.py": "d934208c19d0cdd7",
+    "tests/test_package.py": "6d27a21f2b017a83",
+    "tests/test_package_contract.py": "04b51c1ab65899d1",
+    "tests/test_settings.py": "d785319eb675965d",
+    "tests/test_spar.py": "3053301a8e6b7f11"
+  },
+  "snapshots": {
+    "S1": {
+      "skills/spar/SKILL.md": "fac062fc02752ce7",
+      "skills/spar/T3.md": "5c06fe5317851e51",
+      "skills/spar/agents/openai.yaml": "c446f479ddeb98fc",
+      "skills/workflow/scripts/settings.py": "46676df14b892c16",
+      "skills/grilling/SKILL.md": "88eefcd9ad587b7f",
+      "skills/workflow-clarify/SKILL.md": "42f3a7e4ded8898a",
+      "skills/workflow/SPECIALISTS.md": "e92381a0b2fa1fa0",
+      ".claude-plugin/plugin.json": "b3e099af896bb15f",
+      "CONTEXT.md": "3ea29e8c9b92f48d",
+      "docs/RULE-CONTRACTS.md": "d4b3d581281e5426",
+      "docs/ARCHITECTURE.md": "91681f2adc27b9d6",
+      "README.md": "5833b304325ab95b",
+      "tests/README.md": "34ebcb2ddb79540e",
+      "tests/test_spar.py": "3053301a8e6b7f11",
+      "tests/behavioral/spar.json": "433608b5c76dc02b",
+      "tests/test_settings.py": "d785319eb675965d",
+      "tests/test_owned_skills.py": "d934208c19d0cdd7",
+      "tests/test_package.py": "6d27a21f2b017a83",
+      "tests/test_package_contract.py": "04b51c1ab65899d1"
+    },
+    "S2": {
+      "skills/spar/SKILL.md": "eda79b78f7e91111",
+      "skills/spar/T3.md": "fe9443b3f5f71684",
+      "skills/workflow/scripts/settings.py": "37bf9638b5d3c96e",
+      "skills/grilling/SKILL.md": "11b2557cd4c3bd87",
+      "README.md": "8ac67155a885676c",
+      "tests/test_spar.py": "67b91b1b3b8e34b3",
+      "tests/test_settings.py": "d8387db16281da76",
+      "tests/test_owned_skills.py": "474811c703ac9256",
+      "tests/behavioral/spar.json": "f68ec5c3528b28f7"
+    },
+    "S3": {
+      "skills/spar/SKILL.md": "3c336eadd5dec695",
+      "skills/spar/T3.md": "0b7dcf6ed887ac43",
+      "skills/workflow/scripts/settings.py": "1cdfc8a8e8dc4135",
+      "tests/test_spar.py": "574aba0d87419fbf",
+      "tests/test_settings.py": "bbe63b8422e8b785",
+      "tests/behavioral/spar.json": "cb862a6adf52cb27"
+    },
+    "S4": {
+      "skills/spar/SKILL.md": "47c07257b3e97f33",
+      "skills/spar/T3.md": "0e4887fd073584fd",
+      "tests/test_spar.py": "b0d44bd7c14c358b"
+    }
+  }
+}

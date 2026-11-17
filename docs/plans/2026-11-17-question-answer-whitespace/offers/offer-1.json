@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-question-answer-whitespace",
+  "created": "2026-11-17T15:57:41+00:00",
+  "canonical": {
+    "behaviour": "When the owner answers an offer question with a button, the answer counts even when the host returns it keyed by the question text without its surrounding whitespace (T3 Code drops a final line break): hooks/approval.py finds answers by the question text with surrounding whitespace removed, through one helper, at every lookup; any other difference still finds nothing. `record.py offer present --question` prints its text with no surrounding whitespace, so the host's key and the question agree. Test first.",
+    "paths": [
+      "docs/plans/2026-11-17-question-answer-whitespace/",
+      "hooks/approval.py",
+      "skills/workflow/scripts/offers.py",
+      "tests/test_approval_hook.py",
+      "tests/test_offers.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no git commit or push; the release is a separate step",
+      "no other change to how approvals, pauses or offers work",
+      "no version bump or CHANGELOG entry",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched until the release"
+    ],
+    "conditions": [
+      "GPT-6.1 Sol reviews the fix",
+      "the new tests fail before the fix",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_approval_hook.py\"",
+      "python -X utf8 -m unittest discover -s tests -p \"test_offers.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "1df650ff1198a0a6",
+  "display": "Approval answer lost on a final line break",
+  "state": "approved",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "30fb6ae2-6ef5-4603-896f-cfbe499cb300",
+    "presentation": "864995e4-6bde-472c-878c-25ecbb88e2e7",
+    "recorded": "2026-11-17T15:58:39+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

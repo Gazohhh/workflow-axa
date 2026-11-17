@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "presentation_format": 2,
+  "id": 1,
+  "task": "2026-11-17-rc3-merge",
+  "created": "2026-11-17T17:19:03+00:00",
+  "canonical": {
+    "behaviour": "Move this worktree from c5e954b onto pstack's commit 00ac3ae (main) and keep every unfinished change of the five tasks (/spar, worktree guard, approval-button fix, lost-answer fix, wait-what row). Back up first to .artifacts/2026-11-17-rc3-merge/. Files only pstack changed get pstack's version; the seven files both changed are merged three-way and their conflicts resolved by hand, every contract row and test kept exactly once. Then `git reset --mixed 00ac3ae` moves HEAD and the index only; no file on disk changes and nothing is committed. Then run 5's fixes: /spar cites OPERATIONS.md for the diagnostic allowance, the Spar term in CONTEXT.md points to the handoff instead of restating it, and three stale record lines are corrected. Then the targeted tests, validate and the full suite.",
+    "paths": [
+      ".artifacts/2026-11-17-rc3-merge/",
+      "CONTEXT.md",
+      "README.md",
+      "VENDORED-SKILLS.md",
+      "docs/RULE-CONTRACTS.md",
+      "docs/plans/2026-11-17-pstack-blast-radius-unslop/",
+      "docs/plans/2026-11-17-rc3-merge/",
+      "docs/plans/2026-11-17-spar-skill/",
+      "skills/code-review/BLAST-RADIUS.LICENSE",
+      "skills/code-review/BLAST-RADIUS.md",
+      "skills/code-review/SKILL.md",
+      "skills/code-review/agents/openai.yaml",
+      "skills/plan-review/SKILL.md",
+      "skills/spar/SKILL.md",
+      "skills/workflow-clarify/SKILL.md",
+      "skills/workflow-deliver/SKILL.md",
+      "skills/workflow-execute/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/AUDIT.md",
+      "skills/workflow/SIMPLE-ENGLISH.md",
+      "skills/workflow/SKILL.md",
+      "skills/workflow/UNSLOP.LICENSE",
+      "skills/workflow/WRITING.md",
+      "skills/workflow/flows/INDEX.md",
+      "skills/workflow/flows/architecture.md",
+      "skills/workflow/flows/bug.md",
+      "skills/workflow/flows/docs-tests.md",
+      "skills/workflow/flows/feature.md",
+      "skills/workflow/flows/migration.md",
+      "skills/workflow/flows/performance.md",
+      "skills/workflow/flows/refactor.md",
+      "skills/workflow/flows/ui.md",
+      "skills/workflow/simple-english/word-swaps.md",
+      "skills/writing-for-agents/SKILL.md",
+      "tests/README.md",
+      "tests/behavioral/cases.json",
+      "tests/behavioral/flows.json",
+      "tests/test_flows.py",
+      "tests/test_new_skills.py",
+      "tests/test_owned_skills.py",
+      "tests/test_package_contract.py",
+      "tests/test_release.py",
+      "tests/test_simple_english.py",
+      "tests/test_spar.py"
+    ],
+    "operations": [
+      "git reset --mixed 00ac3ae"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to the five tasks' behaviour beyond resolving the conflicts and fixes F3, F4, F6",
+      "no git commit, push, rebase or merge commit; the release is a separate step",
+      "no version bump, CHANGELOG or VALIDATION.md rewrite",
+      "the main checkout D:/workflow-axa, the installed plugin and the Codex copies stay untouched"
+    ],
+    "conditions": [
+      "a text test is written first for F3 and F4",
+      "the backup is written before any file changes",
+      "work only in the worktree D:/workflow-axa-redesign"
+    ],
+    "checks": [
+      "full suite: only the 4 known VALIDATION.md count failures",
+      "git diff --name-only 00ac3ae lists only the five tasks' files",
+      "no conflict markers; each contract row appears once",
+      "python -X utf8 -I tools/validate.py",
+      "targeted: test_spar, test_owned_skills, test_settings, test_approval_hook, test_phase_gate_hook, test_simple_english, test_offers"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "95a320d1b42c7068",
+  "display": "Merge pstack into the redesign worktree",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": {
+    "session": "a278e242-cfe9-401d-af90-967e6288ba99",
+    "turn": "6346f85c-4586-4db1-9226-7ed7417a2d04",
+    "presentation": "939b4161-d6d8-47a1-82ce-351cd8979ba1",
+    "recorded": "2026-11-17T17:21:02+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": 2
+}

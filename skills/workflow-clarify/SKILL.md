@@ -43,7 +43,8 @@ Write `## Agreement` in PLAN with `workflow/scripts/record.py replace-section` (
 - what happens for each actor, including failures, and step 1's purpose statement;
 - what stays the same, and what is not included;
 - acceptance (A-IDs) as things someone can observe;
-- assumptions the user can reject, and choices deferred and by whom.
+- assumptions the user can reject, and choices deferred and by whom;
+- when the task links a SPAR.md (`docs/spar/`), an Approach part from `/spar`: the Handoff brief of that SPAR.md (`../spar/SPAR-FILE.md`), with its owner decisions and open dissent, citing its revision. Its Owner decisions count as standing answers; don't ask them again. Assumptions stay assumptions. Without a linked SPAR.md, leave this part out.
 
 File lists and test commands wait for `workflow-specify`.
 

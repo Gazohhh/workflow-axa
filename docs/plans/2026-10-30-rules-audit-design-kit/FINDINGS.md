@@ -8,7 +8,7 @@ Scope: workflow-axa source and runtime install; projects `D:/Altinstar/Altinstar
 
 - Source: `D:/workflow-axa/skills` declares 2.7.0-rc.4 (README, CHANGELOG, `rules/version.json`). Git LF (`git ls-files --eol`: i/lf w/lf).
 - Runtime: `~/.agents/skills/<8 skills>`, used by Codex. `~/.claude/skills/<8>` are symlinks to it. Both hosts therefore resolve one copy. No workflow-axa plugin copy in `~/.claude/plugins/installed_plugins.json`.
-- T3 caches: managed Codex 0.156.1, `runtimePaths.homePath` = `C:\Users\Cem\.codex`, no shadow home. Claude Code 2.1.310 (latest 2.1.314). No `CLAUDE_CONFIG_DIR`/`CODEX_HOME` set in the Claude worker. Codex worker environment not observed. Codex skill cache predates today's 14:09 rc.4 install, so it is a stale snapshot.
+- T3 caches: managed Codex 0.156.1, `runtimePaths.homePath` = `~\.codex`, no shadow home. Claude Code 2.1.310 (latest 2.1.314). No `CLAUDE_CONFIG_DIR`/`CODEX_HOME` set in the Claude worker. Codex worker environment not observed. Codex skill cache predates today's 14:09 rc.4 install, so it is a stale snapshot.
 - Runtime equals source apart from line endings: `diff -rq --strip-trailing-cr` shows 0 differences. Runtime files are CRLF.
 
 ### F1 Runtime CRLF breaks every integrity-checked helper (confirmed)
@@ -94,7 +94,7 @@ Scope: workflow-axa source and runtime install; projects `D:/Altinstar/Altinstar
   - The Windows location of `/tmp` was not established.
   - Whether a file of that fixed name already existed, and who owned it, was not checked before writing, so no stronger safety claim is made.
   - The validator ran to the console only.
-- Test fixtures used Python `TemporaryDirectory` folders, which the tests clean up; their paths showed under `C:\Users\Cem\AppData\Local\Temp\` in the error output.
+- Test fixtures used Python `TemporaryDirectory` folders, which the tests clean up; their paths showed under `~\AppData\Local\Temp\` in the error output.
 - Future output: the console or an approved location only; no fixed-name `/tmp` scratch files.
 
 | Command | Exit | Result |
@@ -203,7 +203,7 @@ Alternative to S2-S4 (technical, decide after independent review): manifest sche
 
 | # | Target | Change | Effect |
 |---|---|---|---|
-| G1 | `~/.agents/skills/<8>` | Only after approval: (1) move the current CRLF copy outside discovery as **baseline evidence of the broken state**, not a healthy rollback (e.g. `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.4-crlf-baseline/`); (2) byte-copy the approved package skills, excluding `__pycache__`; (3) source `audit_installation.py --candidate ~/.agents/skills` must report MATCH. Known-good LF rc.4 needs no pre-made backup: Git commit `e9b2723` holds it (last commit touching `skills/` and `version.json`; the working tree matches it), recoverable read-only through `git archive e9b2723 skills` into a new path when needed. Nothing is created before approval. | Fixes F1 on this machine. `~/.claude/skills` symlinks unchanged. |
+| G1 | `~/.agents/skills/<8>` | Only after approval: (1) move the current CRLF copy outside discovery as **baseline evidence of the broken state**, not a healthy rollback (e.g. `~/.workflow-axa/rollback/2.7.0-rc.4-crlf-baseline/`); (2) byte-copy the approved package skills, excluding `__pycache__`; (3) source `audit_installation.py --candidate ~/.agents/skills` must report MATCH. Known-good LF rc.4 needs no pre-made backup: Git commit `e9b2723` holds it (last commit touching `skills/` and `version.json`; the working tree matches it), recoverable read-only through `git archive e9b2723 skills` into a new path when needed. Nothing is created before approval. | Fixes F1 on this machine. `~/.claude/skills` symlinks unchanged. |
 | G2 | `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` | `activate_rules.py --check`, then preview, then `--apply` (from the runtime copy) adds the `workflow-axa:shared-rules` block. Unrelated content is preserved (helper merge, `activate_rules.py:82-95`). | Claude: `@START.md` + `@CORE.md` load eagerly via user-scope import. Codex: read instruction (guidance). Fixes F2 for both hosts as the goal requires. |
 | G3 | `~/.claude/CLAUDE.md` §Design vocabulary | Current: "…invoke the `codebase-design` skill and use its terms exactly: **module**, **interface**, … Do not substitute "service", "component", "API", or "boundary"." → Proposed: "…invoke the `codebase-design` skill and apply its principles. Use its terms (module, interface, depth, seam, adapter, leverage, locality) when they help, explain each in plain language for someone new to it, and keep a project's established names where they are clearer." The principle-by-name sentence stays. | Keeps the skill routing. Removes the mandatory vocabulary and the substitution ban, per the owner brief §5 "no … mandatory specialist vocabulary". Claude-only file; no Codex copy added. |
 
@@ -308,7 +308,7 @@ Authority: the owner's "approved the rules fix where needed", relayed by the coo
 | C1, C2 | `D:/Cheflabels-labeler-V2/AGENTS.md` (CRLF kept, unstaged) | `7d121173…` → `06fbaa52…` | Node `^22.12.0` or `^24.0.0`; shared pointer after the intro paragraph. |
 | D1 | Claude memory `D--Altinstar-Altinstar-react/memory/feedback-twenty-agents-always.md` (LF), `feedback-parallel-subagents.md` (CRLF), `MEMORY.md` | before hashes not recorded (deviation) | Description and index now read "SUPERSEDED 2026-10-30 (history)". A superseded note was added under the frontmatter; the original bodies are kept. |
 | C4 | Claude memory `D--Cheflabels-labeler-V2/memory/feedback_no_nested_ternaries.md`, `MEMORY.md` (LF) | before hashes not recorded (deviation) | Points to the shared `typescript.md`. Status: source updated, runtime pending deployment. The Record-map advice is marked history. |
-| G3 | `C:/Users/Cem/.claude/CLAUDE.md` (LF) | `97e273cb…` → `606d5677…` | Design-vocabulary mandate and substitution ban removed; skill routing and principles kept. Source `global_policy.py --check --host claude` gives MATCH, so the artifact block is intact. |
+| G3 | `~/.claude/CLAUDE.md` (LF) | `97e273cb…` → `606d5677…` | Design-vocabulary mandate and substitution ban removed; skill routing and principles kept. Source `global_policy.py --check --host claude` gives MATCH, so the artifact block is intact. |
 
 Adjustments made while applying:
 
@@ -330,7 +330,7 @@ Changed upstream baseline (Cheflabels, after the audit read):
 Corrected and added facts (earlier text stays as history):
 
 - The eight `~/.claude/skills/<name>` entries are Windows **junctions**, not symlinks, into `~/.agents/skills` (reviewer finding). Link type and targets must be preserved.
-- The reviewer verified: T3 Codex `gpt-6-astra` medium, full-access, `CODEX_HOME=C:/Users/Cem/.codex`, `CLAUDE_CONFIG_DIR` unset.
+- The reviewer verified: T3 Codex `gpt-6-astra` medium, full-access, `CODEX_HOME=~/.codex`, `CLAUDE_CONFIG_DIR` unset.
 - The reviewer's early independent review prefers F1 option A: raw-byte integrity, scoped LF checkout policy and a byte-preserving replacement.
   - Correction: source `audit_installation.py --check-global` resolves the activation library from the **source** (`audit_installation.py:150`, `activate_rules.py:98`), so it compares global blocks against source paths.
   - Split the checks: source `--candidate <runtime>` for bytes only; after runtime integrity passes, run **runtime** `--check-global` to verify runtime paths. The source global check does not validate the runtime route.
@@ -383,16 +383,16 @@ Post-fix validation (console only; no log; no `__pycache__`; no `.artifacts/`):
 ### G1/G2 preparation (HELD; nothing mutated)
 
 - **Candidate** (`D:/workflow-axa/skills`, 8 skills, `__pycache__` excluded): 95 files, inventory sha256 `67ceadcfda137c496df09d9f3b2e24fd3c41333cb4f2dd5be7d9d417148dd29f` (sha over the sorted list of "path, NUL, file sha256, newline").
-- **Runtime** (`C:/Users/Cem/.agents/skills`): 95 files, `2c0d0658aa8b620dac009dd3b4e00f9c7d5271f7cbe94a00522e85b5cea22845`. Same file set. 88 files are CRLF-only differences. 7 have real content differences, exactly the unit 1+2 edits (INSTALLATION.md, typescript.md, version.json, activate_rules.py, audit_installation.py, readiness.py, global_policy.py).
-- **Claude junctions** (preserve; same paths are recreated, so the targets stay valid): `C:/Users/Cem/.claude/skills/{codebase-map, plan-review, resume-task, rule-maker, task-status, ui-design, workflow, workflow-doctor}` → `C:/Users/Cem/.agents/skills/<name>`.
+- **Runtime** (`~/.agents/skills`): 95 files, `2c0d0658aa8b620dac009dd3b4e00f9c7d5271f7cbe94a00522e85b5cea22845`. Same file set. 88 files are CRLF-only differences. 7 have real content differences, exactly the unit 1+2 edits (INSTALLATION.md, typescript.md, version.json, activate_rules.py, audit_installation.py, readiness.py, global_policy.py).
+- **Claude junctions** (preserve; same paths are recreated, so the targets stay valid): `~/.claude/skills/{codebase-map, plan-review, resume-task, rule-maker, task-status, ui-design, workflow, workflow-doctor}` → `~/.agents/skills/<name>`.
 - **G1 operation** (explicit 8 names, no glob):
-  1. Create `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.4-crlf-baseline/`, which is outside skill discovery and does not exist yet.
+  1. Create `~/.workflow-axa/rollback/2.7.0-rc.4-crlf-baseline/`, which is outside skill discovery and does not exist yet.
   2. For each name, `os.rename` the runtime folder into it (same volume). This is **baseline recovery: known-broken helpers**.
-  3. `shutil.copytree(D:/workflow-axa/skills/<name>, C:/Users/Cem/.agents/skills/<name>, ignore=ignore_patterns('__pycache__','*.pyc','*.pyo'))`, a byte copy.
-  4. Verify: (a) source `audit_installation.py --candidate C:/Users/Cem/.agents/skills` gives MATCH, and the inventory digest equals the full candidate value above; (b) `dir /AL` shows the junctions unchanged; (c) runtime `readiness.py inspect` no longer blocks on the manifest.
+  3. `shutil.copytree(D:/workflow-axa/skills/<name>, ~/.agents/skills/<name>, ignore=ignore_patterns('__pycache__','*.pyc','*.pyo'))`, a byte copy.
+  4. Verify: (a) source `audit_installation.py --candidate ~/.agents/skills` gives MATCH, and the inventory digest equals the full candidate value above; (b) `dir /AL` shows the junctions unchanged; (c) runtime `readiness.py inspect` no longer blocks on the manifest.
 - **G2 operation:** runtime `activate_rules.py --check` (expect UPDATE) → runtime preview (must equal the in-memory preview below) → `--apply` → runtime `audit_installation.py --check-global` and runtime `global_policy.py --check` both MATCH.
   - In-memory preview bound to the runtime library: append-only (existing bytes are an unchanged prefix).
-  - `~/.claude/CLAUDE.md`: `00f02bbcfe951eb2b9ed77f0bac37e275fcb042c419c922a26b30b1e7ef8a963` (2,840 B) → `7a54ae59c4fe839e5997073410ea6680d1c7a0b8d3643fda725c9d58f08ed3f2` (4,274 B), adding `@C:/Users/Cem/.agents/skills/rule-maker/rules/START.md` and `@.../CORE.md`.
+  - `~/.claude/CLAUDE.md`: `00f02bbcfe951eb2b9ed77f0bac37e275fcb042c419c922a26b30b1e7ef8a963` (2,840 B) → `7a54ae59c4fe839e5997073410ea6680d1c7a0b8d3643fda725c9d58f08ed3f2` (4,274 B), adding `@~/.agents/skills/rule-maker/rules/START.md` and `@.../CORE.md`.
   - `~/.codex/AGENTS.md`: `4960d3275bc14bb49fd53d5729585e7db5396335188a588b7a2439e8af7b54af` (995 B) → `4030878c0cfbbeed4985dcef571f3e802d010d7594b27b2bcc95f33d3913a37c` (2,542 B), adding the read instruction.
   - No Codex override exists.
 - **Rollback:**
@@ -476,7 +476,7 @@ Inputs (full values):
 - Explicit names: workflow, codebase-map, task-status, resume-task, workflow-doctor, plan-review, rule-maker, ui-design. All paths are resolved absolute; no globs.
 
 **G1. Stage before touching runtime**
-1. Create the exclusive same-volume root `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.5-g1/`; it must not already exist. It is outside skill discovery and holds:
+1. Create the exclusive same-volume root `~/.workflow-axa/rollback/2.7.0-rc.5-g1/`; it must not already exist. It is outside skill discovery and holds:
    - `staged/<name>`: byte copies from `D:/workflow-axa/skills/<name>`, excluding `__pycache__`, `*.pyc` and `*.pyo`;
    - `baseline/` (empty; receives the old runtime folders);
    - `quarantine/` (empty);
@@ -487,7 +487,7 @@ Inputs (full values):
    - no reparse points in staged directories or their ancestors.
 3. Pre-mutation recheck:
    - the source digest is unchanged, and the runtime digest equals `2c0d0658...` (refuse on drift);
-   - the 8 runtime folders and their ancestors are ordinary directories (`C:/Users/Cem/.agents/skills` is not a reparse point);
+   - the 8 runtime folders and their ancestors are ordinary directories (`~/.agents/skills` is not a reparse point);
    - `baseline/<name>` does not exist;
    - the 8 Claude junction targets are recorded;
    - no Codex override exists.
@@ -504,7 +504,7 @@ Inputs (full values):
    - If recovery itself fails: stop and report the runtime as UNAVAILABLE with the journal. No deletion, and no overwrite of unknown content.
 7. After the full swap:
    - the runtime exact file set plus digest equals `a53b10d5...`;
-   - the source `audit_installation.py --candidate C:/Users/Cem/.agents/skills` gives MATCH;
+   - the source `audit_installation.py --candidate ~/.agents/skills` gives MATCH;
    - `dir /AL` shows the 8 junctions with unchanged targets;
    - **installed** `readiness.py inspect` on both projects no longer blocks on the manifest.
    - No claim of an atomic 8-skill transaction.
@@ -575,7 +575,7 @@ Facts are as in the PLAN checkpoint. Only the evidence not recorded there:
 
 ### 2026-11-02 G1/G2 execution evidence
 
-- **Journal:** `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.8-g1/journal.jsonl`. It records: start, staged-verified, premove-recheck-ok, 8 x (live->baseline, staged->live, postcheck-ok), swap-complete, 2 x g2-before-saved-preview-matches, 2 x g2-applied (ok).
+- **Journal:** `~/.workflow-axa/rollback/2.7.0-rc.8-g1/journal.jsonl`. It records: start, staged-verified, premove-recheck-ok, 8 x (live->baseline, staged->live, postcheck-ok), swap-complete, 2 x g2-before-saved-preview-matches, 2 x g2-applied (ok).
 - **Prechecks:**
   - snapshot 111 files at `5003ddfb...`; runtime 95 files at `2c0d0658...`;
   - the newest runtime file dates from 2026-10-30 14:09, so there was no sign of a concurrent installer writer, and no installer-like processes were running;

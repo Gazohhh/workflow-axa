@@ -3,7 +3,7 @@
 ## Current checkpoint (2026-11-02, deployed — authoritative)
 
 - **Deployed:** workflow-axa **2.7.0-rc.8**, from the frozen isolated snapshot. G1 and G2 ran 2026-11-02 between 12:25 and 12:27 under the existing owner setup approval, after the reviewer's final GO and the coordinator's maintenance boundary.
-- **G1:** all eight skills staged under `C:/Users/Cem/.workflow-axa/rollback/2.7.0-rc.8-g1/` and verified (111 files, `5003ddfb07cfe047dbe1122d7c8c4a56c0401ab9de186084260e0c284698b864`; audit MATCH), then swapped one at a time with a journal.
+- **G1:** all eight skills staged under `~/.workflow-axa/rollback/2.7.0-rc.8-g1/` and verified (111 files, `5003ddfb07cfe047dbe1122d7c8c4a56c0401ab9de186084260e0c284698b864`; audit MATCH), then swapped one at a time with a journal.
   - The runtime is now 111 files at `5003ddfb...`. The source-to-runtime audit gives MATCH: 0 changed, 0 missing, 0 unexpected.
   - The 8 Claude junctions are unchanged.
   - The baseline (CRLF rc.4, `2c0d0658...`) is preserved byte-exact in `baseline/`. That is evidence-only recovery. The rollback source is `e9b2723`: an integrity-valid LF rc.4. It lacks the Windows helper fixes and has no live acceptance, so it is a byte-valid fallback, not a fully healthy one.

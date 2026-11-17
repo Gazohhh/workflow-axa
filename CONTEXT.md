@@ -75,6 +75,9 @@ A fact a change is safe because of, such as "this call only drops cache entries 
 **Unslop check**:
 The required writing check that removes the patterns that make text read as machine-written, run before the cold-reader check. It never changes application UI copy, error messages or translations, and "Keep the meaning" wins over every tell. Owner: `skills/workflow/WRITING.md`; tells: `skills/workflow/SIMPLE-ENGLISH.md`.
 
+**Spar**:
+A session the user starts with `/spar`: a fresh Claude and GPT spar with the owner about an idea or a decision until the owner can choose a next move. It is its own skill, not part of the workflow, though it can be used during a task. Its optional record, when the owner keeps one, is `docs/spar/<date>-<topic>/SPAR.md`. Turning it into a workflow plan is the owner's choice at the end, as `skills/spar/SKILL.md` step 5 and `SPAR-FILE.md` "Where it lives" say. It never plans the HOW in tickets or implements.
+
 **Comment debt**:
 A misleading or stale comment outside the lines an approved change edits. It is listed in FINDINGS, not fixed; `/no-comments` is how the user cleans it up.
 

@@ -56,7 +56,7 @@ Delivered 2026-11-12, partial until the owner's checks: commit 1c07609 (release)
 - Checks: validate.py PASS; full suite 1206 ran, 0 failed (V22); docs_check 0 blocking. One unnamed failure in the V18 run was not reproduced.
 - Reviews: T1 V6; T7 V7 and V14; T2, T5, T6 V15; whole feature V17 (Standards and Spec); reconciliation V21.
 - Decisions by: agent for the owner to confirm: D9, D10, D13, D15, D16, D18, D19.
-- Limits: hooks unchanged (D5; 6 hook candidates in docs/RULE-CONTRACTS.md); no live or paid evaluation; the Claude marketplace gazohhh is a local folder source (content equals GitHub, V19); ~/.agents/.skill-lock.json still names the old local source; C:\Users\Cem\.workflow-axa\ARTIFACTS.md is missing (predates this task).
+- Limits: hooks unchanged (D5; 6 hook candidates in docs/RULE-CONTRACTS.md); no live or paid evaluation; the Claude marketplace gazohhh is a local folder source (content equals GitHub, V19); ~/.agents/.skill-lock.json still names the old local source; ~\.workflow-axa\ARTIFACTS.md is missing (predates this task).
 - Kept evidence: .artifacts/2026-11-12-owned-skills-and-repo-test-run/ (baseline/, after/, validate and suite logs) until owner acceptance; scratchpad backup of the rc.36 Codex skills until acceptance.
 
 - 2026-11-12: the agent saw all 6 descriptions in the fresh session (V23). T6 and A4 wait for the owner's own acceptance of that check.

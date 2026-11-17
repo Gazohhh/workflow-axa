@@ -44,17 +44,22 @@ class DocFactsTests(unittest.TestCase):
     def test_current_docs_agree_with_manifests(self):
         self.assertEqual([e for e in validate_package(ROOT) if "states" in e or "Current verification" in e], [])
 
+    def wrong_count(self):
+        """One more than the skills plugin.json registers: a count the documents must never state."""
+        return len(json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))["skills"]) + 1
+
     def test_readme_skill_count_mismatch_fails(self):
         root = self.candidate()
         with (root / "README.md").open("a", encoding="utf-8") as stream:
-            stream.write("\nThe package ships twenty skills.\n")
-        self.assertTrue(any("README.md states 20 skills" in e for e in validate_package(root)), validate_package(root))
+            stream.write(f"\nThe package ships {self.wrong_count()} skills.\n")
+        self.assertTrue(any(f"README.md states {self.wrong_count()} skills" in e for e in validate_package(root)),
+                        validate_package(root))
 
     def test_digit_count_mismatch_fails(self):
         root = self.candidate()
         with (root / "UPGRADE.md").open("a", encoding="utf-8") as stream:
-            stream.write("\n## Current installation checks\n\nReplace all 20 skill folders.\n")
-        self.assertTrue(any("UPGRADE.md states 20 skills" in e for e in validate_package(root)))
+            stream.write(f"\n## Current installation checks\n\nReplace all {self.wrong_count()} skill folders.\n")
+        self.assertTrue(any(f"UPGRADE.md states {self.wrong_count()} skills" in e for e in validate_package(root)))
 
     def test_current_changelog_heading_is_checked_but_history_is_not(self):
         root = self.candidate()

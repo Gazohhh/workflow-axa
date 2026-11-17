@@ -34,7 +34,7 @@ Only on *Show review.html first* or when the owner asks. Keep descriptive titles
 
 ## Read the answer
 
-The answer to the one question decides; the hook reads it from the conversation. Opening the file, choosing a diagram tab, answering grilling, silence or "looks nice" approves nothing; the HTML has no approve button. Qualified answers, corrections and what to record: `workflow-specify` step 5 owns them. An approval from an earlier session holds for the unchanged offer. A later withdrawal or narrowing ends it: present the offer again (narrowed, if the owner narrowed it). A stop only pauses the work: when the owner says to continue, the approval holds again with no new question. Never build the rejected version.
+The answer to the one question decides; the hook reads it from the conversation. Opening the file, choosing a diagram tab, answering grilling, silence or "looks nice" approves nothing; the HTML has no approve button. Qualified answers, corrections and what to record: `workflow-specify` step 5 owns them. An approval from an earlier session holds for the unchanged offer. A later withdrawal or narrowing ends it: present the offer again (narrowed, if the owner narrowed it). A stop only pauses the work: when the owner says to continue, the approval holds again with no new question. Approving a presented offer (the approve button on its question, or `/approve <N>` typed as the answer to its presentation) also counts as continuing; any other answer doesn't. Never build the rejected version.
 
 ## Superseded review cleanup
 

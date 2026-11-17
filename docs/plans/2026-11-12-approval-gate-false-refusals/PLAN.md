@@ -58,6 +58,6 @@ Delivered 2026-11-12 as release 2.8.0-rc.38 (commit c7147e8, pushed; Claude plug
 - Reviews: V8/V10 code review of T1-T6 (independent, both axes, findings fixed or documented); V13 whole feature (fixed); V18 reconciliation.
 - Verdicts: items 1-6 verified; assumptions A1 and A2 partial (one untested case each); release line partial (allowed case live, owner acceptance).
 - Not changed by owner decision: waiver wording (Q6 c). New hook candidates: 7 (E8/E9 approval wording in the same message, bold answers) and 8 (E10/E11 worktree and subagent approvals) in docs/RULE-CONTRACTS.md.
-- Kept until acceptance: the fixture C:\Users\Cem\gate-fixture-rc38, the working copy .artifacts/2026-11-12-approval-gate-false-refusals/work, logs in that folder, the scratchpad backup of the rc.37 Codex skills.
+- Kept until acceptance: the fixture ~\gate-fixture-rc38, the working copy .artifacts/2026-11-12-approval-gate-false-refusals/work, logs in that folder, the scratchpad backup of the rc.37 Codex skills.
 
 - 2026-11-12: owner acceptance: "yes accepting it" (D3). A1/A2 tests added (V19). Fixture and working copy removed after acceptance.

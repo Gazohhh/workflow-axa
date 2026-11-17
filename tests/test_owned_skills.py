@@ -56,6 +56,21 @@ class OwnedSkillTests(unittest.TestCase):
                 self.assertIn(path, text, skill)
             self.assertNotRegex(text, r"installed `(grilling|tdd|code-review)`", skill)
 
+    def test_grilling_keeps_questions_in_the_conversation_without_task_records(self):
+        """T2 of docs/plans/2026-11-17-spar-skill: an Inspect request or a /spar run outside a task has no records."""
+        text = (ROOT / "skills/grilling/SKILL.md").read_text(encoding="utf-8")
+        record = text[text.index("## Record answers"):]
+        self.assertIn("Outside `/spar`, when there are no task records or writes aren't allowed (an Inspect request), nothing is written", record)
+        self.assertIn("nothing is written: the questions, with their exact options, letters and recommendation, "
+                      "the answers and their sources stay in the conversation", record)
+        self.assertIn("Record each choice you made in DECISIONS marked `by: agent`, or, with no task records, when "
+                      "writes aren't allowed or during `/spar` (as Record answers says), state it there instead; during `/spar` it is a coordinator recommendation or an assumption, never an Owner decision.", text)
+        self.assertIn("During `/spar`, questions and answers go into its SPAR.md", record)
+        self.assertIn("Otherwise (not `/spar`):", record)
+        contracts = (ROOT / "docs/RULE-CONTRACTS.md").read_text(encoding="utf-8")
+        self.assertIn("save each question before sending (in the conversation when there are no task records)",
+                      contracts)
+
     def test_the_pattern_covers_every_credited_source(self):
         """The blast-radius method and the Unslop tells (VENDORED-SKILLS.md) are covered by the same rule."""
         for line in ("adapted from pstack", "by Lauren Tan", "see github.com/cursor/plugins"):
