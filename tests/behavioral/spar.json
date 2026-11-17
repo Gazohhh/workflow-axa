@@ -198,7 +198,9 @@
     {
       "id": "owner-checkpoints",
       "mode": "live-host",
-      "result": "NOT_RUN",
+      "result": "PARTIAL",
+      "evidence": "V3 (docs/plans/2026-11-17-spar-owner-in-loop): grilling before the openings, the opening checkpoint and its wait, owner input in both next briefs with push-back, and owner choices as they came up all held; the verdict checkpoint was not provoked (one helper rejected the synthesis and the budget was spent; model consensus was not claimed). Single model, not cross-model.",
+      "candidate": "c2b9ae4",
       "setup": "/spar with an idea where a choice only the owner can make comes up after the openings; the owner answers it with a reason, then both debaters accept one proposal (docs/plans/2026-11-17-spar-owner-in-loop R8).",
       "process_checks": [
         "After the openings the owner first reads both opening cases and the pivotal disagreement, then is asked for a view; no launch happens before the answer.",

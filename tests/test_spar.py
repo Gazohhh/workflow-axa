@@ -336,7 +336,8 @@ class Scenarios(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
         for required in self.REQUIRED:
             self.assertIn(required, ids)
-        findings = text(ROOT / "docs/plans/2026-11-17-spar-skill/FINDINGS.md")
+        findings = text(ROOT / "docs/plans/2026-11-17-spar-skill/FINDINGS.md") + text(
+            ROOT / "docs/plans/2026-11-17-spar-owner-in-loop/FINDINGS.md")
         for case in self.data["scenarios"]:
             with self.subTest(case=case["id"]):
                 self.assertEqual(case["mode"], "live-host")

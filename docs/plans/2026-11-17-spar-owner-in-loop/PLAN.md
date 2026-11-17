@@ -1,13 +1,13 @@
 # /spar with the owner in the loop
 
 ## Current checkpoint
-- Updated / phase: 2026-11-18; T1 verified and pushed to main; T2 waits for the owner's OK and a cost cap
+- Updated / phase: 2026-11-18; T1 verified and pushed; T2 partial (V3); waiting for the owner on the verdict checkpoint and acceptance
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: feature; modifiers none. It changes how /spar involves the owner during a spar. Scope: the task. Classification question: not asked
 - Agreement (gate one): agreed. The plan S2 was accepted word for word by GPT-6.2 Sol (FINDINGS S1); the owner approved it with offer #1 (D2)
 - Offer: #1 approved (owner, question tool, 2026-11-17); approving it also approved the plan
-- Implementation: T1 verified (FINDINGS V1, V2; review S2 passed). T2, the live run, waits for the owner's OK and a cost cap
-- Verification / owner acceptance: full suite 1543 OK, validate PASS; live run not run; owner acceptance not given
+- Implementation: T1 verified (FINDINGS V1, V2; review S2 passed). T2 live check run (V3): four checks pass, the verdict checkpoint was not provoked; $3.89 of $5
+- Verification / owner acceptance: full suite 1543 OK, validate PASS; live check partial (V3); owner acceptance not given
 - Blockers: none
 - Changed files: skills/spar/SKILL.md, T3.md, SPAR-FILE.md; tests/test_spar.py, tests/behavioral/spar.json, tests/README.md. Work happens on D:\workflow-axa main
 
