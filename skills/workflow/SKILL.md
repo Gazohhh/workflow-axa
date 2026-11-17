@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: "Use for repository features, fixes, refactors, research, plans, audits and task resumption, including ordinary prompts, and when asked to write, rewrite or simplify text a person reads. Find the task, check rules, route to the phase skill its records require: clarify, specify, execute or deliver. Explain-only stays read-only."
+description: "Use for any request to change, move or delete code or files in a repository, small ones included (features, fixes, refactors), and for research, plans, audits and task resumption, including ordinary prompts, and when asked to write, rewrite or simplify text a person reads. Find the task, check rules, route to the phase skill its records require: clarify, specify, execute or deliver. Explain-only stays read-only."
 ---
 
 # Workflow

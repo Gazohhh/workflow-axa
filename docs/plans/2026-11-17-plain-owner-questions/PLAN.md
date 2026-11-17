@@ -6,7 +6,7 @@
 - Recipe: feature; modifiers none. It changes how every skill writes what a person reads and how it asks the owner to decide. Scope: the task. Classification question: not asked
 - Agreement (gate one): proposed. The design was agreed in a spar (FINDINGS S1, both models accepted S7) and the owner chose to turn it into this plan (D4); the owner approves the plan once GPT and the coordinator both accept it (D5)
 - Offer: #1 approved (owner, question tool, 2026-11-17); approving it also approved the plan
-- Implementation: T0-T9 verified; T10's checks and reviews done (FINDINGS V11, S3, S4); its live checks wait for the owner's OK and cap
+- Implementation: T0-T9 verified; T10's checks, reviews and live checks done (FINDINGS V11-V13): all five live checks pass after the V13 fix
 - Verification / owner acceptance: full suite 1532 OK, validate PASS; reviews by GPT-6.1 Sol and a fresh Claude passed after round 2; live checks and owner acceptance not run
 - Blockers: none
 - Changed files: none. Work happens on D:\workflow-axa main; hook changes are first built in a temporary separate copy (T3)

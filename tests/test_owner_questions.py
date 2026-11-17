@@ -70,7 +70,8 @@ class CodesComeAfterTheMeaning(unittest.TestCase):
         self.assertIn("still makes sense with every code removed", ask)
         self.assertIn("A fact or access request is asked plainly", grilling)
         spar_file = " ".join((ROOT / "skills/spar/SPAR-FILE.md").read_text(encoding="utf-8").split())
-        self.assertIn("asked through grilling's \"How to ask\", never as a list of labels such as \"O1-O5\"", spar_file)
+        self.assertIn("asked through grilling's \"How to ask\"", spar_file)
+        self.assertIn("never as a list of labels such as \"O1-O5\"", spar_file)
 
 
 class RewriteRequestsUseTheRules(unittest.TestCase):
@@ -91,6 +92,22 @@ class RewriteRequestsUseTheRules(unittest.TestCase):
         intents = " ".join((ROOT / "skills/workflow/SKILL.md").read_text(encoding="utf-8")
                            .split("2. Intent:", 1)[1].split("\n3.", 1)[0].split())
         self.assertIn("A question or a chat message is not a Write request", intents)
+
+
+class LiveCheckFixes(unittest.TestCase):
+    """FINDINGS V12: live checks 3 and 4 were partial."""
+
+    def test_the_workflow_starts_on_any_code_change(self):
+        skill = (ROOT / "skills/workflow/SKILL.md").read_text(encoding="utf-8")
+        description = skill.split("description:", 1)[1].split("\n", 1)[0]
+        self.assertIn("any request to change, move or delete code or files in a repository, small ones included",
+                      description)
+
+    def test_spar_questions_use_lettered_options(self):
+        skill = " ".join((ROOT / "skills/spar/SKILL.md").read_text(encoding="utf-8").split())
+        self.assertIn("in one question card, each choice lettered with a recommendation", skill)
+        spar_file = " ".join((ROOT / "skills/spar/SPAR-FILE.md").read_text(encoding="utf-8").split())
+        self.assertIn("numbered, with lettered options and \"Recommended: <letter>\" and its trade-off", spar_file)
 
 
 class SmallOnlyAfterNamingWhatDependsOnIt(unittest.TestCase):
