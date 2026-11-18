@@ -1,13 +1,13 @@
 # Release 2.9.0-rc.4
 
 ## Current checkpoint
-- Updated / phase: 2026-11-18; the offer waits for the owner's answer
+- Updated / phase: 2026-11-18; released and installed; waiting for the owner's acceptance
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: docs-tests; modifiers none. A version bump, release notes, verification and installation; no behaviour change. Scope: the task. Classification question: not asked
 - Agreement (gate one): not required. A release step the owner asked for ("release it", 2026-11-18)
 - Offer: #2 approved (owner, question tool, 2026-11-18); #1 superseded before it was shown
-- Implementation: not started
-- Verification / owner acceptance: not run
+- Implementation: steps 1-6 done (FINDINGS V1, V2)
+- Verification / owner acceptance: 1544 tests 0 failed, validate PASS, plugin 2.9.0-rc.4, Codex DISK_MATCH; owner acceptance pending
 - Blockers: none
 - Changed files: none
 
