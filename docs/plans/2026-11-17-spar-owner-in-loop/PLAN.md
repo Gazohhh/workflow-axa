@@ -1,7 +1,7 @@
 # /spar with the owner in the loop
 
 ## Current checkpoint
-- Updated / phase: 2026-11-18; delivered as partial (Outcome; owner D4 accepts as is)
+- Updated / phase: 2026-11-18; delivered as partial (Outcome; owner D4 accepts as is); shipped in 2.9.0-rc.4 (2026-11-18, docs/plans/2026-11-18-release-rc4)
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: feature; modifiers none. It changes how /spar involves the owner during a spar. Scope: the task. Classification question: not asked
 - Agreement (gate one): agreed. The plan S2 was accepted word for word by GPT-6.2 Sol (FINDINGS S1); the owner approved it with offer #1 (D2)

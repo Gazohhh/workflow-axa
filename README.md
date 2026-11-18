@@ -1,4 +1,4 @@
-# Workflow AXA — 2.9.0-rc.3
+# Workflow AXA — 2.9.0-rc.4
 
 **One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, presents an offer and asks one question, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or an offer.
 

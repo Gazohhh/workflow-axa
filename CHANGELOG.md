@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.9.0-rc.4 — /spar brings you in (2026-11-18)
+
+**You decide and judge during a spar.** /spar now has written rules: you decide and judge, the two models argue, and the coordinator only moderates and checks evidence. No new round starts while it depends on a choice only you can make.
+
+- **Grilling first.** Before the models start, /spar asks only what is still unclear about your goal, what success looks like, what's off-limits and which trade-offs you accept. If your request already covers it, it asks nothing.
+- **Stops for you.** After the opening positions it always stops: you read both positions and the disagreement that matters most, then give your view or say "no feedback". It also stops every time a choice only you can make comes up, with no fixed number of stops, and for your final say. Before each stop you see what it is about, and every question makes sense without codes.
+- **Your input.** Your decisions bind both models. Your opinions and claims go to both, who may push back with reasons; a wrong fact is corrected with evidence.
+- **"Agreed" needs you.** It means both models and you accept the exact same text, shown to you in full first. Asking for your final say costs no launches. You can also overrule both models; their objection is recorded.
+
+**Checked:** the full suite and validate; an independent review in four rounds; one live /spar run with two fresh Claudes, in which the grilling, the stop after the openings, your input reaching both models and your choices being asked as they came up all worked.
+
+**Not yet tried live, or known limits:**
+- Your final say on a version both models accepted: in the live run one model rejected the last version, so it did not come up.
+- The new rules have not yet run Claude against GPT in T3 Code.
+- An offer whose text puts a command in backticks shows that part garbled; write such text without backticks for now.
+- The rc.3 limits still apply (worktree removal, operation names, delegated review briefs, "S3:"-style openings).
+
+Task records: docs/plans/2026-11-17-spar-owner-in-loop and 2026-11-18-release-rc4.
+
 ## 2.9.0-rc.3 — /spar, plain owner questions, one writing rule set, blast radius (2026-11-17)
 
 **Questions you answer read plainly.** Every question to the owner starts with what is being decided and what each answer does. A code such as D31 or T6 appears only after that, as a reference, and the question still makes sense without it. Decisions come as numbered questions with lettered options and a recommendation with its trade-off; a plain fact question stays plain. New offers open with "What you are asked to approve", keep the offer number in the footer, and show only an address or link word as code instead of the whole text. An offer whose text starts with a record code ("Offer #2", "Agreement 7", "T1:") is refused until it leads with its meaning.

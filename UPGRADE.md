@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.0-rc.3
+# Upgrade to workflow-axa 2.9.0-rc.4
+
+## Upgrade to 2.9.0-rc.4 (from 2.9.0-rc.3)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions. Only /spar changed: a spar that is already running keeps its old rules until the session restarts. A SPAR.md written before rc.4 stays valid; its "agreed by both" means both models only.
 
 ## Upgrade to 2.9.0-rc.3 (from 2.9.0-rc.2)
 
