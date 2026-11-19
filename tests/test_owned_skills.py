@@ -85,8 +85,8 @@ class OwnedSkillTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertIn(path, files)
                 self.assertTrue((ROOT / path).is_file())
-        self.assertEqual(["code-review", "codebase-design", "domain-modeling", "grilling", "implement-spec", "retro",
-                          "simple-english", "tdd", "writing-for-agents"], licensed_skills(ROOT))
+        self.assertEqual(["code-review", "codebase-design", "domain-modeling", "grilling", "implement-spec", "reproduce-bug",
+                          "retro", "simple-english", "tdd", "verify-app", "writing-for-agents"], licensed_skills(ROOT))
 
     def test_no_file_under_skills_names_where_a_skill_came_from(self):
         hits = []

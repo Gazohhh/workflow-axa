@@ -1,4 +1,4 @@
-# Workflow AXA — 2.9.0-rc.4
+# Workflow AXA — 2.9.1
 
 **One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, presents an offer and asks one question, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or an offer.
 
@@ -21,7 +21,7 @@ This repository has no CI workflow; run the checks below from a clone. Nothing h
 
 The other skills in your `/` menu are parts of `/workflow`; you rarely need to type them (`resume` for where things stand).
 
-Full replacement package: **20 skills** (14 workflow-axa skills plus 6 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
+Full replacement package: **22 skills** (14 workflow-axa skills plus 8 that began as copies of other MIT projects and are now maintained here; the list is in `.claude-plugin/plugin.json`; credits in [VENDORED-SKILLS.md](VENDORED-SKILLS.md)), shared version-aware rules, rules-readiness, proactive grilling, approved flowchart reports, recoverable records and the artifact policy.
 
 **Renamed skills (2.9.0).** No redirect skills are kept; use the new names:
 
@@ -101,7 +101,7 @@ Plugin syntax is shown; standalone names depend on the host. The main sequence i
 
 ## Install and check
 
-Replace the complete plugin or all **20 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `resume`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling`, and the user commands `interrogate`, `no-comments`, `wait-what` and `spar`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
+Replace the complete plugin or all **22 complete skill folders** together (the list in `.claude-plugin/plugin.json`): `workflow`, `codebase-map`, `resume`, `plan-review`, `rule-maker`, `ui-design`, `workflow-clarify`, `workflow-specify`, `workflow-execute`, `workflow-deliver`, and the bundled `grilling`, `tdd`, `code-review`, `writing-for-agents`, `codebase-design` and `domain-modeling`, the user commands `interrogate`, `no-comments`, `wait-what` and `spar`, and the app-checking skills `verify-app` and `reproduce-bug`. Keep them as siblings from the same version; a phase skill without its matching `workflow` folder stops and reports the gap. Preserve separately installed skills and actual user modifications after review. Use one stable active installation, start fresh sessions, then check from the installed package:
 
 ```bash
 python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global

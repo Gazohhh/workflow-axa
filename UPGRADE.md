@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.0-rc.4
+# Upgrade to workflow-axa 2.9.1
+
+## Upgrade to 2.9.1 (from 2.9.0-rc.4)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP; `verify-app` and `reproduce-bug` are new, the 21st and 22nd skill folders. Then start new sessions. To use them in an app, ask `verify-app` to set up that app's verify skill; it needs Playwright 1.65 or newer there and a restricted throwaway test account.
 
 ## Upgrade to 2.9.0-rc.4 (from 2.9.0-rc.3)
 

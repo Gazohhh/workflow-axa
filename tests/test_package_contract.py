@@ -18,6 +18,7 @@ EXPECTED_SKILLS = (
     "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
     "interrogate", "no-comments", "wait-what",  # T23
     "spar",
+    "verify-app", "reproduce-bug",
 )
 # (event, hook script) pairs hooks/hooks.json registers.
 EXPECTED_HOOKS = {
@@ -27,7 +28,8 @@ EXPECTED_HOOKS = {
 # Each formerly copied skill keeps its LICENSE: the licence requires the notice to travel with the text (AGENTS.md).
 # T22: implement-spec and retro are archived (not shipped); simple-english's licence ships as
 # skills/workflow/SIMPLE-ENGLISH.LICENSE (KEY_FILES). test_owned_skills checks the archive copies.
-LICENSED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling")
+LICENSED = ("grilling", "tdd", "code-review", "writing-for-agents", "codebase-design", "domain-modeling",
+            "verify-app", "reproduce-bug")
 RENDERER = (
     "skills/codebase-map/scripts/render_report.py", "skills/codebase-map/scripts/task_report.py",
     "skills/codebase-map/scripts/screen_flow.py", "skills/codebase-map/assets/report.css",

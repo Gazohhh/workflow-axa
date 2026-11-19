@@ -1,0 +1,3 @@
+interface:
+  display_name: "Verify app"
+  short_description: "Write an app's guarded verify skill and feature map"

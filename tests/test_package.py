@@ -29,7 +29,7 @@ class PackageTests(unittest.TestCase):
             second = root / "skills/duplicate/SKILL.md"
             second.parent.mkdir()
             second.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
-            self.assertIn("Exactly the 20 SKILL.md files plugin.json registers are required.", validate_package(root))
+            self.assertIn("Exactly the 22 SKILL.md files plugin.json registers are required.", validate_package(root))
 
     def test_malformed_skill_entries_fail_before_any_path_is_read(self):
         cases = {"/etc/passwd": "is not ./skills/<name>", "./skills/../../outside": "is not ./skills/<name>",
@@ -65,7 +65,7 @@ class PackageTests(unittest.TestCase):
             path.write_text(json.dumps(data), encoding="utf-8")
             errors = validate_package(root)
             self.assertTrue(errors)
-            self.assertTrue(all("states 20 skills" in error for error in errors), errors)
+            self.assertTrue(all("states 22 skills" in error for error in errors), errors)
 
     def test_version_without_changelog_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

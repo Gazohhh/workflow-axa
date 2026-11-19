@@ -1,0 +1,13 @@
+{
+  "localFile": ".env.verify.local",
+  "devServer": "http://localhost:8101",
+  "blockedHosts": ["app.example.com", "api.example.com"],
+  "rewrite": [],
+  "alsoAllow": [],
+  "loginFile": ".env.verify.local",
+  "loginKeys": { "user": "VERIFY_USER", "password": "VERIFY_PASSWORD" },
+  "viewport": { "width": 390, "height": 844 },
+  "isMobile": true,
+  "hasTouch": true,
+  "artifacts": ".artifacts/verify"
+}

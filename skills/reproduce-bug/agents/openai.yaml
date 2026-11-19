@@ -1,0 +1,3 @@
+interface:
+  display_name: "Reproduce bug"
+  short_description: "Reproduce a bug report or check a fix in the running app"

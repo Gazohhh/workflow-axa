@@ -1,0 +1,70 @@
+---
+name: verify-app
+description: "Write or update an app's own verify skill: how to start the app, drive its screens the way a user does, keep the browser away from production and capture evidence, plus a feature map of its screens. Use when a repository has no scripted way to prove behaviour in the running app, to add a screen to its map, or to check the map against the app."
+---
+
+# Verify app
+
+An app's verify skill is the scripted way to drive the real app and prove what it does: start it, use a feature the way a user would, and keep the evidence. This skill writes that skill for one repository, adds screens to its feature map later, and checks the map against the app. It knows nothing about any one kind of check; the jobs that use a verify skill (see [GUIDE.md](GUIDE.md)) bring their own input and outcomes.
+
+Write the generated skill for the next agent, not for a person: it will be read cold, in the middle of a task, by an agent that has never seen the app.
+
+## 1. Study the repository, not the user
+
+Answer these from the code and its documents. Ask the owner only what you cannot see, such as which backend is safe and where a test login lives:
+
+- **Surface:** what a user touches: a web or mobile UI, a CLI, an API, a desktop app. Pick the main one and note the others.
+- **Run:** the project's own documented start command, its ports, settings files, seed data and login.
+- **Drive:** existing harnesses first (Playwright or Cypress specs, test helpers, debug ports). Only then a generic recipe: a browser driver for web apps, a terminal session for CLIs, plain HTTP for services.
+- **Observe:** what can be captured: screenshots, video, an accessibility snapshot, network log, terminal output, a stored value read back.
+- **Isolate:** whether two instances can run side by side (ports, data folders, profiles). If not, the generated skill says so and refuses to drive an instance it did not start.
+- **Safety:** which backends are production, which one is safe for tests, where the dev server proxies requests to (its proxy settings), and where the project's rules say test logins may live. The project's own rules win. With no safe backend, stop and ask; never drive a production backend.
+
+Study by reading only: never run the app, its dev server or its start command in this step, because an app's own start can open a browser or call its production backend before any guard check. The app first starts in the setup check, through Launch after Doctor's first part. When reading shows the checkout cannot start as it is (a missing dependency, a broken setting), report exactly why before generating; a skill written against a broken start teaches wrong steps.
+
+## 2. Write the verify skill
+
+Write `.claude/skills/verify-<app>/SKILL.md` with frontmatter (`name: verify-<app>` and a description naming the app, its surface and when to use it) and these sections, each filled from what step 1 found, with no placeholders left:
+
+- **Settings:** a committed settings file for what is the same on every machine (the dev server port, the production hosts that are refused, the window size, where logins and evidence live), and an ignored local file for this machine's values (the backend address, a pin, another dev server port), so no machine's host names are written in the skill or committed. Together they give: the dev server address and port, the only allowed backend, the production hosts that are refused, any address rewrite from the app's configured backend to the allowed one, the window size, and the ignored local file that holds the test login. No login, token or client data in the skill or its settings.
+- **Launch:** the exact command that starts the app for checking, and how to tell it is usable (a screen that answers, not only a process). It starts on the settings' port so it never takes over the developer's own server. It starts the dev server with no outbound proxy: remove `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY` (and their lower-case forms), `NODE_USE_ENV_PROXY` and `GLOBAL_AGENT_*` from the environment of the command that starts it, because a proxy would resolve the backend's name somewhere else; Doctor's first part also checks that the dev server's own settings name no proxy and name no blocked host in the environment variables of the commands that start it and the local backend (an exported variable such as a production database or API address overrides their env files), and that no settings or environment file of the dev server or of the local backend names a blocked production host (search them for each blocked host; a browser-only variable, one the dev server only hands to the page, may name a host listed as a `rewrite` source, since the guard sends that request to the local backend), because a server-side request or a backend redirect to such a host happens outside the browser and its guard. It starts the dev server only: never a command or setting that opens a browser (`--open`, `open: true`, a browser launcher), because that browser is outside the guard; the only browser of a run is the guarded Playwright one. Before starting, Doctor's first part must have passed on this checkout, and the port must be free: nothing listens on it (a listening-socket check such as `Get-NetTCPConnection -LocalPort <port> -State Listen` or `netstat`, not an HTTP request, since a listener that closes without answering looks free to one); when something listens, stop and say so, because a server left from another checkout would be checked instead. Include teardown.
+- **Doctor:** read-only, in two parts. **Before Launch**, on the checkout about to start: `git check-ignore -q` succeeds for the login file, the machine settings file (`localFile`) and the artifacts folder (checked as `<artifacts>/` with a trailing slash, so a folder-only rule matches before the folder exists) on the developer's checkout, where the verify files and evidence live, every time (a worktree of an older commit only serves the dev server and is not checked for them) (an ignore rule on one machine, such as a personal exclude, does not carry to another; when one is not ignored, stop and ask the owner for a rule), the installed `@playwright/test` is 1.65 or newer (guard/README.md, set-up step 1), the guard's own settings check passes (`node <skill>/run.mjs --list` from the repository root with a new `VERIFY_RUN` and `VERIFY_JOURNEYS=<skill>/journeys`: it lists the journeys, or refuses a production, unset or unpinned named backend before anything starts), a pinned backend name resolves only to this machine where the dev server runs, and where the local backend runs when it calls that name itself (inside their containers when they have them; a Node lookup of the name with all addresses, the check `global-setup.ts` makes, run by hand here because Launch comes before any Playwright run), every dev server proxy target and every backend address the dev server itself calls (server-side rendering, an API route) is the allowed backend, and every journey imports only from the guard; a failure stops the run before anything starts. **After Launch:** our process is up, it is this app, the port is ours, the backend is the allowed one and answers, and one logged-in call works through the guard. Run both parts before the first drive on each checkout, and again after anything surprising.
+- **Drive:** two ways, both through the guard. **Explore:** start the explore session (guard/README.md), attach through the verify driver (`drive.mjs <run> attach`, which runs Playwright's own CLI but refuses anything except screen actions and read-only looks), and drive one action at a time: read the accessibility `snapshot`, act on one element, look at the result, write down the action and what changed, decide the next step. **Journey:** a scripted Playwright test of a path already found, for proof and repeat runs. Both use the harness recipe with real selectors from this repository: roles, accessible names, labels, purpose-named data attributes and route paths. Never generated class names, hashes, child positions or coordinates without a fresh screenshot. Drive through what a user does; never set internal state, call hidden methods or write to storage to make something happen.
+- **Evidence:** what to capture and where it goes: one folder per run inside the project's ignored artifacts folder, so a later run never wipes an earlier run's evidence. Capture the action and the resulting state, a short video of the whole path, a screenshot that shows it is this app, and one read-only check of a real value (a stored value read back, a measured position, a network response). Side effects are read back, not assumed. Every screenshot or file a journey writes itself, the setup check's included, goes to `testInfo.outputPath('<name>')` inside the run folder, never to a plain path, which would land beside the repository's tracked files. The throwaway test account's own e-mail and name may appear in captures. A real person's data never should: the test backend holds fictional data only, and when anything the run shows or saves (a screen, a saved response, a log) looks like a real person's data, stop the run (create the explore session's stop file, or end the journey), and once its process has exited delete that run's whole folder `<artifacts>/<run>/` (videos, screenshots, snapshots, Playwright's `error-context.md` diagnostics and your own notes, any of which can quote the page; record in the task only that the run was stopped and deleted, without the data), since Playwright finishes them only on exit, then tell the owner.
+- **Cleanup:** stop what this run started, never by process name; after an explore run has exited, delete its `.playwright-cli` folder; remove temporary profiles, worktrees and links; keep the evidence.
+- **Helpers:** copy the guard from [guard/](guard/) into the verify skill, fill its settings and write the app's `prepare.ts` login step (guard/README.md says how). Every helper is runnable and its command is written in the skill.
+
+The guard is what keeps a run away from production, so it is code, not a sentence: the run refuses to start when the backend is unset or is a production host, the browser can resolve only this machine and the allowed backend, and during the run every request except those to the dev server and the allowed backend is blocked and logged. Its limits (the dev server's proxy, cookies after a rewrite, a journey that bypasses it) are in guard/README.md, and Doctor checks them.
+
+## 3. Seed the feature map
+
+Create `.claude/skills/verify-<app>/features/README.md` (an index, the baseline preconditions and the driving rules) and one file per user-facing screen or feature, starting with the ones the owner names, in the shape of [FEATURE-MAP.md](FEATURE-MAP.md). Each file answers from the user's point of view: what it is, how to reach it, how to drive it, the states it can be in, what it needs (account, data, permissions), what evidence proves it, and its traps. When the data lacks a precondition, the journey reports it as missing in that file's Gotchas; never weaken the journey to make it pass.
+
+## Setup check
+
+First, the test account: its e-mail must be a throwaway alias that belongs to no person and is used for nothing else, and its password must be used nowhere else. Ask the owner to confirm both and record the answer; until they do, stop here. The run does not hide this login from its output or files: a restricted throwaway account is what makes that acceptable, and its login is read only from the ignored login file.
+
+Then run the generated skill's own instructions once, end to end, before anything uses it:
+
+1. Run Doctor's first part, then start the app with Launch.
+2. Run Doctor's second part and confirm it is this app on the allowed backend.
+3. Load one feature map section.
+4. Reach that feature through its user path.
+5. Use one of its states through the mapped controls.
+6. Check the result read-only.
+7. Take a screenshot.
+8. Record a short video of steps 4 to 6.
+9. Clean up, then confirm the evidence is still at its named place.
+
+Also prove the guard: with the backend set to a production host the run must refuse before the browser opens, and a request to any other host during a run must be blocked and logged. And prove the driver: an explore session attaches through `drive.mjs`, a snapshot shows the app, a navigation to another host made from the attached driver fails and is logged as blocked, and after the stop file the session ends "stopped" with its video saved (guard/README.md, "Prove it"). Fix what fails and clean up after every failed attempt. A verify skill whose setup check has not run is a draft, not a deliverable. When every step and proof has passed, write near the top of the generated SKILL.md one line `Status: ready (setup check passed <date>, <commit>)`, and set it back to `Status: draft` whenever the skill or the screens it maps change until the check passes again. When the check ran somewhere other than the real target, list each setup step that place had and the target will not; those stay unproven.
+
+## Keep the map current
+
+Add or update one section when a feature is added or changed ([GUIDE.md](GUIDE.md) part 1): read the feature's code, write its section, run the setup check for that section. To check the whole map against the app:
+
+1. Read the index; fix missing, extra or dead entries.
+2. For each feature file, read its code read-only and note where the section no longer matches, with file and line.
+3. Drive every feature live at least once, Doctor first and again after any failed drive.
+4. Sort each difference: wrong or missing description (fix the map), working behaviour the helpers cannot drive (fix the helpers), or a product bug (report it to the owner; never write around it in the map).
+
+Change only the verify skill's own folder; never product code. End with one outcome and say which: **clean** (every feature covered, nothing to change), **changed** (the proven corrections, shown to the owner, never a pull request), or **blocked** (what stopped the check, exactly).

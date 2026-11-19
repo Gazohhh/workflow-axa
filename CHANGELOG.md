@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.9.1 — check things in the running app: verify-app and reproduce-bug (2026-11-19)
+
+**Two new skills, in two layers.** `verify-app` writes an app's own verify skill in `.claude/skills/verify-<app>/`: how to start the app, drive its screens the way a user does, and capture video, screenshots and one read-only state check, plus a feature map with one section per screen. It also adds screens to the map later and checks the map against the app; `skills/verify-app/GUIDE.md` explains how to add a screen and how to add a new job. `reproduce-bug` is the first job on top: it reproduces a bug report twice in the running app, or checks that a fix commit removes it, and answers Reproduced, Could not reproduce, Blocked, Fix confirmed or Fix not confirmed. Older commits run in a separate worktree, so your working copy is never touched. There is no fix step and nothing runs without a person.
+
+**The guard keeps a run away from production.** A run refuses a production or unset backend before anything starts. The browser resolves only this machine and the allowed backend, uses no proxy, and every request outside the dev server and that backend is blocked and logged, in every browser context and for requests a journey sends itself. Doctor checks the app's dev-server and backend settings and environment before Launch. The machine's own values (backend name, pin) live in an ignored local file, never in the skill. Journeys run through `run.mjs`, which accepts only a short list of options; the explore session is driven one action at a time through `drive.mjs`, which accepts only screen actions and read-only looks and cuts query strings from the addresses it shows.
+
+**The test account is a throwaway one.** Set-up stops until you confirm the test account is a restricted alias used for nothing else; its login is not hidden from the run's output.
+
+Both skills began as copies of another MIT project and are this package's own text now (credits: VENDORED-SKILLS.md).
+
+**Checked:** the full suite (1625 ran, 14 skipped; one failure, the known flaky record.py lock test, which this release does not touch), validate, a strict type check of the guard against Playwright 1.65.1, and an independent review that ended with a pass (S57). Earlier, before the redesign, a live run on one app confirmed a known fix twice before and after, three more fixed bugs came out right, a screen was added by following only the guide, and the guard refused production and blocked other hosts.
+
+**Known limits:**
+- The guard's newer parts (the browser-wide and request guards, the device settings, `run.mjs`) have not run in a real browser yet; the first set-up in an app is their first live run.
+- Explore needs Playwright 1.65 or newer in the app.
+- A redirect that escapes inside a `beforeAll` or `afterAll` hook is logged but does not fail the run.
+- Cutting query strings from shown addresses is best effort for common address forms.
+- The flaky `test_parallel_appends_lose_nothing` (record.py's lock clean-up under parallel writers) is an open bug.
+
+Task record: docs/plans/2026-11-18-bug-reproducer.
+
 ## 2.9.0-rc.4 — /spar brings you in (2026-11-18)
 
 **You decide and judge during a spar.** /spar now has written rules: you decide and judge, the two models argue, and the coordinator only moderates and checks evidence. No new round starts while it depends on a choice only you can make.

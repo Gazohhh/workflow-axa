@@ -90,7 +90,7 @@ class DocFactsTests(unittest.TestCase):
         root = self.candidate()
         with (root / "VENDORED-SKILLS.md").open("a", encoding="utf-8", newline="") as stream:
             stream.write("\nEight skills are credited here.\n")
-        self.assertTrue(any("VENDORED-SKILLS.md states 8 skills" in e and "9" in e for e in validate_package(root)))
+        self.assertTrue(any("VENDORED-SKILLS.md states 8 skills" in e and "11" in e for e in validate_package(root)))
 
     def test_short_credits_note_without_counts_passes(self):
         # D1: VENDORED-SKILLS.md may shrink to a credits and licence note with no hash tables and no counts.

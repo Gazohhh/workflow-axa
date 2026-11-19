@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 5,
+  "task": "2026-11-18-bug-reproducer",
+  "created": "2026-11-18T16:52:55+00:00",
+  "canonical": {
+    "behaviour": "Revision of offer #4 with agreement 5: follow Lauren Tan's method of driving the app one action at a time; everything else stays as approved. New ticket T8: verify-app gets an explore launcher (guard/explore.ts) that refuses a production backend before Chromium starts, launches Chromium with the guard's resolver pin, applies the same request and WebSocket blocking and logging, records video, logs in from the ignored login file itself, and shares the browser under the run's name. The agent then drives it step by step with Playwright's bundled playwright-cli (attach, snapshot, click), noting each action and what changed. reproduce-bug's step 3 becomes: explore step by step, then save the path as a journey and prove it twice with playwright test (unchanged rules). The labeler's verify skill gets the launcher and a login step, and three new proofs: production refused before Chromium, a blocked host from the attached CLI fails and is logged, the session video is saved. T5 then waits for T8. Phase 1 of checking things in the real app, as agreed in agreement 3. workflow-axa gets two new skills written as its own text from pstack (MIT, credited in VENDORED-SKILLS.md, not installed): verify-app, which writes and maintains an app's verify skill and feature map, with a guide for adding screens and new jobs and a browser-guard template; and reproduce-bug, the bug job, which reproduces a bug report twice in the running app and checks a known fix, with the outcomes Reproduced, Could not reproduce, Blocked, Fix confirmed and Fix not confirmed. Both are registered and tested in the package. Then, in the the test app labeler, verify-app writes .claude/skills/verify-labeler/ with a map of My labels; it must pass the 9-step setup check and the guard checks, where production is refused and other hosts are blocked. The first test checks the filter-dot fix 502db1f, the eval checks two more fixed bugs, and a second screen is added by following only the guide. One assumption changed: the candidate skills are read by path from D:\\workflow-axa in the labeler session, instead of through tools/stage_candidate.py, which only builds a separate sandbox repository (E6).",
+    "paths": [
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "VALIDATION.md",
+      "VENDORED-SKILLS.md",
+      "docs/plans/2026-11-18-bug-reproducer/",
+      "skills/reproduce-bug/",
+      "skills/verify-app/",
+      "tests/README.md",
+      "tests/test_docs_consistency.py",
+      "tests/test_owned_skills.py",
+      "tests/test_package.py",
+      "tests/test_package_contract.py",
+      "tests/test_ui_design.py",
+      "tests/test_verify_skills.py"
+    ],
+    "operations": [
+      "git worktree add and git worktree remove in D:\\<test app> for 502db1f^, 502db1f and the two eval commits, inside .artifacts/2026-11-18-bug-reproducer/; one directory link to the main checkout's node_modules per worktree, removed as a link",
+      "npm install and npx playwright install chromium in D:\\<test app>, once",
+      "run Playwright against http://<local backend name> only while it is pinned to this machine (Chromium resolver MAP to 127.0.0.1 and a Node lookup check before the browser starts)",
+      "run the explore launcher and node node_modules/playwright/cli.js cli (playwright-cli attach, snapshot, click, fill, screenshot) in D:\\<test app> against the pinned local backend only",
+      "start the labeler dev server on port 8101 and run Playwright against the owner's local backend only",
+      "tools/verification_summary.py --run --write, once more after the pinned counts are updated (runs the suite and rewrites VALIDATION.md)",
+      "write in D:\\<test app>: .claude/skills/verify-labeler/ (verify skill, features/, eval.md, guard settings) and captures in .artifacts/2026-11-18-bug-reproducer/"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "No change to the backend repository <test backend>.",
+      "No change to the labeler's app code, environment files, existing e2e tests, tests/e2e/utils.ts or AGENTS.md; no CSS.",
+      "No git commit, push or branch in either repository unless the owner asks.",
+      "No run against <production host 1>, <production host 2>, <production host 3>, or <local backend name> when it does not resolve to this machine; no other host.",
+      "No version bump, release, plugin install or cache replacement; no change to the installed plugin.",
+      "Nothing in Paperclip, Trello, Hermes or workflow-paperclip; nothing after phase 1.",
+      "The workflow's bug recipe does not call reproduce-bug."
+    ],
+    "conditions": [
+      "If 502db1f^ does not run against today's local backend, T5 is Blocked and the next candidate bug is used, recorded in FINDINGS.",
+      "No login, token or client data in a skill, record or capture.",
+      "T4 to T7 start after the test login is in the labeler's .env.e2e.local (the owner puts it there) and Playwright is installed; the setup check shows whether the backend accepts the dev server's requests."
+    ],
+    "checks": [
+      "independent review of each ticket and of the whole feature",
+      "labeler afterwards: git worktree list shows only the main checkout, node_modules intact, git status shows only the verify skill files plus the owner's earlier changes",
+      "labeler: eval of three fixed bugs each right on both commits",
+      "labeler: first test 502db1f gives Fix confirmed with videos, screenshots and the dot position; owner watches the videos",
+      "labeler: second screen added by following GUIDE.md, its setup check passes; owner says the guide is clear",
+      "labeler: the 9-step setup check and the two guard runs, results in FINDINGS",
+      "python -X utf8 -I tools/validate.py and python -X utf8 -m unittest discover -s tests -p \"test_*.py\": no new failing names compared with the baseline taken before T1",
+      "python -X utf8 -m unittest tests.test_verify_skills -v (new): required sections, outcome words, guard template, no job words in layer 1, no source or company names"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "13d12201816e53da",
+  "display": "",
+  "state": "draft",
+  "presentation_decision": "chat",
+  "decision": null,
+  "supersedes": 4,
+  "superseded_by": null
+}

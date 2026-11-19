@@ -1,6 +1,6 @@
 {
   "name": "workflow-axa",
-  "version": "2.9.0-rc.4",
+  "version": "2.9.1",
   "description": "Code-grounded workflow with shared rules audits, source-backed design kits, proactive grilling, visual approval and recoverable tasks.",
   "author": {
     "name": "Gazohhh",
@@ -36,6 +36,8 @@
     "./skills/interrogate",
     "./skills/no-comments",
     "./skills/wait-what",
-    "./skills/spar"
+    "./skills/spar",
+    "./skills/verify-app",
+    "./skills/reproduce-bug"
   ]
 }
