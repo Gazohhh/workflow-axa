@@ -173,8 +173,11 @@ class RecordPolicyContracts(unittest.TestCase):
     """Static regression guard only; live behavior cases remain separate."""
     def test_policy_contains_forward_only_and_authority_boundaries(self):
         text=(ROOT/'skills/workflow/TASK-FOLDER.md').read_text()
-        for term in ('Forward-only adoption','legacy `STATUS.md`','No new plan revision','Proposed ADRs are not accepted','Do not bulk rewrite closed tasks','immutable snapshots','phase names separate'):
-            self.assertIn(term,text)
+        self.assertIn('legacy `STATUS.md`',text)
+        self.assertIn('[TASK-HISTORY.md](TASK-HISTORY.md) "Revisions" and "Forward-only adoption"',text)
+        history=(ROOT/'skills/workflow/TASK-HISTORY.md').read_text()
+        for term in ('Forward-only adoption','No new plan revision','Proposed ADRs are not accepted','Do not bulk rewrite closed tasks','immutable snapshots','phase names separate'):
+            self.assertIn(term,history)
 
     def test_utility_modes_remain_bounded(self):
         text=(ROOT/'skills/resume/SKILL.md').read_text()  # T21: task-status and resume-task merged

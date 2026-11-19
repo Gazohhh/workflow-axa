@@ -245,6 +245,148 @@ class IncrementalParse(SpeedCase):
         self.assertEqual(module.read_events(self.path, self.repo), self.cold(module, self.path))
 
 
+FAST = (
+    ("Bash", "git status", True),
+    ("Bash", "git status --porcelain", True),
+    ("Bash", "git log --oneline -3", True),
+    ("Bash", "git diff HEAD", True),
+    ("Bash", "git show HEAD:src/vat.ts", True),
+    ("Bash", "git rev-parse --show-toplevel", True),
+    ("Bash", "git ls-files src", True),
+    ("Bash", "git branch --list", True),
+    ("Bash", "ls -la src", True),
+    ("Bash", "cat src/vat.ts", True),
+    ("Bash", 'grep -rn "vat" src', True),
+    ("Bash", "rg vat src", True),
+    ("Bash", "head -5 src/vat.ts", True),
+    ("Bash", "tail -n 5 src/vat.ts", True),
+    ("Bash", "wc -l src/vat.ts", True),
+    ("Bash", "find . -name '*.ts'", True),
+    ("PowerShell", "Get-Content src/vat.ts", True),
+    ("PowerShell", "Get-ChildItem -Recurse src", True),
+    ("PowerShell", "Select-String -Path src/vat.ts -Pattern vat", True),
+    ("Bash", "git status > x", False),
+    ("Bash", "git status >> x", False),
+    ("Bash", "cat a | tee b", False),
+    ("Bash", "find . -delete", False),
+    ("Bash", "find . -name x -exec rm {} +", False),
+    ("Bash", "find . -fprint out.txt", False),
+    ("Bash", "git -c core.worktree=.. status", False),
+    ("Bash", "git -C .. status", False),
+    ("Bash", "git --git-dir=x status", False),
+    ("Bash", "GIT_DIR=x git status", False),
+    ("Bash", "ls; rm x", False),
+    ("Bash", "ls && rm x", False),
+    ("Bash", "ls || rm x", False),
+    ("Bash", "cat $(rm x)", False),
+    ("Bash", "cat `rm x`", False),
+    ("Bash", "ls\nrm x", False),
+    ("Bash", "git diff --output=x", False),
+    ("Bash", "git branch topic", False),
+    ("Bash", "git branch -D topic", False),
+    ("Bash", "git clean -fdx", False),
+    ("Bash", "git commit -m x", False),
+    ("Bash", "git worktree add ../other", False),
+    ("Bash", "git worktree list", False),
+    ("Bash", "rm x", False),
+    ("Bash", "rg --pre ./script vat", False),
+    ("Bash", "npm install left-pad", False),
+    ("Bash", 'grep -n "npm install" README.md', False),
+    ("Bash", "python settings.py css on", False),
+    ("Bash", 'cat "settings.py css on"', False),
+    ("Bash", "cat record.py", False),
+    ("Bash", "cat legacy_inventory.py", False),
+    ("Bash", "cat render_report.py", False),
+    ("Bash", "python -X utf8 -I tools/validate.py", False),
+    ("Bash", "/usr/bin/git status", False),
+    ("Bash", "", False),
+    ("PowerShell", "Get-Content x | Set-Content y", False),
+    ("PowerShell", "Get-Content (Remove-Item x)", False),
+    ("PowerShell", "Get-ChildItem; Remove-Item x", False),
+    ("PowerShell", "& rm x", False),
+    ("PowerShell", "Remove-Item x", False),
+    ("Edit", "", False),
+    ("Read", "", False),
+)
+
+
+class ReadOnlyFastPath(SpeedCase):
+    """Item 4: a shell call that provably writes nothing is allowed before the gate loads; every other call takes the
+    full path. The fast path never allows what the full path refuses."""
+
+    def setUp(self):
+        super().setUp()
+        from test_approval_hook import git
+        (self.repo / ".git").rmdir()
+        git(self.repo, "init", "-q")
+        git(self.repo, "add", "-A")
+        git(self.repo, "commit", "-qm", "base")
+        git(self.repo, "worktree", "add", "-q", "--detach", str(self.base / "linked"))
+
+    def data(self, tool, command):
+        if tool in ("Bash", "PowerShell"):
+            return {"command": command}
+        return {"file_path": str(self.repo / "src/vat.ts"), "old_string": "1", "new_string": "2"}
+
+    def test_the_fast_path_takes_only_the_read_only_commands(self):
+        module = self.in_process()
+        rows = Rows().router()
+        for tool, command, fast in FAST:
+            with self.subTest(tool=tool, command=command):
+                event = self.event(rows, tool=tool, data=self.data(tool, command))
+                self.assertEqual(module.fast_allow(json.dumps(event)), fast)
+
+    def test_the_fast_path_and_the_full_path_decide_alike(self):
+        module = self.in_process()
+        for label, rows in (("not approved", Rows().router()), ("approved", self.approved()),
+                            ("stopped", self.approved()), ("no workflow", Rows())):
+            if label == "stopped":
+                rows.owner("stop")
+            for tool, command, fast in FAST:
+                with self.subTest(rows=label, tool=tool, command=command):
+                    event = self.event(rows, tool=tool, data=self.data(tool, command))
+                    full = module.problem_for(event)
+                    if module.fast_allow(json.dumps(event)):
+                        self.assertIsNone(full)
+                    hooked = self.finish(self.start(event))
+                    self.assertEqual(hooked is None, full is None or full is module.LEGACY, (hooked, full))
+
+    def test_the_writes_the_fast_path_leaves_out_are_still_refused(self):
+        rows = Rows().router()
+        for tool, command in (("Bash", "git status > src/x.ts"), ("Bash", "cat src/vat.ts | tee src/x.ts"),
+                              ("Bash", "ls; rm src/vat.ts"), ("Bash", "git -c core.worktree=.. status"),
+                              ("PowerShell", "Get-Content src/vat.ts | Set-Content src/x.ts")):
+            with self.subTest(command=command):
+                self.denied(rows, tool=tool, data={"command": command})
+
+    def test_without_a_transcript_every_call_is_allowed_as_before(self):
+        module = self.in_process()
+        for tool, command, _ in FAST:
+            with self.subTest(tool=tool, command=command):
+                event = {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": self.data(tool, command),
+                         "cwd": str(self.repo)}
+                self.assertTrue(module.fast_allow(json.dumps(event)))
+                self.assertIsNone(module.problem_for(event))
+                self.assertIsNone(self.finish(self.start(event)))
+
+    def test_an_unreadable_transcript_takes_the_full_path(self):
+        module = self.in_process()
+        event = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git status"},
+                 "cwd": str(self.repo), "transcript_path": str(self.sessions)}
+        self.assertFalse(module.fast_allow(json.dumps(event)))
+        missing = dict(event, transcript_path=str(self.sessions / "missing.jsonl"))
+        self.assertTrue(module.fast_allow(json.dumps(missing)))
+        self.assertIsNone(module.problem_for(missing))
+
+    def test_input_that_is_no_hook_event_is_allowed_as_before(self):
+        module = self.in_process()
+        for raw in ("not json", "[]", json.dumps({"hook_event_name": "PostToolUse", "tool_name": "Bash",
+                                                  "transcript_path": str(self.path),
+                                                  "tool_input": {"command": "rm x"}})):
+            with self.subTest(raw=raw):
+                self.assertTrue(module.fast_allow(raw))
+
+
 class ReadOnlyTiming(SpeedCase):
 
     def transcript(self, events: int) -> Path:

@@ -2,7 +2,8 @@
 
 An offer is what the agent proposes to change, under an id that never changes. Its **canonical fields** authorise:
 behaviour, paths, operations, delegable paths and operations (what a child may receive), exclusions, conditions,
-required checks, and, for a child, its parent offer and the parent's approval provenance. Changing any canonical field
+required checks, and, for a child, its parent offer and the parent's approval provenance; `lightweight: true` (stored
+only when true, so older hashes stay valid) makes it the short two-answer offer. Changing any canonical field
 means a new offer that supersedes the old one; the display text can change freely.
 
 Stored as `<task folder>/offers/offer-<id>.json`. `state` is a cache, never proof: `draft` (written; it becomes
@@ -85,7 +86,7 @@ def canonical_fields(data: dict) -> dict:
     root-relative (a folder ends with `/`, `*` and `**` are globs)."""
     if not isinstance(data, dict):
         raise OfferError("an offer is a JSON object")
-    unknown = set(data) - set(CANONICAL) - {"display"}
+    unknown = set(data) - set(CANONICAL) - {"display", "lightweight"}
     if unknown:
         raise OfferError(f"unknown offer fields: {', '.join(sorted(unknown))}")
     behaviour = data.get("behaviour")
@@ -109,6 +110,11 @@ def canonical_fields(data: dict) -> dict:
         raise OfferError("an offer names the paths or operations it allows")
     out["parent"] = data.get("parent")
     out["parent_provenance"] = data.get("parent_provenance")
+    lightweight = data.get("lightweight", False)
+    if not isinstance(lightweight, bool):
+        raise OfferError("lightweight must be true or false")
+    if lightweight:
+        out["lightweight"] = True
     return out
 
 
@@ -293,6 +299,7 @@ LINK_LIKE = re.compile(r"://|www\.|@", re.IGNORECASE)
 ANSWER_LINE = ("Reply **approve** to approve from this summary, **show report** to see review.html first, or tell me "
                "what to change. (`/approve {id}`, `/report {id}`, yes, ok, go, ja, akkoord and doe maar work too.)")
 QUESTION_LINE = "How would you like to proceed: Show review.html first, Approve from this summary, or Change something?"
+LIGHT_QUESTION_LINE = "Approve or Change something?"
 
 
 def _visible(value: str) -> str:
@@ -355,30 +362,35 @@ def presentation(offer: dict, folder: pathlib.Path | None = None, question: bool
     the id in the footer), generated so the agent only copies it. Every canonical field is shown
     (empty lists as "None."; delegation and parent sections only when set), values escaped so they render as written,
     then the one question, the answer forms (not in the question tool's variant) and a footer that names the offer,
-    its hash, its task and its workspace. The hook compares it exactly; `rendering()` stays the frozen format 1."""
+    its hash, its task and its workspace. The hook compares it exactly; `rendering()` stays the frozen format 1.
+    A lightweight offer is the short form: empty protected actions, exclusions and conditions are left out, and its
+    question is "Approve or Change something?" with no answer line."""
     c = offer["canonical"]
     prose = _prose_words if offer.get("presentation_format", 1) >= 4 else _prose
+    light = c.get("lightweight") is True
 
-    def section(title: str, items: list[str]) -> list[str]:
+    def section(title: str, items: list[str], always: bool = True) -> list[str]:
+        if not items and not always:
+            return []
         return [f"### {title}", ""] + ([f"- {item}" for item in items] or ["- None."]) + [""]
 
     title = f"## Offer #{offer['id']}" if offer.get("presentation_format", 1) in (1, 2) else "## What you are asked to approve"
     lines = [title, ""]
     lines += section("What will change", [prose(c["behaviour"])])
     lines += section("Files allowed to change", [_code(p) for p in c["paths"]])
-    lines += section("Protected actions", [_code(o) for o in c["operations"]])
+    lines += section("Protected actions", [_code(o) for o in c["operations"]], not light)
     if c["delegable_paths"]:
         lines += section("Delegable files", [_code(p) for p in c["delegable_paths"]])
     if c["delegable_operations"]:
         lines += section("Delegable protected actions", [_code(o) for o in c["delegable_operations"]])
-    lines += section("Excluded", [prose(e) for e in c["exclusions"]])
-    lines += section("Conditions", [prose(e) for e in c["conditions"]])
+    lines += section("Excluded", [prose(e) for e in c["exclusions"]], not light)
+    lines += section("Conditions", [prose(e) for e in c["conditions"]], not light)
     lines += section("Required checks", [prose(e) for e in c["checks"]])
     for key, title in (("parent", "Parent offer"), ("parent_provenance", "Parent approval provenance")):
         if c[key] is not None:
             lines += section(title, [_code(json.dumps(c[key], ensure_ascii=False, sort_keys=True, separators=(",", ":")))])
-    lines += [QUESTION_LINE, ""]
-    if not question:
+    lines += [LIGHT_QUESTION_LINE if light else QUESTION_LINE, ""]
+    if not question and not light:
         lines += [ANSWER_LINE.format(id=offer["id"]), ""]
     where = f" · {workspace_of(folder)}" if folder is not None else ""
     lines.append(_code(f"Offer #{offer['id']} · {offer['hash']} · task {offer['task']}{where}"))

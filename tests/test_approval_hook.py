@@ -494,6 +494,63 @@ class FormatTwoPresentation(ApprovalHookCase):
         self.denied(rows)
 
 
+class LightweightOffer(ApprovalHookCase):
+    """Item 15 (D1): the lightweight offer's one question has two answers, Approve and Change something."""
+
+    THREE = ["Show review.html first", "Approve from this summary", "Change something"]
+
+    def setUp(self):
+        super().setUp()
+        self.light = offers.create(self.folder, {**OFFER, "paths": ["src/vat.ts"], "lightweight": True})
+        self.full = offers.create(self.folder, {**OFFER, "paths": ["tests/vat.spec.ts"]})
+
+    def asked(self, offer, options, answer, question=None):
+        rows = Rows().router()
+        question = question if question is not None else offers.presentation(offer, self.folder, question=True)
+        tool = rows.ask(question, options)
+        rows.answer(tool, question, answer)
+        return rows
+
+    def test_approve_on_its_question_approves_it(self):
+        for answer in ("Approve", "Approve (Recommended)", "Approve from this summary"):
+            with self.subTest(answer=answer):
+                self.allowed(self.asked(self.light, ["Approve", "Change something"], answer))
+
+    def test_a_typed_approve_after_the_short_message_approves_it(self):
+        rows = Rows().router().say("Small fix.\n\n" + offers.presentation(self.light, self.folder))
+        rows.owner("Approve")
+        self.allowed(rows)
+
+    def test_it_covers_only_its_own_files(self):
+        rows = self.asked(self.light, ["Approve", "Change something"], "Approve")
+        self.denied(rows, "needs an approved offer that lists tests/vat.spec.ts",
+                    data={"file_path": str(self.repo / "tests/vat.spec.ts"), "old_string": "a", "new_string": "b"})
+
+    def test_change_something_approves_nothing(self):
+        self.denied(self.asked(self.light, ["Approve", "Change something"], "Change something"), "not an approval")
+
+    def test_a_question_that_differs_from_the_printed_offer_approves_nothing(self):
+        exact = offers.presentation(self.light, self.folder, question=True)
+        for question in (exact.replace("Approve or Change something?", offers.QUESTION_LINE),
+                         exact.replace("- `src/vat.ts`", "- `src/`"), exact + "\n\nAlso the database.",
+                         exact.replace("### Required checks\n\n- npm test\n\n", "")):
+            with self.subTest(question=question[-60:]):
+                self.assertNotEqual(question, exact)
+                self.denied(self.asked(self.light, ["Approve", "Change something"], "Approve", question=question))
+
+    def test_a_three_answer_offer_keeps_its_answers(self):
+        self.allowed(self.asked(self.full, self.THREE, "Approve from this summary"),
+                     data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+        self.allowed(self.asked(self.full, ["Approve", "Change something"], "Approve"),
+                     data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+        self.denied(self.asked(self.full, self.THREE, "Show review.html first"), "review.html first",
+                    data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+
+    def test_approve_is_no_answer_to_a_three_answer_question_that_did_not_offer_it(self):
+        self.denied(self.asked(self.full, self.THREE, "Approve"), "not an approval",
+                    data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+
+
 class OfferStates(ApprovalHookCase):
     """C-OFFER-1, -5: revisions, withdrawal and provenance across sessions."""
 

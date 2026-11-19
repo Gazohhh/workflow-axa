@@ -205,6 +205,81 @@ class FormatTwo(unittest.TestCase):
             offers.load(self.task, 1)
 
 
+class LightweightOffers(unittest.TestCase):
+    """Item 15 (D1): a lightweight offer is one short message whose question has two answers."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.task = Path(tmp.name) / "docs/plans/2026-11-15-vat"
+        self.task.mkdir(parents=True)
+
+    def test_existing_offers_keep_their_hash(self):
+        plain = offers.create(self.task, BASE)
+        self.assertEqual(plain["hash"], "7a13ec7e7260ad4f")
+        self.assertNotIn("lightweight", plain["canonical"])
+        unset = offers.create(self.task, {**BASE, "lightweight": False})
+        self.assertEqual(unset["hash"], plain["hash"])
+        self.assertNotIn("lightweight", unset["canonical"])
+        light = offers.create(self.task, {**BASE, "lightweight": True})
+        self.assertIs(light["canonical"]["lightweight"], True)
+        self.assertNotEqual(light["hash"], plain["hash"])
+        self.assertEqual(offers.load(self.task, light["id"])["hash"], light["hash"])
+
+    def test_lightweight_is_true_or_false(self):
+        for value in ("yes", 1, None, []):
+            with self.subTest(value=value), self.assertRaises(offers.OfferError):
+                offers.create(self.task, {**BASE, "lightweight": value})
+
+    def test_a_canonical_switch_to_lightweight_is_a_new_offer(self):
+        offers.create(self.task, BASE)
+        light = offers.revise(self.task, 1, {**BASE, "lightweight": True})
+        self.assertEqual((light["id"], light["supersedes"]), (2, 1))
+
+    def test_the_short_message_asks_approve_or_change_something(self):
+        light = offers.create(self.task, {**BASE, "lightweight": True})
+        footer = f"`Offer #1 · {light['hash']} · task 2026-11-15-vat`"
+        self.assertEqual(offers.presentation(light), "\n".join([
+            "## What you are asked to approve", "",
+            "### What will change", "", "- Round VAT per line, not per invoice", "",
+            "### Files allowed to change", "", "- `src/vat.ts`", "- `tests/vat.spec.ts`", "",
+            "### Protected actions", "", "- `run unit tests`", "",
+            "### Excluded", "", "- database", "",
+            "### Required checks", "", "- npm test -- vat", "",
+            "Approve or Change something?", "",
+            footer]))
+        self.assertEqual(offers.presentation(light, question=True), offers.presentation(light))
+        self.assertNotIn("review.html", offers.presentation(light))
+
+    def test_the_short_message_leaves_out_only_empty_sections(self):
+        light = offers.create(self.task, {"behaviour": "Fix a typo", "paths": ["README.md"], "lightweight": True})
+        text = offers.presentation(light)
+        self.assertIn("### Files allowed to change\n\n- `README.md`", text)
+        self.assertIn("### Required checks\n\n- None.", text)
+        for absent in ("### Protected actions", "### Excluded", "### Conditions", "### Delegable", "### Parent"):
+            self.assertNotIn(absent, text)
+        wide = offers.create(self.task, {**BASE, "lightweight": True, "conditions": ["no new dependencies"],
+                                         "delegable_paths": ["tests/vat.spec.ts"]})
+        text = offers.presentation(wide)
+        self.assertIn("### Conditions\n\n- no new dependencies", text)
+        self.assertIn("### Delegable files\n\n- `tests/vat.spec.ts`", text)
+
+    def test_present_prints_the_short_message(self):
+        source = self.task.parent / "light.json"
+        source.write_text(json.dumps({**BASE, "lightweight": True}), encoding="utf-8")
+        run = lambda *a: subprocess.run([sys.executable, "-X", "utf8", "-I", str(RECORD), "offer", *a],
+                                        capture_output=True, text=True, encoding="utf-8")
+        run("create", str(self.task), str(source))
+        for extra in ((), ("--question",)):
+            with self.subTest(extra=extra):
+                shown = run("present", str(self.task), "1", *extra).stdout
+                self.assertIn("\n\nApprove or Change something?\n\n`Offer #1 · ", shown)
+                self.assertNotIn("Show review.html first", shown)
+                self.assertNotIn("Reply **approve**", shown)
+                self.assertEqual(shown.split("\n\n", 1)[1].strip(),
+                                 offers.presentation(offers.load(self.task, 1), self.task))
+
+
 class ChildOffers(unittest.TestCase):
     """C-OFFER-6: a child gets a checked subset of what the parent lists as delegable, and inherits its limits."""
 

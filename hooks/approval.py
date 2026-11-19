@@ -11,7 +11,8 @@ proven from the host transcript, never from a stored flag:
   frozen format 1 block (offers.rendering) still counts anywhere in a message, for offers shown before format 2.
   An edited or stale presentation is none. The display-only CSS line is outside it.
 - **The answer** is the first real owner turn after the latest presentation: the question's "Approve from this
-  summary" (or "Approve"; a button may end in "(Recommended)"), `/approve <N>`, or a whole message that is one of:
+  summary" (or "Approve" when the question offered it or the offer is lightweight, whose question is "Approve or
+  Change something?"; a button may end in "(Recommended)"), `/approve <N>`, or a whole message that is one of:
   approve, approved, yes, ok, okay, go, ja, akkoord, doe maar. "Show review.html first", "show report" or `/report <N>`
   approves nothing yet: the next approval counts only
   after a message names the task's existing report, in a later session too. Anything else, a qualified "yes but ..."
@@ -37,14 +38,73 @@ Task records and .artifacts stay writable. Errors fail closed for every recognis
 """
 from __future__ import annotations
 
+import json
+import os
+import sys
+
+FAST_PROGRAMS = {"ls", "cat", "head", "tail", "grep", "rg", "find", "wc", "pwd", "dir", "get-childitem", "gci",
+                 "get-content", "gc", "select-string", "sls", "test-path", "get-item", "get-location", "resolve-path"}
+FAST_GIT = {"status", "log", "diff", "show", "rev-parse", "ls-files"}
+FAST_BRANCH_LIST = {"--list", "-l", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--verbose", "--show-current",
+                    "--no-color"}
+FAST_UNSAFE = set("><|;&$`(){}\n\r")
+FAST_NAMES = ("record.py", "settings.py", "legacy_inventory", "render_report", "worktree", "install")
+FAST_FIND_WRITES = ("-exec", "-ok", "-delete", "-fprint", "-fls")
+
+
+def read_only_command(command: str) -> bool:
+    lowered = command.lower()
+    if not command.strip() or any(c in FAST_UNSAFE for c in command) or any(n in lowered for n in FAST_NAMES):
+        return False
+    words = [w.replace('"', "").replace("'", "") for w in lowered.split()]
+    program, args = words[0], words[1:]
+    if program == "git":
+        if not args or any(a.startswith("--output") for a in args):
+            return False
+        if args[0] == "branch":
+            return all(a in FAST_BRANCH_LIST for a in args[1:])
+        return args[0] in FAST_GIT
+    if program == "find" and any(a.startswith(FAST_FIND_WRITES) for a in args):
+        return False
+    if program == "rg" and any(a.startswith("--pre") for a in args):
+        return False
+    return program in FAST_PROGRAMS
+
+
+def fast_allow(raw: str) -> bool:
+    try:
+        event = json.loads(raw)
+    except ValueError:
+        return True
+    if not isinstance(event, dict) or event.get("hook_event_name", "PreToolUse") != "PreToolUse" \
+            or not event.get("transcript_path"):
+        return True
+    data = event.get("tool_input")
+    command = data.get("command") if isinstance(data, dict) else None
+    if event.get("tool_name") not in ("Bash", "PowerShell") or not isinstance(command, str) \
+            or not read_only_command(command):
+        return False
+    try:
+        open(str(event["transcript_path"]), "rb").close()
+    except FileNotFoundError:
+        return True
+    except (OSError, ValueError):
+        return False
+    return True
+
+
+if __name__ == "__main__":
+    HOOK_INPUT = sys.stdin.read()
+    if fast_allow(HOOK_INPUT):
+        sys.exit(0)
+    import io
+    sys.stdin = io.StringIO(HOOK_INPUT)
+
 import glob
 import importlib.util
 import shlex
-import json
-import os
 import re
 import subprocess
-import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -121,6 +181,7 @@ class Shown:
     legacy: str
     text: str
     question: str
+    light: bool = False
 
     def in_text(self, message: str, before: str = "") -> bool:
         return bool(self.legacy) and self.legacy in message or ends_with(before + message, self.text)
@@ -147,7 +208,8 @@ def ends_with(message: str, presentation: str) -> bool:
 def shown(folder: Path, offer: dict) -> Shown:
     o = offers()
     legacy = o.rendering(offer, folder) if offer.get("presentation_format", 1) == 1 else ""
-    return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True))
+    return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True),
+                 offer["canonical"].get("lightweight") is True)
 
 
 def named_offers(text: str, question: dict | None = None) -> list[tuple[int, str, bool]]:
@@ -328,6 +390,12 @@ def answer_to(event: Event, question: str) -> str:
     return str(found[0]) if len(found) == 1 else ""
 
 
+def option_labels(question: dict) -> set[str]:
+    options = question.get("options")
+    return {RECOMMENDED.sub("", str(o.get("label", "")).strip().lower())
+            for o in (options if isinstance(options, list) else []) if isinstance(o, dict)}
+
+
 def strings(value) -> str:
     """Every string inside one question (its text, options and descriptions), joined."""
     if isinstance(value, str):
@@ -406,9 +474,9 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
             if report_shown(event.text):
                 out.facts.append([event.time, "shown", ""])
         elif event.kind == "question":
-            carrier = next((q.get("question", "") for q in event.questions if rendering.in_question(q)), None)
+            carrier = next((q for q in event.questions if rendering.in_question(q)), None)
             if carrier is not None:
-                asked[event.tool_id] = (event.uuid, str(carrier))
+                asked[event.tool_id] = (event.uuid, str(carrier.get("question", "")), option_labels(carrier))
                 presented, last_presented = None, None
                 out.reason = "it was asked, but the question has no answer yet"
             elif "--- workflow-axa offer #" in strings(event.questions) or ANY_FOOTER.search(strings(event.questions)):
@@ -424,9 +492,10 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                           "output of `record.py offer present <task-folder> <id> --question` as the question's own "
                           "text, or let the owner type approve after the offer shown as text")
         elif event.kind == "answer" and event.tool_id in asked:
-            at, question = asked.pop(event.tool_id)
+            at, question, options = asked.pop(event.tool_id)
             value = RECOMMENDED.sub("", answer_to(event, question).strip().lower())
-            kind = "approve" if value in APPROVE_BUTTONS else "report" if value in REPORT_BUTTONS else "other"
+            approves = value in APPROVE_BUTTONS and (value != "approve" or rendering.light or value in options)
+            kind = "approve" if approves else "report" if value in REPORT_BUTTONS else "other"
             out.facts.append([event.time, kind, [event.uuid, at] if kind == "approve" else
                               f"the answer \"{value[:60]}\" to its question is not an approval; write a narrowed offer"])
         elif event.kind == "user":
@@ -606,7 +675,7 @@ def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-5|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+        key = g.digest(f"facts-6|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
                        f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:

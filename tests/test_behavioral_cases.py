@@ -207,7 +207,7 @@ class InstructionRegressionTests(unittest.TestCase):
         # W1/W2 (D14 goal): visible changes skipped ui-design, so their reports had no screen diagram.
         self.assertIn('anything a user sees on screen (order, text, which rows or items show',(ROOT/'skills/workflow-clarify/SKILL.md').read_text())
         self.assertIn("also needs the report's screen diagram",(ROOT/'skills/workflow-specify/SKILL.md').read_text())
-        self.assertIn('An earlier revision that skipped a step is not a precedent',self.text('TASK-FOLDER.md'))
+        self.assertIn('An earlier revision that skipped a step is not a precedent',self.text('TASK-HISTORY.md'))
         # T24: "Both gates in one message" went (test_cutover checks it is gone); settled one-ticket work goes straight to
         # its offer, which carries the agreement.
         self.assertIn('**No separate agreement** for a lightweight edit, or for one-ticket work when clarification left no open choice',gates)

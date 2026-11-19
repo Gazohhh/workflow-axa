@@ -79,13 +79,11 @@ An approved offer means implementation authority; `Agreement` never does (gates:
 
 Before touching shared files, record `git status` and enough diff to tell existing edits from yours.
 
-IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, check result V. Keep existing IDs. When an older TODO restarts T1 under each revision, address it as `D4/T1` or `D3/T1`; never guess which T1 a short reference means. New cross-revision references use that qualified identity. Do not renumber old records.
-
-A report needs IDs without `/`: read [REPORT-FILES.md](REPORT-FILES.md) "Renderer ID aliases" when you put a qualified ID into report JSON.
+IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, check result V. Keep existing IDs. When an older TODO repeats an ID across revisions, read [TASK-HISTORY.md](TASK-HISTORY.md) "Qualified IDs" before you refer to one.
 
 **Current open work first.** Give each nontrivial ticket an action title and labeled sections, not a paragraph of semicolons inside a checkbox. The ticket explains the next action; test history and old attempts live in FINDINGS, reasons in DECISIONS. Completed or superseded history stays clearly labeled behind the current work. No file per ticket.
 
-A TODO of labeled tickets starts with an overview table: Ticket, What needs to happen, Status, Dependencies. The table is a summary for readers, not a second status system: each ticket's single `Status:` line is the source. `open_items.py` reports every row whose Status or Dependencies differ from the ticket, a row naming a missing, repeated or ambiguous ticket, and a ticket with no row; correct the table from the ticket, never the reverse. In a file that repeats an ID, the table uses the qualified ID (`D4/T3`). `record.py tick` sets the ticket and its row to Verified together and refuses while the row disagrees.
+A TODO of labeled tickets starts with an overview table: Ticket, What needs to happen, Status, Dependencies. The table is a summary for readers, not a second status system: each ticket's single `Status:` line is the source. `open_items.py` reports every row whose Status or Dependencies differ from the ticket, a row naming a missing, repeated or ambiguous ticket, and a ticket with no row; correct the table from the ticket, never the reverse. `record.py tick` sets the ticket and its row to Verified together and refuses while the row disagrees.
 
 ```markdown
 ## Overview
@@ -126,7 +124,7 @@ References:
 
 `Status:` holds one listed state, once. `How to verify` lists planned checks only, never results. The result goes on the one `Verification:` line (`not run`, `passed`, `failed: <what>`, `blocked: <why>`) and its pointer on `Evidence:`; the run details go to FINDINGS. A `Human check:` (or `needs human`) under How to verify keeps the ticket unverified until an `Owner acceptance:` line records the person's result (who, date, V-ID). Add `Decision:`, `Blocker:` or `Paused:` lines when they apply; omit a section with nothing to say, and state each fact once.
 
-A small exact task can remain `- [ ] T1 — <action>; verify: <check>`. Do not force Epic, Story, priority, owner or empty template sections onto every edit; add metadata only when it changes coordination. Scope, acceptance, dependencies and evidence must still be clear. Sample: [readable-todo.md](examples/readable-todo.md). A layout tidy changes layout, not state: keep a checkbox line as it is, or convert it only to a listed state that records the same fact, and keep contradictions visible. Run `open_items.py --task` before and after; any changed ticket state means the tidy changed content.
+A small exact task can remain `- [ ] T1 — <action>; verify: <check>`. Do not force Epic, Story, priority, owner or empty template sections onto every edit; add metadata only when it changes coordination. Scope, acceptance, dependencies and evidence must still be clear. Sample: [readable-todo.md](examples/readable-todo.md). When you tidy an existing TODO's layout, read TASK-HISTORY.md "Tidying a TODO layout" first.
 
 Ticket states remain: not started, ready, in progress, implemented — verification pending, review findings open, verified, blocked, paused, cancelled, superseded, removed, not applicable. **Ready is not implementation permission.** `verified` requires all current acceptance checks after the last relevant repair, including required device/human checks. Implementation, verification and owner acceptance are different facts. A missing device or failed environment blocks verification; it does not prove an implementation defect. A task-caused failure returns that work to repair.
 
@@ -159,26 +157,14 @@ Present the offer and the one question once, save `awaiting approval`, then end 
 
 Run `resume`; it owns the procedure. These records are what it reads. After a resume, a check or review still counts only for files and rules unchanged since it ran (its V entry's state, and `rule-maker/scripts/rules_stamp.py` for the rules).
 
-## Revisions
+## Revisions and older tasks
 
-| Event | Record |
-|---|---|
-| Material change to behavior, approach, risk or protected scope | New proposed revision showing the delta; reopen the agreement, then implementation approval, for the affected parts only |
-| Progress, blocker, rerun, account or agent switch | Update the checkpoint and items. No new plan revision, folder or report |
-| Correction to an unpresented draft | Re-render into the same file with `--replace-unpresented`. The renderer refuses once the task records name the file or the report is approved; then render a new file |
-| Superseding an agreement | Keep its scope and reason; point to what replaced which part |
-
-An earlier revision that skipped a step is not a precedent: each new revision follows the current rules. Keep existing IDs (C3, P1-r1, review-r5) exactly and phase names separate from revision IDs; don't renumber. Keep one short revision log (in DECISIONS, or PLAN for small tasks): revision, report, change, why, outcome.
-
-## Forward-only adoption
-
-New structure applies forward. On a resumed old task, update only the checkpoint, directly affected current tickets, contradictory current wording and needed links; mark old text historical instead of rewriting its meaning. Do not bulk rewrite closed tasks, migrate old JSON, renumber IDs or reconstruct missing reviews. If an original review is missing, record that and use the remaining approval and decision records; its absence proves neither approval nor refusal. Escalate only authority you can't establish. Presented and approved HTML/JSON files are immutable snapshots.
+A progress update, blocker, rerun, or account or agent switch changes only the checkpoint and items. When a plan changes after agreement, or when you resume or adopt an older task, read [TASK-HISTORY.md](TASK-HISTORY.md) "Revisions" and "Forward-only adoption" first.
 
 ## Also record
 
 - **Rules**: one readiness note in the checkpoint (RULES.md); an exception records the user's words, scope and expiry. No separate status file.
 - **Owner acceptance**: set the checkpoint's verification line and add one dated line to `## Outcome` that quotes the owner's words, so the closing record no longer says acceptance is pending. Delivery reports stay unchanged as history.
-- **UI**: one checkpoint entry: area and mode, approving source, allowed components, preview, exceptions, design acceptance and release state (ui-design).
 - **Test output**: [ARTIFACTS.md](ARTIFACTS.md) owns the folder and retention rules; record the output folder, retained proof and the cleanup condition in the checkpoint.
 - **Privacy**: never copy credentials, tokens, personal data or production records into records, prompts or screenshots. Redact first.
-- **ADRs**: offer one only when `domain-modeling`'s criteria hold; a reversal is a new superseding ADR. Proposed ADRs are not accepted because time passed. Task progress stays in task records.
+- **UI and ADRs**: when the task changes UI or an ADR may be due, read TASK-HISTORY.md "UI and ADR records".
