@@ -60,20 +60,7 @@ Write plain English that a smart reader outside your field understands on one re
 11. Use formatting only where it carries structure. No bold lead-ins, no bold as emphasis, no emoji, no heading over two sentences. A vertical list is for three or more parallel items or steps: colon on the lead-in, uppercase start, one instruction per item.
 12. Warnings: command or condition first, then the risk. "Do not run this against production. The command deletes rows."
 
-Use American spelling. `simple-english/word-swaps.md` maps the overused words to plain ones. For an error message, a runbook, an incident report, release notes, a commit message, or UI copy, read `simple-english/use-cases.md` first. It names the mode and the pattern for each. These rules are for facts and instructions, not marketing copy or brand writing, because they delete persuasion. Say so, and offer them for the docs instead.
-
-Before (AI output):
-
-> **Connection timeouts.** If sqlpipe hangs or fails with `dial tcp: i/o timeout`, check that the host running sqlpipe can reach the Postgres port (usually 5432) — this is often a security group or firewall rule blocking the connection. If you're connecting to a managed database (RDS, Cloud SQL, etc.), confirm the instance allows connections from sqlpipe's IP.
-
-After (procedural, headed, numbered):
-
-> ## Connection timeouts
->
-> sqlpipe stops with `dial tcp: i/o timeout` when it cannot connect to the Postgres port (5432 by default).
->
-> 1. Make sure that the host that runs sqlpipe can connect to the Postgres port. A firewall or security group usually blocks it.
-> 2. If the database is managed (RDS, Cloud SQL), make sure that the instance accepts connections from the IP of sqlpipe.
+Use American spelling. `simple-english/word-swaps.md` maps the overused words to plain ones. For an error message, a runbook, an incident report, release notes, a commit message, or UI copy, read `simple-english/use-cases.md` first. It names the mode and the pattern for each. These rules are for facts and instructions, not marketing copy or brand writing, because they delete persuasion. Say so, and offer them for the docs instead. When you rewrite documentation, [WRITING-EXAMPLE.md](WRITING-EXAMPLE.md) shows these rules applied to one passage.
 
 ## Chat replies
 

@@ -45,6 +45,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -149,19 +150,25 @@ def shown(folder: Path, offer: dict) -> Shown:
     return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True))
 
 
-def offer_tasks(text: str, root: Path | None, before: str = "", question: dict | None = None) -> list[tuple[str, bool, int]]:
-    """The tasks a presentation moves the session to, each with whether it was format 2 and the offer's id: only an offer recorded in
-    that task of this project, shown exactly as its approval needs (format 2 visibly at the end of its block, after
-    `before`, or as a question's own text; format 1 only for an offer recorded before format 2), so a made-up or
-    hidden offer never moves the session. `question` is the question-tool question whose strings are `text`."""
-    if root is None:
-        return []
+def named_offers(text: str, question: dict | None = None) -> list[tuple[int, str, bool]]:
     named = [(int(i), t, False) for i, t in OFFER_TASK.findall(text)]
     own = str(question.get("question", "")) if question is not None else text
     footer = OFFER_FOOTER.search(own.replace("\r\n", "\n"))
-    named += [(int(footer[1]), footer[2], True)] if footer else []
+    return named + ([(int(footer[1]), footer[2], True)] if footer else [])
+
+
+def offer_tasks(text: str, root: Path | None, before: str = "", question: dict | None = None,
+                named: list | None = None) -> list[tuple[str, bool, int]]:
+    """The tasks a presentation moves the session to, each with whether it was format 2 and the offer's id: only an offer recorded in
+    that task of this project, shown exactly as its approval needs (format 2 visibly at the end of its block, after
+    `before`, or as a question's own text; format 1 only for an offer recorded before format 2), so a made-up or
+    hidden offer never moves the session. `question` is the question-tool question whose strings are `text`; `named`
+    is named_offers() of them when already known."""
+    if root is None:
+        return []
+    own = str(question.get("question", "")) if question is not None else text
     tasks = []
-    for offer_id, task, format_2 in named:
+    for offer_id, task, format_2 in (named_offers(text, question) if named is None else named):
         folder = root / "docs" / "plans" / task
         try:
             view = shown(folder, offers().load(folder, offer_id))
@@ -183,46 +190,32 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
     task's offers (in visible text or a question, as offer_tasks validates it). A format 2 presentation in text moves
     the session only when the owner's next turn answers it with no assistant text after it, as approval requires. The
     agent's own record writes never move the session (REDESIGN §3.4, N4): bookkeeping must not decide which offer a
-    later withdrawal, narrowing, stop or resume applies to."""
-    g = gate()
+    later withdrawal, narrowing, stop or resume applies to. The transcript's lines are parsed once (entries()); the
+    offers they name are checked against the files at every call."""
     events: list[Event] = []
     visible_block: list[str] = []
     awaiting_answer: list[Event] = []
     calls: dict[str, list] = {}
-    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        try:
-            entry = json.loads(line)
-        except ValueError:
-            continue
-        if not isinstance(entry, dict) or entry.get("isSidechain"):
-            continue
-        uuid = str(entry.get("uuid") or f"line{len(events)}")
-        time = str(entry.get("timestamp") or "")
-        content = (entry.get("message") or {}).get("content")
-        typed = g.queued_text(entry) if entry.get("type") == "attachment" else g.user_text(entry)
-        if typed is not None:
+    for kind, uuid, time, *rest in entries(path, root):
+        uuid = uuid or f"line{len(events)}"
+        if kind == "typed":
+            typed, tasks = rest
             events += awaiting_answer
             awaiting_answer = []
-            for a, b in g.TASK_NAMED.findall(g.slash(typed)):
-                events.append(Event("task", uuid, a or b, time=time))
+            events += [Event("task", uuid, task, time=time) for task in tasks]
             events.append(Event("user", uuid, typed, time=time))
             visible_block = []
-            continue
-        result = entry.get("toolUseResult")
-        if entry.get("type") == "user" and isinstance(result, dict) and isinstance(result.get("answers"), dict) \
-                and isinstance(content, list) and not entry.get("isMeta"):
+        elif kind == "answer":
+            tool_ids, answers = rest
             events += awaiting_answer
             awaiting_answer = []
-            for block in content:
-                if isinstance(block, dict) and block.get("type") == "tool_result" and not block.get("is_error"):
-                    tool_id = str(block.get("tool_use_id"))
-                    events.append(Event("answer", uuid, tool_id=tool_id, answers=result["answers"],
-                                        questions=calls.get(tool_id, []), time=time))
+            events += [Event("answer", uuid, tool_id=tool_id, answers=answers, questions=calls.get(tool_id, []),
+                             time=time) for tool_id in tool_ids]
             visible_block = []
-            continue
-        if entry.get("type") == "assistant" and isinstance(content, list):
-            visible = "\n".join(str(b.get("text", "")) for b in content if isinstance(b, dict) and b.get("type") == "text")
-            found = offer_tasks(visible, root, "".join(text + "\n\n" for text in visible_block))
+        else:
+            visible, named, tool, asks = rest
+            found = offer_tasks(visible, root, "".join(text + "\n\n" for text in visible_block),
+                                named=[tuple(n) for n in named]) if named else []
             if visible.strip():
                 awaiting_answer = []
             if any(not format_2 for _, format_2, _ in found):
@@ -233,25 +226,95 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
                 events.append(Event("text", uuid, visible, time=time))
                 visible_block.append(visible)
             events += [Event("offer_shown", uuid, str(offer_id), time=time) for _, _, offer_id in found]
-            if any(isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") != "AskUserQuestion"
-                   for b in content):
+            if tool:
                 events.append(Event("tool", uuid, time=time))
                 visible_block = []
-            for block in content:
-                if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "AskUserQuestion":
-                    data = block.get("input") or {}
-                    questions = [q for q in data.get("questions", []) if isinstance(q, dict)] if isinstance(data, dict) else []
-                    asked = [(q, t) for q in questions for t, _, _ in offer_tasks(strings(q), root, question=q)]
-                    if asked:
-                        awaiting_answer = []
-                    for _, task in asked:
-                        events.append(Event("task", uuid, task, time=time))
-                    calls[str(block.get("id"))] = questions
-                    events.append(Event("question", uuid, tool_id=str(block.get("id")), questions=questions, time=time))
-                    if asked:
-                        events.append(Event("offer_asked", uuid, tool_id=str(block.get("id")),
-                                            questions=[q for q, _ in asked], time=time))
+            for tool_id, questions, named_each in asks:
+                asked = [(q, t) for q, named in zip(questions, named_each) if named
+                         for t, _, _ in offer_tasks(strings(q), root, question=q, named=[tuple(n) for n in named])]
+                if asked:
+                    awaiting_answer = []
+                for _, task in asked:
+                    events.append(Event("task", uuid, task, time=time))
+                calls[tool_id] = questions
+                events.append(Event("question", uuid, tool_id=tool_id, questions=questions, time=time))
+                if asked:
+                    events.append(Event("offer_asked", uuid, tool_id=tool_id, questions=[q for q, _ in asked],
+                                        time=time))
     return events
+
+
+ENTRIES_VERSION = 1
+
+
+def entry_of(line: str) -> list | None:
+    g = gate()
+    try:
+        entry = json.loads(line)
+    except ValueError:
+        return None
+    if not isinstance(entry, dict) or entry.get("isSidechain"):
+        return None
+    uuid = str(entry["uuid"]) if entry.get("uuid") else None
+    time = str(entry.get("timestamp") or "")
+    content = (entry.get("message") or {}).get("content")
+    typed = g.queued_text(entry) if entry.get("type") == "attachment" else g.user_text(entry)
+    if typed is not None:
+        return ["typed", uuid, time, typed, [a or b for a, b in g.TASK_NAMED.findall(g.slash(typed))]]
+    result = entry.get("toolUseResult")
+    if entry.get("type") == "user" and isinstance(result, dict) and isinstance(result.get("answers"), dict) \
+            and isinstance(content, list) and not entry.get("isMeta"):
+        tool_ids = [str(block.get("tool_use_id")) for block in content
+                    if isinstance(block, dict) and block.get("type") == "tool_result" and not block.get("is_error")]
+        return ["answer", uuid, time, tool_ids, result["answers"]]
+    if entry.get("type") == "assistant" and isinstance(content, list):
+        visible = "\n".join(str(b.get("text", "")) for b in content if isinstance(b, dict) and b.get("type") == "text")
+        tool = any(isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") != "AskUserQuestion"
+                   for b in content)
+        asks = []
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "AskUserQuestion":
+                data = block.get("input") or {}
+                questions = [q for q in data.get("questions", []) if isinstance(q, dict)] if isinstance(data, dict) else []
+                asks.append([str(block.get("id")), questions, [named_offers(strings(q), q) for q in questions]])
+        return ["assistant", uuid, time, visible, named_offers(visible), tool, asks]
+    return None
+
+
+def entries(path: Path, root: Path | None) -> list[list]:
+    g = gate()
+    data = path.read_bytes()
+    cache = g.CACHE_DIR / "events" / f"{g.digest(f'{path.resolve()}|{root}'.encode('utf-8'))}.json"
+    try:
+        state = json.loads(cache.read_text(encoding="utf-8"))
+        offset = state["offset"]
+        if state["v"] != ENTRIES_VERSION or not isinstance(offset, int) or not 0 <= offset <= len(data) \
+                or (offset and data[offset - 1:offset] != b"\n") or not isinstance(state["entries"], list) \
+                or state["head"] != g.digest(data[:min(4096, offset)]) \
+                or state["mark"] != g.digest(data[max(0, offset - 4096):offset]):
+            raise ValueError("stale")
+    except (OSError, ValueError, KeyError, TypeError):
+        state = {"v": ENTRIES_VERSION, "offset": 0, "entries": []}
+    end = data.rfind(b"\n") + 1
+
+    def parsed(chunk: bytes) -> list[list]:
+        return [found for found in map(entry_of, chunk.decode("utf-8", errors="replace").splitlines()) if found]
+
+    if end > state["offset"]:
+        state["entries"] += parsed(data[state["offset"]:end])
+        state.update(offset=end, head=g.digest(data[:min(4096, end)]), mark=g.digest(data[max(0, end - 4096):end]))
+        try:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            temporary = cache.with_suffix(f".{os.getpid()}.tmp")
+            temporary.write_text(json.dumps(state), encoding="utf-8")
+            os.replace(temporary, cache)
+            old = time.time() - g.CACHE_DAYS * 86400
+            for stale in cache.parent.glob("*.json"):
+                if stale.stat().st_mtime < old:
+                    stale.unlink()
+        except OSError:
+            pass
+    return state["entries"] + parsed(data[end:])
 
 
 def answer_to(event: Event, question: str) -> str:
@@ -883,8 +946,12 @@ def problem_for(event: dict) -> str | None:
     install = g.install_problem(event)
     if install:
         return install
-    current = read_events(transcript, Path(project.root or project.cwd))
     targets = offer_command_targets(event, g.targets_of(event))
+    command = str((event.get("tool_input") or {}).get("command", ""))
+    if targets or DERIVE.search(command) or SETTINGS_RUN.search(command) or worktree_changes(event, project):
+        current = read_events(transcript, Path(project.root or project.cwd))
+    else:
+        current = []
     parent = derive_problem(event, project, transcript, current)
     if parent:
         return parent

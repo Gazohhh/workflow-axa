@@ -7,7 +7,7 @@ description: "Check a finished or stopped task against its evidence and write th
 
 Report what was requested, built and verified, including gaps. Deliver never fixes, builds or approves.
 
-Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never use another skills root's copy.
+Read shared policies from sibling `../workflow/`: RULES.md, TASK-FOLDER.md and WRITING.md before step 1; any other file there only when a step below or its "Always" list names your case. Stop if missing; never use another skills root's copy.
 
 **Before you start**, check: the PLAN checkpoint names the agreement and the approved offer (`Offer: #<id>`, the minimal offer for a lightweight edit), or a legacy task's Approval line (else report what's missing, never reconstructing authority); no worker is still writing; execute recorded the whole-feature review, unless the task is stopped, paused, cancelled or lightweight (`workflow/TASK-FOLDER.md`); otherwise hand back to `workflow-execute`, never run it here; rules cover any check you rerun (`workflow/RULES.md`), else that check stays not verified.
 

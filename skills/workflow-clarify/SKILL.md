@@ -7,7 +7,7 @@ description: "Agree a task's behavior before planning: trace journeys, callers a
 
 Turn a request into a behavior agreement the user confirms. No tickets, offers or code.
 
-Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never use another skills root's copy.
+Read shared policies from sibling `../workflow/`: RULES.md, TASK-FOLDER.md and GROUNDING.md before step 1, WRITING.md and VISUAL-REVIEW.md before step 3; any other file there only when a step below or its "Always" list names your case. Stop if missing; never use another skills root's copy.
 
 **Before you start**, check: rules are READY, or a recorded LIMITED_EXCEPTION covers this phase within its limits (`workflow/RULES.md`); the task is found and checkpointed (`workflow/TASK-FOLDER.md`), or the router left only its identity open: then ask "separate task or revision?" as Q1 of your first round, saying a separate task is best in a fresh chat; word the other questions so they hold for either answer, save the round as TASK-FOLDER.md's "identity pending" row says, and never ask it alongside approvals; explain-only and lightweight edits are not clarify work (`workflow/SKILL.md` §2–3). If an agreement covers this revision, go to `workflow-specify`; an approved offer follows Next. Application UI, meaning anything a user sees on screen (order, text, which rows or items show, layout or styling): first read `../ui-design/SKILL.md` and `../rule-maker/rules/DESIGN.md`, then trace. Options you offer include new CSS only when the machine CSS switch is on (`rule-maker/rules/DESIGN.md` rule 1).
 

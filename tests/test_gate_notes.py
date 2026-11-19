@@ -2,14 +2,33 @@
 application file, and a new tag or class in a small change. It never refuses."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import unittest
 
-from test_gate_regressions import CACHE, GATE, A, GateCase, write_rows
+from test_gate_regressions import CACHE, GATE, ROOT, A, GateCase, write_rows
 from test_phase_gate_hook import APPROVED, ROUTER, hooked
+
+HEAVY = re.compile(r'\|\s+(?:hashlib|subprocess|tempfile)\s*$', re.M)
+
+
+def run_registered(hook_event: str, event) -> subprocess.CompletedProcess:
+    """The command hooks.json registers for the event, as the host runs it, with Python's import log on stderr."""
+    command = json.loads((ROOT / "hooks/hooks.json").read_text(encoding="utf-8"))["hooks"][hook_event][0]["hooks"][0]["command"]
+    args = [a.replace("${CLAUDE_PLUGIN_ROOT}", str(ROOT)).strip('"') for a in re.findall(r'"[^"]*"|\S+', command)]
+    args[0] = sys.executable if args[0] == "python" else args[0]
+    result = subprocess.run([args[0], "-X", "importtime", *args[1:]], input=json.dumps(event), capture_output=True,
+                            text=True, encoding="utf-8", env={**os.environ, "WORKFLOW_AXA_GATE_CACHE": CACHE.name})
+    assert result.returncode == 0, result.stderr
+    return result
+
+
+def output(result: subprocess.CompletedProcess) -> str:
+    return json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"] if result.stdout.strip() else ""
 
 
 def run_post(event) -> str:
@@ -77,6 +96,68 @@ class StyleNotes(GateCase):
         self.assertIn("small change", note.lower())
         plain = self.after("Edit", self.edit("src/page.html", "<p>Old</p>", "<p>New</p>"))
         self.assertNotIn("small change", plain.lower())
+
+
+CUE = "sty" + "le"
+
+
+class AfterCallHook(GateCase):
+    """Item 3 of 2026-11-19-workflow-speed: the registered PostToolUse/UserPromptSubmit hook gives the output it gave
+    before, and an event that cannot produce output returns before the gate's heavy imports."""
+
+    def setUp(self):
+        super().setUp()
+        self.report = self.task(A, APPROVED) / "reviews/plan-r1.html"
+        write_rows(self.path, hooked([ROUTER] + self.approval(A), self.repo))
+
+    def event(self, tool_name, data):
+        return {"hook_event_name": "PostToolUse", "tool_name": tool_name, "tool_input": data,
+                "transcript_path": str(self.path), "cwd": str(self.repo)}
+
+    def cases(self):
+        code, doc, shown = str(self.repo / "src/a.tsx"), str(self.repo / "README.md"), f"docs/plans/{A}/reviews/plan-r1.html"
+        digest = hashlib.sha256(self.report.read_bytes()).hexdigest()
+        mark = f"workflow-axa report fingerprint: {shown} sha256={digest}"
+        reply = f"workflow-axa report at owner reply: {shown} sha256={digest}"
+        added = f"<p/>\n<{CUE}>{{css}}</{CUE}>"
+        return (
+            ("cue edit", "PostToolUse", self.event("Edit", {"file_path": code, "old_string": "<p/>",
+                                                           "new_string": added}), "DESIGN.md rule 4"),
+            ("markdown edit", "PostToolUse", self.event("Edit", {"file_path": doc, "old_string": "<p/>",
+                                                                "new_string": added}), ""),
+            ("markdown write", "PostToolUse", self.event("Write", {"file_path": doc, "content": added}), ""),
+            ("report read", "PostToolUse", self.event("Read", {"file_path": str(self.report)}), mark),
+            ("code read", "PostToolUse", self.event("Read", {"file_path": code}), ""),
+            ("report bash", "PostToolUse", self.event("Bash", {"command": f"cat {shown}"}), mark),
+            ("quoted report bash", "PostToolUse", self.event("Bash", {"command": f'cat "{shown[:-2]}"ml'}), mark),
+            ("plain bash", "PostToolUse", self.event("Bash", {"command": "git status"}), ""),
+            ("plain powershell", "PostToolUse", self.event("PowerShell", {"command": "Get-ChildItem"}), ""),
+            ("question", "PostToolUse", self.event("AskUserQuestion", {"questions": []}), reply),
+            ("prompt", "UserPromptSubmit", {"hook_event_name": "UserPromptSubmit", "prompt": "Yes to both",
+                                            "transcript_path": str(self.path), "cwd": str(self.repo)}, reply),
+        )
+
+    def test_the_registered_hook_keeps_its_output(self):
+        for name, hook_event, event, expected in self.cases():
+            with self.subTest(case=name):
+                today = run_post(event)
+                if expected:
+                    self.assertIn(expected, today)
+                else:
+                    self.assertEqual(today, "")
+                self.assertEqual(output(run_registered(hook_event, event)), today)
+
+    def test_an_event_without_output_skips_the_heavy_imports(self):
+        for name, hook_event, event, expected in self.cases():
+            with self.subTest(case=name):
+                result = run_registered(hook_event, event)
+                self.assertEqual(bool(HEAVY.search(result.stderr)), bool(expected))
+        for raw in ("nope", "[]"):
+            with self.subTest(stdin=raw):
+                result = subprocess.run([sys.executable, "-X", "utf8", "-I", "-X", "importtime", str(GATE),
+                                         "--hook-protocol=1"], input=raw, capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual((result.returncode, result.stdout), (0, ""))
+                self.assertIsNone(HEAVY.search(result.stderr))
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ A required decision point before substantive repository planning, application ed
 
 ## Entry and ownership
 
-This file owns the readiness procedure for workflow, its phases, resume and ordinary globally routed requests. Read START.md and CORE.md from this same installed rule-maker first. A missing library pauses affected work; do not fetch or invent one. A readiness blocker is asked on its own, before behavior/design questions. Record one scoped checkpoint line and name only files actually read. Setup is not implementation approval.
+This file owns the readiness procedure for workflow, its phases, resume and ordinary globally routed requests. START.md and CORE.md from this same installed rule-maker are already loaded by the global instructions; read them only when they are not in your context. A missing library pauses affected work; do not fetch or invent one. A readiness blocker is asked on its own, before behavior/design questions. Record one scoped checkpoint line and name only files actually read. Setup is not implementation approval.
 
 After readiness, VERSIONS.md selects compatible guidance and ENGINEERING.md selects only the risk modules this change needs. Read OPERATIONS.md before side-effecting checks. Project conflicts use POLICY.md; a full rules audit uses the skill's AUDIT.md. Pass the effective rules, versions and approved exception to workers and reviewers. A specialist does not override them.
 

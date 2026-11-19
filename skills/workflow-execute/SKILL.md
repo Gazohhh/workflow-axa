@@ -9,7 +9,7 @@ Write progress updates and ticket summaries for a person, as `../workflow/WRITIN
 
 Build the approved tickets until each is verified, then review the whole feature.
 
-Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never substitute another installed copy.
+Read shared policies from sibling `../workflow/`: RULES.md, TASK-FOLDER.md, WRITING.md and AUDIT.md before the first ticket; any other file there only when a step below or its "Always" list names your case. Stop if missing; never substitute another installed copy.
 
 **Before you start**, check:
 

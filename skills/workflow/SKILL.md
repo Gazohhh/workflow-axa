@@ -26,14 +26,13 @@ Read [RULES.md](RULES.md) before planning or writing; check adequacy even if rul
 3. **Not sure** means two routes fit that need different behaviour, permissions or acceptance, or the outcome (or whether a change is wanted) isn't stated. Needing several references is not uncertainty. Then ask with the question tool: *Fix something broken · Add or change a feature · Start a new project · Only investigate*, plus Other, recommended answer first with one line why. Ask at most once for the task, and once more for each later revision that changes, or may change, the kind of work. Never ask small versus complex bug. An unanswered classification question stays pending, and a new session does not reset it; until it is answered, only read-only work continues.
 4. **Other** with a clear outcome: build the steps from the phases. A vague Other: Inspect first, then ask through `grilling`; never repeat the classification menu.
 5. Once the route is settled, show one line before substantive work: `Recipe: <name> (<plain meaning>) — <reason tied to this request>. Say so if you meant something else.` Name modifiers by their effect here, for example `plus Compatibility: saved quotations keep working`. For Inspect: `Route: Inspect — <reason>. Say so if you meant something else.` Show it at task entry, revision entry and resume, lightweight edits included; once per entry, even when the router and clarify both run. Text written before tool calls may reach the owner only as a summary: when the line came before tool calls, repeat it at the top of that turn's final message or first question round. It is a notice, not a question: continue within the current authority. Record the pick and the classification-question reference in the checkpoint ([TASK-FOLDER.md](TASK-FOLDER.md)); Inspect creates no records.
-6. On resume, reconcile the recorded pick with the current scope and show it again. An unchanged scope keeps its pick and question history. An older task with no recorded pick: infer it from the records and code; a missing line alone is not uncertainty. A status-only resume stays read-only.
-7. When later evidence or the owner's correction changes the pick, show the new line with the evidence, keep the work done and the question history, and add only the steps the new recipe adds. A changed pick grants no new authority; changed scope follows the revision and approval rules.
+6. On resume, or when later evidence or the owner's correction changes the pick, read [RECIPE-CHANGES.md](RECIPE-CHANGES.md) first.
 
 When something a recipe needs is missing, use [FALLBACKS.md](FALLBACKS.md).
 
 ## 4. Route to the phase
 
-Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `resume` (status), `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read the checkpoint Agreement and its Offer. A task the owner listed as a pre-offer approval at the upgrade keeps its Approval line, for its recorded scope only. Take the first matching row:
+Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `resume` (status), `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read the checkpoint Agreement and its Offer. A task the owner listed as a pre-offer approval at the upgrade keeps its Approval line, for its recorded scope only (VISUAL-REVIEW.md "Legacy approval recovery"). Take the first matching row:
 
 | Task state | Next skill | Permission |
 |---|---|---|
@@ -53,13 +52,13 @@ Invoke with the skill tool (`workflow-axa:<name>`) or read its SKILL.md whole. T
 
 ## 5. The two gates
 
-Agreement, then the offer and the one question: [VISUAL-REVIEW.md](VISUAL-REVIEW.md) owns both. STOP for user approval before application code. Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
+Agreement, then the offer and the one question: [VISUAL-REVIEW.md](VISUAL-REVIEW.md) owns both; read it before you ask either or judge an answer. STOP for user approval before application code. Answering grilling questions is not agreement, and a generic "go" is not approval of an unseen plan.
 
 ## Always
 
-- Behaviour questions: `grilling`; classification: §3. Evidence: [GROUNDING.md](GROUNDING.md). Specialists: [SPECIALISTS.md](SPECIALISTS.md) ([SETUP.md](SETUP.md)). Reviews and necessity check: [AUDIT.md](AUDIT.md). Output: [ARTIFACTS.md](ARTIFACTS.md).
+- Behaviour questions: `grilling`; classification: §3. Read [GROUNDING.md](GROUNDING.md) when you trace or refresh evidence; [AUDIT.md](AUDIT.md) when you review or a step asks for the necessity check; [SPECIALISTS.md](SPECIALISTS.md) when a step names a specialist or you brief a subagent; [SETUP.md](SETUP.md) only to install, update or diagnose this package or a hook. [ARTIFACTS.md](ARTIFACTS.md) is the output policy the global instructions already load; read it only when it is not in your context.
 - Never stage, commit, push, branch, reset, deploy or publish unasked.
 - Pass workers the output folder, write scope, rules and UI authority. Read applicable instructions whole; do not load unrelated references.
-- Approval waits: present once, end the turn; no polling. Host goals: TASK-FOLDER.md "Approval waits and host goals". End with **Running**, **Waiting on you** or **Done**; do not end running work unless the host will wake you. When an offer waits for the answer, its presentation ends the reply and its question is the state line: put nothing after it.
+- Approval waits: present once, end the turn; no polling ([TASK-FOLDER.md](TASK-FOLDER.md) "Approval waits"; host goals: [HOST-GOALS.md](HOST-GOALS.md)). End with **Running**, **Waiting on you** or **Done**; do not end running work unless the host will wake you. When an offer waits for the answer, its presentation ends the reply and its question is the state line: put nothing after it.
 - Write requested handoffs from the checkpoint ([CHATGPT-PROMPTS.md](CHATGPT-PROMPTS.md)).
 - When needed: PDF-DELIVERABLE.md, OPTIONAL-HELPERS.md.

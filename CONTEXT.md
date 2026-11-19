@@ -174,6 +174,12 @@ Each rule below is stated in several files today. The owner file states it in fu
 | The blast-radius method (safety facts, where grep stops, evidence ladder, probes) | `skills/code-review/BLAST-RADIUS.md` |
 | The Unslop check: when it runs and what it never changes | `skills/workflow/WRITING.md` |
 | The Unslop tells | `skills/workflow/WRITING.md` |
+| What counts as a lightweight edit, and its minimal offer (router §4) | `skills/workflow/SKILL.md` |
+| Making and presenting the offer and the one question (step 5) | `skills/workflow-specify/SKILL.md` |
+| Legacy (pre-offer) approvals and their recovery | `skills/workflow/VISUAL-REVIEW.md` |
+| The rules-readiness states and the readiness question | `skills/rule-maker/rules/READINESS.md` |
+| Test output: its folder, retention and cleanup | `skills/workflow/ARTIFACTS.md` |
+| Superseded report retention and cleanup | `skills/workflow/REPORT-FILES.md` |
 
 ## Places that write for a person
 

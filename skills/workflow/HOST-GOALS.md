@@ -1,0 +1,7 @@
+# Host goals
+
+Read this before you use a host goal, or when goal feedback (Claude Code `/goal`) restarts an approval wait. [TASK-FOLDER.md](TASK-FOLDER.md) "Approval waits" owns the wait itself.
+
+Before using a host goal, bound its current authorized phase with an observable result and check. For planning, completion is the reviewable report and one approval request. For implementation, name the approved tickets and verification. Do not use unbounded conditions such as "maximum FPS". Explicitly deferred work stays unverified with its reason; it is not a runnable completion requirement for the current phase. Genuine blockers, waiting for input and an owner's stop each end autonomous work without claiming the whole task passed. Preserve other authorized, independent work.
+
+Claude Code `/goal` is an independent Stop evaluator. If stale goal feedback restarts an approval wait, diagnose it once and hand control back; do not repeat "still waiting", call sleep in a loop, forge a user response or weaken approval checks. The owner can interrupt the loop, inspect `/goal`, and use `/goal clear` in that affected session. Confirm the host reports it cleared; a restart alone may restore the active goal. Clearing that host loop does not approve implementation or mark deferred work complete. Do not silently clear or rewrite a user's goal in another host. Source: [Claude Code goal documentation](https://code.claude.com/docs/en/goal).

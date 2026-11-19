@@ -16,7 +16,7 @@ A task follows the user's goal, not the chat, date or `/workflow` call. A relate
 | Clear extension of the active task | Keep the folder; add the requirement as a proposed revision; reopen only what it affects. |
 | Related task is complete | Unless the user said which, `workflow-clarify` asks "new revision of it or separate task?" with its first questions. |
 | The task's checkpoint names another worktree than the current one | Stop and ask which worktree is meant; write nothing here. |
-| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. Ask with the plan: the owner installs in the worktree, or you link the main checkout's install at the same lockfile. In a workspace (monorepo) install the linked packages point into the main checkout, so prefer the owner's install there. Remove a link as a link (`rmdir` on Windows, `rm` without `-r`); a recursive delete through it deletes the main checkout's files. |
+| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. Read [WORKTREE-DEPENDENCIES.md](WORKTREE-DEPENDENCIES.md) before you ask. |
 | No relevant record, or user asks for separate work | Create the project's established location, else `docs/plans/YYYY-MM-DD-<slug>/`. |
 | Location unreadable or ownership contested | Say so and ask. Unreadable is not "no match". |
 
@@ -44,7 +44,7 @@ Leave out what doesn't apply; write `unknown` rather than inventing. `workflow/S
 - Updated / phase: <date; investigating, awaiting agreement, specifying, awaiting approval, implementing, verifying, blocked, paused, stopped, cancelled, closed>
 - Recipe: <name; modifiers or none> — <reason>; scope: <the task, or the revision it belongs to; proposed when not yet agreed>; classification question: <not asked / pending at <reference> / answered at <reference> / unknown — legacy record>
 - Agreement (gate one): <agreed/waived/legacy/not required — lightweight or one-ticket offer/pending; revision ("agreement N") and record>
-- Offer: #<id> <draft/approved/superseded/revoked>, the states `offers.py` stores. "Pending" is not stored: the hook derives it from a verified presentation. Approval binds to the offer id and its generated presentation; the hook reads the owner's answer from the conversation, so never write an approval yourself. There is no approval waiver: a non-interactive session, a request for a finished result or "don't ask me" is never one; stop and ask. Legacy tasks the owner listed at the upgrade keep their `- Approval (gate two):` line unchanged
+- Offer: #<id> <draft/approved/superseded/revoked>, the states `offers.py` stores. `approval.py` derives "pending" from a verified presentation and reads the owner's answer from the conversation, so never write an approval yourself; approval has no waiver ([VISUAL-REVIEW.md](VISUAL-REVIEW.md) "The gates"). Legacy tasks the owner listed at the upgrade keep their `- Approval (gate two):` line unchanged
 - Lightweight edit (only when nothing a user or caller can notice changes): <files> — <why>; its minimal offer lists those files. `git commit` of only those files only when the offer names that operation, and no other git write
 - Implementation: <not started/in progress/implemented/partial>
 - Verification / owner acceptance: <not run/passed/limited/blocked; evidence and what is outstanding>
@@ -81,7 +81,7 @@ Before touching shared files, record `git status` and enough diff to tell existi
 
 IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, check result V. Keep existing IDs. When an older TODO restarts T1 under each revision, address it as `D4/T1` or `D3/T1`; never guess which T1 a short reference means. New cross-revision references use that qualified identity. Do not renumber old records.
 
-The HTML renderer uses safe local IDs without `/`. Keep a qualified source ID such as `D4/T8` in the report task title; use a unique projection alias such as `D4-T8` in JSON references. This does not rename the source ticket. See codebase-map REPORT.md; check aliases for collisions rather than blindly replacing punctuation.
+A report needs IDs without `/`: read [REPORT-FILES.md](REPORT-FILES.md) "Renderer ID aliases" when you put a qualified ID into report JSON.
 
 **Current open work first.** Give each nontrivial ticket an action title and labeled sections, not a paragraph of semicolons inside a checkbox. The ticket explains the next action; test history and old attempts live in FINDINGS, reasons in DECISIONS. Completed or superseded history stays clearly labeled behind the current work. No file per ticket.
 
@@ -132,7 +132,7 @@ Ticket states remain: not started, ready, in progress, implemented — verificat
 
 Verified is a passed terminal outcome. Cancelled, superseded, removed and not applicable are closed **without** a test pass and need the decision that caused them. Blocked/paused are waiting states, not terminal success; execution may deliver partial when nothing authorized is runnable. When the owner stops or pauses work, unfinished tickets become `Status: paused` with the reason on its own line (`Paused: owner stop, <date>: "<words>"`); keep their Verification as it was. Never call a waived or owner-removed check passed. A checked box plus some V-ID is insufficient while required verification remains missing. Flag contradictions instead of selecting the most convenient sentence.
 
-`record.py tick` supports labeled blocks and legacy checkboxes, refuses ambiguous IDs and explicit outstanding verification, and preserves endings/history. Update the actual verification result first; then tick with its evidence. It is a record editor, not a test runner or proof of acceptance. `open_items.py` reads both formats, flags explicit incomplete results and reports an unlisted or conflicting Status as not recognized (neither open nor verified); it does not certify natural-language completeness or evidence freshness.
+Update the actual verification result first; then tick with its evidence. `record.py tick` refuses ambiguous IDs and outstanding verification, and `open_items.py` flags incomplete results and unrecognized Status lines; neither runs a test, proves acceptance or certifies evidence freshness.
 
 A V entry records the command, folder, versions, result, which state of the files it ran on (commit plus local diff), and what it didn't cover (`UNTESTED — <scope and reason>`). Reading a file is not a passed test. An agent saying "done" is a claim until you check its results.
 
@@ -140,7 +140,7 @@ Specialist use: record the resolved skill, where it came from and whether it was
 
 ## Checkpoint as you go
 
-Before each unit of work, save what it is, the files it will touch and its check. After it, save what changed, the result and the next step. This is the recovery mechanism; an end-of-session summary is only a bonus. Use `scripts/record.py` (new, append, replace-section, set-line, tick with evidence, batch for several exact edits) instead of ad-hoc edit scripts or `node -e`/`sed` replaces that fail silently; it keeps each file's line endings. Prefer the file-write tool for scripts/JSON; a shell writer needs correct quoting, encoding and an authorized target. At session start, use `scripts/open_items.py --task <folder>` as an index, then read the relevant checkpoint, authority and evidence; it also flags broken encoding and mixed line endings. Test output and scratch follow ARTIFACTS.md and stricter project rules. If the intended output location is public or not ignored where privacy is required, resolve that before writing. Keep cited evidence until its recorded retention condition is met. Only the task owner writes records; subagents return evidence. Parallel workers need non-overlapping files.
+Before each unit of work, save what it is, the files it will touch and its check. After it, save what changed, the result and the next step. This is the recovery mechanism; an end-of-session summary is only a bonus. Use `scripts/record.py` (new, append, replace-section, set-line, tick with evidence, batch for several exact edits) instead of ad-hoc edit scripts or `node -e`/`sed` replaces that fail silently; it keeps each file's line endings. Prefer the file-write tool for scripts/JSON; a shell writer needs correct quoting, encoding and an authorized target. At session start, use `scripts/open_items.py --task <folder>` as an index, then read the relevant checkpoint, authority and evidence; it also flags broken encoding and mixed line endings. Test output and scratch follow ARTIFACTS.md and stricter project rules. Only the task owner writes records; subagents return evidence. Parallel workers need non-overlapping files.
 
 ## Stop, pause and cancel
 
@@ -151,13 +151,9 @@ Before each unit of work, save what it is, the files it will touch and its check
 - **An interrupted worker**: compare its changed files with the ticket scope before trusting anything; uncertain changes stay unverified.
 - **A lightweight edit**: deliver's short form, without the whole-feature review.
 
-## Approval waits and host goals
+## Approval waits
 
-Present the offer and the one question once, save `awaiting approval`, then end the assistant turn (the STOP in `workflow-specify` step 5). A report remaining open, elapsed time, hook feedback or an automatic goal continuation is not a new owner response. Keep writes gated. Resume on the real answer: rejection stops the proposal; requested changes produce a revised offer; approval applies only to the shown offer, task and workspace.
-
-Before using a host goal, bound its current authorized phase with an observable result and check. For planning, completion is the reviewable report and one approval request. For implementation, name the approved tickets and verification. Do not use unbounded conditions such as "maximum FPS". Explicitly deferred work stays unverified with its reason; it is not a runnable completion requirement for the current phase. Genuine blockers, waiting for input and an owner's stop each end autonomous work without claiming the whole task passed. Preserve other authorized, independent work.
-
-Claude Code `/goal` is an independent Stop evaluator. If stale goal feedback restarts an approval wait, diagnose it once and hand control back; do not repeat "still waiting", call sleep in a loop, forge a user response or weaken approval checks. The owner can interrupt the loop, inspect `/goal`, and use `/goal clear` in that affected session. Confirm the host reports it cleared; a restart alone may restore the active goal. Clearing that host loop does not approve implementation or mark deferred work complete. Do not silently clear or rewrite a user's goal in another host. Source: [Claude Code goal documentation](https://code.claude.com/docs/en/goal).
+Present the offer and the one question once, save `awaiting approval`, then end the assistant turn (the STOP in `workflow-specify` step 5). A report remaining open, elapsed time, hook feedback or an automatic goal continuation is not a new owner response. Keep writes gated. Resume on the real answer: rejection stops the proposal; requested changes produce a revised offer; approval applies only to the shown offer, task and workspace. Read [HOST-GOALS.md](HOST-GOALS.md) before you use a host goal, or when `/goal` feedback restarts a wait.
 
 ## Resume
 
@@ -183,6 +179,6 @@ New structure applies forward. On a resumed old task, update only the checkpoint
 - **Rules**: one readiness note in the checkpoint (RULES.md); an exception records the user's words, scope and expiry. No separate status file.
 - **Owner acceptance**: set the checkpoint's verification line and add one dated line to `## Outcome` that quotes the owner's words, so the closing record no longer says acceptance is pending. Delivery reports stay unchanged as history.
 - **UI**: one checkpoint entry: area and mode, approving source, allowed components, preview, exceptions, design acceptance and release state (ui-design).
-- **Test output**: follow [ARTIFACTS.md](ARTIFACTS.md); reuse the recorded output folder (default `.artifacts/<task-folder-name>/`); record retained proof and the cleanup condition in the checkpoint. No manifests or cleanup logs.
+- **Test output**: [ARTIFACTS.md](ARTIFACTS.md) owns the folder and retention rules; record the output folder, retained proof and the cleanup condition in the checkpoint.
 - **Privacy**: never copy credentials, tokens, personal data or production records into records, prompts or screenshots. Redact first.
 - **ADRs**: offer one only when `domain-modeling`'s criteria hold; a reversal is a new superseding ADR. Proposed ADRs are not accepted because time passed. Task progress stays in task records.

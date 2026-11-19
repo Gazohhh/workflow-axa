@@ -80,6 +80,15 @@ class PackageContract(unittest.TestCase):
                     self.assertTrue((ROOT / "hooks" / script).is_file(), script)
         self.assertEqual(found, EXPECTED_HOOKS)
 
+    def test_after_call_hook_keeps_read_for_legacy_report_fingerprints(self):
+        data = json.loads((ROOT / "hooks/hooks.json").read_text(encoding="utf-8"))["hooks"]
+        self.assertEqual([group["matcher"] for group in data["PostToolUse"]],
+                         ["Bash|PowerShell|Read|Edit|Write|MultiEdit|AskUserQuestion"])
+        self.assertNotIn("matcher", data["UserPromptSubmit"][0])
+        for event in ("PostToolUse", "UserPromptSubmit"):
+            with self.subTest(event=event):
+                self.assertTrue(data[event][0]["hooks"][0]["command"].endswith('/hooks/phase_gate.py" --hook-protocol=1'))
+
     def test_licences_travel_with_the_formerly_copied_skills(self):
         for name in LICENSED:
             with self.subTest(skill=name):

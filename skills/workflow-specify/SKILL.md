@@ -7,7 +7,7 @@ description: "Turn agreed behavior into scoped tickets, dependencies, checks and
 
 Turn the agreement into tickets another agent could build, and get the offer approved. The plan report is built only on *Show review.html first* or when the owner asks. No application code or tests.
 
-Read shared policies from sibling `../workflow/`, including its "Always" list. Stop if missing; never substitute another installed copy.
+Read shared policies from sibling `../workflow/`: RULES.md, TASK-FOLDER.md, VISUAL-REVIEW.md and WRITING.md before step 1; any other file there only when a step below or its "Always" list names your case. Stop if missing; never substitute another installed copy.
 
 **Before you start**, check: rules cover this scope (`workflow/RULES.md`); the checkpoint `Agreement` is agreed, legacy or waived for this revision, or `not required` for a lightweight edit or settled one-ticket work, which gets the one-ticket offer (`workflow/VISUAL-REVIEW.md` "No separate agreement"); otherwise go to `workflow-clarify`; no open choice blocks the plan; application UI has its `ui-design` mode and sources recorded (an unrecorded mode blocks only UI tickets); read `../ui-design/SKILL.md` if this session has not. When existing styles cannot produce the agreed layout, ask DESIGN.md rule 4's question; include new CSS only when the machine CSS switch is on (`rule-maker/rules/DESIGN.md` rule 1). Refresh evidence for files changed since the agreement.
 

@@ -52,14 +52,48 @@ Shell commands are read best effort; command-text filtering is advice, not a sec
 """
 from __future__ import annotations
 
-import hashlib
-import importlib.util
 import json
 import os
+import sys
+
+NOTE_TOOLS = ('Edit', 'Write', 'MultiEdit')
+SHELL_QUOTING = str.maketrans('', '', '\\"\'`\r\n')
+
+
+def silent_event(raw: str) -> bool:
+    try:
+        event = json.loads(raw)
+    except ValueError:
+        return True
+    if not isinstance(event, dict):
+        return True
+    if event.get('hook_event_name') != 'PostToolUse' or event.get('tool_name') == 'AskUserQuestion':
+        return False
+    data = event.get('tool_input') or {}
+    if not isinstance(data, dict):
+        return True
+    path = str(data.get('file_path')) if data.get('file_path') else ''
+    if path and '.html' in '\n'.join((path, str(event.get('cwd') or ''), os.path.expanduser('~'))).lower():
+        return False
+    if event.get('tool_name') in ('Bash', 'PowerShell') \
+            and '.html' in str(data.get('command') or '').translate(SHELL_QUOTING).lower():
+        return False
+    return not (event.get('tool_name') in NOTE_TOOLS and path and event.get('transcript_path')
+                and not path.strip().lower().endswith(('.md', '.markdown')))
+
+
+if __name__ == '__main__':
+    HOOK_INPUT = sys.stdin.read()
+    if silent_event(HOOK_INPUT):
+        sys.exit(0)
+    import io
+    sys.stdin = io.StringIO(HOOK_INPUT)
+
+import hashlib
+import importlib.util
 import posixpath
 import re
 import subprocess
-import sys
 import tempfile
 import time
 from pathlib import Path

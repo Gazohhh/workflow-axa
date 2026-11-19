@@ -50,18 +50,15 @@ Repair task-caused defects under the existing approval when behavior and scope r
 
 ## Grounding and visual approval
 
-Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm the agreement (or its recorded `not required` for a lightweight edit or a one-ticket offer) and an approved offer, verified from its presentation and the owner's answer (for a legacy task, its recorded Approval line), both before application writes. Implementation approval has no waiver. Compare delivered behavior and relevant error/permission paths to that offer. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.
+Verify requirement → current evidence → actual gap → task → acceptance traceability. Check existing/partial features were reused, not duplicated; no optional product ideas entered scope. For substantive implementation confirm the agreement (or its recorded `not required` for a lightweight edit or a one-ticket offer) and an approved offer, verified from its presentation and the owner's answer (for a legacy task, its recorded Approval line), both before application writes. Compare delivered behavior and relevant error/permission paths to that offer. Renderer output and opening success are not approval evidence. A drift warning requires reconciliation, not automatic approval revocation or dismissal.
 
-## Visual-review regression
+## Report and visualizer changes
 
-For changed reports/visualizer code, verify that the actual feature flow remains primary (not cards or generic workflow phases), branches preserve source meaning, build dependencies and containment are separate, source ambiguities stay visible, and no style approval grants application authority. Check that codebase-map uses its bundled FLOWCHART-DESIGN.md and actual browser geometry/readability when available; no external diagram skill is required. Retain evidence/acceptance/exclusions and safe offline behavior. Native-size overflow must stay within the diagram wrapper; Fit is optional.
+When a change touches report or visualizer code, the renderer or how a report or UI screen renders, also read [AUDIT-REPORTS.md](AUDIT-REPORTS.md) whole and apply it.
 
-
-## Evidence of no-slop and visual fidelity
+## Evidence of no-slop
 
 Use the examples above and in WRITING.md. Reject duplicate task folders for the same continuing work, empty copied sections, unnecessary helper layers, silent coercion and comments that restate syntax. Preserve useful contracts, boundary parsers and comments explaining non-obvious constraints. Do not invent a numeric comment ratio or ban a function name. Label synthetic examples; add real team-approved examples only when supplied.
-
-When report/UI rendering changes, compare stable screenshots against a reviewed reference in the same environment. The package maintenance tools capture and compare images without replacing a baseline. Missing references or incompatible environments are NOT VERIFIED, not passes. A deliberate visual change needs the user's review before a new baseline is adopted. A passing comparison does not replace branch/meaning checks, manual accessibility review or a cold-reader check. Keep an application's own design system; the report theme is not permission to redesign the app.
 
 ## Test-output lifecycle
 
