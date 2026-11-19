@@ -5,8 +5,8 @@
 ## Start in 60 seconds
 
 1. Ask what you want built, investigated or reviewed. Existing task records are reused.
-2. For a substantive change, confirm the **behavior agreement**: what works, fails and stays unchanged.
-3. Read the **offer**: what changes, its paths and protected operations, what stays out and the checks. Answer the one question: *Show review.html first*, *Approve from this summary* or *Change something*. Only an approved offer lets application code change. The plan report, with current/proposed flows and real UI-kit references, is built when you ask for it.
+2. For a substantive change, confirm the **behavior agreement**: what works, fails and stays unchanged. One-ticket work with no open choice skips this step, because the offer carries the agreement.
+3. Read the **offer**: what changes, its paths and protected operations, what stays out and the checks. Answer the one question: *Show review.html first*, *Approve from this summary* or *Change something*. A lightweight edit's offer is one short message that asks only *Approve* or *Change something*. Click the answer, or type it after an offer shown as text. Only an approved offer lets application code change. The plan report, with current/proposed flows and real UI-kit references, is built when you ask for it.
 4. Get a short result: implemented tickets, tests, review, remaining risks and anything requiring human acceptance.
 
 Understand the system: [one-page architecture](docs/ARCHITECTURE.md). Test in new sessions: [fresh-run guide](docs/EVALUATION.md). Installation and migration: [UPGRADE.md](UPGRADE.md). Current proof and limits: [VALIDATION.md](VALIDATION.md).

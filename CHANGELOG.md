@@ -1,5 +1,59 @@
 # Changelog
 
+## Unreleased (next minor release candidate): faster workflow
+
+Not released. Planned as 2.10.0. The package version in `.claude-plugin/plugin.json` stays 2.9.2 until the release. Task record: docs/plans/2026-11-19-workflow-speed.
+
+**Fewer stops for the owner.**
+- One-ticket work with no open choice gets no separate agreement question. The offer carries the agreement, and the checkpoint records `not required — one-ticket offer`.
+- Grilling asks every open question in one round, each with a recommendation. A second round holds only questions whose options depend on the first answers.
+- A lightweight offer is one short message: what changes, its files and its check. Its question has two answers, *Approve* and *Change something*, and no report option.
+- After an offer shown as text, a typed answer label counts like a click. "Approve from this summary" approves, "Show review.html first" asks for the report first, and "Change something" approves nothing. Punctuation and bold or italic markers around the label are ignored.
+- A one-ticket diff or lightweight edit of about 300 changed lines or fewer, with no blast-radius trigger, gets one reviewer who writes both reports. Larger or riskier diffs keep two reviewers.
+- A review finding counts only with a command that reproduces it, or a `file:line` with the failure it causes. Everything else is a note and starts no repair round.
+
+**Less reading for the agent.** Rare cases moved out of the always-read files into new files. Each is read only when its case comes up:
+
+| New file | Read when |
+|---|---|
+| `skills/workflow/LEGACY-APPROVALS.md` | A checkpoint has an `Approval (gate two)` line or a `legacy` Agreement |
+| `skills/workflow/PAID-EVALUATION.md` | Before a separately paid model or evaluation batch |
+| `skills/workflow/WRITING-FOR-REVIEW.md` | Before a report's JSON is written or rendered, and before a plan or final report is presented |
+| `skills/workflow/WRITING-EXAMPLE.md` | When documentation is rewritten and a worked example helps |
+| `skills/workflow/REPORT-FILES.md` | When qualified ticket IDs go into a report, or after a replacement report is accepted |
+| `skills/workflow/HOST-GOALS.md` | Before a host goal is used, or when `/goal` feedback restarts an approval wait |
+| `skills/workflow/TASK-HISTORY.md` | When a plan changes after agreement, an older task is resumed or tidied, or UI state or an ADR is recorded |
+| `skills/workflow/RECIPE-CHANGES.md` | On resume, or when evidence changes the recipe pick |
+| `skills/workflow/WORKTREE-DEPENDENCIES.md` | When a fresh worktree has no installed dependencies |
+| `skills/workflow/AUDIT-REPORTS.md` | When a change touches report or visualizer code |
+| `skills/rule-maker/DOCS-SHAPE.md` | When a project's AGENTS.md, CLAUDE.md or document index is audited or written |
+| `skills/rule-maker/READINESS-CASES.md` | When READINESS.md names a less common case |
+
+`workflow-execute` copies the recipe's steps and the tickets into the todo list, opens every worker brief with "the bar in this brief is the whole bar", and starts each ticket of multi-ticket work in a fresh worker. Recipe steps are short imperative lines. Each repeated rule has one owner file in CONTEXT.md. `tools/measure_speed.py` counts the words a path reads (on this candidate: router 8,127, bug fix 19,973 of which 17,779 come before code, lightweight edit 17,660; on 2.9.2: 14,536, 28,726 and 26,163).
+
+**Cheaper hooks.**
+- `approval.py` allows a shell call that provably writes nothing (`ls`, `cat`, `grep`, `rg`, `git status`, `git log`, `git diff` and similar) before it loads the gate. No redirect, pipe, `find -exec` or record script qualifies.
+- Other calls that write nothing skip the transcript. Calls that need the conversation parse only the lines added since the last call: the parsed lines are cached under the hook cache, and the offer files are checked again at every call.
+- `phase_gate.py` (after each call) exits before its heavy imports when the event can produce no output. Read stays in its matcher, because a Read of a report records the fingerprint that legacy tasks need.
+
+Measured with `tools/measure_speed.py`, median of five warm runs, 2.9.2 against round 2 of this task (FINDINGS V2, V4):
+
+| Hook call | Transcript of 1k / 5k / 20k events, 2.9.2 | Same, candidate |
+|---|---|---|
+| Read-only Bash | 354 / 371 / 537 ms | 210 / 199 / 196 ms |
+| Read | 169 / 159 / 180 ms | 112 / 111 / 112 ms |
+| Edit | 386 / 482 / 613 ms | 384 / 407 / 468 ms |
+
+**What did not change.** Every change still gets an offer and the one question. The hook still refuses a project write outside an approved offer, and a hook error still refuses writes. Offers created before this version keep their hash: the new `lightweight` field is stored only when true. Tasks in the legacy inventory keep their Approval-line check.
+
+**Checked:** after each round, the full suite and validate (FINDINGS V1, V3). New tests: `test_hook_speed.py` (the same decision for every kind of call, through the hook process), `test_measure_speed.py`, and new classes in `test_approval_hook.py`, `test_gate_notes.py`, `test_flows.py` and `test_offers.py` (tests/README.md "Workflow speed").
+
+**Known limits:**
+- A bug fix still reads about 17,800 words before code, above the task's goal of 10,000.
+- The measured owner stops for a one-ticket bug stay three (rules readiness, the offer, acceptance at delivery). The baseline pilot's three extra stops came from answer forms the hook now accepts. No pilot has run on this candidate yet.
+- The fast path reads command words, not a shell's full grammar. A command it cannot place takes the full check.
+- The flaky `test_parallel_appends_lose_nothing` (record.py's lock clean-up under parallel writers) is still an open bug.
+
 ## 2.9.2 — the approval hook sees every good offer and says why it refuses (2026-11-19)
 
 **One hand-edited offer no longer hides its whole task.** When an offer file's fields no longer match its hash, only that offer stops counting; the other offers of its task still approve writes, and the refusal names the broken file so the owner can put it back. Before, the approval hook skipped every offer of that task without a word. `offer create` still refuses while a broken file is there, so offer numbers stay safe.

@@ -9,7 +9,7 @@ Inspect without changing the environment. Check package/version, host profile/re
 
 Separate **installed on disk**, **discoverable/enabled**, **actually loaded**, **followed** and **enforced**. Do not install, enable, delete, overwrite or repair anything automatically.
 
-Verify `python` starts; otherwise warn that hooks cannot run. The duplicate-copy guard (`hooks/duplicate_skills.py`) names second skill copies at session start. Codex has no such guard. Repeated approval denials: workflow/SETUP.md "Updating sessions safely". Repeated waiting: inspect goal_status and Stop feedback using workflow/TASK-FOLDER.md "Approval waits and host goals".
+Verify `python` starts; otherwise warn that hooks cannot run. The duplicate-copy guard (`hooks/duplicate_skills.py`) names second skill copies at session start. Codex has no such guard. Repeated approval denials: workflow/SETUP.md "Updating sessions safely". Repeated waiting: inspect goal_status and Stop feedback using workflow/HOST-GOALS.md.
 
 ## Global artifact policy
 

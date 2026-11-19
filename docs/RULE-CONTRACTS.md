@@ -36,8 +36,8 @@ For each hard rule of workflow-axa, this file says when it applies, what it cove
 - Applies when: before application code, tests, dependencies, migrations or Git writes in a workflow task.
 - Scope: the offer: behavior summary, allowed and delegable paths and operations, exclusions, conditions and checks. A lightweight edit gets the minimal offer, one-ticket work one ticket, multi-ticket work the full list. The plan report is built only on *Show review.html first* or when the owner asks; the offer, not the report, is what the hook checks.
 - Preconditions: agreement recorded or carried by the offer; tickets in TODO for ticketed work; the offer presented from `record.py offer present`.
-- Action: present the offer (the text `record.py offer present` prints, as the end of the reply), ask the one question (*Show review.html first*, *Approve from this summary*, *Change something*), stop. The hook reads the answer from the conversation; the checkpoint names `Offer: #<id>`.
-- Exceptions: none at the hook. A task in the owner's legacy inventory keeps its `Approval` line, checked by `phase_gate.py`.
+- Action: present the offer (the text `record.py offer present` prints, as the end of the reply), ask the one question (*Show review.html first*, *Approve from this summary*, *Change something*; a lightweight offer asks only *Approve* or *Change something*), stop. The hook reads the answer from the conversation; the checkpoint names `Offer: #<id>`.
+- Exceptions: none at the hook. A task in the owner's legacy inventory keeps its `Approval` line, checked by `phase_gate.py`. Its recovery is owned by `skills/workflow/LEGACY-APPROVALS.md`.
 - When blocked: wait; only task records and the report change. Fix a hook refusal by presenting the offer again or through the `resume` skill, never by editing or disabling the hook.
 - Checked by: hook `approval.py` (contracts C-OFFER-1 to C-OFFER-8 below): a write needs an approved offer that lists its path, in the session's own worktree; Git writes and MCP write tools need their operation named in the offer; a later withdrawal or narrowing ends the approval, and a stop only pauses it; offer records change only through `record.py offer`. Tests: `tests/test_approval_hook.py`, `tests/test_offers.py`.
 - Checked for a legacy task: hook `phase_gate.py`, reached through `approval.py`'s dispatch:
@@ -87,7 +87,7 @@ The small change route is folded into the one-ticket offer (`skills/workflow/VIS
 - Scope: output the agent places under the task's output parent (default `.artifacts/<task>/`).
 - Preconditions: the parent, each file's owner, active consumers and protected paths are known.
 - Action: reuse one stable parent; keep the smallest evidence set; delete only the agent's own disposable output from the current work when every listed condition holds; record what stays and the next cleanup condition.
-- Exceptions: deliverables, approved reports, baselines, rollback data and tool-owned output are protected. Superseded reports follow VISUAL-REVIEW.md "Superseded review cleanup".
+- Exceptions: deliverables, approved reports, baselines, rollback data and tool-owned output are protected. Superseded reports follow REPORT-FILES.md "Superseded review cleanup".
 - When blocked: unclear ownership, or older or unknown output: preserve it and ask. No `git clean`, wildcard delete or blanket wipe.
 - Checked by: hook `approval.py`, calling phase_gate's `bulk_delete` (in `phase_gate.py` since 2.8.0-rc.38), bulk forms only, in an active session. The check runs before the `.artifacts` write exemption (`bulk_delete` `:180`, called at `:2352`, refusal at `:2378`).
   - `git clean` is refused unless it has `-n` or `--dry-run`. It is read from the parsed command words (`git_clean_called` `:154`), also inside `bash -c`, `powershell -Command` and `cmd /c`. The words "git clean" in a commit message, an echo or a heredoc do not count.
@@ -154,16 +154,34 @@ No check covers these:
 - Whether the recorded agreement covers the work. For a legacy task the hook reads only the state word on the `Agreement` line; for an offer task approval.py checks the offer, not the Agreement line.
 - Styling or markup that the cues do not match (computed styles, shell writes), and what the agent did after a note. Notes never block.
 
+## Owner files moved by the speed task (2.10.0 candidate)
+
+Task docs/plans/2026-11-19-workflow-speed moved rare cases out of the files every task reads. The rule text did not change. These files now own them:
+
+| Rule | Owner file now | Before |
+|---|---|---|
+| Legacy (pre-offer) approval recovery | `skills/workflow/LEGACY-APPROVALS.md` | VISUAL-REVIEW.md "Legacy approval recovery", which now only points there |
+| Paid evaluation: the hard total cap before a paid batch | `skills/workflow/PAID-EVALUATION.md` | VISUAL-REVIEW.md "Explicit exceptions and paid evaluation" |
+| Report prose fields and the cold-reader check | `skills/workflow/WRITING-FOR-REVIEW.md` | WRITING.md; `unread_report_guides` now also requires this file before a render |
+| Renderer ID aliases and superseded review cleanup | `skills/workflow/REPORT-FILES.md` | TASK-FOLDER.md and VISUAL-REVIEW.md "Superseded review cleanup" |
+| Host goals during an approval wait | `skills/workflow/HOST-GOALS.md` | TASK-FOLDER.md "Approval waits" |
+| Revisions, qualified IDs, older tasks, UI and ADR records | `skills/workflow/TASK-HISTORY.md` | TASK-FOLDER.md |
+| The recipe pick on resume or when evidence changes it | `skills/workflow/RECIPE-CHANGES.md` | The router's SKILL.md §3 steps 6 and 7 |
+| AGENTS.md, CLAUDE.md and index shape | `skills/rule-maker/DOCS-SHAPE.md` | `skills/rule-maker/DOCS.md` |
+| Required reads, exceptions, workers and audits during readiness | `skills/rule-maker/READINESS-CASES.md` | `skills/rule-maker/rules/READINESS.md` |
+
+CONTEXT.md "Rule owners" lists the owner file of each repeated rule.
+
 ## Redesign contracts (2.9.0-rc.1)
 
 Task `docs/plans/2026-11-15-workflow-redesign` (plan REDESIGN.md v6) replaces the approval forensics above with the contracts below. Each names its owner section in REDESIGN.md and the test that checks it; "Tn" names the ticket that added the test; every one of them landed by 2.9.0-rc.1. These contracts cite no line numbers: tests and section names are the stable references.
 
 | ID | Contract | Owner (REDESIGN.md) | Checked by |
 |---|---|---|---|
-| C-OFFER-1 | An offer is an immutable id with canonical fields (behaviour, allowed and delegable paths and operations, exclusions, conditions, checks, parent); state is pending, approved, superseded or revoked; a canonical change creates a new offer | §3.4 | `tests/test_offers.py` (record), `tests/test_approval_hook.py` (hook) |
-| C-OFFER-2 | An offer becomes pending only with successful presentation evidence: the exact generated presentation as the end of a visible message (nothing before it that could hide it) or as one question's text (`--question`) with that question's answer; the frozen format 1 block still counts for the same offer; the CSS display line is outside the hash | §3.4 | `tests/test_approval_hook.py` |
-| C-OFFER-3 | Approval forms: a button answer, `/approve <id>`, or a whole message from the fixed list; a qualified answer never approves and leads to a narrowed offer confirmed once; scoped answers approve only what was offered by name | §3.4 | `tests/test_approval_hook.py` |
-| C-OFFER-4 | Every offer, lightweight edits included, ends with the one question (Show review.html first, Approve from this summary, Change something), asked once per offer | §3.4 | `tests/test_approval_hook.py`, observed T16 |
+| C-OFFER-1 | An offer is an immutable id with canonical fields (behaviour, allowed and delegable paths and operations, exclusions, conditions, checks, parent, and the optional `lightweight`, stored only when true so an older offer keeps its hash); state is pending, approved, superseded or revoked; a canonical change, a switch to lightweight included, creates a new offer | §3.4 | `tests/test_offers.py` (record, LightweightOffers), `tests/test_approval_hook.py` (hook) |
+| C-OFFER-2 | An offer becomes pending only with successful presentation evidence: the exact generated presentation, in its plain or its `--question` form, as the end of a visible message (nothing before it that could hide it), or the `--question` form as one question's text with that question's answer; the frozen format 1 block still counts for the same offer; the CSS display line is outside the hash | §3.4 | `tests/test_approval_hook.py` |
+| C-OFFER-3 | Approval forms: a button answer, `/approve <id>`, or a whole message from the fixed list; after a presentation in text, a whole message that is a button label (punctuation and emphasis around it ignored): "Approve from this summary" or "Approve" approves, "Show review.html first" counts as the report request, and "Change something" approves nothing; a qualified answer never approves and leads to a narrowed offer confirmed once; scoped answers approve only what was offered by name | §3.4 | `tests/test_approval_hook.py` (TypedAnswerLabels for typed labels) |
+| C-OFFER-4 | Every offer, lightweight edits included, ends with the one question, asked once per offer: Show review.html first, Approve from this summary, Change something; a lightweight offer's is Approve or Change something, with no answer line and without its empty Protected actions, Excluded and Conditions sections | §3.4 | `tests/test_approval_hook.py` (LightweightOffer), `tests/test_offers.py` LightweightOffers, observed T16 |
 | C-OFFER-5 | Approval is a cache over a decision reference re-validated on use; failure fails closed with a diagnosis; a validated approval is never asked again | §3.4 | `tests/test_approval_hook.py` |
 | C-OFFER-6 | A child's derived offer is a checked subset of the parent's delegable scope and inherits exclusions, conditions and checks | §3.4 | `tests/test_offers.py` ChildOffers, `tests/test_approval_hook.py` ChildrenAndRules |
 | C-OFFER-7 | `/wait-what` is a non-answer: it neither approves nor supersedes; its reply re-presents the unchanged offer | §3.4, §3.10 | `tests/test_approval_hook.py` |
@@ -218,7 +236,7 @@ The PreToolUse hook is `hooks/approval.py`. `hooks/phase_gate.py` stays as the r
 | Package installs and npx-style downloads | approval.py, calling `install_problem` | C-SAFE-1 | ProtectedOperations |
 | `git clean`, bulk deletes under `.artifacts` | approval.py, calling `bulk_delete` | C-SAFE-1 | ProtectedOperations |
 | Required reads before a phase skill (Skill calls) | approval.py `kept_gate_checks`, calling `required_read_problem` | G3 | RequiredReadsThroughTheOfferChecker (phase_gate's 14 cases) |
-| Report guides read before render_report.py | approval.py `kept_gate_checks`, calling `unread_report_guides` | — | RecordWritesThroughTheOfferChecker (phase_gate's three report-guide cases) |
+| Report guides read before render_report.py (TASK-REPORT.md, WRITING.md, WRITING-FOR-REVIEW.md, FLOWCHART-DESIGN.md, and UI-FLOW.md when the UI reads apply) | approval.py `kept_gate_checks`, calling `unread_report_guides` | — | RecordWritesThroughTheOfferChecker (phase_gate's three report-guide cases) |
 | Canonical task records only through record.py | approval.py `kept_gate_checks` | — | RecordWritesThroughTheOfferChecker |
 | Styling notes | approval.py: a refusal while the CSS switch is off; phase_gate's PostToolUse note stays | C-CSS-1/2 | ProtectedOperations, `test_gate_notes.py` |
 | Approval line quoting the owner's words, report fingerprints, revisions `rN`, report `write_paths`, small-change and Reconfirmed lines, the lightweight `git commit`, task switches (N4), the report waiver (P1), unnumbered chat plans (P3) | legacy-only: phase_gate, reached through approval.py for a task in the owner's inventory | C-LEG-1 | `test_phase_gate_hook.py`, `test_gate_regressions.py`, `test_session_failures.py`, LegacyDispatch, `test_cutover.py` |

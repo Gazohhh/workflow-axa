@@ -48,7 +48,7 @@ Map every changed file to a ticket; report unexplained changes, untouched promis
 
 ## 5. Reviews
 
-Each ticket review and the whole-feature review (for one ticket, its ticket review) exist, cover Standards and Spec, ran on the final files and have every finding closed or limited; report missing or self-only reviews. Where code-review's blast-radius trigger fired, the review holds a "Blast radius" result. Before you write Done, run `python -X utf8 -I scripts/completion_check.py check <project-root> <task-folder>`. Exit 1 names each change without a passed review of its current form: back to `workflow-execute`, or report the task partial. Exit 2 (no baseline, no git, damaged record): partial, verification pending, never Done; say why.
+Each ticket review and the whole-feature review (for one ticket, its ticket review when it was briefed with those checks) exist, cover Standards and Spec, ran on the final files and have every finding closed or limited; report missing or self-only reviews. Where code-review's blast-radius trigger fired, the review holds a "Blast radius" result. Before you write Done, run `python -X utf8 -I scripts/completion_check.py check <project-root> <task-folder>`. Exit 1 names each change without a passed review of its current form: back to `workflow-execute`, or report the task partial. Exit 2 (no baseline, no git, damaged record): partial, verification pending, never Done; say why.
 
 ## 6. Records
 

@@ -197,6 +197,34 @@ Agent behavior for the four phase skills needs actual sessions: a request with a
 
 `test_approval_hook.OfferVisibility` checks that a hand-edited offer file stops only itself, never the good offers beside it, and that the refusal names it; that a refusal lists the session's own task first, then other tasks newest first; and the reasons for an approve click on a question that didn't carry the offer and for a question whose text differs from the printed offer. These use synthetic transcripts, not a live host.
 
+## Workflow speed (task docs/plans/2026-11-19-workflow-speed)
+
+New test files:
+- `test_hook_speed.py` runs `hooks/approval.py` as the host does. `DecisionsStayTheSame` pins the decision for each kind of call (read-only shell, redirects, Git writes, edits inside and outside the offer, MCP writes, the CSS switch, installs, worktree changes, deriving, a stop). `ReadOnlyCallsSkipTheTranscript` checks that a call that writes nothing never reads the conversation. `IncrementalParse` checks that the cached parse gives the same events as a full parse after appends, that a rewritten transcript or a damaged cache starts a full parse, that an unwritable cache only costs time, and that the offer files are checked again at every call. `ReadOnlyFastPath` checks which commands take the fast path and that both paths decide alike. `ReadOnlyTiming` checks that a read-only call on a 20k-event transcript costs less than 50 ms more than on a 1k-event one. That timing depends on the machine.
+- `test_measure_speed.py` runs `tools/measure_speed.py`: the JSON keys, each file counted once, and the bug path before code.
+
+New classes and tests in existing files:
+- `test_approval_hook.py`: `LightweightOffer` (the two-answer question, a typed approve, "Change something", a three-answer offer keeps its answers) and `TypedAnswerLabels` (a typed "Approve from this summary" after an offer shown as text approves it, the other labels approve nothing, every refusal stays, and a label answers only a presentation in its own session). One more test checks that the `--question` form printed as text is a presentation.
+- `test_gate_notes.py` `AfterCallHook`: the registered after-call hook keeps its output, and an event that can produce no output exits before the heavy imports.
+- `test_flows.py`: recipe steps are short labelled lines ready for the todo list, and `ExecutionTests` checks the todo copy, the opening bar line of every brief and a fresh worker for each ticket.
+- `test_offers.py` `LightweightOffers`: old offers keep their hash, `lightweight` is true or false, switching it is a new offer, and the short message asks *Approve* or *Change something* and leaves out only empty sections.
+- `test_package_contract.py`: the after-call hook keeps Read in its matcher (legacy report fingerprints).
+
+`tools/measure_speed.py` measures words read, hook process time and owner stops. Run it on a tree before and after a change, with the same options, and compare the two JSON files:
+
+```
+python -X utf8 -I tools/measure_speed.py --root <baseline tree> --json > .artifacts/<task>/baseline.json
+python -X utf8 -I tools/measure_speed.py --json > .artifacts/<task>/candidate.json
+```
+
+`--sizes` sets the transcript lengths (default 1000,5000,20000) and `--repeat` the timed runs per size (default 5, the median is reported). Without `--json` it prints one line per measurement. The baseline tree can be a `git archive` extract.
+
+Run these tests with discover from the repository root. The dotted form `python -m unittest tests.test_hook_speed` does not import, because `tests/` is not a package:
+
+```
+python -X utf8 -m unittest discover -s tests -p "test_hook_speed.py"
+```
+
 ## verify-app and reproduce-bug (task docs/plans/2026-11-18-bug-reproducer)
 
 `test_verify_skills.py` checks the two skills' text: verify-app's sections for the generated verify skill, the nine-step setup check, the map-check outcomes clean, changed and blocked, the guide's two parts (adding a screen, adding a job), the feature-map template and the guard template (refusal before the browser, blocked and logged requests, the login only from its file, the settings keys); reproduce-bug's input and one-question rule, fail-closed checks, twice with a reset, the read-only state check and second look, the fix check with its baseline, the worktree and link rules, no fix step, and exactly its five outcomes. It also checks that layer 1 holds no job words, that neither skill names its source or a company outside its LICENSE, the MIT licence and Codex card in each, and links that stay inside each folder. `test_package_contract.py` lists both as registered and licensed. The guard is TypeScript and this package has no Node runner, so it is proven live in an app (the task's T4); these checks prove the text says it, not that an agent follows it.

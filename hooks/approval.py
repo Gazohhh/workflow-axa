@@ -48,7 +48,7 @@ FAST_PROGRAMS = {"ls", "cat", "head", "tail", "grep", "rg", "find", "wc", "pwd",
 FAST_GIT = {"status", "log", "diff", "show", "rev-parse", "ls-files"}
 FAST_BRANCH_LIST = {"--list", "-l", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--verbose", "--show-current",
                     "--no-color"}
-FAST_UNSAFE = set("><|;&$`(){}\n\r")
+FAST_UNSAFE = set("><|;&$`(){}\\\n\r")
 FAST_NAMES = ("record.py", "settings.py", "legacy_inventory", "render_report", "worktree", "install")
 FAST_FIND_WRITES = ("-exec", "-ok", "-delete", "-fprint", "-fls")
 
