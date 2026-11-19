@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased (next minor release candidate): faster workflow
+## 2.10.0 — faster workflow: cheaper hooks, less reading, fewer stops (2026-11-19)
 
-Not released. Planned as 2.10.0. The package version in `.claude-plugin/plugin.json` stays 2.9.2 until the release. Task record: docs/plans/2026-11-19-workflow-speed.
+Task record: docs/plans/2026-11-19-workflow-speed.
 
 **Fewer stops for the owner.**
 - One-ticket work with no open choice gets no separate agreement question. The offer carries the agreement, and the checkpoint records `not required — one-ticket offer`.

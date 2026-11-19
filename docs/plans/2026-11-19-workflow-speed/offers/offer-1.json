@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 1,
+  "task": "2026-11-19-workflow-speed",
+  "created": "2026-11-19T18:03:43+00:00",
+  "canonical": {
+    "behaviour": "Create the isolated worktree for this task: D:\\workflow-axa-speed on a new branch speed/2.10 from main 1a0d523, so the live hooks in D:\\workflow-axa stay untouched. Nothing else changes here. The task records are then copied into the worktree, and the session moves into it to present the offer for the actual work (tickets T0 to T8). That second offer is a separate approval, because an approval given in this checkout does not cover writes in another worktree.",
+    "paths": [],
+    "operations": [
+      "`git worktree add`"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "any change to hooks/, skills/, tests/ or tools/ in D:\\workflow-axa",
+      "commits, pushes and merges"
+    ],
+    "conditions": [
+      "The worktree is created with one explicit command: git worktree add -b speed/2.10 D:/workflow-axa-speed 1a0d523"
+    ],
+    "checks": [
+      "git status in D:\\workflow-axa is unchanged apart from this task's records",
+      "git worktree list shows D:/workflow-axa-speed on speed/2.10 at 1a0d523"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "26a82da84cb46907",
+  "display": "",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": null,
+  "supersedes": null,
+  "superseded_by": 2
+}

@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 5,
+  "task": "2026-11-19-workflow-speed",
+  "created": "2026-11-19T21:53:04+00:00",
+  "canonical": {
+    "behaviour": "Merge the delivered speed work (branch speed/2.10, commits 122b2aa to 3972094) into main and release it as 2.10.0. The merge is a fast-forward of main to speed/2.10; from that moment every running session uses the new hooks. The version changes from 2.9.2 to 2.10.0 wherever the package states it (the rules stay 1.9.0: their text moved between files, no rule changed). CHANGELOG.md turns the Unreleased entry into 2.10.0, with its known limits (reading target missed, older installed copies reject an offer with the lightweight field). UPGRADE.md gets a 2.9.2 to 2.10.0 section. VALIDATION.md is rewritten from a fresh full run. Then one release commit on main (the version files and this task's records) and a push. Then the Claude Code plugin is updated, and workflow-axa's Codex copies in your skills folder are replaced from the release ZIP after a full backup, checked by the installation audit. The task's evidence moves from the worktree into .artifacts/2026-11-19-workflow-speed/ here, then the worktree D:/workflow-axa-speed, its merged branch and the pilot fixtures in D:/workflow-axa-pilots/2026-11-19-workflow-speed are removed. Last, the release evidence goes in a second small commit and push.",
+    "paths": [
+      ".artifacts/2026-11-19-workflow-speed/",
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "UPGRADE.md",
+      "VALIDATION.md",
+      "docs/plans/2026-11-19-workflow-speed/",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/rule-maker/rules/version.json",
+      "tests/behavioral/engineering-rules.json",
+      "tests/behavioral/rules-audit-kit.json",
+      "tests/behavioral/rules-readiness.json",
+      "tests/behavioral/ui-design.json"
+    ],
+    "operations": [
+      "claude plugin marketplace update gazohhh",
+      "claude plugin update workflow-axa@gazohhh",
+      "git branch",
+      "git commit",
+      "git merge",
+      "git push",
+      "git worktree",
+      "python -X utf8 -I C:/Users/Cem/.agents/skills/rule-maker/scripts/audit_installation.py --check-global",
+      "python -X utf8 -I tools/build_release.py",
+      "python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md",
+      "remove D:/workflow-axa-pilots/2026-11-19-workflow-speed",
+      "replace the workflow-axa folders in C:/Users/Cem/.agents/skills, after a backup"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "no change to how any skill or hook works beyond the delivered speed/2.10 commits",
+      "no change to the user's global CLAUDE.md, AGENTS.md or ARTIFACTS.md (global_policy.py and activate_rules.py --apply are not run)",
+      "no force push and no rewrite of published history",
+      "skills in ~/.agents/skills that are not workflow-axa's stay untouched"
+    ],
+    "conditions": [
+      "every installed folder equals the release build afterwards (diff, __pycache__ ignored)",
+      "main is fast-forwarded only (git merge --ff-only speed/2.10); if that is refused, stop and ask",
+      "the Codex backup is made and checked before any installed folder is replaced",
+      "the full suite and validate pass before the release commit, with the known flaky lock test named if it fails",
+      "the worktree is removed only after its evidence is copied and compared"
+    ],
+    "checks": [
+      "audit_installation.py --check-global reports DISK_MATCH with no missing folder",
+      "claude plugin list shows workflow-axa 2.10.0",
+      "full suite: python -X utf8 -m unittest discover -s tests -p \"test_*.py\"",
+      "python -X utf8 -I tools/validate.py"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "b5a99c76c2d61708",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "37b6fc29-d9d2-4905-83cc-45181877cc91",
+    "turn": "91b5f401-17e4-43c7-bc60-41eee0bc0aa5",
+    "presentation": "fca2b60a-86d9-4ac1-b47b-892b3068f52c",
+    "recorded": "2026-11-19T21:53:34+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

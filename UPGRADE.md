@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.2
+# Upgrade to workflow-axa 2.10.0
+
+## Upgrade to 2.10.0 (from 2.9.2)
+
+No migration of task records. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP at the same time, then start new sessions. Update every copy together: an older copy of `offers.py` refuses an offer that carries the new `lightweight` field. Existing offers keep their hashes and approvals. Refusals read differently: a refused git operation or MCP tool now names the offer that lists it and why it is not approved yet. Some workflow reference sections moved into on-demand files (CHANGELOG lists them); their rules did not change, so the rules version stays 1.9.0.
 
 ## Upgrade to 2.9.2 (from 2.9.1)
 
