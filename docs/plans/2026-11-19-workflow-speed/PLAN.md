@@ -1,7 +1,7 @@
 # Workflow speed (Matt Pocock and Lauren Tan review)
 
 ## Current checkpoint
-- Updated / phase: 2026-11-19; releasing 2.10.0 (offer #5)
+- Updated / phase: 2026-11-19; released as 2.10.0 (17cc1ec); owner acceptance pending
 - Recipe: feature; modifiers Compatibility — the owner wants the workflow faster: cheaper hooks, less always-read text and fewer stops; existing tasks, offers and approvals keep working; scope: the task; classification question: not asked (the owner's "do all of it" on the 16-item comparison settles the kind of work)
 - Agreement (gate one): agreed — agreement 1, 2026-11-19 (owner: "Agree")
 - Offer: #5 draft (merge and release 2.10.0); #4 approved (T9); #3 approved (T0-T8); #2 approved (worktree)
@@ -10,7 +10,7 @@
 - Blockers: none
 - Changed files: 64 files on speed/2.10 (list: .artifacts/2026-11-19-workflow-speed/changed-files.txt)
 - Scope paths: `hooks/`, `skills/`, `tests/`, `tools/`
-- Next safe action: owner decides on merge/release of speed/2.10, or another round on A1
+- Next safe action: owner restarts sessions to load 2.10.0 and accepts it; owner removes the worktree D:/workflow-axa-speed and branch speed/2.10 (the hook refuses it from this session, E18)
 
 ## Working context
 - Owner: Gazoh; repository D:\workflow-axa-speed (worktree of D:\workflow-axa), branch speed/2.10 at 1a0d523; created under offer #2
@@ -82,3 +82,6 @@ Open follow-ups: misleading refusal for shell chains with variable paths (E16); 
 Kept evidence: .artifacts/2026-11-19-workflow-speed/ (baseline.json, r1.json, r2.json, final.json, suite logs, review probes, pilot/). Scratch to remove after the owner's decision on merge: baseline-tree/, the pilot fixtures in D:/workflow-axa-pilots/2026-11-19-workflow-speed/.
 
 Next safe action: owner decides whether to merge speed/2.10 into main (live hooks switch at once), release as 2.10.0 and reinstall; or ask for another round on A1.
+
+
+Release 2026-11-19: 2.10.0 released under offer #5: main fast-forwarded, release commit 17cc1ec pushed, Claude plugin and Codex copies updated (FINDINGS R1, R2). The worktree and its merged branch remain (E18).
