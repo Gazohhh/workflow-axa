@@ -317,6 +317,7 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
     last_presented = None  # the offer the latest rendering in visible text belongs to (typed answers go to it)
     visible_block: list[str] = []
     open_is_format_2 = False
+    footer = rendering.question.rstrip().splitlines()[-1] if rendering.question.strip() else "\0"
     for index, event in enumerate(events):
         if len(at_event) < len(out.facts):
             at_event += [index - 1] * (len(out.facts) - len(at_event))
@@ -349,6 +350,16 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                 out.reason = "it was asked, but the question has no answer yet"
             elif "--- workflow-axa offer #" in strings(event.questions) or ANY_FOOTER.search(strings(event.questions)):
                 last_presented = None
+                if footer in strings(event.questions):
+                    out.reason = ("a question carried this offer's footer, but its text is not exactly the output of "
+                                  "`record.py offer present <task-folder> <id> --question`; ask again with that output "
+                                  "unchanged, nothing added after the footer")
+        elif event.kind == "answer" and event.tool_id not in asked and presented is not None \
+                and last_presented == offer_id and any(
+                    RECOMMENDED.sub("", str(v).strip().lower()) in APPROVE_BUTTONS for v in event.answers.values()):
+            out.reason = ("the owner clicked approve on a question that did not contain this offer; ask with the "
+                          "output of `record.py offer present <task-folder> <id> --question` as the question's own "
+                          "text, or let the owner type approve after the offer shown as text")
         elif event.kind == "answer" and event.tool_id in asked:
             at, question = asked.pop(event.tool_id)
             value = RECOMMENDED.sub("", answer_to(event, question).strip().lower())
@@ -476,15 +487,33 @@ def fold(sessions: dict[str, Facts]) -> Status:
 
 # Offers on disk and their validated approval
 
-def project_offers(root: Path) -> list[tuple[Path, dict]]:
-    found = []
-    for folder in sorted((root / "docs" / "plans").glob("*")) if (root / "docs" / "plans").is_dir() else []:
-        if (folder / "offers").is_dir():
+def project_offers(root: Path) -> tuple[list[tuple[Path, dict]], list[tuple[str, str]]]:
+    """Every offer of the project that loads, and (task, reason) for each offer file that doesn't. A file edited by
+    hand approves nothing, but the other offers of its task stay usable."""
+    found, broken = [], []
+    plans = root / "docs" / "plans"
+    for folder in sorted(plans.glob("*")) if plans.is_dir() else []:
+        names = [p.name for p in (folder / "offers").glob("*")] if (folder / "offers").is_dir() else []
+        ids = sorted(int(m[1]) for m in map(offers().OFFER_FILE.match, names) if m)
+        for offer_id in ids:
             try:
-                found += [(folder, offer) for offer in offers().all_offers(folder)]
-            except offers().OfferError:
-                continue  # a hand-edited offer is simply not usable
-    return found
+                found.append((folder, offers().load(folder, offer_id)))
+            except offers().OfferError as exc:
+                broken.append((folder.name, f"#{offer_id} ({folder.name}): offers/offer-{offer_id}.json is unusable "
+                                            f"({exc}); it approves nothing until the owner puts it back as it was"))
+    return found, broken
+
+
+def session_task(current: list[Event]) -> str | None:
+    """The task this session is on: the latest task the owner named or whose offer was presented."""
+    return next((e.text for e in reversed(current) if e.kind == "task"), None)
+
+
+def nearest_first(items: list[tuple], task: str | None) -> list:
+    """The values of (task, value) pairs: the session's own task first, then the other tasks newest first (task
+    folders start with their date)."""
+    items = sorted(items, key=lambda item: item[0], reverse=True)
+    return [value for _, value in sorted(items, key=lambda item: item[0] != task)]
 
 
 def report_check(folder: Path):
@@ -992,13 +1021,16 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
         return ("workflow-axa: the owner stopped the work in this session; no write starts until they ask to "
                 "continue. Task records stay writable for the handoff.")
     root = Path(project.root or project.cwd)
-    usable, why = [], []
-    for folder, offer in project_offers(root):
+    found, broken = project_offers(root)
+    usable, why = [], list(broken)
+    for folder, offer in found:
         ok, reason = validated(folder, offer, transcript, current)
         if ok:
-            usable.append(offer)
+            usable.append((folder.name, offer))
         else:
-            why.append(f"#{offer['id']} ({offer['task']}): {reason}")
+            why.append((folder.name, f"#{offer['id']} ({offer['task']}): {reason}"))
+    task = session_task(current)
+    usable, why = nearest_first(usable, task), nearest_first(why, task)
     for kind, where, label in targets:
         if kind == "refused":
             return label

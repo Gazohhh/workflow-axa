@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.9.1
+# Upgrade to workflow-axa 2.9.2
+
+## Upgrade to 2.9.2 (from 2.9.1)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions. Only the approval hook changed: its refusals read differently, and a task with one hand-edited offer file has its other offers back. If a refusal names an offer file as unusable, put that file back as it was; don't move it out of `offers/`, because the next new offer would take its number.
 
 ## Upgrade to 2.9.1 (from 2.9.0-rc.4)
 

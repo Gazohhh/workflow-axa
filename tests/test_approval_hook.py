@@ -1676,5 +1676,92 @@ class Activation(ApprovalHookCase):
                 self.assertIn("writes pause", out.getvalue())
 
 
+class OfferVisibility(ApprovalHookCase):
+    """Task docs/plans/2026-11-19-offer-visibility: a colleague's session had every write refused after real
+    approvals. One hand-edited offer hid the whole task, the refusal listed other tasks' offers, and an approve click
+    on the wrong question was reported as no answer at all."""
+
+    def setUp(self):
+        super().setUp()
+        self.offer = self.recorded_as(self.offer, format_1=False)
+
+    readable = FormatTwoPresentation.readable
+
+    def second_offer(self, folder=None, paths=("src/vat.ts",)):
+        folder = folder or self.folder
+        folder.mkdir(parents=True, exist_ok=True)
+        return self.recorded_as(offers.create(folder, {**OFFER, "paths": list(paths)}), format_1=False, folder=folder)
+
+    def asked_and_approved(self, offer, folder=None):
+        rows = Rows().router()
+        question = offers.presentation(offers.load(folder or self.folder, offer["id"]), folder or self.folder,
+                                       question=True)
+        tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+        rows.answer(tool, question, "Approve from this summary")
+        return rows
+
+    def break_by_hand(self, offer_id):
+        path = self.folder / "offers" / f"offer-{offer_id}.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["canonical"]["behaviour"] += " (edited)"
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    def test_a_hand_edited_offer_does_not_hide_the_good_offers_beside_it(self):
+        good = self.second_offer()
+        self.break_by_hand(self.offer["id"])
+        rows = self.asked_and_approved(good)
+        self.allowed(rows)
+        self.denied(rows, f"#{self.offer['id']} ({TASK}): offers/offer-{self.offer['id']}.json is unusable",
+                    "edited by hand", "the owner puts it back",
+                    data={"file_path": str(self.repo / "src/other.ts"), "old_string": "a", "new_string": "b"})
+        self.denied(rows, "needs an approved offer that lists tests/vat.spec.ts",
+                    data={"file_path": str(self.repo / "tests/vat.spec.ts"), "old_string": "a", "new_string": "b"})
+
+    def test_approved_offers_in_a_refusal_also_come_from_the_sessions_task_first(self):
+        old = self.repo / "docs/plans/2026-01-01-a"
+        rows = self.asked_and_approved(self.second_offer(old), old)
+        rows.owner("now the vat one")
+        question = self.readable(question=True)
+        tool = rows.ask(question, ["Show review.html first", "Approve from this summary", "Change something"])
+        rows.answer(tool, question, "Approve from this summary")
+        self.denied(rows, f"Offers here: approved #{self.offer['id']} ({TASK})",
+                    data={"file_path": str(self.repo / "src/other.ts"), "old_string": "a", "new_string": "b"})
+
+    def test_a_hand_edited_offer_still_approves_nothing(self):
+        rows = self.asked_and_approved(self.offer)
+        self.break_by_hand(self.offer["id"])
+        self.denied(rows, "edited by hand")
+
+    def other_tasks(self):
+        for day in ("2026-01-01-a", "2026-01-02-b", "2026-01-03-c", "2026-12-01-d"):
+            self.second_offer(self.repo / "docs/plans" / day)
+
+    def test_the_refusal_lists_the_offers_of_the_task_the_session_is_on_first(self):
+        self.other_tasks()
+        rows = Rows().router().say(self.readable())
+        rows.owner("hmm, what does this touch?")
+        self.denied(rows, f"Offers here: #{self.offer['id']} ({TASK}): the owner's answer")
+
+    def test_without_a_task_in_the_session_the_newest_tasks_come_first(self):
+        self.other_tasks()
+        rows = Rows()
+        rows.owner("/workflow-axa:workflow edit it")
+        reason = self.denied(rows, "Offers here: #1 (2026-12-01-d)", f"; #{self.offer['id']} ({TASK})")
+        self.assertNotIn("2026-01-01-a", reason)
+
+    def test_an_approve_click_on_a_question_without_the_offer_says_so(self):
+        rows = Rows().router().say(self.readable())
+        tool = rows.ask("Approve offer #1?", ["Approve from this summary", "Change something"])
+        rows.answer(tool, "Approve offer #1?", "Approve from this summary")
+        self.denied(rows, "clicked approve on a question that did not contain this offer", "--question")
+
+    def test_a_question_with_the_offers_footer_but_other_text_says_it_differs(self):
+        rows = Rows().router()
+        question = self.readable(question=True) + "\n\nShall I go ahead?"
+        tool = rows.ask(question, ["Approve from this summary", "Change something"])
+        rows.answer(tool, question, "Approve from this summary")
+        self.denied(rows, "its text is not exactly", "--question")
+
+
 if __name__ == "__main__":
     unittest.main()

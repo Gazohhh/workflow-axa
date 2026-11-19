@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.9.2 — the approval hook sees every good offer and says why it refuses (2026-11-19)
+
+**One hand-edited offer no longer hides its whole task.** When an offer file's fields no longer match its hash, only that offer stops counting; the other offers of its task still approve writes, and the refusal names the broken file so the owner can put it back. Before, the approval hook skipped every offer of that task without a word. `offer create` still refuses while a broken file is there, so offer numbers stay safe.
+
+**Refusals point at the right task.** When no approved offer covers a write, the refusal lists the offers of the task the session is on first, then other tasks newest first. Before, it listed the three oldest offers in the whole project.
+
+**Two clearer reasons.** An approve click on a question that didn't contain the offer, and a question whose text differs from the printed offer, now say so and how to ask instead. What counts as an approval is unchanged.
+
+**Checked:** seven new hook tests (each failed before the fix), the full suite and validate, and an independent review that ended with a pass.
+
+**Known limits:**
+- An offer that a broken offer file beside it used to hide now counts fully. If its task has an open rules question, that question can now pause a write that another task's offer used to allow.
+- The tests use made-up session transcripts; the fix has not yet been seen on a live session with a broken offer file.
+- The flaky `test_parallel_appends_lose_nothing` (record.py's lock clean-up under parallel writers) is still an open bug.
+
 ## 2.9.1 — check things in the running app: verify-app and reproduce-bug (2026-11-19)
 
 **Two new skills, in two layers.** `verify-app` writes an app's own verify skill in `.claude/skills/verify-<app>/`: how to start the app, drive its screens the way a user does, and capture video, screenshots and one read-only state check, plus a feature map with one section per screen. It also adds screens to the map later and checks the map against the app; `skills/verify-app/GUIDE.md` explains how to add a screen and how to add a new job. `reproduce-bug` is the first job on top: it reproduces a bug report twice in the running app, or checks that a fix commit removes it, and answers Reproduced, Could not reproduce, Blocked, Fix confirmed or Fix not confirmed. Older commits run in a separate worktree, so your working copy is never touched. There is no fix step and nothing runs without a person.

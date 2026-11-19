@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 1,
+  "task": "2026-11-19-offer-visibility",
+  "created": "2026-11-19T14:30:36+00:00",
+  "canonical": {
+    "behaviour": "The approval hook keeps seeing a task's good offers when one offer file in that task was edited by hand. The broken file stays unusable and the refusal names it, so the owner can put it back. When no approved offer covers a write, the refusal lists the offers of the task the session is on first, instead of the three oldest offers in the whole project. Two refusal reasons become clear: an approve click on a question that didn't contain the offer, and a question whose text differs from the printed offer. What counts as an approval does not change. The offer script itself is not changed, so creating an offer still refuses while a broken file is there.",
+    "paths": [
+      "CHANGELOG.md",
+      "hooks/approval.py",
+      "tests/README.md",
+      "tests/test_approval_hook.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "hooks/hooks.json and the other hooks",
+      "installing, releasing, committing or pushing",
+      "skills/workflow/scripts/offers.py and record.py"
+    ],
+    "conditions": [
+      "Tests are written first and seen failing",
+      "The live plugin copy in the cache is not touched"
+    ],
+    "checks": [
+      "New tests fail before the fix and pass after it",
+      "The full test suite and tools/validate.py pass, with failures that existed before named",
+      "test_approval_hook, test_offers, test_shadow_comparison and test_session_failures pass"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "4d60518ca8391389",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "0356615f-6f44-4d94-9e12-4431b08355cb",
+    "turn": "2bd9ef87-f1df-45b6-bf01-36e7079c9c26",
+    "presentation": "140b8bc6-451e-4655-b909-9dee0b7c372f",
+    "recorded": "2026-11-19T14:32:56+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

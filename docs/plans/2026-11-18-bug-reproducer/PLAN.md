@@ -1,7 +1,7 @@
 # Bug reproducer, phase 1: agents reproduce a bug report in the real app
 
 ## Current checkpoint
-- Updated / phase: 2026-11-19; delivered (S57 passed); 2.9.1 prepared, waiting for the owner to commit and push (the hook blocks git commit for the agent)
+- Updated / phase: 2026-11-19; delivered and released as 2.9.1 (4791859 on origin/main); not installed
 - Recipe: feature; plus Security (test accounts, which backend the browser may reach, no production writes) — adds two generic skills to the package and a first app map; scope: the task (proposed); classification question: not asked (the request states the outcome)
 - Rules: READY for planning / sources: D:\workflow-axa\AGENTS.md, D:\<test app>\AGENTS.md, shared START, CORE, READINESS (installed 1.9.0; this repository has no stamp line, the labeler is stamped 1.8.7; neither blocks) / scope: planning / limits: implementation needs its own offer and approval
 - Agreement (gate one): agreed — agreements 3, 4, 5 and 6 (2026-11-18; 6 from the owner's answers Q13–Q15)

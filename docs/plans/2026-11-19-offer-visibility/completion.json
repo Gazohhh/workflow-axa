@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "base": "479185976e7bb0507cfbf477a901a8f56cd98214",
+  "dirty": {},
+  "snapshots": {
+    "S1": {
+      "hooks/approval.py": "17b435f8c911fb5d",
+      "tests/test_approval_hook.py": "b8f78b3e1ea10af1",
+      "tests/README.md": "6674e7fc48ff8579",
+      "CHANGELOG.md": "32ebddc796ff6053"
+    }
+  }
+}

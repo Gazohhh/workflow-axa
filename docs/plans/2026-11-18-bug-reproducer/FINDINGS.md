@@ -446,3 +446,5 @@ c. Keep them (they never leave this PC).
 - Suite on the final reviewed state (2026-11-19): 1625 ran; 1 failure, the known flaky record.py lock test (outside this task); every other test OK (skipped 14).
 
 - V75 (2.9.1 release, 2026-11-19): version 2.9.0-rc.4 to 2.9.1 in plugin.json, README, the codebase-map renderer version, rules/version.json and the four tests/behavioral files; CHANGELOG 2.9.1 entry with known limits; UPGRADE 2.9.1 section; VALIDATION.md regenerated with verification_summary.py --run (1625 ran, 1611 passed, 14 skipped, 0 failed; validate PASS, 22 skills). The commit is blocked by the workflow hook (git commit not in an approved offer); the owner runs it with the prepared message and the 49-path list (this task's and the release's files; docs/spar stays out), then pushes.
+
+- V76 (2026-11-19): the owner committed and pushed the release: 4791859 "Release 2.9.1: verify-app and reproduce-bug" (49 files) is origin/main; the working tree was clean afterwards. Not installed on this machine (plugin update and Codex copies not asked).
