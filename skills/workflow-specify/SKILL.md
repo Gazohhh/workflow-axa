@@ -45,8 +45,10 @@ First compare every ticket with the agreement line by line (behavior, timing, da
 
 Present it with **the one question**. A lightweight offer's question has two answers, *Approve* and *Change something*, and no report option. Any other offer's has three: *Show review.html first*, *Approve from this summary*, *Change something*; when the change touches saved data, auth, a public interface, a migration, deletion, money, more than one owner or visible UI, recommend the report and say why.
 
-- **With the question tool** whenever the host offers one: the question's text is the output of `record.py offer present <task-folder> <id> --question`, unchanged (the CSS line first, as printed), with exactly the answers above. A recommended answer comes first, ends in "(Recommended)" and carries the reason as its description; you may put "**I recommend the report first**, because [reason]." and a blank line before the CSS line.
+- **With the question tool** (buttons), the default whenever the host offers one (Claude Code does): the question's text is the output of `record.py offer present <task-folder> <id> --question`, unchanged (the CSS line first, as printed), with exactly the answers above. A recommended answer comes first, ends in "(Recommended)" and carries the reason as its description; you may put "**I recommend the report first**, because [reason]." and a blank line before the CSS line.
 - **Only without a question tool**: the output of `record.py offer present <task-folder> <id>` is **the end of your reply**, as ordinary text with no code block or quote around it. Text before it ends with a blank line and has no `<`, no `$$` and no fenced block; put examples or HTML in an earlier message. Print the form without `--question` here; the owner types an answer's label or approve.
+
+A host message tool (such as `send_to_user`) is not a presentation: the offer counts only as your reply's own text or as the question's text. A plain question such as "Commit and push?" approves no protected action; the action must be in an offer presented this way. `/approve <N>` counts only as a whole message.
 
 **STOP.** Say "implements the behavior we agreed" only when the comparison found no difference.
 

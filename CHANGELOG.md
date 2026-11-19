@@ -11,6 +11,8 @@ Not released. Planned as 2.10.0. The package version in `.claude-plugin/plugin.j
 - After an offer shown as text, a typed answer label counts like a click. "Approve from this summary" approves, "Show review.html first" asks for the report first, and "Change something" approves nothing. Punctuation and bold or italic markers around the label are ignored.
 - A one-ticket diff or lightweight edit of about 300 changed lines or fewer, with no blast-radius trigger, gets one reviewer who writes both reports. Larger or riskier diffs keep two reviewers.
 - A review finding counts only with a command that reproduces it, or a `file:line` with the failure it causes. Everything else is a note and starts no repair round.
+- A refused `git commit`, `git push` or MCP tool names the offer that lists it and the real reason it is not approved: shown only through a message tool, presented text that differs from `record.py offer present` (with the first differing line), or `/approve N` with more text after it. The refusal says how to present the offer: the question tool with the `--question` output, or the exact text at the end of the reply. The promise of a "one step" approval is gone; that route never existed. `/approve N` still counts only as a whole message.
+- Step 5 of `workflow-specify` and VISUAL-REVIEW.md name the question tool as the default presentation wherever the host has one. A host message tool such as `send_to_user` is not a presentation.
 
 **Less reading for the agent.** Rare cases moved out of the always-read files into new files. Each is read only when its case comes up:
 

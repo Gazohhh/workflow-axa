@@ -1895,5 +1895,105 @@ class OfferVisibility(ApprovalHookCase):
         self.denied(rows, "its text is not exactly", "--question")
 
 
+class HooqdGitCommitReplay(ApprovalHookCase):
+    """T9 of 2026-11-19-workflow-speed: the Hooqd session needed five tries to commit. Each refused try now gets its
+    real reason and the way to present the offer; only the question-tool presentation approved, and still does."""
+
+    COMMIT = {"tool": "Bash", "data": {"command": "git commit -m x"}}
+    THREE = ["Approve from this summary", "Show review.html first", "Change something"]
+    HOW = ("`record.py offer present docs/plans/2026-11-15-vat 1 --question`",
+           "`record.py offer present docs/plans/2026-11-15-vat 1`", "question tool")
+
+    def setUp(self):
+        super().setUp()
+        import shutil
+        shutil.rmtree(self.folder / "offers")
+
+    def make_offer(self):
+        self.hooqd = offers.create(self.folder, {**OFFER, "paths": ["src/vat.ts"],
+                                                 "operations": ["git add", "git commit", "git push"]})
+        self.assertEqual(self.hooqd["id"], 1)
+        self.text = offers.presentation(self.hooqd, self.folder)
+        self.question = offers.presentation(self.hooqd, self.folder, question=True)
+
+    def step_1(self):
+        rows = Rows().router()
+        tool = rows.ask("Commit and push to origin/master?", ["Commit and push", "Not yet"])
+        rows.answer(tool, "Commit and push to origin/master?", "Commit and push")
+        return rows
+
+    def step_2(self):
+        rows = self.step_1()
+        self.make_offer()
+        rows.append({"type": "assistant", "uuid": rows.uid(), "message": {"content": [{"type": "tool_use",
+                     "id": "m1", "name": "mcp__t3-code__send_to_user", "input": {"message": self.text}}]}})
+        rows.say("Shall I commit and push under offer #1?")
+        rows.owner("approve")
+        return rows
+
+    def step_3(self):
+        rows = self.step_2()
+        lines = self.text.splitlines()
+        footer = lines[-1]
+        asked = lines.index(offers.QUESTION_LINE)
+        swapped = lines[:asked] + [footer, "", offers.QUESTION_LINE]
+        rows.say("Here it is again.\n\n" + "\n".join(swapped))
+        rows.owner("Approve from this summary")
+        return rows
+
+    def step_4(self):
+        rows = self.step_3()
+        rows.say("Presenting it exactly.\n\n" + self.text)
+        rows.owner("/approve 1 This is also a bug in the hook, please note it")
+        return rows
+
+    def step_5(self):
+        rows = self.step_4()
+        tool = rows.ask(self.question, self.THREE)
+        rows.answer(tool, self.question, "Approve from this summary")
+        return rows
+
+    def refused(self, rows, *fragments):
+        reason = self.denied(rows, 'no approved offer lists "git commit"', *fragments, **self.COMMIT)
+        self.assertNotIn("one step", reason)
+        return reason
+
+    def test_step_1_a_plain_question_without_an_offer_says_how_to_add_and_present_one(self):
+        self.refused(self.step_1(), "Add it to an offer", "`record.py offer create`", "question tool",
+                     "--question", "approves nothing")
+
+    def test_step_2_an_offer_shown_through_a_message_tool_is_not_presented(self):
+        self.refused(self.step_2(), "Offer #1 (2026-11-15-vat) lists it", "not in your reply text",
+                     "a tool call such as a message tool is not a presentation", *self.HOW)
+
+    def test_step_3_a_rearranged_presentation_names_the_first_differing_line(self):
+        self.refused(self.step_3(), "Offer #1 (2026-11-15-vat) lists it",
+                     "differs from the `record.py offer present` output",
+                     f'should be "{offers.QUESTION_LINE}"', *self.HOW)
+
+    def test_step_4_a_slash_approve_with_more_text_asks_for_it_alone(self):
+        self.refused(self.step_4(), "Offer #1 (2026-11-15-vat) lists it", '"/approve 1" had more text after it',
+                     "may narrow the approval", '"/approve 1" alone', "button", *self.HOW)
+
+    def test_step_5_the_question_tool_presentation_approves_the_commit(self):
+        rows = self.step_5()
+        self.allowed(rows, **self.COMMIT)
+        self.allowed(rows, tool="Bash", data={"command": "git push"})
+
+    def test_the_mcp_refusal_names_the_offer_and_its_reason_too(self):
+        self.make_offer()
+        offers.revise(self.folder, 1, {**OFFER, "paths": ["src/vat.ts"], "operations": ["mcp__notion__create_page"]})
+        rows = self.step_1()
+        rows.append({"type": "assistant", "uuid": rows.uid(), "message": {"content": [{"type": "tool_use",
+                     "id": "m1", "name": "mcp__t3-code__send_to_user",
+                     "input": {"message": offers.presentation(offers.load(self.folder, 2), self.folder)}}]}})
+        rows.owner("approve")
+        reason = self.denied(rows, "has no approved offer that lists mcp__notion__create_page",
+                             "Offer #2 (2026-11-15-vat) lists it", "a tool call such as a message tool",
+                             "`record.py offer present docs/plans/2026-11-15-vat 2 --question`",
+                             tool="mcp__notion__create_page", data={"title": "x"})
+        self.assertNotIn("one step", reason)
+
+
 if __name__ == "__main__":
     unittest.main()

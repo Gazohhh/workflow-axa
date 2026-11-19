@@ -276,7 +276,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
                              time=time) for tool_id in tool_ids]
             visible_block = []
         else:
-            visible, named, tool, asks = rest
+            visible, named, tool, asks, carried = rest
             found = offer_tasks(visible, root, "".join(text + "\n\n" for text in visible_block),
                                 named=[tuple(n) for n in named]) if named else []
             if visible.strip():
@@ -290,7 +290,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
                 visible_block.append(visible)
             events += [Event("offer_shown", uuid, str(offer_id), time=time) for _, _, offer_id in found]
             if tool:
-                events.append(Event("tool", uuid, time=time))
+                events.append(Event("tool", uuid, carried, time=time))
                 visible_block = []
             for tool_id, questions, named_each in asks:
                 asked = [(q, t) for q, named in zip(questions, named_each) if named
@@ -307,7 +307,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
     return events
 
 
-ENTRIES_VERSION = 1
+ENTRIES_VERSION = 2
 
 
 def entry_of(line: str) -> list | None:
@@ -332,15 +332,17 @@ def entry_of(line: str) -> list | None:
         return ["answer", uuid, time, tool_ids, result["answers"]]
     if entry.get("type") == "assistant" and isinstance(content, list):
         visible = "\n".join(str(b.get("text", "")) for b in content if isinstance(b, dict) and b.get("type") == "text")
-        tool = any(isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") != "AskUserQuestion"
-                   for b in content)
+        others = [strings(b.get("input")) for b in content if isinstance(b, dict) and b.get("type") == "tool_use"
+                  and b.get("name") != "AskUserQuestion"]
+        tool = bool(others)
+        carried = "\n".join(t for t in others if "--- workflow-axa offer #" in t or ANY_FOOTER.search(t))
         asks = []
         for block in content:
             if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "AskUserQuestion":
                 data = block.get("input") or {}
                 questions = [q for q in data.get("questions", []) if isinstance(q, dict)] if isinstance(data, dict) else []
                 asks.append([str(block.get("id")), questions, [named_offers(strings(q), q) for q in questions]])
-        return ["assistant", uuid, time, visible, named_offers(visible), tool, asks]
+        return ["assistant", uuid, time, visible, named_offers(visible), tool, asks, carried]
     return None
 
 
@@ -451,6 +453,9 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
             visible_block = []
         if event.kind == "task":
             on = event.text
+        elif event.kind == "tool" and presented is None and carries(event.text, rendering, footer):
+            out.reason = ("the offer text was not in your reply text (a tool call such as a message tool is not a "
+                          "presentation)")
         elif event.kind == "text":
             before = "".join(text + "\n\n" for text in visible_block)
             if rendering.in_text(event.text, before):
@@ -462,6 +467,9 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                 if rendering.text in event.text or rendering.question in event.text:
                     out.reason = ("its presentation was not the end of the agent's text, or something before it could "
                                   "hide it (`<`, `$$` or a fenced block); after a tool call, present it again")
+                elif footer in event.text:
+                    out.reason = ("the presented text differs from the `record.py offer present` output "
+                                  f"({difference(event.text, rendering)})")
             elif presented is not None and open_is_format_2:
                 presented, last_presented = None, None
                 out.reason = "more text followed its presentation; present it again as the end of the reply"
@@ -506,6 +514,10 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                 elif (typed and typed[1] == "report" and int(typed[2]) == offer_id) or said in REPORT_BUTTONS \
                         or label in REPORT_BUTTONS:
                     out.facts.append([event.time, "report", ""])
+                elif slash and slash[0] == "approve" and re.match(rf"#?{offer_id}\s+\S", slash[1]):
+                    out.facts.append([event.time, "other", f"\"/approve {offer_id}\" had more text after it, and extra "
+                                      "words may narrow the approval; after the next presentation the owner sends "
+                                      f"\"/approve {offer_id}\" alone or clicks the approve button"])
                 else:
                     out.facts.append([event.time, "other", f"the owner's answer \"{said[:80]}\" is not one of the "
                                       "approval forms; a conditional answer needs a narrowed offer, presented again"])
@@ -524,6 +536,27 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
         after = next((t for t in seconds[index + 1:] if t is not None), None)
         fact += [own, own] if own is not None else [before, after]
     return out
+
+
+def carries(text: str, rendering: Shown, footer: str) -> bool:
+    return bool(text) and (footer in text or rendering.text in text or rendering.question in text
+                           or bool(rendering.legacy) and rendering.legacy in text)
+
+
+def difference(text: str, rendering: Shown) -> str:
+    shown = text.replace("\r\n", "\n").splitlines()
+    best = None
+    for variant in (rendering.text, rendering.question):
+        wanted = variant.splitlines()
+        start = shown.index(wanted[0]) if wanted and wanted[0] in shown else 0
+        got = shown[start:]
+        same = next((i for i, (a, b) in enumerate(zip(got, wanted)) if a != b), min(len(got), len(wanted)))
+        if best is None or same > best[0]:
+            best = (same, wanted)
+    same, wanted = best
+    if same >= len(wanted):
+        return "more text follows it"
+    return f'line {same + 1} should be "{wanted[same][:160]}"'
 
 
 @dataclass
@@ -672,7 +705,7 @@ def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-7|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+        key = g.digest(f"facts-8|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
                        f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:
@@ -1155,15 +1188,16 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
                 "continue. Task records stay writable for the handoff.")
     root = Path(project.root or project.cwd)
     found, broken = project_offers(root)
-    usable, why = [], list(broken)
+    usable, why, unusable = [], list(broken), []
     for folder, offer in found:
         ok, reason = validated(folder, offer, transcript, current)
         if ok:
             usable.append((folder.name, offer))
         else:
             why.append((folder.name, f"#{offer['id']} ({offer['task']}): {reason}"))
+            unusable.append((folder.name, (offer, reason)))
     task = session_task(current)
-    usable, why = nearest_first(usable, task), nearest_first(why, task)
+    usable, why, unusable = nearest_first(usable, task), nearest_first(why, task), nearest_first(unusable, task)
     for kind, where, label in targets:
         if kind == "refused":
             return label
@@ -1188,12 +1222,13 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
             authority = [o for o in usable if names_operation(o, name)]
             if not authority:
                 return (f"workflow-axa: {label} is a protected operation; no approved offer lists \"{name}\" among its "
-                        "operations. Add it to the offer and ask the owner, or ask them for this one step.")
+                        "operations." + operation_help(name, unusable))
         else:
             name = str(tool)
             authority = [o for o in usable if names_operation(o, name)]
             if not authority:
-                return f"workflow-axa: {label} has no approved offer that lists {name} among its operations."
+                return (f"workflow-axa: {label} has no approved offer that lists {name} among its operations."
+                        + operation_help(name, unusable))
         waiting = [o for o in authority if rules_open(root / "docs" / "plans" / o["task"])]
         if waiting:
             return (f"workflow-axa: {label} waits for the rules question of task {waiting[0]['task']} (its checkpoint "
@@ -1474,6 +1509,22 @@ def another_worktree(event: dict, targets: list, project, g) -> str | None:
                     f"({project.root}); an approval given here doesn't cover it. To work there, start the session "
                     "in that worktree (or move into it, as EnterWorktree does), present its offer there and retry.")
     return None
+
+
+def operation_help(name: str, unusable: list[tuple[dict, str]]) -> str:
+    listing = [(offer, reason) for offer, reason in unusable if names_operation(offer, name)]
+    if listing:
+        offer, reason = listing[0]
+        task, number = f"docs/plans/{offer['task']}", offer["id"]
+        first = f" Offer #{number} ({offer['task']}) lists it but is not approved: {reason}. Present it again:"
+    else:
+        task, number = "<task-folder>", "<id>"
+        first = (" Add it to an offer (`record.py offer create`, or `record.py offer revise` for an existing one) and "
+                 "present that offer:")
+    return (f"{first} with the question tool (buttons), the output of `record.py offer present {task} {number} "
+            f"--question` unchanged as the question's own text; or, only without a question tool, the exact "
+            f"`record.py offer present {task} {number}` text as the end of your reply. A question in your own words, "
+            "or the offer sent through a message tool, approves nothing.")
 
 
 def no_offer(label: str, rel: str, why: list[str], usable: list[dict]) -> str:
