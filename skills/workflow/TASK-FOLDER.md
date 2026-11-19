@@ -16,7 +16,7 @@ A task follows the user's goal, not the chat, date or `/workflow` call. A relate
 | Clear extension of the active task | Keep the folder; add the requirement as a proposed revision; reopen only what it affects. |
 | Related task is complete | Unless the user said which, `workflow-clarify` asks "new revision of it or separate task?" with its first questions. |
 | The task's checkpoint names another worktree than the current one | Stop and ask which worktree is meant; write nothing here. |
-| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. Read [WORKTREE-DEPENDENCIES.md](WORKTREE-DEPENDENCIES.md) before you ask. |
+| A fresh worktree has no installed dependencies (no `node_modules`, `vendor`) | Never install on your own. When dependencies are missing, read [WORKTREE-DEPENDENCIES.md](WORKTREE-DEPENDENCIES.md) before you ask. |
 | No relevant record, or user asks for separate work | Create the project's established location, else `docs/plans/YYYY-MM-DD-<slug>/`. |
 | Location unreadable or ownership contested | Say so and ask. Unreadable is not "no match". |
 
@@ -83,7 +83,7 @@ IDs: requirement R, evidence E, acceptance A, ticket T, journey J, question Q, c
 
 **Current open work first.** Give each nontrivial ticket an action title and labeled sections, not a paragraph of semicolons inside a checkbox. The ticket explains the next action; test history and old attempts live in FINDINGS, reasons in DECISIONS. Completed or superseded history stays clearly labeled behind the current work. No file per ticket.
 
-A TODO of labeled tickets starts with an overview table: Ticket, What needs to happen, Status, Dependencies. The table is a summary for readers, not a second status system: each ticket's single `Status:` line is the source. `open_items.py` reports every row whose Status or Dependencies differ from the ticket, a row naming a missing, repeated or ambiguous ticket, and a ticket with no row; correct the table from the ticket, never the reverse. `record.py tick` sets the ticket and its row to Verified together and refuses while the row disagrees.
+A TODO of labeled tickets starts with an overview table: Ticket, What needs to happen, Status, Dependencies. The table is a summary for readers, not a second status system: each ticket's single `Status:` line is the source. `open_items.py` reports a table that disagrees with its tickets; correct the table from the ticket, never the reverse. `record.py tick` sets the ticket and its row to Verified together.
 
 ```markdown
 ## Overview

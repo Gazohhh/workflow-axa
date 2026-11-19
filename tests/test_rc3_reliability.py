@@ -209,7 +209,8 @@ class PermissionPolicyTests(unittest.TestCase):
         self.assertNotIn('same-tag elements or plain-by-instruction', skill)
 
     def test_cap_and_total_categories_cannot_be_inferred(self):
-        policy = (ROOT/'skills/workflow/VISUAL-REVIEW.md').read_text()
+        policy = (ROOT/'skills/workflow/PAID-EVALUATION.md').read_text()  # moved from VISUAL-REVIEW.md (speed 2.10)
+        self.assertIn('[PAID-EVALUATION.md](PAID-EVALUATION.md)', (ROOT/'skills/workflow/VISUAL-REVIEW.md').read_text())
         prompt = (ROOT/'docs/archive/CLAUDE-TEST-PROMPT.txt').read_text()
         for term in ('$[AMOUNT]', 'orchestration', 'retro', 'subtotal', 'does not meter'):
             self.assertIn(term, policy)
@@ -312,7 +313,9 @@ class L1TidyTests(TicketFixture):
 
     def test_resume_keeps_the_original_approval_quote(self):
         self.assertIn('never rewrite an Approval quote', (ROOT / 'skills/resume/SKILL.md').read_text(encoding='utf-8'))  # T21
-        policy = (ROOT / 'skills/workflow/VISUAL-REVIEW.md').read_text(encoding='utf-8')
+        policy = (ROOT / 'skills/workflow/LEGACY-APPROVALS.md').read_text(encoding='utf-8')  # moved from VISUAL-REVIEW.md
+        self.assertIn('[LEGACY-APPROVALS.md](LEGACY-APPROVALS.md)',
+                      (ROOT / 'skills/workflow/VISUAL-REVIEW.md').read_text(encoding='utf-8'))
         self.assertIn('`- Reconfirmed (gate two): r<N>, <date>: "<words>"`', policy)
         self.assertIn('The original Approval quote stays unchanged', policy)
 

@@ -37,19 +37,15 @@ The answer to the one question decides; the hook reads it from the conversation.
 
 ## Superseded review cleanup
 
-Keep one filename while a draft is unpresented; use the renderer's guarded replacement instead of retry copies. After the owner accepts a replacement report, read [REPORT-FILES.md](REPORT-FILES.md) "Superseded review cleanup" whole before you ask about, retain or remove any older file.
+Keep one filename while a draft is unpresented; use the renderer's guarded replacement instead of retry copies. When the owner has accepted a replacement report, read [REPORT-FILES.md](REPORT-FILES.md) "Superseded review cleanup" whole before you ask about, retain or remove any older file.
 
 ## Legacy approval recovery
 
-This applies only to tasks the owner listed as pre-offer approvals at the upgrade (`legacy_inventory.py`, SETUP.md); every other task uses offers. The hook accepts an explicit `legacy` Approval line with **one named existing report** even without a numbered revision when its presentation and the full owner answer are found in accessible current/earlier project transcripts and the checkpoint names no conflicting revision. A label other than `r1`, `r2` never cancels a valid approval: preserve the report and its IDs, let `resume` reconcile it with the owner's complete answer and the changes since, and never fabricate a revision to satisfy a parser; an unchanged single-gate scope holds both gates.
-
-An approval found in an earlier session carries over only for the unchanged report, with no later revocation, no stop without a continuation since, and no later restriction missing from the checkpoint; otherwise show the same report again, ask whether it still holds, and add the owner's exact answer on a separate `- Reconfirmed (gate two): r<N>, <date>: "<words>"` line. The original Approval quote stays unchanged. The hook checks provenance only: compare the report's recorded scope with the current work before recording `legacy`. No transcript, a missing report, contradictory scope or uncertain authority means a focused clarify/specify question, not automatic trust or a restarted interview. Never suggest editing, disabling or bypassing the hook. Record established approval before the first edit attempt; never use a blocked edit to discover whether permission is recorded.
+When a task's checkpoint has a `- Approval (gate two):` line or a `legacy` Agreement (a task the owner listed as a pre-offer approval at the upgrade), read [LEGACY-APPROVALS.md](LEGACY-APPROVALS.md) whole before you rely on, reconfirm or record that approval. Every other task uses offers.
 
 ## Explicit exceptions and paid evaluation
 
-An exceptional permission needs its own answer: a generic "yes to all recommendations" grants no plain-HTML exception (DESIGN.md rule 4) and settles no spending cap. An agent's recommendation is never the owner's instruction.
-
-Before **launching a separately paid model/evaluation batch**, present its cases, allowed sessions, subagents and retries, model and settings, and a hard total ceiling with units. Only the owner's actual cap, or a proposed-cap option they deliberately select, approves it; a suggested cap, `$[AMOUNT]`, "don't worry too much about costs", silence or an earlier batch's limit does not. The ceiling covers orchestration, child sessions, retries and the single retro; zero authorizes no paid calls. Bound in-flight spend with a provider limit or conservative reservations; if spend cannot be observed, disclose that and agree a measurable session or token limit first. Record budget, answer and usage in the existing evaluator record; a per-session subtotal is not the whole batch. Stop at the boundary or a safety violation, with no automatic retry or next batch. The package does not meter provider billing; normal authorized tool calls need no payment question.
+An exceptional permission needs its own answer: a generic "yes to all recommendations" grants no plain-HTML exception (DESIGN.md rule 4) and settles no spending cap. An agent's recommendation is never the owner's instruction. When you are about to launch a separately paid model or evaluation batch, read [PAID-EVALUATION.md](PAID-EVALUATION.md) first; normal authorized tool calls need no payment question.
 
 ## Saved reports are snapshots
 

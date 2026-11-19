@@ -142,7 +142,8 @@ class InstructionRegressionTests(unittest.TestCase):
         self.assertIn('Reading the agreement differently from its words is a gap',deliver)
         self.assertIn("a fresh one that didn't build the work reconciles",deliver)
         self.assertIn('A finding the reviewer calls a user decision',(ROOT/'skills/workflow-execute/SKILL.md').read_text(encoding='utf-8'))
-        self.assertIn('names any failures it already had',(ROOT/'skills/workflow/WRITING.md').read_text(encoding='utf-8'))
+        self.assertIn('names any failures it already had',(ROOT/'skills/workflow/WRITING-FOR-REVIEW.md').read_text(encoding='utf-8'))  # moved from WRITING.md
+        self.assertIn('[WRITING-FOR-REVIEW.md](WRITING-FOR-REVIEW.md) "Cold-reader check"',(ROOT/'skills/workflow/WRITING.md').read_text(encoding='utf-8'))
         # Old-docs test: resume offered to rewrite an old review JSON to 'approved'.
         self.assertIn('never edit or offer to edit an old report',(ROOT/'skills/resume/SKILL.md').read_text())  # T21: resume-task merged into resume
         # Design loop: plan and delivery of a capturable page used sketches only.

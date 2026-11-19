@@ -9,9 +9,9 @@ approval-exceptions: <none, or the one approval this recipe adds to the common p
 
 <One sentence: what this kind of job is and what the recipe protects.>
 
-1. <First step: what to read or establish, and which skill does it.>
-2. <Next step. Keep each step one or two lines; shared steps stay in the phase skills.>
-3. <Checks: what proves it works, and when it counts as done.>
+1. **<Imperative verb and object>** <what to read or establish, and which skill does it.>
+2. **<Next imperative step>** <one or two short lines; execute copies each step into the todo list word for word, and shared steps stay in the phase skills.>
+3. **<Check step>** <what proves it works, and when it counts as done.>
 
 **Done when:** <the evidence delivery reports for this kind of job.>
 

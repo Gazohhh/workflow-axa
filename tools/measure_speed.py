@@ -30,6 +30,9 @@ ENTRIES = {
     "lightweight": ROUTER + RULES + ("workflow-specify/SKILL.md", "workflow-execute/SKILL.md",
                                      "code-review/SKILL.md", "workflow-deliver/SKILL.md"),
 }
+AFTER_CODE = ("code-review/SKILL.md", "workflow-deliver/SKILL.md")
+ENTRIES["bug_before_code"] = tuple(e for e in ENTRIES["bug"] if e not in AFTER_CODE)
+EXCLUDED = {"bug_before_code": AFTER_CODE}
 
 READ_VERB = re.compile(r"(?:^|[:;,|]\s*|\b(?:and|then|first|now)\s+)"
                        r"(?:(?:read|follow|apply)\b(?!-)|run the [\w\s,-]*?\bcheck\b)", re.I)
@@ -71,6 +74,8 @@ words: for each path, start from its entry files and add every Markdown file tha
                 workflow-deliver
     lightweight router + the four rule-maker files + SKILL.md of workflow-specify, workflow-execute,
                 code-review, workflow-deliver (minimal offer, one pass, one review, short delivery)
+    bug_before_code  the bug path without code-review and workflow-deliver: those two SKILL.md files are
+                never counted or followed, so a file only they name drops out (what is read before code)
   Read instruction: a sentence (lines split at . ! ?) with an imperative read/follow/apply or "run the ...
   check" (at the sentence start or after : ; , | and/then/first/now), or any sentence inside a "## Always"
   section. It does not count when the sentence holds a condition word (when, whenever, if but not "even if",
@@ -126,13 +131,14 @@ def instructed_names(text: str) -> list[str]:
     return names
 
 
-def reading_set(root: Path, entries: tuple[str, ...]) -> list[Path]:
+def reading_set(root: Path, entries: tuple[str, ...], excluded: tuple[str, ...] = ()) -> list[Path]:
     skills = (root / "skills").resolve()
+    skipped = {(skills / e).resolve() for e in excluded}
     queue = [skills / e for e in entries if (skills / e).is_file()]
     seen: list[Path] = []
     while queue:
         path = queue.pop(0).resolve()
-        if path in seen:
+        if path in seen or path in skipped:
             continue
         seen.append(path)
         for name in instructed_names(path.read_text(encoding="utf-8", errors="replace")):
@@ -145,7 +151,7 @@ def reading_set(root: Path, entries: tuple[str, ...]) -> list[Path]:
 def measure_words(root: Path) -> dict:
     result = {}
     for name, entries in ENTRIES.items():
-        files = reading_set(root, entries)
+        files = reading_set(root, entries, EXCLUDED.get(name, ()))
         per_file = {p.relative_to(root.resolve()).as_posix(): word_count(p) for p in files}
         result[name] = {"files": list(per_file), "per_file": per_file, "total": sum(per_file.values())}
     return result

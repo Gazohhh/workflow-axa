@@ -203,9 +203,49 @@ class FlowPromptTests(unittest.TestCase):
         for case in self.data["cases"]:
             self.assertEqual((case["mode"], case["result"]), ("live-host", "NOT_RUN"))
 
+    def test_recipe_steps_are_short_labelled_lines_for_the_todo_list(self):
+        """docs/plans/2026-11-19-workflow-speed R5: execute copies each recipe's numbered steps into the todo list."""
+        for name in RECIPES:
+            steps = re.findall(r"^\d+\. (.*)$", (FLOWS / f"{name}.md").read_text(encoding="utf-8"), re.M)
+            with self.subTest(recipe=name):
+                self.assertTrue(steps)
+                for step in steps:
+                    self.assertTrue(step.startswith("**"), step)
+                    self.assertLessEqual(len(step.split()), 60, step)
+
     def test_the_index_rows_match_the_labels(self):
         rows = re.findall(r"^\| ([\w-]+) \|", (FLOWS / "INDEX.md").read_text(encoding="utf-8"), re.M)
         self.assertEqual(sorted(r for r in rows if r != "Recipe"), sorted(RECIPES))
+
+
+class ExecutionTests(unittest.TestCase):
+    """docs/plans/2026-11-19-workflow-speed R5: todo list, the bar line and fresh context per ticket."""
+
+    execute = (ROOT / "skills/workflow-execute/SKILL.md").read_text(encoding="utf-8")
+
+    def test_execute_copies_the_recipe_and_tickets_into_the_todo_list(self):
+        self.assertIn("Copy the recipe's numbered steps (`workflow/flows/<recipe>.md`) and the approved tickets word "
+                      "for word into the host's todo list", self.execute)
+        self.assertIn("work from it and mark each item done as it finishes", self.execute)
+
+    def test_every_brief_opens_with_the_bar_line_stated_once(self):
+        bar = "The bar in this brief is the whole bar: add no check, gate or review round above it."
+        self.assertIn(f"Every subagent brief starts with \"{bar}\"", self.execute)
+        self.assertEqual(self.execute.count(bar), 1)
+        self.assertIn("pointing to files rather than copying them", self.execute)
+        specialists = (ROOT / "skills/workflow/SPECIALISTS.md").read_text(encoding="utf-8")
+        self.assertIn("the opening bar line `workflow-execute` \"Briefs\" sets", specialists)
+        self.assertNotIn(bar, specialists)
+
+    def test_each_ticket_of_multi_ticket_work_gets_fresh_context(self):
+        self.assertIn("With several tickets, each runs in a fresh worker, or after /clear from the task records when "
+                      "the host has no subagents; you keep the records and reviews.", self.execute)
+
+    def test_the_docs_policy_is_read_only_when_a_ticket_names_a_document(self):
+        lines = [l for l in self.execute.splitlines() if "rule-maker/DOCS.md" in l]
+        self.assertEqual(1, len(lines))
+        self.assertIn("When the ticket's Documents line names a document, update it as `../rule-maker/DOCS.md` says.",
+                      lines[0])
 
 
 if __name__ == "__main__":

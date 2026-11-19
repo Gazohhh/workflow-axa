@@ -391,11 +391,20 @@ class FormatTwoPresentation(ApprovalHookCase):
                         "```\n" + self.readable() + "\n```", "Context\n\n```\nold\n```\n\n" + self.readable(),
                         self.readable() + "\n\nActually this also deletes the database.",
                         "Inline " + self.readable(),
-                        self.readable().replace("- `git commit`", "- `git status`"), self.readable(question=True)):
+                        self.readable().replace("- `git commit`", "- `git status`"),
+                        self.readable(question=True) + "\n\nActually this also deletes the database.",
+                        "```\n" + self.readable(question=True) + "\n```"):
             with self.subTest(message=message[:40]):
                 rows = Rows().router().say(message)
                 rows.owner("yes")
                 self.denied(rows)
+
+    def test_the_question_variant_printed_as_text_is_a_presentation_too(self):
+        for prefix in ("", "CSS: off (machine setting; display only)\n\n"):
+            with self.subTest(prefix=prefix):
+                rows = Rows().router().say(prefix + self.readable(question=True))
+                rows.owner("yes")
+                self.allowed(rows)
 
     def test_a_question_with_the_recommendation_and_the_css_line_before_it_counts(self):
         rows = Rows().router()
@@ -546,9 +555,75 @@ class LightweightOffer(ApprovalHookCase):
         self.denied(self.asked(self.full, self.THREE, "Show review.html first"), "review.html first",
                     data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
 
-    def test_approve_is_no_answer_to_a_three_answer_question_that_did_not_offer_it(self):
-        self.denied(self.asked(self.full, self.THREE, "Approve"), "not an approval",
-                    data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+    def test_approve_typed_through_other_approves_a_three_answer_offer_as_before_round_2(self):
+        for answer in ("Approve", "approve", "Approve (Recommended)"):
+            with self.subTest(answer=answer):
+                self.allowed(self.asked(self.full, self.THREE, answer),
+                             data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
+
+
+class TypedAnswerLabels(ApprovalHookCase):
+    """E10 of 2026-11-19-workflow-speed: without a question tool (claude -p) the agent prints the offer as text and the
+    owner types one of the presented answers; either printed form of `offer present` is a presentation."""
+
+    def setUp(self):
+        super().setUp()
+        self.full = offers.create(self.folder, {**OFFER, "paths": ["tests/vat.spec.ts"]})
+        self.light = offers.create(self.folder, {**OFFER, "paths": ["src/vat.ts"], "lightweight": True})
+
+    def target(self, rel="tests/vat.spec.ts"):
+        return {"tool": "Write", "data": {"file_path": str(self.repo / rel), "content": "x"}}
+
+    def typed(self, offer, answer, question=False):
+        rows = Rows().router()
+        rows.say("Here is the offer.\n\n" + offers.presentation(offer, self.folder, question=question))
+        rows.owner(answer)
+        return rows
+
+    def test_a_typed_answer_label_approves_the_offer_shown_as_text(self):
+        for question in (False, True):
+            for answer in ("Approve from this summary", "approve from this summary", "  Approve from this summary. ",
+                           "**Approve from this summary**", "Approve from this summary!", "approve", "yes"):
+                with self.subTest(question=question, answer=answer):
+                    self.allowed(self.typed(self.full, answer, question), **self.target())
+
+    def test_the_other_labels_typed_approve_nothing(self):
+        for question in (False, True):
+            for answer in ("Show review.html first", "Change something", "Approve from this summary but skip tests"):
+                with self.subTest(question=question, answer=answer):
+                    self.denied(self.typed(self.full, answer, question), **self.target())
+
+    def test_the_lightweight_labels_typed(self):
+        self.allowed(self.typed(self.light, "Approve"), **self.target("src/vat.ts"))
+        self.allowed(self.typed(self.light, "**approve**"), **self.target("src/vat.ts"))
+        self.denied(self.typed(self.light, "Change something"), **self.target("src/vat.ts"))
+
+    def test_a_typed_label_keeps_every_refusal(self):
+        before = Rows().router()
+        before.owner("Approve from this summary")
+        before.say("Here is the offer.\n\n" + offers.presentation(self.full, self.folder, question=True))
+        self.denied(before, "no owner answer came after it yet", **self.target())
+        exact = offers.presentation(self.full, self.folder, question=True)
+        for shown in (exact.replace("- `tests/vat.spec.ts`", "- `tests/`"),
+                      exact.replace("### Required checks\n\n- npm test\n\n", ""),
+                      exact + "\n\nAlso the database.", "```\n" + exact + "\n```"):
+            with self.subTest(shown=shown[-50:]):
+                rows = Rows().router().say(shown)
+                rows.owner("Approve from this summary")
+                self.denied(rows, **self.target())
+        rows = self.typed(self.full, "Approve from this summary")
+        rows.owner("I revoke that, not approved")
+        self.denied(rows, **self.target())
+        rows = self.typed(self.full, "Approve from this summary")
+        rows.owner("stop")
+        self.denied(rows, **self.target())
+
+    def test_a_typed_label_answers_only_a_presentation_in_its_own_session(self):
+        Rows().router().say(offers.presentation(self.full, self.folder, question=True)).write(
+            self.sessions / "s-other.jsonl")
+        rows = Rows().router()
+        rows.owner("Approve from this summary")
+        self.denied(rows, **self.target())
 
 
 class OfferStates(ApprovalHookCase):

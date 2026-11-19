@@ -176,7 +176,7 @@ Each rule below is stated in several files today. The owner file states it in fu
 | The Unslop tells | `skills/workflow/WRITING.md` |
 | What counts as a lightweight edit, and its minimal offer (router §4) | `skills/workflow/SKILL.md` |
 | Making and presenting the offer and the one question (step 5) | `skills/workflow-specify/SKILL.md` |
-| Legacy (pre-offer) approvals and their recovery | `skills/workflow/VISUAL-REVIEW.md` |
+| Legacy (pre-offer) approvals and their recovery | `skills/workflow/LEGACY-APPROVALS.md` |
 | The rules-readiness states and the readiness question | `skills/rule-maker/rules/READINESS.md` |
 | Test output: its folder, retention and cleanup | `skills/workflow/ARTIFACTS.md` |
 | Superseded report retention and cleanup | `skills/workflow/REPORT-FILES.md` |

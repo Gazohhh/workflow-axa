@@ -32,7 +32,7 @@ When something a recipe needs is missing, use [FALLBACKS.md](FALLBACKS.md).
 
 ## 4. Route to the phase
 
-Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `resume` (status), `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read the checkpoint Agreement and its Offer. A task the owner listed as a pre-offer approval at the upgrade keeps its Approval line, for its recorded scope only (VISUAL-REVIEW.md "Legacy approval recovery"). Take the first matching row:
+Inspect with read-only tools and relevant available specialists: `code-review`, `codebase-map` (cold-reader check), `domain-modeling`, `resume` (status), `research`, `diagnosing-bugs`. Report evidence and uncertainty, then stop. Otherwise read the checkpoint Agreement and its Offer (an `Approval (gate two):` line instead: VISUAL-REVIEW.md "Legacy approval recovery"). Take the first matching row:
 
 | Task state | Next skill | Permission |
 |---|---|---|

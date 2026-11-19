@@ -6,15 +6,16 @@ proven from the host transcript, never from a stored flag:
 
 - **Presentation** of offer #N is the exact text `record.py offer present` prints (offers.presentation, format 2):
   it names the offer, its hash, its task and its workspace, so identical offers in two tasks or checkouts never
-  share consent. It counts as the end of a visible assistant message (nothing that could hide it before it), or as
+  share consent. It (or its `--question` variant) counts as the end of a visible assistant message (nothing that
+  could hide it before it), or as
   the text of one question of a question-tool call (`--question`); then only that question's answer counts. The
   frozen format 1 block (offers.rendering) still counts anywhere in a message, for offers shown before format 2.
   An edited or stale presentation is none. The display-only CSS line is outside it.
 - **The answer** is the first real owner turn after the latest presentation: the question's "Approve from this
-  summary" (or "Approve" when the question offered it or the offer is lightweight, whose question is "Approve or
-  Change something?"; a button may end in "(Recommended)"), `/approve <N>`, or a whole message that is one of:
-  approve, approved, yes, ok, okay, go, ja, akkoord, doe maar. "Show review.html first", "show report" or `/report <N>`
-  approves nothing yet: the next approval counts only
+  summary" (or "Approve"; a button may end in "(Recommended)"), `/approve <N>`, or a whole message that is one of:
+  approve, approved, yes, ok, okay, go, ja, akkoord, doe maar, or, after a presentation in text (either variant), a
+  typed "Approve from this summary" with its surrounding punctuation and emphasis ignored. "Show review.html first",
+  "show report" or `/report <N>` approves nothing yet: the next approval counts only
   after a message names the task's existing report, in a later session too. Anything else, a qualified "yes but ..."
   included, approves nothing: the agent writes a narrowed offer.
 - **After approval:** a later owner message that withdraws it ("revoke", "not approved") ends it; one that may narrow
@@ -115,6 +116,7 @@ APPROVE_WORDS = {"approve", "approved", "yes", "ok", "okay", "go", "ja", "akkoor
 YES_WORDS = {"yes", "ja", "y", "ok", "okay"}
 APPROVE_BUTTONS = {"approve from this summary", "approve"}
 REPORT_BUTTONS = {"show review.html first", "show review.html before i decide", "show report", "show the report"}
+LABEL_EDGES = " \t.!?,;:\"'*_`-"
 RECOMMENDED = re.compile(r"\s*\(recommended\)$")
 SLASH = re.compile(r"^/(approve|report)\s+#?(\d+)$")
 SETTINGS_QUESTION = re.compile(r"\bturn\s+css\s+(on|off)\b", re.I)
@@ -175,16 +177,16 @@ ANY_FOOTER = re.compile(r"Offer #\d+ · [0-9a-f]+ · task ")
 
 @dataclass(frozen=True)
 class Shown:
-    """The accepted presentations of one offer: the format 2 message (offers.presentation), whose text variant counts
-    as the end of the assistant's text and whose question variant counts only as a question's own text, and, for an
+    """The accepted presentations of one offer: the format 2 message (offers.presentation), whose two variants each
+    count as the end of the assistant's text and whose question variant also counts as a question's own text, and, for an
     offer recorded before format 2 only, the frozen format 1 block anywhere in a message, as before."""
     legacy: str
     text: str
     question: str
-    light: bool = False
 
     def in_text(self, message: str, before: str = "") -> bool:
-        return bool(self.legacy) and self.legacy in message or ends_with(before + message, self.text)
+        return bool(self.legacy) and self.legacy in message or ends_with(before + message, self.text) \
+            or ends_with(before + message, self.question)
 
     def in_question(self, question: dict) -> bool:
         return bool(self.legacy) and self.legacy in strings(question) \
@@ -208,8 +210,7 @@ def ends_with(message: str, presentation: str) -> bool:
 def shown(folder: Path, offer: dict) -> Shown:
     o = offers()
     legacy = o.rendering(offer, folder) if offer.get("presentation_format", 1) == 1 else ""
-    return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True),
-                 offer["canonical"].get("lightweight") is True)
+    return Shown(legacy, o.presentation(offer, folder), o.presentation(offer, folder, question=True))
 
 
 def named_offers(text: str, question: dict | None = None) -> list[tuple[int, str, bool]]:
@@ -241,7 +242,7 @@ def offer_tasks(text: str, root: Path | None, before: str = "", question: dict |
         elif question is not None:
             ok = ends_with(own, view.question)
         else:
-            ok = ends_with(before + text, view.text)
+            ok = ends_with(before + text, view.text) or ends_with(before + text, view.question)
         if ok:
             tasks.append((task, format_2, offer_id))
     return tasks
@@ -390,12 +391,6 @@ def answer_to(event: Event, question: str) -> str:
     return str(found[0]) if len(found) == 1 else ""
 
 
-def option_labels(question: dict) -> set[str]:
-    options = question.get("options")
-    return {RECOMMENDED.sub("", str(o.get("label", "")).strip().lower())
-            for o in (options if isinstance(options, list) else []) if isinstance(o, dict)}
-
-
 def strings(value) -> str:
     """Every string inside one question (its text, options and descriptions), joined."""
     if isinstance(value, str):
@@ -464,7 +459,7 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                 out.reason = "it was presented, but no owner answer came after it yet"
             elif "--- workflow-axa offer #" in event.text or ANY_FOOTER.search(event.text):
                 last_presented = None
-                if rendering.text in event.text:
+                if rendering.text in event.text or rendering.question in event.text:
                     out.reason = ("its presentation was not the end of the agent's text, or something before it could "
                                   "hide it (`<`, `$$` or a fenced block); after a tool call, present it again")
             elif presented is not None and open_is_format_2:
@@ -476,7 +471,7 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
         elif event.kind == "question":
             carrier = next((q for q in event.questions if rendering.in_question(q)), None)
             if carrier is not None:
-                asked[event.tool_id] = (event.uuid, str(carrier.get("question", "")), option_labels(carrier))
+                asked[event.tool_id] = (event.uuid, str(carrier.get("question", "")))
                 presented, last_presented = None, None
                 out.reason = "it was asked, but the question has no answer yet"
             elif "--- workflow-axa offer #" in strings(event.questions) or ANY_FOOTER.search(strings(event.questions)):
@@ -492,22 +487,24 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                           "output of `record.py offer present <task-folder> <id> --question` as the question's own "
                           "text, or let the owner type approve after the offer shown as text")
         elif event.kind == "answer" and event.tool_id in asked:
-            at, question, options = asked.pop(event.tool_id)
+            at, question = asked.pop(event.tool_id)
             value = RECOMMENDED.sub("", answer_to(event, question).strip().lower())
-            approves = value in APPROVE_BUTTONS and (value != "approve" or rendering.light or value in options)
-            kind = "approve" if approves else "report" if value in REPORT_BUTTONS else "other"
+            kind = "approve" if value in APPROVE_BUTTONS else "report" if value in REPORT_BUTTONS else "other"
             out.facts.append([event.time, kind, [event.uuid, at] if kind == "approve" else
                               f"the answer \"{value[:60]}\" to its question is not an approval; write a narrowed offer"])
         elif event.kind == "user":
             said, slash = words(event.text), command(event.text)
+            label = said.strip(LABEL_EDGES)
             if slash and slash[0] == "wait-what":
                 presented = None
                 continue
             if presented is not None and last_presented == offer_id:
                 typed = SLASH.match(f"/{slash[0]} {slash[1]}") if slash else None
-                if (typed and typed[1] == "approve" and int(typed[2]) == offer_id) or said in APPROVE_WORDS:
+                if (typed and typed[1] == "approve" and int(typed[2]) == offer_id) or said in APPROVE_WORDS \
+                        or label in APPROVE_BUTTONS:
                     out.facts.append([event.time, "approve", [event.uuid, presented]])
-                elif (typed and typed[1] == "report" and int(typed[2]) == offer_id) or said in REPORT_BUTTONS:
+                elif (typed and typed[1] == "report" and int(typed[2]) == offer_id) or said in REPORT_BUTTONS \
+                        or label in REPORT_BUTTONS:
                     out.facts.append([event.time, "report", ""])
                 else:
                     out.facts.append([event.time, "other", f"the owner's answer \"{said[:80]}\" is not one of the "
@@ -675,7 +672,7 @@ def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-6|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+        key = g.digest(f"facts-7|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
                        f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:
@@ -1489,7 +1486,8 @@ def no_offer(label: str, rel: str, why: list[str], usable: list[dict]) -> str:
         first = (" This project has no offers yet. Create one through `workflow-specify` step 5 (`record.py offer "
                  "create`), present it (`record.py offer present`, as the end of your reply),")
     return (f"workflow-axa: {label} needs an approved offer that lists {rel}.{first} ask the one question (Show "
-            "review.html first · Approve from this summary · Change something), and retry after the owner's answer. "
+            "review.html first · Approve from this summary · Change something; a lightweight offer's is Approve · "
+            "Change something), and retry after the owner's answer. "
             "An offer in your own words can't be approved. Task records stay writable.")
 
 

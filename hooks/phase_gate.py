@@ -2307,17 +2307,26 @@ def authority_problem(target: tuple[str, str, str], state: dict, project: Projec
 
 # Report guides (round v3), unchanged
 
-REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'workflow/WRITING.md', 'codebase-map/FLOWCHART-DESIGN.md')
+REPORT_GUIDES = ('codebase-map/TASK-REPORT.md', 'workflow/WRITING.md', 'codebase-map/FLOWCHART-DESIGN.md',
+                 'workflow/WRITING-FOR-REVIEW.md')
 UI_GUIDE = 'codebase-map/UI-FLOW.md'
 
 
 def unread_report_guides(path: Path, reads: 'ReadEvidence | None' = None) -> list[str]:
     """Report guides not read whole in this context, when specify or deliver loaded (round v3: in all four
-    worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test."""
-    missing = evidence_library().unread_files(path, (reads or ReadEvidence(str(path))).get())
+    worktrees the report was rendered before its writing rules were read). Reuses plain_reply's read test.
+    A guide the read-evidence phase table does not list (speed 2.10) is checked against the same whole reads."""
+    found = (reads or ReadEvidence(str(path))).get()
+    missing = evidence_library().unread_files(path, found)
     wanted = REPORT_GUIDES + (UI_GUIDE,)
-    return sorted({rel for phase in ('workflow-specify', 'workflow-deliver') for rel in missing.get(phase, ())
-                   if rel in wanted})
+    phases = ('workflow-specify', 'workflow-deliver')
+    unread = {rel for phase in phases for rel in missing.get(phase, ()) if rel in wanted}
+    if set(phases) & set(found['loaded']):
+        listed = {rel for phase in phases for rel in evidence_library().phase_reads_table()[0][phase]}
+        opened = '\n'.join(found['inputs']).splitlines()
+        unread |= {rel for rel in REPORT_GUIDES if rel not in listed
+                   and not any(name == rel or name.endswith('/' + rel) for name in opened)}
+    return sorted(unread)
 
 
 _REPLY = None

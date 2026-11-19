@@ -33,7 +33,7 @@ These stay external; use them only when installed, and never install them yourse
 | A pull-request description is requested | `pr` | Draft from real evidence; never open, publish or merge without separate permission. |
 | An approved procedure needs human-run setup steps | `wizard` | Only approved stages; the human runs interactive steps; protect secrets. |
 
-Before each call, pass: task and approval paths, the exact question or work unit, settled answers, allowed writes, relevant files or diff, output location ([ARTIFACTS.md](ARTIFACTS.md)) and applicable rules (RULES.md, with any exact exception). Only the task owner writes task records; specialists and subagents return evidence. Without subagents, run sequentially and label a self-review as such.
+Before each call, pass, after the opening bar line `workflow-execute` "Briefs" sets for every subagent brief: task and approval paths, the exact question or work unit, settled answers, allowed writes, relevant files or diff, output location ([ARTIFACTS.md](ARTIFACTS.md)) and applicable rules (RULES.md, with any exact exception). Only the task owner writes task records; specialists and subagents return evidence. Without subagents, run sequentially and label a self-review as such.
 
 Installed is not invoked, and invoked is not a correct result.
 

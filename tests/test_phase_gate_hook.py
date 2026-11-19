@@ -230,10 +230,20 @@ class PhaseGateHookTests(unittest.TestCase):
         self.assertEqual(denied["permissionDecision"], "deny")
         self.assertIn("workflow/WRITING.md", denied["permissionDecisionReason"])
         self.assertIn("codebase-map/TASK-REPORT.md", denied["permissionDecisionReason"])
+        self.assertIn("workflow/WRITING-FOR-REVIEW.md", denied["permissionDecisionReason"])
         read = lambda rel: {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
                             "input": {"file_path": f"D:/workflow-axa/skills/{rel}"}}]}}
         rows += [read("workflow/WRITING.md"), read("codebase-map/TASK-REPORT.md"), read("codebase-map/UI-FLOW.md"),
                  read("codebase-map/FLOWCHART-DESIGN.md")]
+        # Speed 2.10: the report prose rules and the cold-reader check moved out of WRITING.md into an on-demand
+        # file; the render still waits for it, after specify and after deliver.
+        for phase in ("workflow-specify", "workflow-deliver"):
+            with self.subTest(phase=phase):
+                held = self.fire([ROUTER, skill(f"workflow-axa:{phase}")] + rows[2:], "Bash", render)
+                self.assertEqual(held["permissionDecision"], "deny")
+                self.assertIn("workflow/WRITING-FOR-REVIEW.md", held["permissionDecisionReason"])
+                self.assertNotIn("workflow/WRITING.md,", held["permissionDecisionReason"])
+        rows += [read("workflow/WRITING-FOR-REVIEW.md")]
         self.assertIsNone(self.fire(rows, "Bash", render))
         self.assertIsNone(self.fire([say("plain session")], "Bash", render))
         # E5: the router's fallback, reading the phase SKILL.md whole, loads the phase like the skill tool does.
@@ -262,7 +272,7 @@ class PhaseGateHookTests(unittest.TestCase):
     def test_flowchart_guide_read_evidence_and_compaction(self):
         command = {'command': 'python render_report.py --validate-input --input p.json'}
         other = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
-                 for rel in ('workflow/WRITING.md', 'codebase-map/TASK-REPORT.md')]
+                 for rel in ('workflow/WRITING.md', 'codebase-map/TASK-REPORT.md', 'workflow/WRITING-FOR-REVIEW.md')]
         read = {'type': 'assistant', 'message': {'content': [{'type': 'tool_use', 'id': 'guide-read',
                 'name': 'Read', 'input': {'file_path': 'D:/workflow-axa/skills/codebase-map/FLOWCHART-DESIGN.md'}}]}}
         good = user([{'type': 'tool_result', 'tool_use_id': 'guide-read', 'content': 'Complete guide'}])
@@ -1300,7 +1310,8 @@ class ApprovalGateTests(unittest.TestCase):
 
 DECLARE = '<!-- workflow-axa:required-read phases={phases} path="{path}" -->'
 GUIDES = [tool('Read', file_path=f'D:/workflow-axa/skills/{rel}')
-          for rel in ('workflow/WRITING.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md')]
+          for rel in ('workflow/WRITING.md', 'codebase-map/TASK-REPORT.md', 'codebase-map/FLOWCHART-DESIGN.md',
+                      'workflow/WRITING-FOR-REVIEW.md')]
 
 
 class RequiredReadTests(unittest.TestCase):

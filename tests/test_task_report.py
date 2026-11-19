@@ -657,7 +657,11 @@ class WordingTests(unittest.TestCase):
         self.assertIn("must, may, must not", meaning.lower())
         own_prose = "\n".join(l for l in writing.splitlines() if not l.startswith((">", "Before:")))
         self.assertIsNone(helper_contraction(own_prose), "WRITING.md uses a contraction outside a quoted bad example")
-        for path in ("skills/workflow/WRITING.md", "skills/codebase-map/SKILL.md", "skills/codebase-map/TASK-REPORT.md"):
+        self.assertNotIn("then render a new file", writing)
+        moved = (ROOT / "skills/workflow/WRITING-FOR-REVIEW.md").read_text(encoding="utf-8")  # from WRITING.md
+        self.assertIsNone(helper_contraction(moved), "WRITING-FOR-REVIEW.md uses a contraction")
+        for path in ("skills/workflow/WRITING-FOR-REVIEW.md", "skills/codebase-map/SKILL.md",
+                     "skills/codebase-map/TASK-REPORT.md"):
             text = (ROOT / path).read_text(encoding="utf-8")
             self.assertIn("--replace-unpresented", text, path)
             self.assertNotIn("then render a new file", text, path)

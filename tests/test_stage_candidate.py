@@ -46,15 +46,24 @@ SUPERSEDED_BY_T24 = {
                                              "can now answer *Approve from this summary* or *Change something*"),
 }
 
+# Speed 2.10 moved these T17 blocks, word for word, into on-demand files; the source keeps a pointer section.
+MOVED_IN_2_10 = {
+    ("skills/workflow/VISUAL-REVIEW.md", "This applies only to tasks the owner listed as pre"):
+        "skills/workflow/LEGACY-APPROVALS.md",
+}
+
 
 class CandidateBlocks(unittest.TestCase):
 
     def test_the_cutover_applied_every_block(self):
         """T17: the package carries the new text; a block whose new text contains its old text only needs the new.
         A block T24 (or 2.9.0-rc.2) rewrote carries its replacement instead (SUPERSEDED_BY_T24)."""
-        found = set()
+        found, moved = set(), set()
         for rel, old, new in stage.blocks(stage.CANDIDATES.read_text(encoding="utf-8")):
             with self.subTest(rel=rel, new=new[:50]):
+                if (rel, new[:50]) in MOVED_IN_2_10:
+                    moved.add((rel, new[:50]))
+                    rel = MOVED_IN_2_10[(rel, new[:50])]
                 text = (ROOT / rel).read_text(encoding="utf-8").replace("\r\n", "\n")
                 replacement = SUPERSEDED_BY_T24.get((rel, new[:50]))
                 if replacement:
@@ -66,6 +75,7 @@ class CandidateBlocks(unittest.TestCase):
                 if old not in new:
                     self.assertNotIn(old, text)
         self.assertEqual(found, set(SUPERSEDED_BY_T24))  # every listed block still exists in the candidates
+        self.assertEqual(moved, set(MOVED_IN_2_10))
 
 
 class Staging(unittest.TestCase):

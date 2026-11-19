@@ -45,7 +45,7 @@ Words that carry uncertainty, permission or a proposal (may, might, could, shoul
 
 ## Documents and reports
 
-Write plain English that a smart reader outside your field understands on one read. These rules come from ASD-STE100, the controlled language that aerospace uses for maintenance manuals, in its Plain form. When asked to write or rewrite documentation, apply them to the prose. A report is a document: apply them to every prose field of the report JSON (the understanding line, section texts, ticket specifications and expected results, acceptance notes, check expectations, results and limits, decision summaries, risks), and run the self-check on that text before rendering.
+Write plain English that a smart reader outside your field understands on one read. These rules come from ASD-STE100, the controlled language that aerospace uses for maintenance manuals, in its Plain form. When asked to write or rewrite documentation, apply them to the prose. When you write a report's JSON or render a report, read [WRITING-FOR-REVIEW.md](WRITING-FOR-REVIEW.md) first: it applies these rules to the report's prose fields.
 
 1. Classify each passage. Procedural text tells the reader what to do: imperative mood, 20 words per sentence, one instruction per sentence. Descriptive text explains: simple tenses, 25 words per sentence, one topic per paragraph, six sentences per paragraph at most.
 2. Never touch code, identifiers, commands, flags, file paths, quoted errors, product names, facts, quoted user words (double-quoted or in backticks), decision records, report values (`verified`, `partial` and so on), or DESIGN.md rule 4's question, which is quoted word for word. When the source gives no number or cause, keep the general statement.
@@ -80,8 +80,6 @@ After: The pods restarted and the queue lost its leader for a short time. It rec
 
 1. Reply: search for `—`, `;`, `**`, `#`, and a line that starts with `-`. Remove each one that the workflow formats do not need.
 2. Document: count the words in your three longest sentences. Over 20 or 25, split. Search for `has been`, `;`, `—`, `, making`, `**`, and any heading that covers fewer than three sentences. Fix each hit. Consider each `'`, `check`, `verify` and `config` against rules 6 and 8: they are suggestions. Read each `should`, `may`, `might`, `could` and `would` against rule 5. Read each step: does it name a host, a flag, or a prior step the reader must already have? If not, add it or point to it.
-
-The report renderer checks every report before writing. It prints `PLAIN ENGLISH:` problems and `PLAIN ENGLISH NOTE:` lines for modals, skipping quoted text. Problems never block it; `--open` waits. Until the user sees the report, re-render into the same file with `--replace-unpresented`.
 
 ## Unslop
 
@@ -130,9 +128,7 @@ A bare rule number means that rule of "Documents and reports". Each tell keeps t
 
 ## Cold-reader check
 
-Before presenting a plan report, a substantial plan or a final report, reread it as someone who missed the conversation. Can they explain the goal, what changes, what stays the same, the decision asked of them and how completion is checked? Can a developer find the evidence? Check each claim against it: "the full suite passes" names any failures it already had; "every finding is fixed" counts the open ones; "what works now" lists only what a check showed.
-
-When you can, give an independent reviewer only the document and its audience, ask them to restate those five things, and compare part by part with the table above. Each mismatch is a writing defect. Without a reviewer, write the restatement yourself before rereading the records, and say it was a self-check.
+When you are about to present a plan report, a substantial plan or a final report (the delivery chat report included), read [WRITING-FOR-REVIEW.md](WRITING-FOR-REVIEW.md) "Cold-reader check" and run it.
 
 ## Say which state
 

@@ -27,6 +27,19 @@ class MeasureSpeed(unittest.TestCase):
         self.assertEqual(bug["total"], sum(bug["per_file"].values()))
         self.assertGreater(bug["total"], 0)
 
+    def test_bug_before_code_is_the_bug_path_without_review_and_delivery(self):
+        words = json.loads(run("--json", "--sizes", "50").stdout)["words"]
+        for name in ("router", "bug", "lightweight", "bug_before_code"):
+            self.assertIn(name, words)
+        before, bug = words["bug_before_code"], words["bug"]
+        for after in ("skills/code-review/SKILL.md", "skills/workflow-deliver/SKILL.md"):
+            self.assertIn(after, bug["files"])
+            self.assertNotIn(after, before["files"])
+        self.assertIn("skills/workflow-execute/SKILL.md", before["files"])
+        self.assertLessEqual(set(before["files"]), set(bug["files"]))
+        self.assertEqual(before["total"], sum(before["per_file"].values()))
+        self.assertLess(before["total"], bug["total"])
+
     def test_hook_timings_cover_each_call_kind_and_size(self):
         data = json.loads(run("--json", "--sizes", "50").stdout)
         for kind in ("bash_read_only", "read", "edit"):

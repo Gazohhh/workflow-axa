@@ -153,6 +153,11 @@ SCENARIOS = {
                    [ROUTER] + c.approval(OTHER) + c.approval(TASK) + [user("commit it"), c.records(OTHER)],
                    "Bash", {"command": "git commit -m vat"}),
         lambda c: (record_write(approved_offer(c, "commit it"), c, OTHER), "Bash", {"command": "git commit -m vat"})),
+    "E10: the offer shown as text, then the typed answer 'Approve from this summary'": (
+        lambda c: (c.task(TASK, '- Approval: revision r1 approved by the owner 2026-11-19: "Approve from this '
+                          'summary" (report `reviews/plan-r1.html`).') and
+                   [ROUTER] + c.approval(TASK, "Approve from this summary"), "Edit", c.code("src/vat.ts")),
+        lambda c: (offered(c, "Approve from this summary"), "Edit", edit(c))),
 }
 
 # (legacy outcome, offer outcome, classification). "same" needs equal outcomes; any other entry names why they differ.
@@ -188,6 +193,7 @@ EXPECTED = {
         "one of the fixed forms; the owner answers the one question instead, Approve from this summary (P3, "
         "C-OFFER-3)"),
     "N4: a record written to another task before the asked-for commit": ("allow", "allow", "same"),
+    "E10: the offer shown as text, then the typed answer 'Approve from this summary'": ("allow", "allow", "same"),
 }
 
 
