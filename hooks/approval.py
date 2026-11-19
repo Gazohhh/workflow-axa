@@ -1512,9 +1512,10 @@ def another_worktree(event: dict, targets: list, project, g) -> str | None:
 
 
 def operation_help(name: str, unusable: list[tuple[dict, str]]) -> str:
-    listing = [(offer, reason) for offer, reason in unusable if names_operation(offer, name)]
+    listing = [(offer, reason) for offer, reason in unusable if names_operation(offer, name)
+               and offer.get("state") not in ("superseded", "revoked")]
     if listing:
-        offer, reason = listing[0]
+        offer, reason = max(listing, key=lambda pair: (pair[0]["task"] == listing[0][0]["task"], pair[0]["id"]))
         task, number = f"docs/plans/{offer['task']}", offer["id"]
         first = f" Offer #{number} ({offer['task']}) lists it but is not approved: {reason}. Present it again:"
     else:

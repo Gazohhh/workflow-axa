@@ -1994,6 +1994,16 @@ class HooqdGitCommitReplay(ApprovalHookCase):
                              tool="mcp__notion__create_page", data={"title": "x"})
         self.assertNotIn("one step", reason)
 
+    def test_after_a_revision_the_refusal_names_the_current_offer_not_the_superseded_one(self):
+        self.make_offer()
+        offers.revise(self.folder, 1, {**OFFER, "paths": ["src/vat.ts"], "operations": ["git add", "git commit"]})
+        rows = self.step_1()
+        rows.owner("approve")
+        reason = self.denied(rows, "Offer #2 (2026-11-15-vat) lists it",
+                             "`record.py offer present docs/plans/2026-11-15-vat 2 --question`",
+                             **self.COMMIT)
+        self.assertNotIn("Offer #1", reason)
+
 
 if __name__ == "__main__":
     unittest.main()
