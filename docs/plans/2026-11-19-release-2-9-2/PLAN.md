@@ -1,16 +1,16 @@
 # Release 2.9.2
 
 ## Current checkpoint
-- Updated / phase: 2026-11-19; awaiting approval
+- Updated / phase: 2026-11-19; released and installed; waiting for the owner's acceptance
 - Rules: READY (AGENTS.md project rules; shared START, CORE, READINESS)
 - Recipe: docs-tests; modifiers none. A version bump, release notes, verification, publication and installation; no behaviour change beyond the delivered task. Scope: the task. Classification question: not asked
 - Agreement (gate one): not required. A release step the owner asked for ("we need to push this right and make a new release", 2026-11-19)
-- Offer: #1 draft
-- Implementation: not started
-- Verification / owner acceptance: not run
+- Offer: #1 approved (owner, question tool, 2026-11-19)
+- Implementation: steps 1-6 done (FINDINGS V1-V3)
+- Verification / owner acceptance: 1632 tests 0 failed, validate PASS, plugin 2.9.2, Codex DISK_MATCH; owner acceptance pending
 - Blockers: none
 - Changed files: none
-- Next safe action: wait for the owner's answer to offer #1
+- Next safe action: owner restarts sessions and accepts 2.9.2; then delete the release artifacts
 
 ## Working context
 - Owner: Cem. Repository D:\workflow-axa, branch main (the only branch; equal to origin/main at 4791859 after git fetch, 2026-11-19).

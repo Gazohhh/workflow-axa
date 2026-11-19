@@ -1,0 +1,7 @@
+# Findings
+
+- D1 (by: user, 2026-11-19) "we need to push this right and make a new release", then offer #1 approved from the summary (question tool).
+- V1 Steps 1-3: version 2.9.2 in plugin.json, rules/version.json (rules stay 1.9.0), README.md, the renderer version and four tests/behavioral files; CHANGELOG.md 2.9.2 entry with its known limits; UPGRADE.md 2.9.1 to 2.9.2 section. verification_summary.py --run --write VALIDATION.md: 1632 ran, 1618 passed, 14 skipped, 0 failed; validate PASS.
+- V2 Step 4: release commit 46d7a43 pushed to origin/main (4791859..46d7a43).
+- V3 Step 5: Claude Code marketplace update and plugin update took workflow-axa from 2.9.0-rc.4 to 2.9.2 (read from D:\workflow-axa); sessions pick it up after a restart. Codex: tools/build_release.py built workflow-axa-2.9.2.zip (236 files, SHA-256 4b9ac847a15bdd5cbf72724f9e837530a95c338a3b98a219081124496f481fbe); the dry run showed only codebase-map and rule-maker changed (version files) and verify-app and reproduce-bug new; the 20 installed folders were backed up to .artifacts/2026-11-19-release-2-9-2/codex-backup and checked, then all 22 folders replaced and equal to the build. audit_installation.py --check-global: DISK_MATCH, declared 2.9.2, nothing missing, changed or unexpected; global CLAUDE.md and AGENTS.md references MATCH.
+- Retention: the ZIP, the extracted build and the Codex backup in .artifacts/2026-11-19-release-2-9-2 may be deleted after the owner accepts 2.9.2.

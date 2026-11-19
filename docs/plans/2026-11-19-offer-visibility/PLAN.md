@@ -1,7 +1,7 @@
 # Approval hook: one broken offer file hides a task, and refusals point the wrong way
 
 ## Current checkpoint
-- Updated / phase: 2026-11-19; closed (delivered; A4 partial, see Outcome)
+- Updated / phase: 2026-11-19; closed; shipped in 2.9.2 (46d7a43)
 - Recipe: bug; no modifiers — the approval hook hides valid offers and gives refusal reasons that send the agent the wrong way; scope: the task; classification question: not asked (the owner said "fix it")
 - Rules: READY for this scope / sources: D:\workflow-axa\AGENTS.md, shared START, CORE, READINESS (installed 1.9.0; rules_stamp: NONE, information only) / limits: implementation needs the offer's approval
 - Agreement (gate one): not required — settled one-ticket work (the three fixes named in the owner's chat diagnosis, 2026-11-19; owner: "fix it")
@@ -11,7 +11,7 @@
 - Blockers: none
 - Changed files: hooks/approval.py, tests/test_approval_hook.py, tests/README.md, CHANGELOG.md, docs/plans/2026-11-19-offer-visibility/
 - Scope paths: `hooks/approval.py`, `tests/test_approval_hook.py`, `tests/README.md`, `CHANGELOG.md`
-- Next safe action: owner decides on the commit; delete .artifacts/2026-11-19-offer-visibility/full.txt after it
+- Next safe action: none; shipped in 2.9.2
 
 ## Working context
 - Owner: Cem. Repository D:\workflow-axa, branch main at 4791859, local edits only in docs/plans/2026-11-18-bug-reproducer/ (the owner's, untouched).
