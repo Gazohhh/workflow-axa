@@ -71,7 +71,9 @@ class CodesComeAfterTheMeaning(unittest.TestCase):
         self.assertIn("A fact or access request is asked plainly", grilling)
         spar_file = " ".join((ROOT / "skills/spar/SPAR-FILE.md").read_text(encoding="utf-8").split())
         self.assertIn("asked through grilling's \"How to ask\"", spar_file)
-        self.assertIn("never as a list of labels such as \"O1-O5\"", spar_file)
+        self.assertIn("labels follow `../workflow/WRITING.md` \"Chat replies\" rule 7", spar_file)
+        writing = (ROOT / "skills/workflow/WRITING.md").read_text(encoding="utf-8")
+        self.assertRegex(writing, r"(?m)^7\. A label .* comes after its plain meaning")
 
 
 class AnAddressDoesNotTurnTheOfferIntoCode(unittest.TestCase):

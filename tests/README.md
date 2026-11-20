@@ -148,9 +148,21 @@ It runs `test_simple_english.py` (WRITING.md is the only owner of the common rul
 
 ## /spar (2.9.0-rc.3 candidate)
 
-`test_spar.py` checks that `/spar` is registered and user-only, that the workflow names it without running it, and that the skill text (SKILL.md, T3.md, SPAR-FILE.md) states each rule of agreement 6 (docs/plans/2026-11-17-spar-skill, R31-R40: rebuilt around SPAR.md). `tests/behavioral/spar.json` holds its live process scenarios: each stages a situation (a real idea, a direction-changing owner question, a labelled synthesis, a spent budget, one model only, cancel, the handoff, the SPAR.md structure) and lists the process to observe, never a prescribed answer; results from earlier designs are kept under `history`. They run only live; until then they stay `NOT_RUN`, and a recorded result names its evidence and the candidate it ran on. `test_settings.py` covers the default depth.
+`test_spar.py` checks that `/spar` is registered and user-only, that the workflow names it without running it, and that the skill text (SKILL.md, T3.md, SPAR-FILE.md) states each rule of agreement 6 (docs/plans/2026-11-17-spar-skill, R31-R40: rebuilt around SPAR.md) and of the later reworks below. `tests/behavioral/spar.json` holds its live process scenarios: each stages a situation (a real idea, a direction-changing owner question, a labelled synthesis, a spent budget, one model only, cancel, the handoff, the SPAR.md structure) and lists the process to observe, never a prescribed answer; results from earlier designs are kept under `history`. They run only live; until then they stay `NOT_RUN`, and a recorded result names its evidence and the candidate it ran on. `test_settings.py` covers the default depth.
 
-`OwnerInTheLoop` (task docs/plans/2026-11-17-spar-owner-in-loop, R1-R8) checks that the owner decides and judges: no launch waits on an open owner choice, grilling runs before the openings, the checkpoints after the openings, for each owner choice and for the verdict are shown before their question, owner decisions bind while owner opinions can be challenged, and "agreed" needs both debaters and the owner. The `owner-checkpoints` scenario in `behavioral/spar.json` is its live check, NOT_RUN until observed. One limit was raised on purpose: SKILL.md may grow to 1700 words and T3.md to 1200, because these rules added about 370 words.
+`OwnerInTheLoop` (task docs/plans/2026-11-17-spar-owner-in-loop, R1-R8) checks that the owner decides and judges: no launch waits on an open owner choice, the brief-shaping choices are asked on the start card, the checkpoints after the openings, for each owner choice and for the verdict are shown before their question, owner decisions bind while owner opinions can be challenged, and "agreed" needs both debaters and the owner.
+
+`SparRework` (task docs/plans/2026-11-20-spar-rework, R1-R9) checks the rework:
+- agreement on ideas: per decision point, both debaters' lines quoted, and "both debaters agree" only on identical point text with no extra condition;
+- no exact-text acceptance and no synthesis brief;
+- one start card with the success criteria; the frame as a receipt; the owner choices asked together at the pause after the openings;
+- an evidence step, and owner claims marked "not yet checked" from the first exchange on;
+- the single-model warning and the debater line;
+- a conclusion that never claims the owner's agreement before the verdict.
+
+The new `behavioral/spar.json` cases (incompatible agree, a restatement at the last exchange, a failed send before a question, an unchecked owner claim, single-model helpers) are NOT_RUN until observed. The earlier until-agreement and owner-checkpoints results stay under `history`. Size limits follow the sizes reached: SKILL.md 1700, T3.md 1100, SPAR-FILE.md 760 words. The kept rules are pinned word for word, so the rework stayed near its old size.
+
+`test_simple_english.test_a_label_follows_its_meaning_in_every_owner_message` checks WRITING.md "Chat replies" rule 7, its fixed example and grilling's pointer to it.
 
 ## Owned skills (2.8.0-rc.37)
 

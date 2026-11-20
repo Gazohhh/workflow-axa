@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 2,
+  "task": "2026-11-20-release-2-11-0",
+  "created": "2026-11-20T00:39:02+00:00",
+  "canonical": {
+    "behaviour": "Release the delivered /spar rework as workflow-axa 2.11.0. The rework is committed on branch spar/architecture-review, main (2.10.0) is merged in, and the version moves to 2.11.0 everywhere it is stated. The docs are updated: a CHANGELOG entry, UPGRADE notes, the README title, a design-history note in docs/DESIGN.md and VALIDATION.md regenerated from a full test run. Then the release and its records are pushed to origin main. Your local checkout D:/workflow-axa and the installed plugin are not changed by this offer; moving them to the release is a second, small offer presented from that checkout.",
+    "paths": [
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "UPGRADE.md",
+      "VALIDATION.md",
+      "docs/DESIGN.md",
+      "docs/plans/2026-11-20-release-2-11-0/",
+      "docs/plans/2026-11-20-spar-rework/",
+      "docs/spar/2026-11-19-architecture-review/",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/rule-maker/rules/version.json",
+      "tests/behavioral/engineering-rules.json",
+      "tests/behavioral/rules-audit-kit.json",
+      "tests/behavioral/rules-readiness.json",
+      "tests/behavioral/ui-design.json"
+    ],
+    "operations": [
+      "git commit",
+      "git merge",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "any write in D:/workflow-axa (the main checkout) or to the installed plugin",
+      "tags, force pushes and history rewrites",
+      "the global rule files and Codex skill copies"
+    ],
+    "conditions": [
+      "Approving this offer is the owner's OK for tools/verification_summary.py --run --write",
+      "The merge of main brings only 2.10.0's release records and version strings; if it conflicts anywhere else, stop and report",
+      "The push is a fast-forward of origin/main to this branch: git push origin HEAD:main"
+    ],
+    "checks": [
+      "git log origin/main shows the release commits after the push",
+      "python -X utf8 -I tools/validate.py",
+      "python -X utf8 -m unittest discover -s tests -p \"test_*.py\""
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "a9416bf58ff2ef30",
+  "display": "",
+  "state": "superseded",
+  "presentation_decision": null,
+  "decision": null,
+  "supersedes": 1,
+  "superseded_by": 3
+}

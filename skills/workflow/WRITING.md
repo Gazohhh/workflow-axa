@@ -72,6 +72,7 @@ Every chat reply, in every mode, follows these rules:
 4. Define a concept term in a few words the first time you use it: "idempotent (safe to run twice)". Do not define product names.
 5. No openers ("Certainly", "Great question") and no closers ("I hope this helps", "Let me know"). Writing out contractions is a suggestion.
 6. Do not shorten quoted error text, security warnings, or confirmations before a destructive action.
+7. A label (S4, (b), test_r44) comes after its plain meaning, as a reference, in every owner-facing message, commit and pull-request text and HTML reports included. A label seen only earlier, or in a part that failed to send, counts as unseen. Send long content in parts at section boundaries and check each part as sent. Ask no question until every part has arrived. Records, files and agent briefs may use bare labels.
 
 Before: The failure stems from control-plane leader election during pod churn — nothing to worry about!
 After: The pods restarted and the queue lost its leader for a short time. It recovered without help. You do not have to do anything.
@@ -132,4 +133,4 @@ When you are about to present a plan report, a substantial plan or a final repor
 
 ## Say which state
 
-Use "before this change" for the old code, "agreed" for the agreement, "approved plan" for implementation approval, and a dated checkpoint for progress. Report agreement, approval, implementation and verification separately: "R3 is agreed and approved, coded, and still needs a phone check" beats "R3 done."
+Use "before this change" for the old code, "agreed" for the agreement, "approved plan" for implementation approval, and a dated checkpoint for progress. Report agreement, approval, implementation and verification separately: "Offline draft saving (R3) is agreed and approved, coded, and still needs a phone check" beats "R3 done."

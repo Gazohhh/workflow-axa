@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/spar/SKILL.md"
 T3 = ROOT / "skills/spar/T3.md"
 FILE = ROOT / "skills/spar/SPAR-FILE.md"
+SKILL_CEILING, T3_CEILING, FILE_CEILING = 1700, 1100, 760
 
 
 def text(path: Path) -> str:
@@ -91,7 +92,7 @@ class Contract(unittest.TestCase):
         self.has("coordinator recommendation", "each debater's assessment", "owner decision", where=self.file)
 
     def test_r36_effort_is_a_budget(self):
-        self.has("quick (openings and 1 exchange)", "normal (3)", "thorough (5)", "standard and deep mean normal and thorough", "an explicit launch limit",
+        self.has("quick (openings and 1 exchange)", "normal (3)", "thorough (5)", "an explicit launch limit",
                  "say which open issue it would settle", "a partial conclusion and a recommended next move",
                  "`spar_default_depth`")
 
@@ -102,8 +103,9 @@ class Contract(unittest.TestCase):
                  "self-critique", where=self.t3)
 
     def test_r38_how_it_ends(self):
-        self.has("Agreement: both debaters and the owner accepted the exact text of the same proposal id", "never fake agreement",
-                 "proceed, investigate, defer or abandon", "A cancel stops the debaters and asks nothing more")
+        self.has("never fake agreement", "A bounded spar ends when the owner can choose a next move (proceed, investigate, "
+                 "defer or abandon); dissent is a valid ending", "A cancel stops the debaters and asks nothing more",
+                 "a cancel, a provider failure and a spent budget are each reported as themselves")
 
     def test_r39_conclusion_first_then_the_handoff(self):
         self.has("\"Turn this into a workflow plan\" · \"Investigate <the uncertainty> first\" · "
@@ -113,7 +115,8 @@ class Contract(unittest.TestCase):
 
     def test_r40_what_stays(self):
         self.has("**Spar:** <idea> · effort <effort> (at most <n> launches) · <A> vs <B>",
-                 "No debater starts before this line is shown", "neither sees the other's",
+                 "a receipt that needs no reply, sent in the same turn as the first launch and before it",
+                 "neither sees the other's",
                  "check the cited evidence yourself", "agreement without evidence is not agreement",
                  "A credible safety, security or data-loss finding goes to the owner at once",
                  "the standing diagnostic allowance in `../rule-maker/rules/OPERATIONS.md`")
@@ -129,9 +132,10 @@ class Contract(unittest.TestCase):
         self.assertIn("SPAR-FILE.md", term)
 
     def test_briefs_and_waiting(self):
-        self.has("## The opening brief", "## The exchange brief", "## The synthesis brief", "challenge the framing",
-                 "your verdict on each current proposal, by its id", "Never poll.",
+        self.has("## The opening brief", "## The exchange brief", "challenge the framing",
+                 "for each decision point: agree, disagree or mis-framed", "Never poll.",
                  "act on a round only when both have returned", where=self.t3)
+        self.assertNotIn("## The synthesis brief", self.t3)
 
     def test_keeping_spar_md_is_the_owners_choice(self):
         self.has("\"Keep a SPAR.md\" · \"Conversation only\"", "asks only what the command did not state",
@@ -160,8 +164,7 @@ class Contract(unittest.TestCase):
                  "can keep a SPAR.md")
 
     def test_small_rules_a_following_agent_needs(self):
-        self.has("In T3 Code, send it with `send_to_user` or end the turn with it",
-                 "a synthesis gets the id S1, S2 and so on")
+        self.has("In T3 Code, send it with `send_to_user` or end the turn with it")
         self.has("**End sparring**: cancel any debater still running; show the partial conclusion, then the handoff "
                  "question", "In this mode the frame names <A> vs <B> as \"you vs me\" and the launch limit as 0",
                  where=self.t3)
@@ -184,14 +187,16 @@ class Contract(unittest.TestCase):
                 self.assertNotEqual(gate.control_intent(label), "pause")
 
     def test_the_skill_stays_small(self):
-        """Raised on purpose for docs/plans/2026-11-17-spar-owner-in-loop: its rules added about 370 words."""
-        self.assertLess(len(self.skill.split()), 1700)
-        self.assertLess(len(self.t3.split()), 1200)
-        self.assertLess(len(self.file.split()), 900)
+        """Set for docs/plans/2026-11-20-spar-rework T2 just above the sizes reached (SKILL 1,677, T3 1,060,
+        SPAR-FILE 737 words); the agreed rules, not the estimates, set them."""
+        self.assertLess(len(self.skill.split()), SKILL_CEILING)
+        self.assertLess(len(self.t3.split()), T3_CEILING)
+        self.assertLess(len(self.file.split()), FILE_CEILING)
 
 
 class AgreementSeven(unittest.TestCase):
-    """Agreement 7, R41-R44 (D35): the start card, until agreement, and a strict "agreed"."""
+    """Agreement 7, R41-R44 (D35), as reworked by docs/plans/2026-11-20-spar-rework: the start card, until agreement
+    and a mechanical "agreed"."""
 
     skill, t3 = text(SKILL), text(T3)
 
@@ -203,8 +208,10 @@ class AgreementSeven(unittest.TestCase):
 
     def test_r41_one_start_card_for_what_the_command_left_out(self):
         self.has("**The start card**", "asks only what the command did not state",
-                 "Quick (up to 6 launches) · Normal (up to 10) · Thorough (up to 14) · Until agreement",
+                 "Quick (up to 4 launches) · Normal (up to 8) · Thorough (up to 12) · Until agreement",
                  "\"Keep a SPAR.md\" · \"Conversation only\"", "preselected, never used silently",
+                 "3 to 6 proposed success criteria, which \"yes\" accepts",
+                 "only the open choices that shape the opening brief",
                  "No card when the command states all three", "No debater starts before the owner answers")
         self.has("a recommended pair from two different makers", "or the owner chooses A and B", where=self.t3)
 
@@ -215,16 +222,16 @@ class AgreementSeven(unittest.TestCase):
                  "the card's debater field offers the menu below instead; no separate question", where=self.t3)
         self.assertNotIn("before the frame is final", self.t3)
 
-    def test_r42_until_agreement_has_the_owners_cap_and_three_endings(self):
-        self.has("**Until agreement**", "The cap comes from the command or the start card: 20 · 30 · 50 or a number, at least 6",
-                 "deadlock (two consecutive exchanges in which neither debater brings new evidence, a new argument or "
-                 "a changed position)", "each reported as itself",
-                 "Start another exchange only while at least four launches remain; the last two go to a synthesis check "
-                 "of the current best proposal, labelled S<n>", "Count every launch, failed ones and replacements too",
-                 "When fewer launches remain than the next step needs, the cap is reached",
-                 "never past the cap without the owner's OK", "A cap limits launches, not money",
-                 "Until agreement ends only on agreement, deadlock or the cap, the owner's own direction (dissent "
-                 "recorded), a cancel, or a debater that can't continue")
+    def test_r42_until_agreement_is_one_opt_in_rule(self):
+        """docs/plans/2026-11-20-spar-rework R2: one rule, deadlock and the cap reported apart, no cap tiers."""
+        self.has("**Until agreement**", "is opt-in", "ends when every decision point is agreed or in deadlock",
+                 "changed position), at the cap, or by the owner's decision", "deadlock (a point on which two consecutive exchanges brought no new "
+                 "evidence, argument or changed position)", "deadlock and the cap are reported separately",
+                 "The cap comes from the command or the start card", "Count every launch, failed ones and replacements too",
+                 "When fewer launches remain than the next exchange needs, the cap is reached",
+                 "never past the cap without the owner's OK", "A cap limits launches, not money")
+        self.assertNotIn("20 · 30 · 50", self.skill)
+        self.assertNotIn("synthesis check", self.skill + self.t3)
 
     def test_the_card_offers_only_the_launches_left_and_a_new_cap_is_above_those_used(self):
         """docs/plans/2026-11-17-plain-owner-questions T9: run 5's card offered cap 30 when the owner had 20 left."""
@@ -234,19 +241,28 @@ class AgreementSeven(unittest.TestCase):
         self.has("**Continue sparring**: ask for more effort or a new cap with the start card's choices; an effort's "
                  "launches come on top of those spent, a cap counts every launch so far; show a new frame line, then go on")
         self.has("effort and cap don't apply; it is never \"agreed\", only a labelled recommendation",
-                 "A retry or replacement never uses the last two launches of a cap unless the owner raises it",
-                 "exchange <n> of <budget or cap>", "reason; an accept with amendments is a reject)", where=self.t3)
+                 "exchange <n> of <budget or cap>", where=self.t3)
+        self.assertNotIn("last two launches", self.skill + self.t3)
 
-    def test_r43_agreed_means_the_exact_same_text(self):
-        self.has("accepted the exact text of the same proposal id, without conditions or blockers",
-                 "An accept with amendments rejects that version", "Any later edit voids the acceptance",
-                 "the last version the debaters accepted")
-        self.has("accept it as written, or reject it", "A replacement debater judges the current text itself",
-                 where=self.t3)
-        self.assertEqual(self.t3.lower().count("an accept with amendments is a reject"), 2)
+    def test_r43_agreement_is_on_decision_points_and_the_label_is_mechanical(self):
+        """docs/plans/2026-11-20-spar-rework R1: agreement on ideas, not on exact text; the label stays mechanical."""
+        self.has("decision points", "agree, disagree or mis-framed", "may split a point or add one",
+                 "one line in its own words", "quoted verbatim",
+                 "Label a point \"both debaters agree\" only when both answered agree to the identical point text and "
+                 "neither quote adds a condition the other lacks", "otherwise show the two quotes without a label",
+                 "inside an exchange the budget or cap still allows; when none remains, the point stays unresolved",
+                 "The owner's verdict is separate and always explicit")
+        self.has("A replacement debater answers every open decision point itself", where=self.t3)
+        everything = (self.skill + self.t3 + text(FILE)).lower()
+        for removed in ("exact text", "accept with amendments", "voids the acceptance", "synthesis brief",
+                        "accept it as written", "s<n>", "s1, s2"):
+            with self.subTest(removed=removed):
+                self.assertNotIn(removed, everything)
 
     def test_r44_briefs_reward_justified_disagreement(self):
-        self.assertEqual(self.t3.count("Justified disagreement is success; a changed position needs its reason."), 3)
+        briefs = self.t3.count("```text")
+        self.assertEqual(briefs, 2)
+        self.assertEqual(self.t3.count("Justified disagreement is success; a changed position needs its reason."), briefs)
 
 
 class OwnerInTheLoop(unittest.TestCase):
@@ -268,16 +284,17 @@ class OwnerInTheLoop(unittest.TestCase):
         self.has("state the strongest argument for the other side before you rebut it", where=self.t3)
 
     def test_r2_grilling_before_the_openings(self):
-        self.has("Before the openings, run one grilling round on the frontier of unsettled choices that shape the "
-                 "opening brief", "a settled brief needs no question",
-                 "With \"no interview\", show labelled options and leave them open")
+        """docs/plans/2026-11-20-spar-rework R3: the grilling round before the openings now rides on the start card."""
+        self.has("only the open choices that shape the opening brief (outcome, boundaries, trade-offs)",
+                 "a settled brief needs no question", "with \"no interview\", show labelled options and leave them open")
 
     def test_r3_three_checkpoints_shown_before_the_question(self):
         self.has("a message the owner can read before the question tool opens",
                  "then ask in plain language and grilling's form",
                  "(a) after the openings, always: both opening cases, the disagreement most likely to change the outcome, "
                  "and an open \"your view?\"", "as soon as it becomes askable", "there is no fixed number of these stops",
-                 "(c) the verdict: the exact proposal both debaters accepted, in full, with any remaining dissent",
+                 "(c) the verdict, at the ending:",
+                 "every owner choice that can be asked now is asked in the same message, not one by one afterwards",
                  "The owner may ask for a pause after every round or waive the optional ones",
                  "\"Spar with me only\" has no debaters, so (a) and (c) don't apply")
         self.assertNotIn("Pause only when an owner decision blocks the next step", self.skill)
@@ -298,25 +315,81 @@ class OwnerInTheLoop(unittest.TestCase):
     def test_r6_owner_decisions_bind_owner_opinions_are_challenged(self):
         self.has("An owner decision binds and goes into the next briefs as a decision",
                  "never into the opening brief", "may push back with reasons",
-                 "a factual claim of the owner is checked like any other")
+                 "An owner's factual claim goes into the briefs from the first exchange on, marked \"not yet checked\"",
+                 "the debaters check it or say they could not")
         self.has("Owner input since your last position:", "push back with reasons where you disagree", where=self.t3)
         self.has("Owner decisions so far (decisions only, no owner preference):", where=self.t3)
-        self.has("Owner input since your last position: <as in the exchange brief>", where=self.t3)
-        self.assertEqual(self.t3.count("new ones marked; they bind"), 2)
+        self.assertEqual(self.t3.count("new ones marked; they bind"), 1)
+        self.assertEqual(self.t3.count("marked \"not yet checked\""), 2)
 
     def test_r7_agreed_needs_the_owner_and_the_verdict_costs_no_launch(self):
-        self.has("Agreement: both debaters and the owner accepted the exact text of the same proposal id",
-                 "even when the last launches are spent; it costs no launch",
-                 "both debaters accepted; the owner's verdict is pending",
-                 "The owner may instead choose a direction over both debaters, with their dissent recorded",
-                 "starts another exchange only with a concrete issue and at least four launches left",
-                 "the last version the debaters accepted is kept, and the owner's verdict is asked again",
-                 "the owner's own direction (dissent recorded)")
-        self.has("the owner's verdict on each proposal both debaters accepted",
-                 "or agreed by both debaters and the owner", "the owner's direction over the debaters' dissent",
+        self.has("it costs no launch", "The owner may instead choose a direction over both debaters, with their dissent recorded",
+                 "starts another exchange only with a concrete issue and launches left for it")
+        self.has("the owner's verdict on the points both debaters agree on",
+                 "or agreed by both debaters and the owner", "It never states the owner's agreement",
                  where=self.file)
-        self.assertNotIn("Agreement: both debaters accepted the exact text", self.skill)
         self.assertNotIn("or agreed by both.", self.file)
+
+
+class SparRework(unittest.TestCase):
+    """docs/plans/2026-11-20-spar-rework T2 (R1-R7): ideas, fewer stops, evidence first, focused debaters."""
+
+    skill, t3, file = text(SKILL), text(T3), text(FILE)
+
+    def has(self, *phrases, where=None):
+        body = " ".join((self.skill if where is None else where).split())
+        for phrase in phrases:
+            with self.subTest(phrase=phrase[:60]):
+                self.assertIn(phrase, body)
+
+    def test_r3_one_start_card_and_the_frame_is_a_receipt(self):
+        self.has("the debaters (T3.md \"Who debates\")", "the record: \"Keep a SPAR.md\" · \"Conversation only\"",
+                 "a receipt that needs no reply")
+        self.assertNotIn("a setting to skip", self.skill.lower())
+
+    def test_the_conclusion_never_claims_the_owners_agreement_before_the_card(self):
+        """Review S1, defect 1: the verdict is asked after the conclusion, so the conclusion can't state it."""
+        self.has("\"both debaters agree; the owner's verdict is pending\"", "It never states the owner's agreement",
+                 where=self.file)
+        self.assertNotIn("1. The outcome (agreed by both debaters and the owner", self.file)
+        self.has("only after the answer does SPAR.md say \"agreed by both debaters and the owner\"")
+
+    def test_the_card_is_skipped_only_when_the_criteria_are_settled(self):
+        """Review S1, defect 2: a fully stated command must not skip the success criteria."""
+        self.has("No card when the command states all three, the success criteria are settled,")
+
+    def test_owner_claims_stay_out_of_the_independent_openings(self):
+        self.has("An owner's factual claim goes into the briefs from the first exchange on, marked \"not yet checked\"")
+        self.assertNotIn("the opening brief included", self.skill)
+
+    def test_r4_an_evidence_step_before_the_openings(self):
+        self.has("## 1. Understand and gather the evidence", "the `research` specialist when installed",
+                 "outside sources included", "verify the decisive claim yourself before it counts",
+                 "the observation that would falsify it and the cheapest check", "\"Investigate first\"")
+        self.has("owner claims marked \"not yet checked\"", where=self.file)
+
+    def test_r5_the_card_warns_when_only_one_model_debates(self):
+        self.has("When only one model can debate, the card says that helpers of the same model tend to agree at once")
+
+    def test_r6_plain_titles_live_disagreements_and_the_trade_off_first(self):
+        self.has("Plain titles for the owner; ids only in the record")
+        self.has("each side's current claim, its strongest objection and its source",
+                 "what would change your mind on each point still disputed, or \"none\"", where=self.t3)
+        self.assertNotIn("<in full>", self.t3)
+        self.has("2. The decisive trade-off", "a table only when several criteria separate the options",
+                 "both debaters' lines quoted verbatim", where=self.file)
+        self.assertNotRegex(self.skill + self.t3, r"\b(standard|deep)\b")
+
+    def test_r7_every_brief_keeps_the_debater_to_its_task(self):
+        briefs = self.t3.count("```text")
+        self.assertEqual(self.t3.count("This brief is your whole task: read only, load no skills, ask no one."), briefs)
+
+    def test_labels_point_to_the_one_writing_rule(self):
+        self.has("`../workflow/WRITING.md` \"Chat replies\" rule 7", where=self.file)
+        writing = text(ROOT / "skills/workflow/WRITING.md")
+        self.assertRegex(writing, r"(?m)^7\. A label .* comes after its plain meaning")
+        for body in (self.skill, self.t3, self.file):
+            self.assertNotIn("comes after its plain meaning", body)
 
 
 class Scenarios(unittest.TestCase):
@@ -324,7 +397,9 @@ class Scenarios(unittest.TestCase):
 
     REQUIRED = ("real-idea", "owner-direction", "labelled-synthesis", "budget-spent", "one-model", "cancel",
                 "record-choice", "handoff-in-task",
-                "handoff", "spar-file", "start-card", "until-agreement", "owner-checkpoints")
+                "handoff", "spar-file", "start-card", "until-agreement", "owner-checkpoints",
+                "incompatible-agree", "restatement-at-the-last-exchange", "part-fails-before-a-question",
+                "unchecked-owner-claim", "same-model-helpers")
     RESULTS = ("NOT_RUN", "OBSERVED", "PARTIAL", "FAILED", "NOT_PROVOKED")
 
     def setUp(self):
@@ -356,7 +431,7 @@ class Scenarios(unittest.TestCase):
         return ROOT / (named.group(0) if named else "docs/plans/2026-11-17-spar-skill") / "FINDINGS.md"
 
     def test_evidence_ids_are_looked_up_in_the_named_task_only(self):
-        case = next(c for c in self.data["scenarios"] if c["id"] == "owner-checkpoints")
+        case = next(c for c in self.data["history"] if c["id"] == "owner-checkpoints")
         self.assertEqual(self.findings_of(case["evidence"]),
                          ROOT / "docs/plans/2026-11-17-spar-owner-in-loop/FINDINGS.md")
         self.assertRegex(text(self.findings_of(case["evidence"])), r"(?m)^- V3 T2 live check")

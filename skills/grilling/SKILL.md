@@ -51,7 +51,7 @@ a. <option>  b. <option>
 ➡️ Recommended: a, <its trade-off>
 ```
 
-The title and first sentence carry the meaning: what the owner decides and what each answer does. A code (a decision, ticket, synthesis or contract id such as D31, T6, S2) appears only after the meaning, as a reference, and the question still makes sense with every code removed.
+The title and first sentence carry the meaning: what the owner decides and what each answer does. Codes follow `../workflow/WRITING.md` "Chat replies" rule 7, so the question still makes sense with every code removed.
 
 A fact or access request is asked plainly, without options, and DESIGN.md rule 4's question in its exact wording, with its same-tag list and no recommendation; both make sense without codes. Ask through the host's structured multiple-choice question tool when it has one, otherwise as the same lettered list in chat, never in the background. Write each question for someone new to the project (`../workflow/WRITING.md`).
 

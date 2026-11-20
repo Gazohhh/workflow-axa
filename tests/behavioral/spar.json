@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "format": "Live-host process scenarios for /spar after agreement 6 (docs/plans/2026-11-17-spar-skill, A8: rebuilt around SPAR.md). Each stages a situation and lists the process to observe; none prescribes the recommended answer, and disagreement may remain. A NOT_RUN scenario is never a pass; a recorded result (OBSERVED, PARTIAL, FAILED, NOT_PROVOKED) names its evidence and the candidate it ran on. `history` keeps the scenarios and results of the earlier designs (agreements 3-5) unchanged.",
+  "format": "Live-host process scenarios for /spar after agreement 6 (docs/plans/2026-11-17-spar-skill, A8: rebuilt around SPAR.md). Each stages a situation and lists the process to observe; none prescribes the recommended answer, and disagreement may remain. A NOT_RUN scenario is never a pass; a recorded result (OBSERVED, PARTIAL, FAILED, NOT_PROVOKED) names its evidence and the candidate it ran on. `history` keeps the scenarios and results of the earlier designs (agreements 3-5, and the until-agreement and owner-checkpoints cases of agreement 7 and docs/plans/2026-11-17-spar-owner-in-loop, superseded by docs/plans/2026-11-20-spar-rework) unchanged.",
   "scenarios": [
     {
       "id": "real-idea",
@@ -56,7 +56,7 @@
     {
       "id": "budget-spent",
       "mode": "live-host",
-      "result": "NOT_RUN",
+      "result": "PARTIAL",
       "setup": "Effort quick on an idea with open disagreement.",
       "process_checks": [
         "The launch limit is respected; more effort is asked with the issue it would settle.",
@@ -66,12 +66,14 @@
         "an explicit launch limit",
         "a partial conclusion and a recommended next move"
       ],
-      "prescribed_answer": null
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): after-sb-3: 'the budget is spent (4 of 4 launches)', a labelled recommendation and a recommended next move. Not provoked: asking for more effort with the issue it would settle.",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
     },
     {
       "id": "one-model",
       "mode": "live-host",
-      "result": "NOT_RUN",
+      "result": "PARTIAL",
       "setup": "GPT not available; the owner picks Spar with me only.",
       "process_checks": [
         "The assistant spars with the owner, its self-critique labelled; it is never called cross-model."
@@ -80,7 +82,9 @@
         "**Spar with me only**",
         "self-critique"
       ],
-      "prescribed_answer": null
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): after-sa-1, after-sb-1: the start card offered 'Spar with me only' beside two labelled single-model helpers; the owner picked the helpers, so the self-critique mode itself was not exercised.",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
     },
     {
       "id": "cancel",
@@ -180,6 +184,129 @@
     {
       "id": "until-agreement",
       "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "/spar with an idea where the debaters start apart; the owner picks Until agreement with a cap (docs/plans/2026-11-20-spar-rework R2).",
+      "process_checks": [
+        "The coordinator asks for the cap and never passes it without the owner's OK.",
+        "Each decision point ends agreed, in deadlock or open; the ending is reported as agreement, deadlock, the cap or the owner's decision, with deadlock and the cap kept apart.",
+        "A point is labelled agreed only when both debaters answered agree to the same point text with no extra condition."
+      ],
+      "rules": [
+        "The cap comes from the command or the start card",
+        "ends when every decision point is agreed or in deadlock",
+        "deadlock and the cap are reported separately"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "owner-checkpoints",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "setup": "/spar with an idea where two choices only the owner can make are known after the openings and a third comes up later; the owner answers with reasons (docs/plans/2026-11-20-spar-rework R3).",
+      "process_checks": [
+        "After the openings the owner first reads both opening cases, the pivotal disagreement and the decision points, then is asked for a view; no launch happens before the answer.",
+        "The two choices known at that pause are asked in the same message as the view, not one by one afterwards; the later one is asked when it becomes askable.",
+        "Both next briefs carry the owner's answers as decisions and the owner's reasoning for the debaters to engage with.",
+        "The conclusion comes before the owner's verdict, which is asked explicitly; both debaters agreeing is never reported as the owner's verdict."
+      ],
+      "rules": [
+        "No launch whose brief depends on an open owner choice",
+        "a message the owner can read before the question tool opens",
+        "every owner choice that can be asked now is asked in the same message, not one by one afterwards",
+        "The owner's verdict is separate and always explicit"
+      ],
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): after-sa-2 and after-sb-2: the pause after the openings showed both cases, the decision points and every askable owner choice in one message; the verdict came with the full recommendation in the closing card. Under the CLI no question tool was used (chat questions).",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
+    },
+    {
+      "id": "incompatible-agree",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "setup": "Staged replies: both debaters answer agree to one decision point, but one adds a condition the other lacks (for example \"agree, if the cache is per user\").",
+      "process_checks": [
+        "The point is not labelled \"both debaters agree\"; the conclusion shows both lines quoted verbatim.",
+        "Any restatement goes back to both debaters inside the budget; the coordinator never merges the two lines into one agreed sentence."
+      ],
+      "rules": [
+        "neither quote adds a condition the other lacks",
+        "otherwise show the two quotes without a label"
+      ],
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): Not seeded. after-sa-3 point 2: both said agree but with different details, and the coordinator wrote 'Not labelled, because each debater adds a different detail'. A seeded case is still to run. Counter-observation: after-sb-4 says 'you, Helper A and Helper B all agree' on the overall build, after the owner's verdict, although helper A answered one point 'mis-framed'.",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
+    },
+    {
+      "id": "restatement-at-the-last-exchange",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "Effort quick: after the only exchange the quotes on one point look compatible but the verdicts differ, and no launch is left.",
+      "process_checks": [
+        "No extra launch is made to settle the restatement, and the launch limit is not passed without the owner's OK.",
+        "The point is reported as unresolved, with both quotes."
+      ],
+      "rules": [
+        "when none remains, the point stays unresolved",
+        "an explicit launch limit"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "part-fails-before-a-question",
+      "mode": "live-host",
+      "result": "NOT_RUN",
+      "setup": "In T3 Code a long conclusion goes out in parts and one `send_to_user` part fails (for example over the message limit) before the handoff question.",
+      "process_checks": [
+        "The failed part is resent, split smaller when needed, and confirmed as sent before any question opens.",
+        "No question or message relies on a label whose meaning was only in the failed part."
+      ],
+      "rules": [
+        "a message the owner can read before the question tool opens",
+        "labels follow `../workflow/WRITING.md` \"Chat replies\" rule 7"
+      ],
+      "prescribed_answer": null
+    },
+    {
+      "id": "unchecked-owner-claim",
+      "mode": "live-host",
+      "result": "OBSERVED",
+      "setup": "After the openings the owner gives a factual claim the debaters cannot take on trust (for example \"users keep asking for this\") as a reason to change direction.",
+      "process_checks": [
+        "Both next briefs carry the claim marked \"not yet checked\".",
+        "Each debater checks it with a source or says it could not; neither adopts it unchecked.",
+        "The conclusion presents the claim as a fact only if it was checked."
+      ],
+      "rules": [
+        "An owner's factual claim goes into the briefs from the first exchange on, marked \"not yet checked\"",
+        "the debaters check it or say they could not"
+      ],
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): after-sb-2: the owner's 'users keep asking' was held out of the openings and marked 'not yet checked' for the exchange; after-sb-3: 'Neither helper could find any trace of it in the repo'; the helpers moved on the owner's concrete answers, not on the claim.",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
+    },
+    {
+      "id": "same-model-helpers",
+      "mode": "live-host",
+      "result": "PARTIAL",
+      "setup": "Claude Code CLI, no T3 Code: only one model can debate and the owner picks two fresh helpers.",
+      "process_checks": [
+        "The start card says that helpers of the same model tend to agree at once, before the owner chooses.",
+        "The single-model label is in the frame line, every progress line and SPAR.md.",
+        "Agreement at the openings is shown with both quotes and never called cross-model."
+      ],
+      "rules": [
+        "When only one model can debate, the card says that helpers of the same model tend to agree at once",
+        "single model, fresh context, not cross-model"
+      ],
+      "prescribed_answer": null,
+      "evidence": "V6 (docs/plans/2026-11-20-spar-rework FINDINGS): after-sa-1 and after-sb-1: the start card warns that helpers of the same model tend to agree at once (check 1). Not observed: the single-model label on every progress line and in SPAR.md, and agreement at the openings shown with both quotes.",
+      "candidate": "release ZIP 9206687ca1ec (docs/plans/2026-11-20-spar-rework T5, Claude CLI, single model)"
+    }
+  ],
+  "history": [
+    {
+      "id": "until-agreement",
+      "mode": "live-host",
       "result": "OBSERVED",
       "setup": "/spar with an idea where the debaters start apart; the owner picks Until agreement with a cap.",
       "process_checks": [
@@ -214,9 +341,7 @@
         "both debaters accepted; the owner's verdict is pending"
       ],
       "prescribed_answer": null
-    }
-  ],
-  "history": [
+    },
     {
       "id": "real-decision",
       "mode": "live-host",

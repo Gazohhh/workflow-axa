@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "base": "39720940a32cd4864d2f260dcd20a89f88228a9e",
+  "dirty": {
+    "docs/spar/2026-11-19-architecture-review/SPAR.md": "a5d46f3f8384dc6f"
+  },
+  "snapshots": {
+    "S1": {
+      "skills/spar/SKILL.md": "9e5288cfe1542099",
+      "skills/spar/T3.md": "87fda9f74711a2b1",
+      "skills/spar/SPAR-FILE.md": "858e33630b13b18e",
+      "skills/workflow/WRITING.md": "4d105a06f8dad01d",
+      "skills/grilling/SKILL.md": "9b8d4d42ace94e82",
+      "tests/test_spar.py": "762b0dc68718bf2b",
+      "tests/test_owner_questions.py": "adbf04eb3bb41456",
+      "tests/test_simple_english.py": "d6daf808cfadbd84",
+      "tests/behavioral/spar.json": "451d108ccd8a27cf"
+    },
+    "S2": {
+      "skills/spar/SKILL.md": "a3d12f4462cd5936",
+      "skills/spar/SPAR-FILE.md": "8381390e4d4e4dfd",
+      "tests/test_spar.py": "eca52c6b13b2f3d6",
+      "tests/behavioral/spar.json": "927dc8ab45be22bd",
+      "docs/RULE-CONTRACTS.md": "6a2c2cc06123932d",
+      "tests/README.md": "abbded3df4de0e02"
+    },
+    "S3": {
+      "skills/grilling/SKILL.md": "9b8d4d42ace94e82",
+      "skills/spar/T3.md": "87fda9f74711a2b1",
+      "skills/workflow/WRITING.md": "4d105a06f8dad01d",
+      "tests/README.md": "e6d9ea101c9d5f37",
+      "tests/behavioral/spar.json": "702111f2476f2fb2",
+      "tests/test_owner_questions.py": "adbf04eb3bb41456",
+      "tests/test_simple_english.py": "d6daf808cfadbd84",
+      "skills/spar/SKILL.md": "a3d12f4462cd5936",
+      "skills/spar/SPAR-FILE.md": "8381390e4d4e4dfd",
+      "tests/test_spar.py": "eca52c6b13b2f3d6",
+      "docs/RULE-CONTRACTS.md": "6a2c2cc06123932d"
+    },
+    "S4": {
+      "tests/behavioral/spar.json": "8f5ff8a98a56a718"
+    },
+    "S5": {
+      "docs/RULE-CONTRACTS.md": "6a2c2cc06123932d",
+      "skills/grilling/SKILL.md": "9b8d4d42ace94e82",
+      "skills/spar/SKILL.md": "a3d12f4462cd5936",
+      "skills/spar/SPAR-FILE.md": "8381390e4d4e4dfd",
+      "skills/spar/T3.md": "87fda9f74711a2b1",
+      "skills/workflow/WRITING.md": "4d105a06f8dad01d",
+      "tests/README.md": "e6d9ea101c9d5f37",
+      "tests/test_owner_questions.py": "adbf04eb3bb41456",
+      "tests/test_simple_english.py": "d6daf808cfadbd84",
+      "tests/test_spar.py": "eca52c6b13b2f3d6"
+    }
+  }
+}

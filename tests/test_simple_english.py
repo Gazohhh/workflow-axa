@@ -187,6 +187,20 @@ class SimpleEnglishTests(unittest.TestCase):
             self.assertIn(part, expect)
         self.assertIn("Export failed: 3 rows rejected", case["prompt"])
 
+    def test_a_label_follows_its_meaning_in_every_owner_message(self):
+        """R8 of the spar rework: one owner of the label rule; grilling points to it instead of repeating it."""
+        rule = " ".join(section(WRITING.read_text(encoding="utf-8"), "## Chat replies").split())
+        for part in ("comes after its plain meaning, as a reference",
+                     "every owner-facing message, commit and pull-request text and HTML reports included",
+                     "seen only earlier, or in a part that failed to send, counts as unseen",
+                     "Ask no question until every part has arrived",
+                     "Records, files and agent briefs may use bare labels"):
+            self.assertIn(part, rule)
+        state = " ".join(section(WRITING.read_text(encoding="utf-8"), "## Say which state").split())
+        self.assertIn('"Offline draft saving (R3) is agreed and approved, coded', state)
+        grilling = " ".join((ROOT / "skills/grilling/SKILL.md").read_text(encoding="utf-8").split())
+        self.assertIn('`../workflow/WRITING.md` "Chat replies" rule 7', grilling.split("### How to ask", 1)[1])
+
     def test_report_steps_load_it(self):
         for path in ("skills/codebase-map/TASK-REPORT.md", "skills/workflow/VISUAL-REVIEW.md", "skills/workflow-deliver/SKILL.md"):
             self.assertIn("WRITING.md", (ROOT / path).read_text(encoding="utf-8"), path)
