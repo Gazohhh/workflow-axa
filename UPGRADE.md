@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.10.0
+# Upgrade to workflow-axa 2.11.0
+
+## Upgrade to 2.11.0 (from 2.10.0)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions. Only skill text and tests changed: /spar, `skills/workflow/WRITING.md` and one line in grilling; no hook or script changed. A spar already running keeps its old rules until the session restarts. A SPAR.md written before 2.11.0 stays valid; its "agreed by both" meant exact-text acceptance. The rules version stays 1.9.0.
 
 ## Upgrade to 2.10.0 (from 2.9.2)
 

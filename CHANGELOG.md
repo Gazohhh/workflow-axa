@@ -1,5 +1,52 @@
 # Changelog
 
+## 2.11.0 — /spar argues about ideas, every label explained (2026-11-20)
+
+Task records: docs/plans/2026-11-20-spar-rework and 2026-11-20-release-2-11-0. The spar behind it: docs/spar/2026-11-19-architecture-review/SPAR.md.
+
+**/spar agrees on ideas, not on wording.**
+- Each debater answers every decision point with agree, disagree or mis-framed, in one line of its own words. The conclusion quotes both lines.
+- "Both debaters agree" is written only when both said agree to the same point and neither added a condition the other lacks. Otherwise the conclusion shows the two quotes without a label.
+- Exact-text acceptance, "an accept with amendments is a reject", "any later edit voids the acceptance", the separate synthesis brief and the S-ids are gone. A bounded spar ends when you can choose, and lasting dissent is a valid ending. Until agreement stays as an opt-in.
+- The conclusion never claims your agreement before you give your verdict.
+
+**Fewer stops.**
+- One start card asks for the effort, the debaters, the record and 3 to 6 proposed success criteria, which "yes" accepts.
+- The frame line is a receipt that needs no reply.
+- Every owner choice that can be asked at the pause after the openings is asked in that same message, not one after another.
+- Your verdict and the next move share the closing card.
+- Launch limits are Quick 4, Normal 8 and Thorough 12. The old 6, 10 and 14 included the removed synthesis check.
+
+**Evidence first.**
+- An explicit evidence step runs before the openings, and the coordinator checks the decisive claim.
+- Your factual claims reach the debaters from the first exchange on, marked "not yet checked". The debaters check them or say they could not.
+- When only one model can debate, the start card says that helpers of the same model tend to agree at once.
+- Every brief says "This brief is your whole task: read only, load no skills, ask no one."
+
+**Every label shows its meaning.** `skills/workflow/WRITING.md` "Chat replies" rule 7: in every owner-facing message, commit and pull-request text and HTML reports included, a label (such as S4, (b) or test_r44) comes after its plain meaning. A label seen only earlier, or in a part that failed to send, counts as unseen. No question opens until every part of a long message has arrived. grilling and SPAR-FILE.md point to the rule.
+
+**Tests.**
+- Wording pins of the removed rules became behaviour checks.
+- Five new live cases are in `tests/behavioral/spar.json`.
+
+**Checked:**
+- Full suite: 1706 tests OK. validate: PASS.
+- Four independent review rounds.
+- A live before-and-after replay (Claude CLI, single model) of the same cases on 2.10.0's predecessor and on the candidate:
+  - stops before the first exchange went from 3 to 2;
+  - an unchecked owner claim was checked instead of adopted;
+  - no fake agreement and no safeguard regression.
+
+**Not checked:**
+- A cross-model spar in T3 Code on the installed release.
+- Codex.
+- The failed-send and last-exchange cases.
+- One run per case.
+
+**Known:**
+- The spar skill stayed near its old size (about 3,480 words), because kept rules are pinned word for word by tests.
+- On a hidden-decision request, grilling stated "the choice resets on restart" as an assumption instead of asking it. The follow-up was left for later by the owner.
+
 ## 2.10.0 — faster workflow: cheaper hooks, less reading, fewer stops (2026-11-19)
 
 Task record: docs/plans/2026-11-19-workflow-speed.

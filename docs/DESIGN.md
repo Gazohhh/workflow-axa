@@ -210,3 +210,11 @@ Reminder hooks that fired on legitimate work (`plain_reply`, `phase_reads`, `tru
 The CSS rule became one switch per machine, off by default: the owner wanted one easy on/off that every agent reads, set in one place, not in every project. A fresh install is off without anyone doing anything. With the switch off nothing changes. Only the owner's Yes to the exact question turns it on; switching on never widens an approved offer, and a project can stay stricter with `css: never`. The switch protects against an agent writing CSS where nobody wanted it; it is not a lock against a person.
 
 The router picks one recipe from `flows/` for the kind of job, and `FALLBACKS.md` names what to do when a tool or check is missing, so a missing tool no longer stops work silently. The package is smaller: `resume` replaces two status skills, `rule-maker` diagnose replaces `workflow-doctor`, two skills are archived and `simple-english` became reference text. Three user-invoked skills are new: `interrogate`, `no-comments` and `wait-what`.
+
+## /spar argues about ideas (2.11.0)
+
+A cross-model spar was judged by whether two models and the owner accepted identical text. That pushed debates towards a bland synthesis everyone could sign, and it spent launches on accept/reject rounds. The owner's definition decided the change: sparring is two models that disagree and agree about ideas. Agreement is now per decision point, quoted in each debater's own words, and labelled only by a mechanical check, so the coordinator can show agreement but never invent it.
+
+Pstack's multi-model skills end with the parent choosing against a rubric, or keeping only reproduced findings, never in consensus. /spar keeps the owner as the judge instead of the coordinator, and borrows the discipline of grading against criteria and checking evidence.
+
+The owner's own factual claims are treated like any other evidence: marked "not yet checked" and verified, after a replay showed same-model helpers adopting one unchecked. The label rule moved into WRITING.md, because labels without their meaning ("do you agree with S4?") showed up in many skills, not only /spar. Source: docs/spar/2026-11-19-architecture-review/SPAR.md.
