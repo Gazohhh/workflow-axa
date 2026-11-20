@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 3,
+  "task": "2026-11-19-workflow-speed",
+  "created": "2026-11-19T18:15:58+00:00",
+  "canonical": {
+    "behaviour": "Makes workflow-axa faster without making it less correct, as agreed in agreement 1 (items 1-16). Hooks: a call that writes nothing skips the transcript parse, the parse reads only new lines, the after-call hook no longer runs on Read, and old-task code loads only when an old task exists. Reading: the router reads its SKILL.md, the recipe index and one recipe; rare sections move to files read only when needed; each repeated rule lives in one file. Stops: one-ticket work gets no separate agreement question, grilling asks in one round, and the lightweight offer has two answers (Approve, Change something). Review: one reviewer for a small diff, findings must reproduce, docs_check runs less often. Execution: recipe steps go into the todo list and each ticket gets a fresh context. Every change still gets an offer and the hook still refuses writes outside it. Work runs as tickets T0-T8 in this worktree, with parallel subagents on separate files, a measure and test loop, and live pilots within 50 USD in total.",
+    "paths": [
+      "CHANGELOG.md",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "hooks/approval.py",
+      "hooks/hooks.json",
+      "hooks/phase_gate.py",
+      "skills/",
+      "tests/",
+      "tools/"
+    ],
+    "operations": [
+      "git commit"
+    ],
+    "delegable_paths": [
+      "CHANGELOG.md",
+      "CONTEXT.md",
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/RULE-CONTRACTS.md",
+      "hooks/approval.py",
+      "hooks/hooks.json",
+      "hooks/phase_gate.py",
+      "skills/",
+      "tests/",
+      "tools/"
+    ],
+    "delegable_operations": [],
+    "exclusions": [
+      "VALIDATION.md and other commands AGENTS.md says need the owner's OK each time",
+      "anything in D:/workflow-axa (the live checkout), global settings and installed copies",
+      "pushing, merging into main, releasing, version bumps and reinstalling",
+      "the Altinstar approval failures"
+    ],
+    "conditions": [
+      "Commits only on speed/2.10 after a green round",
+      "Live pilots run in a throwaway fixture under .artifacts/2026-11-19-workflow-speed/, at most 5 USD per run and 50 USD in total",
+      "No test is removed or weakened; a moved sentence keeps its test",
+      "Parallel workers never share a file"
+    ],
+    "checks": [
+      "a live bug-fix pilot on the candidate gets the same result as on main, in less time and with fewer tokens",
+      "hook allow and refuse results are unchanged on the recorded cases",
+      "python -X utf8 -I tools/validate.py passes",
+      "the full unittest suite passes, with failures that existed before named",
+      "tools/measure_speed.py shows at most 10k words before code for a one-ticket bug fix and read-only hook time that does not grow with session length"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "808bed20bf23649d",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "37b6fc29-d9d2-4905-83cc-45181877cc91",
+    "turn": "5c21e8f4-529f-4710-ad23-3d9e11466d62",
+    "presentation": "d1488511-51db-4751-ba2c-4678aad13dfc",
+    "recorded": "2026-11-19T18:19:10+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

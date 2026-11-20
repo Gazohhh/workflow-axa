@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 4,
+  "task": "2026-11-19-workflow-speed",
+  "created": "2026-11-19T20:29:02+00:00",
+  "canonical": {
+    "behaviour": "Fixes the approval refusals from the Hooqd bug report (ticket T9). When a git operation or MCP tool is refused and an offer lists it but is not usable yet, the refusal names that offer and the reason (not presented, presentation not at the end of the reply, no owner answer after it, or \"/approve N\" followed by more text) instead of saying no offer lists it. The phrase \"or ask them for this one step\" goes; the refusal says how to present the offer: buttons with the offer present --question output as the question, or the exact offer text at the end of the reply. \"/approve N\" still counts only as a whole message. The specify skill and VISUAL-REVIEW say buttons are the default where the host has them, and that a host message tool such as send_to_user is not a presentation. What counts as an approval does not change. Each case gets a failing test first.",
+    "paths": [
+      "CHANGELOG.md",
+      "docs/RULE-CONTRACTS.md",
+      "hooks/approval.py",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/VISUAL-REVIEW.md",
+      "tests/test_approval_hook.py"
+    ],
+    "operations": [
+      "git commit"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "anything in D:/workflow-axa or D:/Hooqd",
+      "pushing, merging, releasing"
+    ],
+    "conditions": [
+      "A failing test for each reported step before the fix",
+      "Commit only on speed/2.10 after the tests pass"
+    ],
+    "checks": [
+      "python -X utf8 -I tools/validate.py passes",
+      "test_approval_hook, test_shadow_comparison, test_session_failures, test_gate_regressions, test_hook_speed and test_owner_questions pass",
+      "the new tests fail before the fix and pass after it"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "fb1f8d04220e33ae",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "37b6fc29-d9d2-4905-83cc-45181877cc91",
+    "turn": "e04a589d-5f4d-4d67-ba67-56de4995bbbf",
+    "presentation": "f667486b-3348-4be9-83a6-b62c5f572b4d",
+    "recorded": "2026-11-19T20:41:34+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}
