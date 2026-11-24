@@ -5,14 +5,14 @@
 - Updated / phase: 2026-11-24; closed (delivered, committed and pushed)
 - Recipe: bug; Compatibility (the hook runs live for every session from this checkout) — three wrong refusals reproduced from a real transcript; scope: the task; classification question: not asked (the request states the outcome)
 - Agreement (gate one): agreed (agreement 2, 2026-11-24, owner: "approve"; DECISIONS D3)
-- Offer: #3 approved (supersedes #2 and #1; DECISIONS D7)
+- Offer: #4 approved (2.11.1 release; supersedes #3, #2, #1; DECISIONS D8)
 - Implementation: implemented; T1-T5 verified (TODO)
-- Verification / owner acceptance: passed (V8-V11); the owner asked for the commit and push after delivery (D6)
+- Verification / owner acceptance: passed (V8-V13); the owner asked for the commit and push after delivery (D6) and for release 2.11.1 (D8)
 - Blockers: none
 - Changed files: hooks/phase_gate.py, hooks/approval.py, tests/test_approval_hook.py, tests/test_offers.py, tests/README.md, skills/workflow-execute/SKILL.md; records: this folder, docs/spar/2026-11-24-approval-hook-fixes/SPAR.md
 - Rules: READY / AGENTS.md, CLAUDE.md, tests/README.md, rule-maker START, CORE, READINESS / this task / rules 1.9.0
 - Test output: .artifacts/2026-11-24-approval-hook-fixes/ (candidate copy: scratch, removable now; baseline-main.log, after-copy.log, replay-offer6.txt: kept as evidence until the owner accepts)
-- Next safe action: none required; release and the Codex copies' refresh only on request.
+- Next safe action: none required; the Codex copies' refresh only on request.
 
 ## Working context
 - Owner: Cem. Requested through the T3 thread a3a3f191 (an agent relaying a retrospective of the workflow-paperclip session).
@@ -64,7 +64,7 @@ Delivered 2026-11-24 (reconciled by an independent subagent; record gaps it foun
 - Tickets: T1-T5 verified.
 - Verdicts: R1-R4, A1-A5 and the assumptions verified. A5 was partial at first delivery (one existing CSS-dependent test failure); the owner asked to fix it (D6, offer #2): the test now has its own settings file (V10, review S2), and the full suite passes (V11).
 - Checks: V1 baseline `Ran 1696 tests` / 1 existing failure; V8 after the copy `Ran 1703 tests in 638.293s` / the same 1 failure; validate.py PASS; V9 replay: offer #6 stays approved.
-- Reviews: S1 independent, Standards and Spec plus blast radius, one finding repaired and passed; T4's sentence reviewed with writing-for-agents, no findings. completion_check: every change reviewed in its current form.
+- Reviews: S1 independent, Standards and Spec plus blast radius, one finding repaired and passed; T4's sentence reviewed with writing-for-agents, no findings. completion_check at first delivery: every change reviewed in its current form. Before the 2.11.1 commit it exits 1: the release edits are unreviewed, tests/README.md changed in the rebase merge, and the remote's 2.11.0 files count because the baseline is 8a56c42; the hooks, tests/test_approval_hook.py, tests/test_offers.py and workflow-execute/SKILL.md stay covered.
 - Limits: the derive check can't run when record.py's variable was set in an earlier shell call (as before); no live host run of the new hooks beyond this session; SETUP.md:79 ("the legacy checker takes the last task written or named") is now slightly imprecise for offer writes (note only).
 - Kept: .artifacts/2026-11-24-approval-hook-fixes/baseline-main.log, after-copy.log, replay-offer6.txt. Scratch: the candidate/ folder there, removable now.
-- Next: committed on main and pushed to origin (offer #2). The Codex copies in ~/.agents/skills are not refreshed (excluded); no version bump or release.
+- Next: committed on main and pushed to origin (offer #2). The Codex copies in ~/.agents/skills are not refreshed (excluded). Release 2.11.1 (offer #4, D8): version strings, notes and VALIDATION.md only, checked by V13, in the commit that carries this line; no independent review of those edits.

@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.11.1 — approvals survive delegated results; refusals give the real reason (2026-11-24)
+
+Task records: docs/plans/2026-11-24-approval-hook-fixes. The spar behind it: docs/spar/2026-11-24-approval-hook-fixes/SPAR.md. Found in a long workflow-paperclip session where the owner approved the same unchanged offer six times.
+
+**Host messages no longer cancel an approval.**
+- T3 Code hands a delegated result back as `Delegated task node:… (title) in child thread … [completed]:`. The hook only knew the shape without "in child thread", so each GPT result counted as an owner message, and a "but", "only" or "never" in it suspended the approved offer.
+- T3's context handoffs and "the T3 server restarted" notes were read as owner messages too. Now only a `User message:` inside them counts, so an owner's "stop" delivered that way still stops.
+- Task notifications and question answers already never counted; tests now pin that.
+
+**A refusal names the offer that matters.** It leads with the newest live offer and why it isn't approved, then approved offers for other files. Superseded and revoked offers are left out; before, superseded #1-#3 filled the list and hid the reason for the live one.
+
+**Read-only offer commands pass.** `record.py offer … --help`, `present`, `show` and `list` were refused as writes to files named "revise" or "present" when record.py sat in a shell variable (`$R`). The hook now reads offer commands from its own command parse. `offer derive` keeps its parent check, through a variable too, and is refused when the hook can't read the task folder or the parent offer.
+
+**Builder briefs.** A builder quotes the test runner's verbatim summary line for every test count and gives a file:line for every claim about existing behaviour (`workflow-execute` "Briefs").
+
+**Tests.** 7 new tests with the real message shapes and commands; two tests moved to the new refusal wording; the record.py test in test_offers no longer depends on the machine's CSS setting.
+
+**Checked:** full suite and validate (VALIDATION.md); a read-only replay of the paperclip transcript: the offer stays approved through the four results that suspended it; independent reviews (both axes plus blast radius).
+
+**Not checked:** a live session with new delegated results on the installed release; Codex.
+
+**Known:** when record.py's variable was set in an earlier shell call, the hook can't see it, so no derive check runs (as before).
+
 ## 2.11.0 — /spar argues about ideas, every label explained (2026-11-20)
 
 Task records: docs/plans/2026-11-20-spar-rework and 2026-11-20-release-2-11-0. The spar behind it: docs/spar/2026-11-19-architecture-review/SPAR.md.

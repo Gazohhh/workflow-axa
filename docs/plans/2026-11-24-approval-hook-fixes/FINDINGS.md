@@ -38,3 +38,7 @@ Source transcript (read-only): C:/Users/Cem/.claude/projects/D--workflow-papercl
 - Review S2: fresh subagent a026c83 (independent) passed: tests/test_offers.py isolation fix, both axes, no findings.
 
 - V11 — Full suite after the test fix, D:\workflow-axa at 8a56c42 plus this task's changes: `Ran 1703 tests in 684.978s` / `OK (skipped=14)`. Log: .artifacts/2026-11-24-approval-hook-fixes/after-test-fix.log. A5 is now verified.
+
+- V12 — Rebased tree (this task's commit on top of origin/main e9ce56b, release 2.11.0): `python -X utf8 -m unittest discover -s tests -p "test_*.py"` → `Ran 1713 tests in 671.179s` / `OK (skipped=14)`; `python -X utf8 -I tools/validate.py` → `PASS: package structure, manifest consistency, minimal metadata, 22 local skills, relative links (1472 workflow words).` Log: .artifacts/2026-11-24-approval-hook-fixes/after-rebase.log.
+
+- V13 — Release 2.11.1 tree (6d86d70 plus the version strings and release notes): `python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md` → "exit 0; 1713 ran, 1699 passed, 14 skipped, 0 failed" (VALIDATION.md, Unit tests row; the console log holds only "Updated VALIDATION.md"). After that run only docs/DESIGN.md's scan sentence and this task's records changed; `python -X utf8 -I tools/validate.py` → `PASS: package structure, manifest consistency, minimal metadata, 22 local skills, relative links (1472 workflow words).` No independent review covers the release edits (version strings and notes).

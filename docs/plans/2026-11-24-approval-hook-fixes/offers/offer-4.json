@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 4,
+  "task": "2026-11-24-approval-hook-fixes",
+  "created": "2026-11-24T13:54:34+00:00",
+  "canonical": {
+    "behaviour": "Release the approval-hook fixes as workflow-axa 2.11.1, so colleagues can update the plugin and see a new version. The fixes are already on origin/main (6d86d70). The version moves from 2.11.0 to 2.11.1 wherever it is stated: .claude-plugin/plugin.json, the README title, UPGRADE.md, skills/rule-maker/rules/version.json, the report renderer's version and the four behavioural case files. CHANGELOG.md gets a 2.11.1 entry and UPGRADE.md a short section (no migration; hooks changed, so restart sessions after updating). VALIDATION.md is regenerated from a full test run. First the local main is put back on origin/main with git reset --soft, keeping its two extra record lines staged, because the local commit was amended after a copy was pushed and can't be pushed without force. Then one release commit and a push to origin main.",
+    "paths": [
+      ".artifacts/2026-11-24-approval-hook-fixes/",
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "UPGRADE.md",
+      "VALIDATION.md",
+      "docs/DESIGN.md",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/rule-maker/rules/version.json",
+      "tests/behavioral/engineering-rules.json",
+      "tests/behavioral/rules-audit-kit.json",
+      "tests/behavioral/rules-readiness.json",
+      "tests/behavioral/ui-design.json"
+    ],
+    "operations": [
+      "git commit",
+      "git push",
+      "git reset"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "any change to hooks, skills text or tests beyond the version strings",
+      "reinstalling the Codex copies, the local plugin or any global settings",
+      "tags, other branches, force push",
+      "the rules version (stays 1.9.0)"
+    ],
+    "conditions": [
+      "approving this offer is the owner's OK for tools/verification_summary.py --run --write",
+      "git reset only as `git reset --soft origin/main`; nothing in the working tree is discarded",
+      "the push is a fast-forward of origin/main; if origin/main moves again, stop and report"
+    ],
+    "checks": [
+      "git log origin/main shows the release commit after the push",
+      "python -X utf8 -I tools/validate.py",
+      "python -X utf8 -m unittest discover -s tests -p \"test_*.py\" (through verification_summary.py --run --write)"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "377d790d4a054187",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "625123f0-717d-48fd-8f7e-b76caf7bb947",
+    "turn": "741f3c25-4e90-4e9b-a981-c40962e9063d",
+    "presentation": "2c663b50-24ea-493d-a490-7e4547e6a3e5",
+    "recorded": "2026-11-24T13:56:45+00:00"
+  },
+  "supersedes": 3,
+  "superseded_by": null
+}

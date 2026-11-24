@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.11.0
+# Upgrade to workflow-axa 2.11.1
+
+## Upgrade to 2.11.1 (from 2.11.0)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions: the approval hooks (`hooks/approval.py`, `hooks/phase_gate.py`) changed, and a running session keeps the old ones until it restarts. Their caches get new versions, so the first call after the update reads each transcript once in full. Saved offers and task records stay valid. The rules version stays 1.9.0.
 
 ## Upgrade to 2.11.0 (from 2.10.0)
 

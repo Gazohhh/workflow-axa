@@ -211,6 +211,10 @@ The CSS rule became one switch per machine, off by default: the owner wanted one
 
 The router picks one recipe from `flows/` for the kind of job, and `FALLBACKS.md` names what to do when a tool or check is missing, so a missing tool no longer stops work silently. The package is smaller: `resume` replaces two status skills, `rule-maker` diagnose replaces `workflow-doctor`, two skills are archived and `simple-english` became reference text. Three user-invoked skills are new: `interrogate`, `no-comments` and `wait-what`.
 
+## Host messages are not the owner (2.11.1)
+
+The approval hook reads the owner's words from the transcript, and T3 Code delivers several of its own messages as plain user messages with no origin field: delegated results, context handoffs, restart notes. Recognising them by their opening line, anchored at the start, keeps an owner quoting one later in a message speaking for themselves. A handoff or restart note can carry the owner's real next message after `User message:`; only that part is judged, because dropping the whole message would lose a real "stop". A scan of the local transcripts (files over 300 MB skipped) found four such messages, each new and never a replay. Offer commands are read from the hook's own shell parse instead of text patterns, after a variable holding record.py hid the subcommand from them. Source: docs/spar/2026-11-24-approval-hook-fixes/SPAR.md.
+
 ## /spar argues about ideas (2.11.0)
 
 A cross-model spar was judged by whether two models and the owner accepted identical text. That pushed debates towards a bland synthesis everyone could sign, and it spent launches on accept/reject rounds. The owner's definition decided the change: sparring is two models that disagree and agree about ideas. Agreement is now per decision point, quoted in each debater's own words, and labelled only by a mechanical check, so the coordinator can show agreement but never invent it.
