@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.12.0 — reviews read the output first; cited sources are opened (2026-11-24)
+
+Task records: docs/plans/2026-11-24-reviewer-output-and-sources.
+
+**Output read.** When the reviewed work makes a message, report, dashboard or document for a person, a fresh reviewer first gets only the finished output and who reads it.
+- The reviewer says which question each part answers and names the obvious questions left out. The plan and code reviews start after that.
+- The owner gets the left-out questions in one question before delivery, unless the agreement or the approved offer excludes them in words. They are never notes, and delivery waits for the answer.
+- It costs one extra reviewer per finished output, and one more when the content changes. Agent instructions and rewordings that keep the content are left out. A plan or an idea is read through its current output or a sample, else it is NOT VERIFIED. Without subagents it is a labeled self-check.
+- The rule stands in `skills/workflow/AUDIT.md`. `code-review`, `plan-review`, `/spar` and `workflow-deliver` point to it. In `/spar` the reader is no debater launch.
+
+**Cited sources.** An outside source named for a method, formula, number, threshold or standard carries its URL (offline: file and page) and the exact sentence or formula that was read. Otherwise the text says "unverified" and why.
+- This holds for question cards and offers, before they are sent. Reviewers open each source, and a breach is a finding. A source that a reviewer cannot open stays unverified.
+- The rule stands in `skills/workflow/WRITING.md`. Unslop 5 now points to it, because it asked only for a source's name. `grilling`, `workflow-specify`, `code-review`, `plan-review` and `/spar` point to it too.
+
+**Tests.** `test_reader_and_sources.py` (14 tests), live cases B31 and B32 (not run), and the size limit of `/spar` from 1700 to 1740 words.
+
+**Checked:** full suite and validate (VALIDATION.md); an independent review on both axes plus blast radius, four findings repaired; four test runs on made-up material. A code review with the old text did not name a missing comparison with an earlier period, and an output reader with the new text did. That is one run each, in different roles. Both the old and the new plan review caught a wrong cited section.
+
+**Not checked:** a live session that follows the rules on its own; an agent writing a question card with a source; `/spar` with the output read; Codex. The two runs with the new text came before the four repairs and were not repeated. The text that tells the reader what to return did not change after them.
+
 ## 2.11.1 — approvals survive delegated results; refusals give the real reason (2026-11-24)
 
 Task records: docs/plans/2026-11-24-approval-hook-fixes. The spar behind it: docs/spar/2026-11-24-approval-hook-fixes/SPAR.md. Found in a long workflow-paperclip session where the owner approved the same unchanged offer six times.

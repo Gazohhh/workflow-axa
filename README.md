@@ -1,4 +1,4 @@
-# Workflow AXA — 2.11.1
+# Workflow AXA — 2.12.0
 
 **One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, presents an offer and asks one question, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or an offer.
 
@@ -43,6 +43,8 @@ Full replacement package: **22 skills** (14 workflow-axa skills plus 8 that bega
 
 `code-review` also checks comments and reader load, and adds a blast-radius step when anything outside the diff reads what changed. That step follows `skills/code-review/BLAST-RADIUS.md`: it proves the facts a change is safe because of as far as running code allows, or marks them unproven, and looks where a search stops. Planning records those safety assumptions, every recipe except new-project names the step, and "what could this break?" gets the same report as an inspection. The interrogate, no-comments, reader-load and wait-what ideas were adapted from pstack and Matt Pocock's skills without copying text. The blast-radius method and the Unslop tells (below) adapt pstack text under its MIT licence ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)).
 
+When the work makes something a person reads, such as a message, report, dashboard or document, code review, plan review and `/spar` start with an output read. A fresh reviewer sees only the finished output and who reads it, says which question each part answers, and names the obvious questions left out. The owner gets those in one question before delivery, except the ones that the agreement or the approved offer excludes in words. Agent instructions and rewordings that keep the content are left out. Rule, with its other cases (plans, no subagents): "Output read" in [AUDIT.md](skills/workflow/AUDIT.md).
+
 ## This update: `/workflow` routes to four phase skills
 
 `/workflow` is now a small coordinator. It finds the task, checks rules readiness, reads the task's records and hands over to the phase skill those records call for. Each phase owns its procedure and entry conditions. Direct invocation must satisfy the same conditions.
@@ -56,7 +58,7 @@ Full replacement package: **22 skills** (14 workflow-axa skills plus 8 that bega
 
 **The offer and the one question.** Agreement permits the offer, never code. Only the owner's answer to the one question approves an offer, and only an approved offer permits application code and tests. A later material change reopens only the affected agreement items or tickets; unrelated approved work continues. Tasks approved before the offer model keep that authority for their recorded scope when the owner listed them in the legacy inventory; nothing is re-asked or rewritten. A lightweight edit still gets the minimal offer; a small behavior or architecture change is not lightweight because few files change. Definitions: [VISUAL-REVIEW.md](skills/workflow/VISUAL-REVIEW.md).
 
-**Writing.** Human-facing prose still follows the existing [WRITING.md](skills/workflow/WRITING.md), with a meaning-preservation check, a required Unslop check against the numbered tells in the same file, and a cold-reader reconstruction test. The Unslop check never rewrites application UI text, error messages or translations. Skills and agent instructions follow the bundled `writing-for-agents` for structure. No new writing skill, linter or other dependency is added.
+**Writing.** Human-facing prose still follows the existing [WRITING.md](skills/workflow/WRITING.md), with a meaning-preservation check, a required Unslop check against the numbered tells in the same file, and a cold-reader reconstruction test. The Unslop check never rewrites application UI text, error messages or translations. An outside source named for a method, formula, number, threshold or standard carries its URL (offline: file and page) and the words read there, or says unverified, also in question cards and offers. Skills and agent instructions follow the bundled `writing-for-agents` for structure. No new writing skill, linter or other dependency is added.
 
 **Central report (optional).** A schema-2 report may carry an additive `task_report` object: request, agreement, specification, per-ticket specifications, decisions, risks, checks, acceptance results and delivery, each citing its source record. PLAN/TODO/FINDINGS/DECISIONS stay authoritative; the report is a dated projection, not approval. For new drafts, `skills/codebase-map/scripts/record_projection.py` can freeze exact headings and labeled tickets into report text and check drift without overwriting a snapshot. Reports without `task_report` render as before. Contract: [TASK-REPORT.md](skills/codebase-map/TASK-REPORT.md).
 

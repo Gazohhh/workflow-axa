@@ -49,6 +49,7 @@ The source-of-truth is the existing task folder: `PLAN.md` (scope/authority), `T
 | Architecture owner/interface | `codebase-design` / `domain-modeling` | A seam, responsibility or term is genuinely disputed |
 | Build tests | `tdd` | An approved ticket has testable behavior |
 | Verify code and standards | `code-review` | A changed diff, not another identical review |
+| Does the output answer its reader's questions? | `skills/workflow/AUDIT.md` "Output read" | Before the plan or code review of something a person reads |
 | Rules and host readiness | `rule-maker` (audit, diagnose) | Missing or changed rules, installation and duplicate-copy diagnosis |
 | Status after interruption | `resume` (status, continue, handoff) | Existing work, never an invented clean slate |
 

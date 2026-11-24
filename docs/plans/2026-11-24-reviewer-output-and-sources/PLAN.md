@@ -56,4 +56,4 @@ Delivered 2026-11-24 under offer #2 (D1).
 - Decisions by the agent: D2, D3, D4, D5.
 - Kept: .artifacts/2026-11-24-reviewer-output-and-sources/ baseline.log, after.log, after-2.log until the commit and release decision. Scratch only in the session scratchpad.
 - Owner acceptance, 2026-11-24: "yes i accept". It names no commit, push or release.
-- Next: commit, push and release are the owner's decision.
+- Release 2.12.0 (offer #3, D7): the change is commit e931728; version strings, CHANGELOG, UPGRADE, README, ARCHITECTURE, DESIGN and VALIDATION.md follow in the release commit; the push and its check are in the release records commit.

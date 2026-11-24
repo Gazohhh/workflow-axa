@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.11.1
+# Upgrade to workflow-axa 2.12.0
+
+## Upgrade to 2.12.0 (from 2.11.1)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions. Only skill text, documents and tests changed; no hook changed, and the only script change is the report renderer's version number. A review of something a person reads now starts with one extra reader (exceptions: CHANGELOG), and the owner can get a question about what the output leaves out. Delivery waits for that answer. This also holds for a task that was planned before the update and is delivered after it: its review needs the output read, and its records the result and the answer. The rules version stays 1.9.0.
 
 ## Upgrade to 2.11.1 (from 2.11.0)
 
