@@ -60,6 +60,11 @@ Standards also always checks:
 
 - **Comments** (from `../rule-maker/rules/CORE.md`): flag a new comment unless it is one of these: a licence header; a constraint the project can't change (vendor, platform, protocol), with its link; a public API doc comment; text a tool reads (a formatter or static-analysis directive, Rust `// SAFETY:`); an issue link; an exception the project adds. Flag a comment in the diff that contradicts the code, and when it states an intended contract, report it as a possible bug.
 - **Reader load** (a judgement call): too much to hold at once: many live values, a flag that changes a function's meaning, indirection that buys nothing. → split, name or inline.
+- **Cited sources**: `../workflow/WRITING.md` "Cited sources", on each outside source named in the diff or the spec.
+
+### 3b. Output read
+
+When the diff creates or changes something a person reads, run `../workflow/AUDIT.md` "Output read" now; step 4 starts after its reader has returned.
 
 ### 4. Run the axes
 
@@ -75,7 +80,8 @@ Every brief includes the diff (in a task: the changed and untracked files), any 
 **Standards brief** also includes:
 
 - The standards-source files from step 3, **plus the smell baseline and the comment and reader-load checks from step 3** pasted in full (the subagent has no other access to them).
-- When the diff changes prose (docs, Markdown, comments), the Unslop check of `../workflow/WRITING.md` and its tells, pasted in full; each tell is a note.
+- When the diff or the spec names an outside source: `../workflow/WRITING.md` "Cited sources", pasted in full, with the spec's path and "Check each outside source named in the diff or the spec."
+- When the diff changes prose (docs, Markdown, comments), the Unslop check of `../workflow/WRITING.md` and its tells, pasted in full; each tell is a note, except a "Cited sources" breach.
 - "Report each breach of a documented standard with its file and rule; name each baseline smell, quoting the hunk, as a note. Under 400 words."
 
 **Spec brief** also includes the spec's path or contents and: "Report requirements missing or partial, behaviour nobody asked for (scope creep), and requirements implemented wrongly. Quote the spec line for each. Under 400 words." With no spec, skip this axis and say so.
@@ -86,7 +92,7 @@ Run this step when anything outside the diff reads what changed: an exported sym
 
 ### 5. Aggregate
 
-Present the reports under `## Standards` and `## Spec`, findings then notes, verbatim or lightly cleaned. Do **not** merge or rerank findings across axes. End with one line: counts per axis and the worst finding _within each axis_, never one winner across them.
+Present the reports under `## Standards` and `## Spec`, findings then notes, verbatim or lightly cleaned; step 3b's result goes under `## Reader`, first. Do **not** merge or rerank findings across axes. End with one line: counts per axis and the worst finding _within each axis_, never one winner across them.
 
 ### 6. After repairs
 

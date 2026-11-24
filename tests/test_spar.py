@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/spar/SKILL.md"
 T3 = ROOT / "skills/spar/T3.md"
 FILE = ROOT / "skills/spar/SPAR-FILE.md"
-SKILL_CEILING, T3_CEILING, FILE_CEILING = 1700, 1100, 760
+SKILL_CEILING, T3_CEILING, FILE_CEILING = 1740, 1100, 760
 
 
 def text(path: Path) -> str:

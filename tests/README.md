@@ -160,7 +160,7 @@ It runs `test_simple_english.py` (WRITING.md is the only owner of the common rul
 - the single-model warning and the debater line;
 - a conclusion that never claims the owner's agreement before the verdict.
 
-The new `behavioral/spar.json` cases (incompatible agree, a restatement at the last exchange, a failed send before a question, an unchecked owner claim, single-model helpers) are NOT_RUN until observed. The earlier until-agreement and owner-checkpoints results stay under `history`. Size limits follow the sizes reached: SKILL.md 1700, T3.md 1100, SPAR-FILE.md 760 words. The kept rules are pinned word for word, so the rework stayed near its old size.
+The new `behavioral/spar.json` cases (incompatible agree, a restatement at the last exchange, a failed send before a question, an unchecked owner claim, single-model helpers) are NOT_RUN until observed. The earlier until-agreement and owner-checkpoints results stay under `history`. Size limits follow the sizes reached: SKILL.md 1740 (1700 before the output read), T3.md 1100, SPAR-FILE.md 760 words. The kept rules are pinned word for word, so the rework stayed near its old size.
 
 `test_simple_english.test_a_label_follows_its_meaning_in_every_owner_message` checks WRITING.md "Chat replies" rule 7, its fixed example and grilling's pointer to it.
 
@@ -240,6 +240,10 @@ python -X utf8 -m unittest discover -s tests -p "test_hook_speed.py"
 ## Host messages, refusal reasons and offer commands (task docs/plans/2026-11-24-approval-hook-fixes)
 
 `test_approval_hook.py`, from a workflow-paperclip session: `OfferStates` checks that T3's real delegated-result shape (`… in child thread … [completed]:`), its restart notes and context handoffs never narrow an approval, that an owner's words after `User message:` inside them still count, and that a task notification or a question answer never narrows one. `ProtectedOperations` checks that read-only `record.py offer` commands pass with record.py in a variable and output redirected outside the project, that `offer derive` keeps its parent check through a variable and is refused when its folder or parent can't be read, and that an offer command never changes the legacy gate's current task. `OfferVisibility` checks that a refusal leads with the live offer's reason and leaves superseded and revoked offers out. Synthetic transcripts with the real message shapes, not a live host.
+
+## Output read and cited sources (task docs/plans/2026-11-24-reviewer-output-and-sources)
+
+`test_reader_and_sources.py` checks that AUDIT.md "Output read" and WRITING.md "Cited sources" state their rules, that no other skill file repeats them, that each skill that uses one points to it (code-review and plan-review before their own reviews, spar also to checkpoint (a)), and that both spar briefs carry the source line. B31 and B32 in `behavioral/cases.json` stay NOT_RUN until an observed host run. These checks prove the text says it, not that an agent follows it.
 
 ## verify-app and reproduce-bug (task docs/plans/2026-11-18-bug-reproducer)
 

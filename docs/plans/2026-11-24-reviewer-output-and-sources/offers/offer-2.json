@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 2,
+  "task": "2026-11-24-reviewer-output-and-sources",
+  "created": "2026-11-24T17:26:38+00:00",
+  "canonical": {
+    "behaviour": "Reviewers get two new rules. (1) Read the output first: when the work makes something a person reads (message, report, dashboard, document), a fresh reviewer first sees only the finished output and who reads it. The reviewer says which question each part answers and which obvious questions are missing. Plan and code review come after that. A missing question comes to you before delivery, unless the agreed plan excludes it in words. Today it would end as a note that nobody acts on. (2) Open the source: a named source for a method, formula, number or standard needs its URL and the exact words or formula that were read. Otherwise the text says unverified and why. This includes question cards and offers. Reviewers open each source themselves. The old source rule failed because it only asked for a name, so a wrong or unread source passed. Rule 1 stands in AUDIT.md and rule 2 in WRITING.md. The skills that own each step only point there, and the old rule becomes a pointer too.",
+    "paths": [
+      ".artifacts/2026-11-24-reviewer-output-and-sources/",
+      "CONTEXT.md",
+      "docs/RULE-CONTRACTS.md",
+      "skills/code-review/SKILL.md",
+      "skills/grilling/SKILL.md",
+      "skills/plan-review/SKILL.md",
+      "skills/spar/SKILL.md",
+      "skills/spar/T3.md",
+      "skills/workflow-deliver/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/AUDIT.md",
+      "skills/workflow/WRITING.md",
+      "tests/README.md",
+      "tests/behavioral/cases.json",
+      "tests/test_reader_and_sources.py",
+      "tests/test_spar.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "an automatic check: a script cannot tell which sentence relies on a source",
+      "any other repository",
+      "commit, push, release, version bump, changelog and installing the change",
+      "hooks and tools"
+    ],
+    "conditions": [
+      "a plan review with no output yet reads a sample, or says that nothing could be checked",
+      "at most 4 subagent test runs on made-up material, plus one reviewer and its repair check",
+      "in spar the extra reader does not use up a debater launch; a short source line also stands in the two debater briefs, because debaters load no files",
+      "in the spar tests only the size limits change, by at most 60 words each for the skill and its T3 file",
+      "no client, project or event name in any changed file",
+      "one extra reader per finished output, not per ticket; agent instructions and simple rewording are left out"
+    ],
+    "checks": [
+      "full test suite and the validator, compared with the result before the change",
+      "new text tests fail before the change and pass after it",
+      "one independent review, including one place per rule",
+      "test runs with the old and the new text: the reviewer names a missing earlier-period comparison, and a reviewer catches a wrong cited section"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "24c7d6d5956b36c5",
+  "display": "",
+  "state": "superseded",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "41bb8e1b-667a-4571-9e50-1d909c27ae2f",
+    "turn": "f37c0850-b26b-4727-a9b7-8127148b8022",
+    "presentation": "065a649a-1a03-4bb3-a084-0fb1dda1691b",
+    "recorded": "2026-11-24T17:40:30+00:00"
+  },
+  "supersedes": 1,
+  "superseded_by": 3
+}

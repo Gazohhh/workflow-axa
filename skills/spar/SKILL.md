@@ -41,7 +41,7 @@ A credible safety, security or data-loss finding goes to the owner at once, with
 
 ## 1. Understand and gather the evidence
 
-**Evidence, before the openings.** Gather the facts the idea rests on, outside sources included (yourself, or the `research` specialist when installed), into the existing record: SPAR.md "Evidence", or the chat when conversation only. Then verify the decisive claim yourself before it counts. A claim only a prototype can settle stays open with the observation that would falsify it and the cheapest check, for "Investigate first". Scale this to the idea's risk; passing tests show behaviour, not that the architecture is right. A check you run follows the standing diagnostic allowance in `../rule-maker/rules/OPERATIONS.md`, every condition of it; otherwise report the hypothesis and the check it needs.
+**Evidence, before the openings.** Gather the facts the idea rests on, outside sources included (yourself, or the `research` specialist when installed), into the existing record: SPAR.md "Evidence", or the chat when conversation only. For an idea about something a person reads, first run `../workflow/AUDIT.md` "Output read" (no debater launch); its left-out questions go into both opening briefs as evidence and to the owner at checkpoint (a), or the conclusion without debaters. Then verify the decisive claim yourself before it counts. A claim only a prototype can settle stays open with the observation that would falsify it and the cheapest check, for "Investigate first". Scale this to the idea's risk; passing tests show behaviour, not that the architecture is right. A check you run follows the standing diagnostic allowance in `../rule-maker/rules/OPERATIONS.md`, every condition of it; otherwise report the hypothesis and the check it needs.
 
 Show the frame as a receipt that needs no reply, sent in the same turn as the first launch and before it: **Spar:** <idea> · effort <effort> (at most <n> launches) · <A> vs <B>, where <n> is the cap for until agreement.
 
@@ -57,7 +57,7 @@ Each debater answers each decision point agree, disagree or mis-framed, and may 
 
 Then:
 
-- check the cited evidence yourself before an objection counts as settled;
+- check the cited evidence yourself (`../workflow/WRITING.md` "Cited sources") before an objection counts as settled;
 - agreement without evidence is not agreement: send the gap back in the next brief;
 - show one progress line: Round <n>/<budget or cap>: <what moved>. In T3 Code, send it with `send_to_user` or end the turn with it.
 

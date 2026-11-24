@@ -16,9 +16,17 @@ For each category record `PASS`, `ISSUE`, `NOT APPLICABLE` with a reason, or `NO
 | Maintainability | Existing owner, clear data flow, justified helpers, no comments beyond CORE's exceptions, no speculative wrappers or unrelated churn. |
 | Verification | Actual commands and outputs, behavioral tests through meaningful interfaces, original reproduction, integration where relevant, final-state evidence. |
 | Documentation and recovery | Correct existing task reused or a new one justified; meaningful questions and answer sources recorded; existing authoritative docs match; task state, decisions, TODO evidence and next step allow a fresh agent to continue. |
-| Reader clarity | Apply [WRITING.md](WRITING.md): concrete goal/change/consequence first, technical evidence accessible, no concealed material uncertainty or duplicate boilerplate. |
+| Reader clarity | Apply [WRITING.md](WRITING.md), its "Cited sources" included: concrete goal/change/consequence first, technical evidence accessible, no concealed material uncertainty or duplicate boilerplate. |
 | Specialist integration | Correct resolved skill actually loaded/invoked; selected routes covered, adapters honored, changed/missing dependencies and exceptions explicit, outputs inspected. |
 | Worktree and privacy | User edits/index intent preserved, ownership clear, no secrets or unapproved external actions. |
+
+## Output read
+
+When the reviewed work creates or changes the content of a message, report, dashboard or document for a person (not agent instructions, not a rewording that keeps the content), this comes before any review against the plan or the diff. Give a fresh reviewer only the finished output and who reads it: no plan, spec, diff or conversation. The reviewer returns, for each part, which question it answers for that reader (or "none"), then the obvious questions this reader would ask that no part answers.
+
+Only then compare that list with the spec. A left-out question that the agreement with the owner excludes in words (its approved offer included) is closed. Every other one goes to the owner as an open choice before delivery, all in one question, most important first: never a note, and not a finding either, because only the owner can settle what the output must answer. In a task, record the result in FINDINGS and the answer in DECISIONS.
+
+Run it once per finished output, and again only when its content changes. A plan or an idea has no finished output: read the current output it changes or a sample, else record `NOT VERIFIED`. Without subagents, read the output yourself before you reopen the plan, labeled self-check.
 
 ## Necessity check
 

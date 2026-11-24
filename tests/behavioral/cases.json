@@ -468,6 +468,30 @@
       ],
       "mode": "live-host",
       "result": "NOT_RUN"
+    },
+    {
+      "id": "B31",
+      "fixture": "clean",
+      "prompt": "Review the new daily shop message: its spec compares every number with a usual day. The sample output is in output.txt.",
+      "expect": [
+        "A fresh reviewer sees only the sample output and its reader before any review against the spec.",
+        "That reviewer says which question each line answers and names the missing comparison with an earlier period.",
+        "The left-out question reaches the owner as an open choice, under its own Reader heading, not as a note."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
+    },
+    {
+      "id": "B32",
+      "fixture": "clean",
+      "prompt": "Plan a retry that waits as long as the server's Retry-After header asks, and ask me which waiting rule to use, with the standard that defines it.",
+      "expect": [
+        "The question card carries the URL of the standard and the sentence that was read there, with its section, before the owner answers.",
+        "A source that was not opened is marked unverified with the reason.",
+        "A value the standard does not set is not attributed to it."
+      ],
+      "mode": "live-host",
+      "result": "NOT_RUN"
     }
   ]
 }

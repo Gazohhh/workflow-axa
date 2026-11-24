@@ -72,6 +72,9 @@ What a change can break outside itself, beyond the callers a search lists. Code-
 **Safety fact**:
 A fact a change is safe because of, such as "this call only drops cache entries that nothing reads". Before the diff exists it is a safety assumption with the check that could falsify it. Review proves it on the evidence ladder (step 1 stated, step 5 reproduced) or marks it unproven.
 
+**Output read**:
+The first step of a review of something a person reads: a fresh reviewer sees only the finished output and who reads it, says which question each part answers, and names the obvious questions left out. Those go to the owner. Owner of the rule: `skills/workflow/AUDIT.md`. The cold-reader check is a different step: it asks whether the workflow's own report is understood.
+
 **Unslop check**:
 The required writing check that removes the patterns that make text read as machine-written, run before the cold-reader check. It never changes application UI copy, error messages or translations, and "Keep the meaning" wins over every tell. Owner of the rules and the tells: `skills/workflow/WRITING.md`.
 
@@ -174,6 +177,8 @@ Each rule below is stated in several files today. The owner file states it in fu
 | The blast-radius method (safety facts, where grep stops, evidence ladder, probes) | `skills/code-review/BLAST-RADIUS.md` |
 | The Unslop check: when it runs and what it never changes | `skills/workflow/WRITING.md` |
 | The Unslop tells | `skills/workflow/WRITING.md` |
+| Cited sources: URL and the words read there, or "unverified" | `skills/workflow/WRITING.md` |
+| The output read: the finished output first, without the plan | `skills/workflow/AUDIT.md` |
 | What counts as a lightweight edit, and its minimal offer (router §4) | `skills/workflow/SKILL.md` |
 | Making and presenting the offer and the one question (step 5) | `skills/workflow-specify/SKILL.md` |
 | Legacy (pre-offer) approvals and their recovery | `skills/workflow/LEGACY-APPROVALS.md` |

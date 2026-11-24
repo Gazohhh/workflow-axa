@@ -43,6 +43,14 @@ If plain words cannot carry a part, keep the precise wording and explain it. Sho
 
 Words that carry uncertainty, permission or a proposal (may, might, could, should, would) are part of the meaning. "The cause could be the cache" is not "The cause is the cache". Keep them, rewrite only empty hedging, and never just delete one.
 
+## Cited sources
+
+An outside source named as the authority for a method, formula, number, threshold or standard carries its URL (offline: file and page) and the exact sentence or formula you read there. Read it there yourself, or take both from a task record that holds them. Otherwise write "unverified" beside the claim, with the reason: paywalled, only the abstract read, from memory.
+
+This holds in every text a person reads: question cards with their options and recommendations, offers, plans and reports. Check it before you send, because the owner may choose on it.
+
+A reviewer opens each cited source and looks for the quoted words in the named place. A wrong place or quote, or a missing one without "unverified", is a finding. A source that the reviewer cannot open stays unverified.
+
 ## Documents and reports
 
 Write plain English that a smart reader outside your field understands on one read. These rules come from ASD-STE100, the controlled language that aerospace uses for maintenance manuals, in its Plain form. When asked to write or rewrite documentation, apply them to the prose. When you write a report's JSON or render a report, read [WRITING-FOR-REVIEW.md](WRITING-FOR-REVIEW.md) first: it applies these rules to the report's prose fields.
@@ -106,7 +114,7 @@ A bare rule number means that rule of "Documents and reports". Each tell keeps t
 | Tell | What to do |
 |---|---|
 | Unslop 3 | Rule 4. |
-| Unslop 5 | Name the source of a claim ("the Postgres docs say"). Without a source, state the claim with its evidence or mark it unverified. No "experts believe". |
+| Unslop 5 | "Cited sources" above, for what it covers. For any other claim, name its source or its evidence, or mark it unverified. No "experts believe". |
 | Unslop 7, 31 | Rule 10 and `simple-english/word-swaps.md`. |
 | Unslop 8 | Write "is" or "has", not "serves as", "stands as", "boasts" or "features". |
 | Unslop 9, 10, 23, 25 | Rule 10. |

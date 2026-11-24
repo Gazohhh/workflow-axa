@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 3,
+  "task": "2026-11-24-reviewer-output-and-sources",
+  "created": "2026-11-24T18:24:04+00:00",
+  "canonical": {
+    "behaviour": "Release the two accepted review rules as workflow-axa 2.12.0 and push it to main on GitHub, so you can install it. The version goes from 2.11.1 to 2.12.0 in every place that states it. The docs are included: CHANGELOG, UPGRADE (no migration, no hook change), README, ARCHITECTURE and DESIGN explain both rules, and the task records, CONTEXT, RULE-CONTRACTS and tests README are committed too. VALIDATION is made new from a full test run. There are three commits: the accepted change with its records, the release, and the final release records. The two rules themselves do not change. After the push you update D:/workflow-axa, because your plugin reads that folder. I give you the exact commands.",
+    "paths": [
+      ".artifacts/2026-11-24-reviewer-output-and-sources/",
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "CONTEXT.md",
+      "README.md",
+      "UPGRADE.md",
+      "VALIDATION.md",
+      "docs/ARCHITECTURE.md",
+      "docs/DESIGN.md",
+      "docs/RULE-CONTRACTS.md",
+      "skills/code-review/SKILL.md",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/grilling/SKILL.md",
+      "skills/plan-review/SKILL.md",
+      "skills/rule-maker/rules/version.json",
+      "skills/spar/SKILL.md",
+      "skills/spar/T3.md",
+      "skills/workflow-deliver/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/AUDIT.md",
+      "skills/workflow/WRITING.md",
+      "tests/README.md",
+      "tests/behavioral/cases.json",
+      "tests/behavioral/engineering-rules.json",
+      "tests/behavioral/rules-audit-kit.json",
+      "tests/behavioral/rules-readiness.json",
+      "tests/behavioral/ui-design.json",
+      "tests/test_reader_and_sources.py",
+      "tests/test_spar.py"
+    ],
+    "operations": [
+      "git add",
+      "git commit",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "any further change to the accepted skill text and tests",
+      "tags, GitHub releases, force push",
+      "the rules version (stays 1.9.0)",
+      "updating D:/workflow-axa, the installed plugin, the Codex copies or global settings"
+    ],
+    "conditions": [
+      "approving this offer is your OK for tools/verification_summary.py --run --write",
+      "if a check fails, nothing is pushed",
+      "no client, project or event name in the new text",
+      "the push is a fast-forward of origin/main from this branch; if origin/main moved, stop and report"
+    ],
+    "checks": [
+      "after the push, origin/main holds all three commits and no file of the task is left uncommitted",
+      "every place that states the version says 2.12.0",
+      "full test suite and the validator, through tools/verification_summary.py --run --write",
+      "one independent check of the release text against the change"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "c98b611f3c338a00",
+  "display": "",
+  "state": "draft",
+  "presentation_decision": "chat",
+  "decision": null,
+  "supersedes": 2,
+  "superseded_by": null
+}
