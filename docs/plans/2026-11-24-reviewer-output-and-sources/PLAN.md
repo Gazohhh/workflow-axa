@@ -1,7 +1,7 @@
 # Reviewers read the output first, and cited sources are opened
 
 ## Current checkpoint
-- Updated / phase: 2026-11-24; implementing (release 2.12.0)
+- Updated / phase: 2026-11-24; closed (released 2.12.0)
 - Recipe: docs-tests; modifiers none — only agent instructions and the tests and documents that read them change; scope: the task; classification question: not asked (the request states the outcome)
 - Agreement (gate one): not required — one-ticket offer
 - Offer: #3 approved (release 2.12.0, D7; supersedes #2, approved and delivered, D1)
@@ -11,7 +11,7 @@
 - Changed files: the 15 files offer #2 lists (CONTEXT.md, docs/RULE-CONTRACTS.md, nine skill files, tests/README.md, tests/behavioral/cases.json, tests/test_reader_and_sources.py, tests/test_spar.py) and this folder
 - Rules: READY / AGENTS.md, CLAUDE.md, CONTEXT.md, tests/README.md, rule-maker START, CORE, READINESS, OPERATIONS / this task / rules 1.9.0 / rules_stamp NONE (information only). docs_check: no blocking finding; two existing warnings in UPGRADE.md:108 are unrelated
 - Scope paths: `skills/`, `tests/`, `CONTEXT.md`, `docs/RULE-CONTRACTS.md`
-- Next safe action: commit the change, then the release files, check, push
+- Next safe action: the owner updates D:/workflow-axa and the installs, then starts new sessions
 
 ## Working context
 - Owner: Cem. Branch t3/reviewer-output-and-source-checks at 432da9b, equal to main and origin/main after a fetch on 2026-11-24; clean at the start. This worktree only. The hooks and skills of running sessions load from D:/workflow-axa, so edits here do not reach them.
@@ -56,4 +56,4 @@ Delivered 2026-11-24 under offer #2 (D1).
 - Decisions by the agent: D2, D3, D4, D5.
 - Kept: .artifacts/2026-11-24-reviewer-output-and-sources/ baseline.log, after.log, after-2.log until the commit and release decision. Scratch only in the session scratchpad.
 - Owner acceptance, 2026-11-24: "yes i accept". It names no commit, push or release.
-- Release 2.12.0 (offer #3, D7): the change is commit e931728; version strings, CHANGELOG, UPGRADE, README, ARCHITECTURE, DESIGN and VALIDATION.md follow in the release commit; the push and its check are in the release records commit.
+- Release 2.12.0 (offer #3, D7): the change is commit e931728; version strings, CHANGELOG, UPGRADE, README, ARCHITECTURE, DESIGN and VALIDATION.md follow in the release commit; released as 323c7f9 on origin/main (V10). Not done: D:/workflow-axa, the installed plugin and the Codex copies (the owner updates them); tags and GitHub releases. completion_check does not cover the release files (V9).
