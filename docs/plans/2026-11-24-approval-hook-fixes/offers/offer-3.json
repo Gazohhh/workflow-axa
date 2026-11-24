@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 3,
+  "task": "2026-11-24-approval-hook-fixes",
+  "created": "2026-11-24T13:40:32+00:00",
+  "canonical": {
+    "behaviour": "Put this task's commit on top of the newer remote main and push it. Since offer #2 was approved, origin/main gained 4 commits (release 2.11.0, the /spar rework; 37 files) that this checkout doesn't have, so a plain push would be refused. The approval-hook fixes and the test fix stay as approved and verified. Steps: commit this task's files on main; replay that commit on top of origin/main with git pull --rebase (tests/README.md is the only file both sides changed; both sections are kept); run the full suite and tools/validate.py on the combined tree; then push main to origin.",
+    "paths": [
+      ".artifacts/2026-11-24-approval-hook-fixes/",
+      "hooks/approval.py",
+      "hooks/phase_gate.py",
+      "skills/workflow-execute/SKILL.md",
+      "tests/README.md",
+      "tests/test_approval_hook.py",
+      "tests/test_hook_speed.py",
+      "tests/test_offers.py"
+    ],
+    "operations": [
+      "git commit",
+      "git pull",
+      "git push"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "D:\\workflow-paperclip and its transcript (read only)",
+      "changing any file the remote commits brought in, apart from merging tests/README.md",
+      "how the owner's own words are judged",
+      "reinstalling the Codex copies or any global settings",
+      "version bump, release, tags, other branches, force push"
+    ],
+    "conditions": [
+      "one commit with only this task's files, rebased onto origin/main with `git pull --rebase origin main`; no merge commit, no force push",
+      "push only after the full suite and tools/validate.py pass on the rebased tree; on any failure, stop and report before pushing"
+    ],
+    "checks": [
+      "git status shows main up to date with origin/main after the push",
+      "python -X utf8 -I tools/validate.py on the rebased tree",
+      "python -X utf8 -m unittest discover -s tests -p \"test_*.py\" on the rebased tree with no failure"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "52afb459b1c4d9e2",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "625123f0-717d-48fd-8f7e-b76caf7bb947",
+    "turn": "3b64a4b3-f22b-4487-ae59-bb4dfbe07b3a",
+    "presentation": "5c43a737-03ea-48f2-bef2-8051905ba0db",
+    "recorded": "2026-11-24T13:42:12+00:00"
+  },
+  "supersedes": 2,
+  "superseded_by": null
+}

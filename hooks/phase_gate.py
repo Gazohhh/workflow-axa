@@ -646,6 +646,21 @@ def patch_files(text: str, strip: int = 1) -> list[str]:
     return files
 
 
+OFFER_WRITES = ('create', 'revise', 'derive', 'presentation', 'approve', 'revoke')
+OFFER_LABEL = '`record.py offer '
+DERIVE_LABEL = re.compile(r'\A`record\.py offer derive` writing (.*) from offer #(\S*)\Z')
+
+
+def derive_label(folder: str, parent: str) -> str:
+    return f'`record.py offer derive` writing {folder} from offer #{parent}'
+
+
+def derive_call(label: str) -> tuple[str, str] | None:
+    """The folder and parent offer of a `record.py offer derive` target, as shell_writes labelled it."""
+    found = DERIVE_LABEL.match(label)
+    return (found.group(1), found.group(2)) if found else None
+
+
 def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> list[tuple[str, str, str]]:
     """What a shell command writes, best effort: ('path', absolute path, label), ('git', repository folder, label) and
     ('ambiguous', relative path, label) for a write relative to a folder an unresolved variable named (cwd None)."""
@@ -758,8 +773,21 @@ def shell_writes(command: str, cwd: str | None, powershell: bool = False) -> lis
             # current task never followed it.
             script = next(i for i, a in enumerate(args) if slash(expand(a)).endswith(('record.py', 'render_report.py')))
             rest = args[script + 1:]
-            if slash(expand(args[script])).endswith('record.py'):
-                files = [a for a in rest if not a.startswith('-')][1:2]  # record.py <verb> <file> ...
+            operands = [a for a in rest if not a.startswith('-')]
+            if slash(expand(args[script])).endswith('record.py') and operands[:1] == ['offer']:
+                files, verb, operands = [], (operands[1:2] or [''])[0], operands[2:]
+                if '-h' in rest or '--help' in rest or verb not in OFFER_WRITES:
+                    pass
+                elif verb == 'derive':
+                    folder = expand(operands[0]) if operands else ''
+                    label = derive_label(folder, operands[1] if len(operands) > 1 else '')
+                    resolved = folder and '$' not in folder and (here is not None or is_absolute(folder))
+                    writes.append(('path', absolute(folder, here or ''), label) if resolved else
+                                  ('ambiguous', folder, label))
+                elif operands:
+                    add(operands[0], f'`record.py offer {verb}` writing {operands[0]}')
+            elif slash(expand(args[script])).endswith('record.py'):
+                files = operands[1:2]  # record.py <verb> <file> ...
             else:
                 files = [rest[i + 1] for i, a in enumerate(rest[:-1]) if a == '--output']
             for target in files:
@@ -874,7 +902,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 27  # 26: T7 waiver and unnumbered chat presentations; 27: small offers keep their root
+STATE_VERSION = 28  # 26: T7 waiver and unnumbered chat presentations; 27: small offers keep their root; 28: T3 host messages
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -925,16 +953,23 @@ def user_text(entry: dict) -> str | None:
     return human_words(text)
 
 
-DELEGATE_REPORT = re.compile(r'\A\s*Delegated task node:delegated-task:\S+ \(.*\) \[[^\]\n]+\]:')
+DELEGATE_REPORT = re.compile(r'\A\s*Delegated task node:delegated-task:\S+ \(.*\)(?: in child thread \S+)? '
+                             r'\[[^\]\n]+\]:')
+HOST_NOTICE = re.compile(r'\A\s*(?:Context handoff \(|Note: the T3 server restarted,)')
+WRAPPED_MESSAGE = '\n\nUser message:\n'
 
 
 def human_words(text: str) -> str | None:
     """The typed text without host notes and IDE context, or None for command output and notifications. T3 Code hands
     a finished delegate's result back as a plain user message with no origin field; only its opening line tells it
-    from the owner, so the match is anchored at the start and an owner quoting one later in a message still speaks."""
+    from the owner, so the match is anchored at the start and an owner quoting one later in a message still speaks.
+    T3's context handoffs and restart notes arrive the same way; only the message they deliver after
+    "User message:" can be the owner's (workflow-paperclip, 2026-11-24)."""
     if re.search(r'<(?:local-command-std\w+|bash-std\w+|bash-input|user-prompt-submit-hook|task-notification)>', text):
         return None
     text = IDE_TEXT.sub(' ', re.sub(r'<system-reminder>.*?</system-reminder>', ' ', text, flags=re.S))
+    if HOST_NOTICE.match(text):
+        return human_words(text.split(WRAPPED_MESSAGE, 1)[1]) if WRAPPED_MESSAGE in text else None
     return None if DELEGATE_REPORT.match(text) else text
 
 
@@ -1341,9 +1376,9 @@ def feed(state: dict, entry: dict, raw: str, cwd: str):
                 set_task(state, found.group(1), n, slash(str(data.get('file_path') or data.get('notebook_path') or '')),
                          written=True)
         elif name in SHELLS:
-            for kind, where, _ in shell_writes(str(data.get('command', '')), str(entry.get('cwd') or cwd),
-                                               name == 'PowerShell'):
-                for task in TASK_PATH.findall(where + '/') if kind == 'path' else []:
+            for kind, where, label in shell_writes(str(data.get('command', '')), str(entry.get('cwd') or cwd),
+                                                   name == 'PowerShell'):
+                for task in TASK_PATH.findall(where + '/') if kind == 'path' and not label.startswith(OFFER_LABEL) else []:
                     set_task(state, task, n, where, written=True)
 
 

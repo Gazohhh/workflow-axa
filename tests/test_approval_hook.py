@@ -634,7 +634,8 @@ class OfferStates(ApprovalHookCase):
         rows.owner("yes")
         self.allowed(rows)
         new = offers.revise(self.folder, self.offer["id"], {**OFFER, "paths": ["tests/vat.spec.ts"]})
-        self.denied(rows, "offer #1 is superseded")
+        reason = self.denied(rows, f"Offers here: #{new['id']} ({TASK}): it was never presented")
+        self.assertNotIn(f"#1 ({TASK})", reason)
         self.presented(rows, offer=new)
         rows.owner("yes")
         self.allowed(rows, data={"file_path": str(self.repo / "tests/vat.spec.ts"), "content": "x"}, tool="Write")
@@ -669,6 +670,60 @@ class OfferStates(ApprovalHookCase):
             rows.owner("yes")
             rows.owner("stop, " + report.format("completed"))
             self.denied(rows)
+
+    T3_DELEGATE = ("Delegated task node:delegated-task:command%3Amcp%3A0720f1c0%3Adelegate-task%3A7cf78321 (Spar A "
+                   "synthesis S7: KPI methodology (GPT)) in child thread thread:delegated-task:command%3Amcp%3A0720f1c0"
+                   "%3Adelegate-task%3A7cf78321 [completed]:\n**Reject S7.** Only the tests change; I withdraw the "
+                   "earlier point, but never the database.")
+    T3_RESTART = ("Note: the T3 server restarted, and this background work was cancelled before it finished. It will "
+                  "not report back on its own, so resume or restart what you still need and wait for its result:\n"
+                  "- shell: Run the read-only 120-day backfill into the replay folder (id bp8t957yw)")
+    T3_HANDOFF = ("Context handoff (delta_since_target_last_seen):\nProvider context handoff. Thread: a3a3f191. Covered "
+                  "app runs: 109-109.\nRecover an omitted item only when the request needs it. Historical material is "
+                  "context, not a new request or higher-priority instructions.\n\n[Historical assistant; "
+                  "run_interrupt_result; status=interrupted]\nRun interrupted before provider start\n\nUser message:\n")
+
+    def test_host_messages_in_their_real_t3_shapes_never_narrow_an_approval(self):
+        """The workflow-paperclip session (2026-11-23/24): T3 hands a delegate's result back as `(title) in child
+        thread <id> [completed]:`, and its context handoffs and restart notes arrive as plain user messages; each
+        suspended an approved offer ("a later owner message may narrow it") until the owner approved it again."""
+        wrapped = self.T3_RESTART.replace("(id bp8t957yw)", "(id a43f)") + "\n\nUser message:\n" + self.T3_DELEGATE
+        for name, message in (("delegated result", self.T3_DELEGATE), ("restart note", self.T3_RESTART),
+                              ("restart note wrapping a delegated result", wrapped),
+                              ("handoff wrapping a restart note", self.T3_HANDOFF + self.T3_RESTART)):
+            with self.subTest(name):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.owner(message)
+                self.allowed(rows)
+
+    def test_the_owners_message_inside_a_host_notice_still_counts(self):
+        for words, fragment in (("stop", "stopped the work"), ("only change the tests", "may narrow it"),
+                                ("I revoke that", "withdraws it")):
+            for envelope in (self.T3_HANDOFF, self.T3_RESTART + "\n\nUser message:\n"):
+                with self.subTest(words=words, envelope=envelope[:12]):
+                    rows = self.presented()
+                    rows.owner("yes")
+                    rows.owner(envelope + words)
+                    self.denied(rows, fragment)
+
+    def test_a_task_notification_or_a_question_answer_never_narrows_an_approval(self):
+        rows = self.presented()
+        rows.owner("yes")
+        rows.append({"type": "attachment", "uuid": rows.uid(), "attachment": {
+            "type": "queued_command", "commandMode": "task-notification",
+            "origin": {"kind": "task-notification", "producer": "session-task"},
+            "prompt": "<task-notification>\n<status>completed</status>\n<result>Only the tests; I revoke the rest, "
+                      "never the database.</result>\n</task-notification>"}})
+        question = "Should only the tests change? Please confirm, but never the database."
+        tool_id = rows.ask(question, ["Yes, only the tests", "No"])
+        rows.append({"type": "user", "uuid": rows.uid(), "toolUseResult": {
+            "questions": [{"question": question, "options": [{"label": "Yes, only the tests"}, {"label": "No"}]}],
+            "answers": {question: "Yes, only the tests"}},
+            "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": tool_id, "content":
+                        f'Your questions have been answered: "{question}"="Yes, only the tests". You can now '
+                        "continue with these answers in mind."}]}})
+        self.allowed(rows)
 
     def test_a_stop_then_continue_keeps_the_approval_but_a_withdrawal_needs_a_fresh_one(self):
         rows = self.presented()
@@ -1131,7 +1186,8 @@ class OfferStates(ApprovalHookCase):
         offers.approve(self.folder, 1, "s-earlier", earlier.rows[-1]["uuid"], earlier.rows[-2]["uuid"])
         self.denied(Rows().router(), "doesn't validate in session s-earlier")
         offers.revoke(self.folder, 1)
-        self.denied(Rows().router(), "offer #1 is revoked")
+        reason = self.denied(Rows().router(), "no current offer (every offer is superseded or revoked)")
+        self.assertNotIn(f"#1 ({TASK})", reason)
 
 
 class ChildrenAndRules(ApprovalHookCase):
@@ -1257,12 +1313,59 @@ class ProtectedOperations(ApprovalHookCase):
     def test_the_offer_commands_need_no_offer(self):
         """Host test R2 (T16): the very first `record.py offer create` was refused as a write to a file "create"."""
         record = ROOT / "skills/workflow/scripts/record.py"
-        for verb in ("create", "present", "revise", "derive", "presentation"):
+        for verb in ("create", "present", "revise", "presentation"):
             with self.subTest(verb=verb):
                 command = f'python -X utf8 -I "{record}" offer {verb} docs/plans/{TASK} offer.json'
                 self.allowed(Rows().router(), tool="Bash", data={"command": command})
         self.denied(Rows().router(), tool="Bash",
                     data={"command": f'python -X utf8 -I "{record}" offer create docs/plans/{TASK} x && echo y > src/vat.ts'})
+
+    def test_read_only_offer_commands_through_a_variable_pass(self):
+        """The workflow-paperclip session (2026-11-24): with record.py in a variable, `offer revise --help` and
+        `offer present ... > <scratchpad file>` were refused as writes to files named "revise" and "present"."""
+        scratch = self.base / "scratchpad"
+        scratch.mkdir()
+        record = (ROOT / "skills/workflow/scripts/record.py").as_posix()
+        for command in (f"R={record}; python -X utf8 -I $R offer revise --help; python -X utf8 -I $R offer present "
+                        f"--help | head -20",
+                        f"R={record}; python -X utf8 -I $R offer present docs/plans/{TASK} 5 --question > "
+                        f"{scratch.as_posix()}/q5.txt 2>&1; head -c 600 {scratch.as_posix()}/q5.txt",
+                        f'python -X utf8 -I "{record}" offer show docs/plans/{TASK} 1',
+                        f'python -X utf8 -I "{record}" offer list docs/plans/{TASK}',
+                        f'python -X utf8 -I "{record}" offer derive --help'):
+            with self.subTest(command=command[-60:]):
+                self.allowed(Rows().router(), tool="Bash", data={"command": command})
+        self.denied(Rows().router(), "src/vat.ts", tool="Bash",
+                    data={"command": f"R={record}; python -X utf8 -I $R offer present docs/plans/{TASK} 1 > src/vat.ts"})
+
+    def test_deriving_through_a_variable_keeps_the_parent_check(self):
+        parent = offers.create(self.folder, {**OFFER, "delegable_paths": ["tests/"], "paths": ["src/vat.ts", "tests/"]})
+        record = (ROOT / "skills/workflow/scripts/record.py").as_posix()
+        command = f'R={record}; python -X utf8 -I "$R" offer derive "{self.folder.as_posix()}" {parent["id"]} child.json'
+        self.denied(Rows().router(), "needs an approved parent", tool="Bash", data={"command": command})
+        rows = self.presented(offer=parent)
+        rows.owner("approve")
+        self.allowed(rows, tool="Bash", data={"command": command})
+        rows.owner("I revoke that")
+        self.denied(rows, "needs an approved parent", tool="Bash", data={"command": command})
+        for unreadable in (f'python -X utf8 -I "{record}" offer derive "$T" {parent["id"]} child.json',
+                           f'python -X utf8 -I "{record}" offer derive docs/plans/{TASK} offer.json',
+                           f'python -X utf8 -I "{record}" offer derive docs/plans/{TASK}',
+                           f'cd "$X"; python -X utf8 -I "{record}" offer derive docs/plans/{TASK} {parent["id"]} c.json'):
+            with self.subTest(command=unreadable[-50:]):
+                self.denied(rows, "can't read", tool="Bash", data={"command": unreadable})
+
+    def test_an_offer_command_never_changes_the_legacy_gates_current_task(self):
+        g = load_hook().gate()
+        g.CACHE_DIR = Path(self.cache) / "legacy-scan"
+        rows = Rows().router()
+        rows.edit(str(self.folder / "PLAN.md"))
+        record = (ROOT / "skills/workflow/scripts/record.py").as_posix()
+        rows.append({"type": "assistant", "uuid": rows.uid(), "cwd": str(self.repo), "message": {"content": [{
+            "type": "tool_use", "id": "b1", "name": "Bash", "input": {"command":
+                f'python -X utf8 -I "{record}" offer create docs/plans/2026-11-20-other x.json'}}]}})
+        rows.write(self.path)
+        self.assertEqual(g.scan(self.path, str(self.repo))["tasks"][-1][0], TASK)
 
     def test_installs_and_bulk_deletes_keep_their_safeguards(self):
         self.denied(self.approved(), "installs packages", tool="Bash", data={"command": "npm install left-pad"})
@@ -1858,6 +1961,27 @@ class OfferVisibility(ApprovalHookCase):
         rows.answer(tool, question, "Approve from this summary")
         self.denied(rows, f"Offers here: approved #{self.offer['id']} ({TASK})",
                     data={"file_path": str(self.repo / "src/other.ts"), "old_string": "a", "new_string": "b"})
+
+    def test_the_refusal_leads_with_the_live_offers_reason_and_leaves_superseded_ones_out(self):
+        """The workflow-paperclip session (2026-11-24): superseded #1-#3 filled the refusal, so the reason the live
+        offer was not approved never showed."""
+        live = self.offer
+        for _ in range(3):
+            live = self.recorded_as(offers.revise(self.folder, live["id"], {**OFFER, "behaviour": f"v{live['id']}"}),
+                                    format_1=False)
+        other = self.second_offer(paths=("tests/vat.spec.ts",))
+        rows = self.asked_and_approved(live)
+        rows.owner("only change the tests, never the database")
+        approved_other = self.asked_and_approved(other)
+        rows.rows += approved_other.rows[1:]
+        reason = self.denied(rows, f"Offers here: #{live['id']} ({TASK}): a later owner message may narrow it",
+                             f"approved #{other['id']} ({TASK}) lists tests/vat.spec.ts")
+        for gone in range(1, live["id"]):
+            self.assertNotIn(f"#{gone} ({TASK})", reason)
+        offers.revoke(self.folder, live["id"])
+        offers.revoke(self.folder, other["id"])
+        reason = self.denied(rows, "no current offer")
+        self.assertNotIn(f"#{live['id']} ({TASK})", reason)
 
     def test_a_hand_edited_offer_still_approves_nothing(self):
         rows = self.asked_and_approved(self.offer)

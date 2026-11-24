@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "base": "8a56c42e0e1b23691d372c0ad2b92f026730cfef",
+  "dirty": {
+    "docs/spar/2026-11-24-approval-hook-fixes/SPAR.md": "6231535d93b06d3d"
+  },
+  "snapshots": {
+    "S1": {
+      "hooks/phase_gate.py": "06fb65ffd05932ef",
+      "hooks/approval.py": "130eb5ee2bb6875a",
+      "tests/test_approval_hook.py": "5d54357ce74142e5",
+      "tests/README.md": "cacbd5633bafb8e8",
+      "skills/workflow-execute/SKILL.md": "6def55e426e80845"
+    },
+    "S2": {
+      "tests/test_offers.py": "932dccea2820deb2"
+    }
+  }
+}

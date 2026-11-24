@@ -24,7 +24,7 @@ Reconfirm only missing authority, material changes or blockers.
 
 A lightweight edit runs one pass: build, its check, one review (step 6), then the short `workflow-deliver`. Before the first change, record the baseline once: `python -X utf8 -I ../workflow-deliver/scripts/completion_check.py baseline <project-root> <task-folder>`.
 
-**Briefs.** Every subagent brief starts with "The bar in this brief is the whole bar: add no check, gate or review round above it.", then gives what its step lists, pointing to files rather than copying them. A worker gets the ticket, acceptance, seams, allowed files, rules, FINDINGS documents, UI authority, output folder and starting `git status`. Subagents return evidence; you write the records.
+**Briefs.** Every subagent brief starts with "The bar in this brief is the whole bar: add no check, gate or review round above it.", then gives what its step lists, pointing to files rather than copying them. A worker gets the ticket, acceptance, seams, allowed files, rules, FINDINGS documents, UI authority, output folder and starting `git status`. A builder quotes the runner's verbatim summary line for every test count (for unittest, `Ran N tests … OK`) and gives a file:line for every claim about existing behaviour. Subagents return evidence; you write the records.
 
 ## The loop
 

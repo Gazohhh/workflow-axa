@@ -307,7 +307,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
     return events
 
 
-ENTRIES_VERSION = 2
+ENTRIES_VERSION = 3
 
 
 def entry_of(line: str) -> list | None:
@@ -705,7 +705,7 @@ def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-8|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+        key = g.digest(f"facts-9|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
                        f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:
@@ -1045,13 +1045,13 @@ def problem_for(event: dict) -> str | None:
     install = g.install_problem(event)
     if install:
         return install
-    targets = offer_command_targets(event, g.targets_of(event))
+    targets = g.targets_of(event)
     command = str((event.get("tool_input") or {}).get("command", ""))
-    if targets or DERIVE.search(command) or SETTINGS_RUN.search(command) or worktree_changes(event, project):
+    if targets or SETTINGS_RUN.search(command) or worktree_changes(event, project):
         current = read_events(transcript, Path(project.root or project.cwd))
     else:
         current = []
-    parent = derive_problem(event, project, transcript, current)
+    parent = derive_problem(targets, transcript, current)
     if parent:
         return parent
     protected, consent = settings_problem(event, current, transcript, targets)
@@ -1077,27 +1077,21 @@ def problem_for(event: dict) -> str | None:
     return problem
 
 
-OFFER_COMMAND = re.compile(r"record\.py[\"']?\s+offer\s+([\w-]+)\b")
-
-
-def offer_command_targets(event: dict, targets: list) -> list:
-    """`record.py offer <verb> <task-folder> ...` writes only that task's offers/ (offers.py checks it); the gate's
-    record.py parser reads the verb as the file written (host test R2 of T16), so that target is dropped."""
-    verbs = set(OFFER_COMMAND.findall(str((event.get("tool_input") or {}).get("command", ""))))
-    return [t for t in targets if not (t[0] == "path" and t[2].startswith("`record.py` writing ")
-                                        and Path(t[1]).name in verbs)]
-
-
-DERIVE = re.compile(r"record\.py[\"']?\s+offer\s+derive\s+(\"[^\"]+\"|'[^']+'|\S+)\s+#?(\d+)")
-
-
-def derive_problem(event: dict, project, transcript: Path, current: list[Event]) -> str | None:
+def derive_problem(targets: list, transcript: Path, current: list[Event]) -> str | None:
     """`record.py offer derive <task> <parent>` needs the parent's approval on record, but approvals are recorded when
     a write first relies on them (host test R10 of T16). So before the command runs, the parent is validated from the
-    conversation, which records it, or the command is refused with the reason."""
-    for folder_text, parent_id in DERIVE.findall(str((event.get("tool_input") or {}).get("command", ""))):
-        folder = Path(folder_text.strip("\"'"))
-        folder = folder if folder.is_absolute() else Path(project.cwd) / folder
+    conversation, which records it, or the command is refused with the reason. The call comes from the gate's own
+    parse of the command; one whose folder or parent this checker can't read is refused."""
+    g = gate()
+    for kind, where, label in targets:
+        call = g.derive_call(label)
+        if call is None:
+            continue
+        if kind != "path" or not call[1].isdigit():
+            return (f"workflow-axa: {label}: this checker can't read the task folder or the parent offer number, so "
+                    "it can't check the parent's approval. Write both explicitly (`record.py offer derive "
+                    "docs/plans/<task> <parent id> <file>`) and retry.")
+        folder, parent_id = Path(where), call[1]
         try:
             parent = offers().load(folder, int(parent_id))
         except offers().OfferError as exc:
@@ -1189,12 +1183,13 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
     root = Path(project.root or project.cwd)
     found, broken = project_offers(root)
     usable, why, unusable = [], list(broken), []
-    for folder, offer in found:
+    for folder, offer in sorted(found, key=lambda pair: -pair[1]["id"]):
         ok, reason = validated(folder, offer, transcript, current)
         if ok:
             usable.append((folder.name, offer))
         else:
-            why.append((folder.name, f"#{offer['id']} ({offer['task']}): {reason}"))
+            if offer["state"] not in ("superseded", "revoked"):
+                why.append((folder.name, f"#{offer['id']} ({offer['task']}): {reason}"))
             unusable.append((folder.name, (offer, reason)))
     task = session_task(current)
     usable, why, unusable = nearest_first(usable, task), nearest_first(why, task), nearest_first(unusable, task)
@@ -1208,7 +1203,7 @@ def rest_of_call(event: dict, g, project, transcript: Path, current: list[Event]
             rel = g.relative(where, project.root_of(where))
             authority = [o for o in usable if covers(o, rel)]
             if not authority:
-                return no_offer(label, rel, why, usable)
+                return no_offer(label, rel, why, usable, bool(found))
             if not settings().css_allowed(Path(project.root_of(where))) \
                     and touches_styling(event, where, rel, Path(project.root_of(where))):
                 return (f"workflow-axa: {label} changes styling, and CSS is off here (the machine switch in "
@@ -1528,12 +1523,17 @@ def operation_help(name: str, unusable: list[tuple[dict, str]]) -> str:
             "or the offer sent through a message tool, approves nothing.")
 
 
-def no_offer(label: str, rel: str, why: list[str], usable: list[dict]) -> str:
-    parts = [f"approved #{o['id']} ({o['task']}) lists {', '.join(o['canonical']['paths']) or 'no paths'}"
-             for o in usable[:3]]
-    parts += why[:3]
+def no_offer(label: str, rel: str, why: list[str], usable: list[dict], any_offer: bool) -> str:
+    """Live offers that failed to validate come first, newest first, because their reasons explain the refusal; then
+    approved offers that cover other files. Superseded and revoked offers are left out."""
+    parts = why[:3] + [f"approved #{o['id']} ({o['task']}) lists {', '.join(o['canonical']['paths']) or 'no paths'}"
+                       for o in usable[:3]]
     if parts:
         first = f" Offers here: {'; '.join(parts)}. Present the offer that should cover it (`record.py offer present`),"
+    elif any_offer:
+        first = (" This project has no current offer (every offer is superseded or revoked). Create one through "
+                 "`workflow-specify` step 5 (`record.py offer create`), present it (`record.py offer present`, as the "
+                 "end of your reply),")
     else:
         first = (" This project has no offers yet. Create one through `workflow-specify` step 5 (`record.py offer "
                  "create`), present it (`record.py offer present`, as the end of your reply),")

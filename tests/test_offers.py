@@ -349,8 +349,9 @@ class RecordCommandLine(unittest.TestCase):
             task.mkdir()
             source = Path(tmp) / "offer.json"
             source.write_text(json.dumps(BASE), encoding="utf-8")
+            env = {**os.environ, "WORKFLOW_AXA_SETTINGS": str(Path(tmp) / "settings.json")}
             run = lambda *a: subprocess.run([sys.executable, "-X", "utf8", "-I", str(RECORD), "offer", *a],
-                                            capture_output=True, text=True, encoding="utf-8")
+                                            capture_output=True, text=True, encoding="utf-8", env=env)
             self.assertIn("offer #1 draft", run("create", str(task), str(source)).stdout)
             shown = run("present", str(task), "1")
             self.assertIn("## What you are asked to approve", shown.stdout)
