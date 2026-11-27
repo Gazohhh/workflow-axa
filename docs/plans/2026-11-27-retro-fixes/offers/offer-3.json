@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 3,
+  "task": "2026-11-27-retro-fixes",
+  "created": "2026-11-27T13:48:42+00:00",
+  "canonical": {
+    "behaviour": "Release the retro fixes as workflow-axa 2.13.0 and install it on this machine (ticket T5). In this worktree: set every version string to 2.13.0 (plugin.json, rules version.json package_version, the report renderer's version number, README, UPGRADE, the four behavioral case files); add the 2.13.0 CHANGELOG entry, an UPGRADE note, a DESIGN.md section and a tests/README.md section for the new tests; regenerate VALIDATION.md with verification_summary.py --run --write, which runs the whole suite; build the ZIP into .artifacts/release/. Commit as Release 2.13.0, push to origin main as a fast-forward, then a release-records commit. Install: update D:/workflow-axa with git pull --ff-only origin main (if the hook refuses that from this worktree, you run that one command); run claude plugin marketplace update gazohhh and claude plugin update workflow-axa@gazohhh; replace the 22 skill folders in C:/Users/Cem/.agents/skills from the ZIP (they equal 2.12.0 byte for byte now; retro stays). Then check the installed copies and one live hook call. The version is 2.13.0, a minor release, because it adds the run: operation and a session-start warning.",
+    "paths": [
+      ".artifacts/release/",
+      ".claude-plugin/plugin.json",
+      "CHANGELOG.md",
+      "README.md",
+      "UPGRADE.md",
+      "VALIDATION.md",
+      "docs/DESIGN.md",
+      "docs/plans/2026-11-27-retro-fixes/",
+      "skills/codebase-map/scripts/render_report.py",
+      "skills/rule-maker/rules/version.json",
+      "tests/README.md",
+      "tests/behavioral/engineering-rules.json",
+      "tests/behavioral/rules-audit-kit.json",
+      "tests/behavioral/rules-readiness.json",
+      "tests/behavioral/ui-design.json"
+    ],
+    "operations": [
+      "claude plugin marketplace update gazohhh",
+      "claude plugin update workflow-axa@gazohhh",
+      "git add",
+      "git commit",
+      "git pull",
+      "git push",
+      "run: python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "C:/Users/Cem/.agents/skills/retro and any folder there that is not one of the 22 package skills",
+      "global CLAUDE.md, Codex AGENTS.md and ~/.workflow-axa (checked, not written)",
+      "rules version (stays 1.9.0) and any skill, hook or script behaviour",
+      "tags, GitHub releases, force push"
+    ],
+    "conditions": [
+      "the installed Codex copies still equal the 2.12.0 tree right before they are replaced; otherwise stop and ask",
+      "the push is a fast-forward of origin/main (8e2744b); D:/workflow-axa stays clean and fast-forwards, otherwise stop and ask"
+    ],
+    "checks": [
+      "C:/Users/Cem/.agents/skills equals the release commit for all 22 skills; audit_installation.py --check-global and global_policy.py --check from the installed copy",
+      "a live PowerShell call with 2>$null in this multi-worktree repository is allowed by the installed hook",
+      "origin/main and D:/workflow-axa at the release-records commit; installed_plugins.json says 2.13.0",
+      "python -X utf8 -I tools/validate.py PASS before and after VALIDATION.md is written",
+      "verification_summary.py --run --write: the suite passes (1736 ran, OK, 14 skipped expected)"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "05609ef11b62ddc1",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "b7506a41-b8f7-4d60-bed7-961ca1f9d0fe",
+    "turn": "7ecd90ba-6340-4d81-a969-00e388ce9dc8",
+    "presentation": "128bc5ac-9e11-4a17-89a1-919abeba84de",
+    "recorded": "2026-11-27T14:05:30+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

@@ -8,6 +8,7 @@
 | T2 | Fewer false refusals: placement, folder paths, PHP signatures, `run:` operations | Verified | T1 |
 | T3 | Name the completion baseline in "Before you start" and warn when it is missing | Verified | none |
 | T4 | Session start reports missing ~/.workflow-axa files | Verified | none |
+| T5 | Release 2.13.0 and install it | Not started | T1-T4 |
 
 ## Tickets
 
@@ -123,3 +124,36 @@ References:
 
 ## Whole-task checks
 - `python -X utf8 -B tools/validate.py` and `python -X utf8 -B -m unittest discover -s tests -p "test_*.py"` in the worktree, counts compared with the baseline (A9).
+
+
+### T5 — Release 2.13.0 and install it (revision 2)
+Status: Not started
+
+What needs to happen: publish the retro fixes as release 2.13.0 and install it on this machine for Claude and Codex, so new sessions run the new hooks and skills.
+
+What should work:
+- origin/main carries a "Release 2.13.0" commit whose version strings all say 2.13.0, and validate.py passes on it.
+- D:/workflow-axa (the live plugin checkout) is at that commit; the Claude plugin registration says 2.13.0.
+- ~/.agents/skills holds the 22 skills of the 2.13.0 ZIP; `retro` is left alone.
+- The live hook allows a read-only PowerShell command with `2>$null` in this multi-worktree repository.
+
+Technical details:
+- Release files: .claude-plugin/plugin.json, skills/rule-maker/rules/version.json, skills/codebase-map/scripts/render_report.py (RENDERER_VERSION only), README.md, UPGRADE.md, CHANGELOG.md, docs/DESIGN.md, tests/README.md (a section for the new tests), tests/behavioral/{engineering-rules,rules-audit-kit,rules-readiness,ui-design}.json (candidate_version), VALIDATION.md (by verification_summary.py), this task folder. Rules version stays 1.9.0.
+- ZIP: tools/build_release.py writes .artifacts/release/workflow-axa-2.13.0.zip (ignored by Git).
+- Install order: push; update D:/workflow-axa with `git pull --ff-only origin main` (the hook refuses this from a session in another worktree, so the owner may need to run it); `claude plugin marketplace update gazohhh` and `claude plugin update workflow-axa@gazohhh`; replace the 22 folders in ~/.agents/skills from the ZIP.
+- TDD: no, a release and install has no behaviour of its own; the checks below prove it.
+
+Documents: README.md, UPGRADE.md, CHANGELOG.md, docs/DESIGN.md, tests/README.md, VALIDATION.md
+
+How to verify:
+- `python -X utf8 -I tools/validate.py` before and after VALIDATION.md is written.
+- `python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md` (runs the whole suite).
+- `git log origin/main -1`; `git -C D:/workflow-axa log -1`; installed_plugins.json version; ~/.agents/skills/rule-maker/rules/version.json; compare_installed against the release commit; `python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global` from the installed copy; global_policy.py --check; one live PowerShell call with `2>$null`.
+
+Verification: not run
+
+References:
+- Supports: revision 2 request
+- Depends on: T1, T2, T3, T4
+- Evidence: FINDINGS E14, E15, E16 (PLAN "Revision 2")
+- Rules: AGENTS.md (releases read versions from plugin.json and version.json; installation and global settings need explicit approval; verification_summary.py --run --write needs the owner's OK)

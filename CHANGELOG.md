@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.13.0 — agent messages are not the owner's; fewer false refusals (2026-11-27)
+
+Task records: docs/plans/2026-11-27-retro-fixes. From a retro of two long sessions (Hooqd and the Xerocast launcher).
+
+**Agent messages.** T3 Code delivers a message from another agent as a plain user message that starts with `[T3 Code: the agent in T3 thread "…" sent this message, not the user.]`. The approval hook now ignores such a message: it cannot approve, narrow, withdraw, pause or resume an offer. Before, a coordinator agent's "only" or "but" suspended an approved offer. Narrowing words inside fenced code or `>` quote lines no longer count either, so pasted output does not narrow an approval. A withdrawal is still read from the whole message, and the owner's own words are read as before.
+
+**Fewer false refusals.** In a repository with several worktrees, the hook refused commands it could not place. These now pass:
+- `sh -n <script>`, PowerShell `2>$null`, the command text after `adb shell`;
+- the message of `git commit -m`;
+- a quoted heredoc that one `record.py` call or `git commit -F -` reads as data.
+
+A heredoc that a shell or interpreter reads is still judged by its body. Other fixes:
+- An offer path `folder/` also covers the folder itself.
+- `--name:` counts as a CSS custom property only in files that can carry CSS, so a PHP console signature such as `{--force : …}` is not styling.
+- An approved offer can list `run: <exact command>` for a project's own test runner. Only that exact text passes the placement check.
+
+**Baseline and machine files.** `workflow-execute` names the completion baseline (`completion_check.py baseline`) under "Before you start" for every route, and `open_items.py --task` warns when implementation started without `completion.json`. Session start reports a missing `~/.workflow-axa/settings.json` or `ARTIFACTS.md` when the global CLAUDE.md names that folder.
+
+**Tests.** Nine new tests in `test_approval_hook.py`, `test_offers.py`, `test_open_items.py` and `test_duplicate_skills_hook.py`; each failed on 2.12.0.
+
+**Checked:** full suite and validate (VALIDATION.md); an independent review on both axes plus blast radius in four rounds, eight hook findings and one spec finding repaired, the last round passed.
+
+**Not checked:** a live T3 session with an agent-sent message; a live PowerShell or adb session. Unfenced pastes still narrow an offer, and `adb shell "echo $(rm $p)"` passes as it did before.
+
 ## 2.12.0 — reviews read the output first; cited sources are opened (2026-11-24)
 
 Task records: docs/plans/2026-11-24-reviewer-output-and-sources.

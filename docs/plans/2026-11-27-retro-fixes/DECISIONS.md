@@ -9,3 +9,6 @@
 - D6 (2026-11-27, by: user): offer #1 (cb12000e32d57753) approved. The owner answered "Approve from this summary" to the one question in this thread (question tool). Status: settled.
 
 - D7 (2026-11-27, by: user): after the delivery the owner answered "yes do it" to "whether to commit and merge this branch, and whether to restore ARTIFACTS.md". That plain answer approves no protected action, so offer #2 (1ac1ca1101648226) listed git add, git commit, git push to origin main and the global_policy.py --apply run; the owner answered "Approve from this summary (Recommended)" (question tool). Status: settled.
+
+- D8 (2026-11-27, by: agent): release version 2.13.0, a minor version (PLAN "Revision 2"). Shown in offer #3; the owner could change it. Status: settled with D9.
+- D9 (2026-11-27, by: user): offer #3 (05609ef11b62ddc1, release 2.13.0 and install) approved: the owner answered "Approve from this summary (Recommended)" (question tool), after asking "make a new release if you did not already and install the new plugin." Status: settled.

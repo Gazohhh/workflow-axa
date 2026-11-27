@@ -11,7 +11,7 @@
 - Blockers: none
 - Changed files: hooks/approval.py, hooks/phase_gate.py, hooks/duplicate_skills.py, skills/workflow/scripts/offers.py, skills/workflow/scripts/open_items.py, skills/workflow-execute/SKILL.md, skills/workflow-specify/SKILL.md, tests/test_approval_hook.py, tests/test_offers.py, tests/test_open_items.py, tests/test_duplicate_skills_hook.py
 - Scope paths: `hooks/approval.py`, `hooks/phase_gate.py`, `hooks/duplicate_skills.py`, `skills/workflow/scripts/offers.py`, `skills/workflow/scripts/open_items.py`, `skills/workflow-execute/SKILL.md`, `tests/`
-- Next safe action: offer #2 approved (D7): commit, push to origin main, restore ARTIFACTS.md; then the owner installs in D:/workflow-axa
+- Next safe action: published to origin/main 8e2744b and ARTIFACTS.md restored (Outcome); next, with the owner's OK, update D:/workflow-axa from origin/main and run the suite there
 
 ## Working context
 - Owner: Cem. The request was relayed by the coordinator agent of the Hooqd and Xerocast launcher thread (T3 thread 90c9636a), at the owner's request. A relay approves nothing; the owner answers here.
@@ -100,3 +100,17 @@ Machine note: C:/Users/Cem/.workflow-axa/ has settings.json but no ARTIFACTS.md,
 Kept evidence: this task folder and completion.json. Scratch logs in the session scratchpad are disposable.
 
 Next safe action: the owner decides whether to commit this branch, merge it and install it as the live plugin; each needs its own approval.
+
+
+Published 2026-11-27 under offer #2 (D7): commits 1e7e07a (the fixes and records) and 8e2744b (the hook's offer #2 approval record) on retro-fixes, pushed as a fast-forward to origin/main (ee0e979..8e2744b). global_policy.py --apply wrote C:/Users/Cem/.workflow-axa/ARTIFACTS.md; --check now reports MATCH for all four files (V8). D:/workflow-axa is not updated yet, so live sessions still run the 2.12.0 hooks. This note is written after the push and is not committed.
+
+## Revision 2: release 2.13.0 and install (2026-11-27)
+
+Request (owner, after the publish): "make a new release if you did not already and install the new plugin." No release was made yet: origin/main 8e2744b still says 2.12.0. Recipe: Other (release and install) — build steps from the phases; one ticket (T5); Agreement: not required — one-ticket offer.
+
+Findings for this revision:
+- E14: version strings live in .claude-plugin/plugin.json, README.md title, UPGRADE.md, VALIDATION.md, skills/rule-maker/rules/version.json (package_version), skills/codebase-map/scripts/render_report.py (RENDERER_VERSION) and the candidate_version of four tests/behavioral/*.json files; release 2.12.0 (323c7f9) also added CHANGELOG, README, UPGRADE and docs/DESIGN.md text, then a separate "release records" commit.
+- E15: installed now: Claude plugin cache 2.12.0 from ee0e979 (installed_plugins.json); the gazohhh marketplace is the directory D:/workflow-axa, whose main checkout is clean at ee0e979, so live hooks run from it. Codex copies in ~/.agents/skills: all 22 skills equal the ee0e979 tree byte for byte (232 files, none differ, missing or extra); one extra folder `retro` (archived, not in the package) stays.
+- E16: tools/build_release.py writes dist/ when Git ignores it, else .artifacts/release/; verification_summary.py --run --write runs the suite and rewrites VALIDATION.md's current section.
+
+Version choice (by: agent, D8): 2.13.0, a minor version, because the release adds the `run:` offer operation and a new session-start warning, as 2.12.0 was minor for new review rules; 2.11.1 was a patch for fixes only.

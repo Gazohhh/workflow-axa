@@ -1,4 +1,4 @@
-# Workflow AXA — 2.12.0
+# Workflow AXA — 2.13.0
 
 **One command:** `/workflow` (Claude plugin: `/workflow-axa:workflow`). The agent reads your repository, clarifies consequential choices, presents an offer and asks one question, then builds and checks the approved work. You can also ask it to **explain or review** code without creating task records or an offer.
 
@@ -44,6 +44,8 @@ Full replacement package: **22 skills** (14 workflow-axa skills plus 8 that bega
 `code-review` also checks comments and reader load, and adds a blast-radius step when anything outside the diff reads what changed. That step follows `skills/code-review/BLAST-RADIUS.md`: it proves the facts a change is safe because of as far as running code allows, or marks them unproven, and looks where a search stops. Planning records those safety assumptions, every recipe except new-project names the step, and "what could this break?" gets the same report as an inspection. The interrogate, no-comments, reader-load and wait-what ideas were adapted from pstack and Matt Pocock's skills without copying text. The blast-radius method and the Unslop tells (below) adapt pstack text under its MIT licence ([VENDORED-SKILLS.md](VENDORED-SKILLS.md)).
 
 When the work makes something a person reads, such as a message, report, dashboard or document, code review, plan review and `/spar` start with an output read. A fresh reviewer sees only the finished output and who reads it, says which question each part answers, and names the obvious questions left out. The owner gets those in one question before delivery, except the ones that the agreement or the approved offer excludes in words. Agent instructions and rewordings that keep the content are left out. Rule, with its other cases (plans, no subagents): "Output read" in [AUDIT.md](skills/workflow/AUDIT.md).
+
+A message that another agent sends through T3 Code never approves, narrows or stops an offer; only the owner's own messages do. An offer can list `run: <exact command>` for a project's own test runner that the approval hook would otherwise refuse in a repository with several worktrees.
 
 ## This update: `/workflow` routes to four phase skills
 

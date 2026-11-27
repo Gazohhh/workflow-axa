@@ -1,4 +1,8 @@
-# Upgrade to workflow-axa 2.12.0
+# Upgrade to workflow-axa 2.13.0
+
+## Upgrade to 2.13.0 (from 2.12.0)
+
+No migration. Update the plugin (`claude plugin marketplace update gazohhh`, `claude plugin update workflow-axa@gazohhh`) and replace the Codex skill copies from the release ZIP, then start new sessions: the hooks (`hooks/approval.py`, `hooks/phase_gate.py`, `hooks/duplicate_skills.py`) changed, and a running session keeps the old ones until it restarts. Their caches get new versions, so the first call after the update reads each transcript once in full. Saved offers and task records stay valid. An offer may now list `run: <exact command>` among its operations. The rules version stays 1.9.0.
 
 ## Upgrade to 2.12.0 (from 2.11.1)
 

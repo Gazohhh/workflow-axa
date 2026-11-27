@@ -47,3 +47,5 @@
 - Review S2: code-review subagent ad40af97 (independent) failed: repair diff for S1 (F5-F7)
 - Review S3: code-review subagent ad40af97 (independent) failed: repair diff for S2 (F8)
 - Review S4: code-review subagent ad40af97 (independent) passed: repair diff for S3; the final state of all 11 files (whole-feature review was S1 plus these repair reviews)
+
+- V8 (offer #2 checks): `git status --short` empty after commit 8e2744b; `git push origin retro-fixes:main` printed `ee0e979..8e2744b  retro-fixes -> main`; `git log origin/main --oneline -1` shows 8e2744b; `global_policy.py --check` before apply: ARTIFACTS.md MISSING, the other three MATCH; after `--apply`: MATCH for all four. UNTESTED — host loading of ARTIFACTS.md in a fresh session.

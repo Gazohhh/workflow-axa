@@ -211,6 +211,10 @@ The CSS rule became one switch per machine, off by default: the owner wanted one
 
 The router picks one recipe from `flows/` for the kind of job, and `FALLBACKS.md` names what to do when a tool or check is missing, so a missing tool no longer stops work silently. The package is smaller: `resume` replaces two status skills, `rule-maker` diagnose replaces `workflow-doctor`, two skills are archived and `simple-english` became reference text. Three user-invoked skills are new: `interrogate`, `no-comments` and `wait-what`.
 
+## Agent messages are not the owner, and placement reads what runs here (2.13.0)
+
+T3 Code marks a message from another agent with an opening line, as it does for delegated results. The hook drops such a message completely, a stop included, because the owner can still stop the work and an agent's words carry no authority of their own. The placement check for repositories with several worktrees kept refusing commands that change nothing on this machine. It now reads a commit message, the text after `adb shell` and a heredoc that one `record.py` call or `git commit -F -` reads as data as text, not as commands. Every other heredoc is still read, because a review found four ways to run a shell through a dropped body. A project's own test runner gets through an approved offer's `run: <exact command>`, not a project file, because any agent could edit such a file. Source: docs/plans/2026-11-27-retro-fixes.
+
 ## The output before the plan, the source before the claim (2.12.0)
 
 The owner reported the cause in the request for this change. Two models agreed on a daily report through many review rounds because both checked it against its plan. Neither asked what the plan left out. The owner saw in one live message that every number was compared with a usual day and none with an earlier period. So a fresh reviewer now reads the finished output without the plan. A left-out question is in no spec, so code-review would have made it a note that starts nothing. It goes to the owner instead, together with the others in one question, because a test reader named 13.
