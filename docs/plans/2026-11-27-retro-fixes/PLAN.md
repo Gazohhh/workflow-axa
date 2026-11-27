@@ -11,7 +11,7 @@
 - Blockers: none
 - Changed files: hooks/approval.py, hooks/phase_gate.py, hooks/duplicate_skills.py, skills/workflow/scripts/offers.py, skills/workflow/scripts/open_items.py, skills/workflow-execute/SKILL.md, skills/workflow-specify/SKILL.md, tests/test_approval_hook.py, tests/test_offers.py, tests/test_open_items.py, tests/test_duplicate_skills_hook.py
 - Scope paths: `hooks/approval.py`, `hooks/phase_gate.py`, `hooks/duplicate_skills.py`, `skills/workflow/scripts/offers.py`, `skills/workflow/scripts/open_items.py`, `skills/workflow-execute/SKILL.md`, `tests/`
-- Next safe action: published to origin/main 8e2744b and ARTIFACTS.md restored (Outcome); next, with the owner's OK, update D:/workflow-axa from origin/main and run the suite there
+- Next safe action: none; 2.13.0 released and installed (Outcome, V9-V11). Restart sessions to load the plugin update.
 
 ## Working context
 - Owner: Cem. The request was relayed by the coordinator agent of the Hooqd and Xerocast launcher thread (T3 thread 90c9636a), at the owner's request. A relay approves nothing; the owner answers here.
@@ -114,3 +114,6 @@ Findings for this revision:
 - E16: tools/build_release.py writes dist/ when Git ignores it, else .artifacts/release/; verification_summary.py --run --write runs the suite and rewrites VALIDATION.md's current section.
 
 Version choice (by: agent, D8): 2.13.0, a minor version, because the release adds the `run:` offer operation and a new session-start warning, as 2.12.0 was minor for new review rules; 2.11.1 was a patch for fixes only.
+
+
+Released and installed 2026-11-27 under offer #3 (D9), ticket T5 verified. Release 2.13.0 is commit 312a56c on origin/main (V9); the ZIP is .artifacts/release/workflow-axa-2.13.0.zip. Codex copies in ~/.agents/skills equal the release (V10). The owner pulled D:/workflow-axa to 312a56c; the Claude plugin is 2.13.0 and the live hook passed both checks (V11). A release-records commit follows with these lines. Not done: tags or a GitHub release; removing the archived ~/.agents/skills/retro. Running sessions keep the old hooks loaded only until their next call reads the files; Claude asks for a restart to apply the plugin update.

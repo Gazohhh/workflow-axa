@@ -8,7 +8,7 @@
 | T2 | Fewer false refusals: placement, folder paths, PHP signatures, `run:` operations | Verified | T1 |
 | T3 | Name the completion baseline in "Before you start" and warn when it is missing | Verified | none |
 | T4 | Session start reports missing ~/.workflow-axa files | Verified | none |
-| T5 | Release 2.13.0 and install it | Not started | T1-T4 |
+| T5 | Release 2.13.0 and install it | Verified | T1, T2, T3, T4 |
 
 ## Tickets
 
@@ -127,7 +127,7 @@ References:
 
 
 ### T5 — Release 2.13.0 and install it (revision 2)
-Status: Not started
+Status: Verified
 
 What needs to happen: publish the retro fixes as release 2.13.0 and install it on this machine for Claude and Codex, so new sessions run the new hooks and skills.
 
@@ -150,10 +150,10 @@ How to verify:
 - `python -X utf8 -I tools/verification_summary.py --run --write VALIDATION.md` (runs the whole suite).
 - `git log origin/main -1`; `git -C D:/workflow-axa log -1`; installed_plugins.json version; ~/.agents/skills/rule-maker/rules/version.json; compare_installed against the release commit; `python -X utf8 skills/rule-maker/scripts/audit_installation.py --check-global` from the installed copy; global_policy.py --check; one live PowerShell call with `2>$null`.
 
-Verification: not run
+Verification: passed (V9 release, V10 Codex install, V11 Claude install and live hook)
 
 References:
 - Supports: revision 2 request
 - Depends on: T1, T2, T3, T4
-- Evidence: FINDINGS E14, E15, E16 (PLAN "Revision 2")
+- Evidence: FINDINGS E14, E15, E16 (PLAN "Revision 2"), E17, V9, V10, V11; FINDINGS V9, V10, V11
 - Rules: AGENTS.md (releases read versions from plugin.json and version.json; installation and global settings need explicit approval; verification_summary.py --run --write needs the owner's OK)
