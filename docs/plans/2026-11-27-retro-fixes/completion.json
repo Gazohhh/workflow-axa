@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "base": "ee0e979548368bc59fecbdc18bea74eef1ede49d",
+  "dirty": {},
+  "snapshots": {
+    "S1": {
+      "hooks/approval.py": "84672e4dfb225615",
+      "hooks/duplicate_skills.py": "eeeb4b26a818f2d3",
+      "hooks/phase_gate.py": "3127a155814bbb98",
+      "skills/workflow-execute/SKILL.md": "7c694305b066dbbd",
+      "skills/workflow-specify/SKILL.md": "835abfb9de73fbdd",
+      "skills/workflow/scripts/offers.py": "002c5c12c2261d49",
+      "skills/workflow/scripts/open_items.py": "95c1dc47eb45ac40",
+      "tests/test_approval_hook.py": "8a75000366964520",
+      "tests/test_duplicate_skills_hook.py": "d15233ba16b38a47",
+      "tests/test_offers.py": "2825bc1b44589fe6",
+      "tests/test_open_items.py": "a3d5009c8431b2f1"
+    },
+    "S2": {
+      "hooks/approval.py": "6ace1530e629cec7",
+      "hooks/duplicate_skills.py": "bb38f636e324eacb",
+      "hooks/phase_gate.py": "3127a155814bbb98",
+      "skills/workflow-execute/SKILL.md": "7c694305b066dbbd",
+      "skills/workflow-specify/SKILL.md": "835abfb9de73fbdd",
+      "skills/workflow/scripts/offers.py": "002c5c12c2261d49",
+      "skills/workflow/scripts/open_items.py": "5b9c604f1c7a88a7",
+      "tests/test_approval_hook.py": "a669d5b218dbf902",
+      "tests/test_duplicate_skills_hook.py": "5e9eeb492f007141",
+      "tests/test_offers.py": "2825bc1b44589fe6",
+      "tests/test_open_items.py": "a3bb0241766d676e"
+    },
+    "S3": {
+      "hooks/approval.py": "df60eb2e464f3c50",
+      "hooks/duplicate_skills.py": "bb38f636e324eacb",
+      "hooks/phase_gate.py": "3127a155814bbb98",
+      "skills/workflow-execute/SKILL.md": "7c694305b066dbbd",
+      "skills/workflow-specify/SKILL.md": "835abfb9de73fbdd",
+      "skills/workflow/scripts/offers.py": "002c5c12c2261d49",
+      "skills/workflow/scripts/open_items.py": "5b9c604f1c7a88a7",
+      "tests/test_approval_hook.py": "b8a07498f6fc4ca1",
+      "tests/test_duplicate_skills_hook.py": "5e9eeb492f007141",
+      "tests/test_offers.py": "2825bc1b44589fe6",
+      "tests/test_open_items.py": "a3bb0241766d676e"
+    },
+    "S4": {
+      "hooks/approval.py": "562a8c62a892720f",
+      "hooks/duplicate_skills.py": "bb38f636e324eacb",
+      "hooks/phase_gate.py": "3127a155814bbb98",
+      "skills/workflow-execute/SKILL.md": "7c694305b066dbbd",
+      "skills/workflow-specify/SKILL.md": "835abfb9de73fbdd",
+      "skills/workflow/scripts/offers.py": "002c5c12c2261d49",
+      "skills/workflow/scripts/open_items.py": "5b9c604f1c7a88a7",
+      "tests/test_approval_hook.py": "4c85c5dfb0d3f7d2",
+      "tests/test_duplicate_skills_hook.py": "5e9eeb492f007141",
+      "tests/test_offers.py": "2825bc1b44589fe6",
+      "tests/test_open_items.py": "a3bb0241766d676e"
+    }
+  }
+}

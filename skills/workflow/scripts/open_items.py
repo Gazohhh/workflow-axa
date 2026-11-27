@@ -31,6 +31,7 @@ LABELS = (('overview', 'OVERVIEW TABLE DISAGREES WITH THE TICKETS (tickets are t
           ('unclear', 'STATUS NOT RECOGNISED, RECONCILE (not counted as open or verified)'), ('blocked', 'BLOCKED'),
           ('unbacked', 'TICKED, NO EVIDENCE OR INCOMPLETE VERIFICATION'), ('in_progress', 'IN PROGRESS'),
           ('open', 'OPEN'), ('paused', 'PAUSED'), ('closed', 'CLOSED WITHOUT TEST PASS'))
+STARTED = re.compile(r'^-\s*Implementation\s*:\s*(?:in progress|implemented|partial)', re.I | re.M)
 NEXT = re.compile(r'^-\s*(Last result\s*/\s*)?next safe action\s*:\s*(?P<v>.+)$', re.I | re.M)
 
 
@@ -58,7 +59,8 @@ def scan(task: pathlib.Path) -> dict | None:
 
 
 def record_problems(task: pathlib.Path) -> list[str]:
-    """Mechanical damage seen in real runs: non-UTF-8 bytes and mixed line endings."""
+    """Mechanical damage seen in real runs: non-UTF-8 bytes, mixed line endings, and implementation started
+    without the review baseline."""
     problems = []
     for path in sorted(task.glob('*.md')):
         raw = path.read_bytes()
@@ -69,6 +71,11 @@ def record_problems(task: pathlib.Path) -> list[str]:
         crlf, lf = raw.count(b'\r\n'), raw.count(b'\n')
         if crlf and lf != crlf:
             problems.append(f'{path.name}: mixed line endings ({crlf} CRLF, {lf - crlf} LF)')
+    plan = task / 'PLAN.md'
+    text = plan.read_text(encoding='utf-8', errors='replace') if plan.is_file() else ''
+    if STARTED.search(section(text, 'Current checkpoint')) and not (task / 'completion.json').is_file():
+        problems.append('implementation started but completion.json is missing: the review check will exit 2 '
+                        '(workflow-execute "Before you start")')
     return problems
 
 

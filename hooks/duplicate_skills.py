@@ -176,10 +176,32 @@ def overlap_message(plugin: str, overlaps: tuple) -> str:
             f'Do not change plugin settings yourself. The user can disable {plugin} for this project.')
 
 
+def missing_machine_files(root: Path, config: Path) -> str | None:
+    """The global CLAUDE.md names ~/.workflow-axa, and ARTIFACTS.md or settings.json is not there."""
+    try:
+        text = (config / 'CLAUDE.md').read_text(encoding='utf-8', errors='replace').replace('\\', '/')
+        home = Path.home() / '.workflow-axa'
+    except (OSError, RuntimeError):
+        return None
+    if '.workflow-axa/' not in text:
+        return None
+    settings = Path(os.environ.get('WORKFLOW_AXA_SETTINGS') or home / 'settings.json')
+    gone = [str(path) for path in (home / 'ARTIFACTS.md', settings) if not path.is_file()]
+    if not gone:
+        return None
+    return ('workflow-axa: missing ' + ' and '.join(gone) + '. The global CLAUDE.md reads the artifact policy from '
+            'that folder, and without settings.json CSS reads as off. Tell the owner in your first reply. To '
+            f'restore them, run {root / "skills/workflow/scripts/global_policy.py"} --check, then --apply only with '
+            'their OK.')
+
+
 def session_start(root: Path, config: Path, duplicates: list[str], event: dict) -> None:
     notes = []
     if duplicates:
         notes.append(duplicate_message(duplicates))
+    missing = missing_machine_files(root, config)
+    if missing:
+        notes.append(missing)
     copy = differing_rules_copy(root, config)
     if copy:
         notes.append(rules_message(copy))

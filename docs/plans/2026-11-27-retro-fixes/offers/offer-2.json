@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 2,
+  "task": "2026-11-27-retro-fixes",
+  "created": "2026-11-27T13:39:17+00:00",
+  "canonical": {
+    "behaviour": "Publish the delivered retro fixes of offer #1 and restore the missing machine policy file. First, stage and commit the 11 changed files and this task folder on branch retro-fixes in this worktree, as one commit. Second, push that commit to origin as a fast-forward of main (git push origin retro-fixes:main), which is the merge; the remote branch retro-fixes is not created. Third, run D:/workflow-axa/skills/workflow/scripts/global_policy.py --apply, whose --check shows it writes only C:/Users/Cem/.workflow-axa/ARTIFACTS.md (settings.json, the global CLAUDE.md and the Codex AGENTS.md already match). The live checkout D:/workflow-axa is not updated; installing there stays a separate step.",
+    "paths": [
+      "docs/plans/2026-11-27-retro-fixes/",
+      "hooks/approval.py",
+      "hooks/duplicate_skills.py",
+      "hooks/phase_gate.py",
+      "skills/workflow-execute/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/scripts/offers.py",
+      "skills/workflow/scripts/open_items.py",
+      "tests/test_approval_hook.py",
+      "tests/test_duplicate_skills_hook.py",
+      "tests/test_offers.py",
+      "tests/test_open_items.py"
+    ],
+    "operations": [
+      "git add",
+      "git commit",
+      "git push",
+      "run: python -X utf8 -I D:/workflow-axa/skills/workflow/scripts/global_policy.py --apply"
+    ],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "D:/workflow-axa working tree and its main branch (no pull, merge or reset there)",
+      "any file other than the ones listed",
+      "force push, tags, release, version bump, CHANGELOG"
+    ],
+    "conditions": [
+      "global_policy.py --check still shows only ARTIFACTS.md missing right before --apply",
+      "the push is a fast-forward of origin/main (still at ee0e979); otherwise stop and ask"
+    ],
+    "checks": [
+      "git log origin/main -1 shows the new commit after the push",
+      "git status clean in this worktree after the commit",
+      "global_policy.py --check reports MATCH for all four files afterwards"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "1ac1ca1101648226",
+  "display": "",
+  "state": "draft",
+  "presentation_decision": "chat",
+  "decision": null,
+  "supersedes": null,
+  "superseded_by": null
+}

@@ -16,13 +16,14 @@ Read RULES.md, TASK-FOLDER.md, WRITING.md and AUDIT.md from sibling `../workflow
 - tickets have dependencies, acceptance, seams and scope (else `workflow-specify`);
 - a missing optional specialist a ticket names (`workflow/SPECIALISTS.md`) blocks only that ticket;
 - `git status` and diff are recorded (`workflow/TASK-FOLDER.md`);
+- the review baseline exists: before the first change, once per task, run `python -X utf8 -I ../workflow-deliver/scripts/completion_check.py baseline <project-root> <task-folder>` (it writes `completion.json`, which the review check needs; it is not the PLAN test baseline);
 - UI tickets wait for their recorded `ui-design` authority; read `../ui-design/SKILL.md` step 4 before building one.
 
 Reconfirm only missing authority, material changes or blockers.
 
 **Todo list.** Copy the recipe's numbered steps (`workflow/flows/<recipe>.md`) and the approved tickets word for word into the host's todo list (TodoWrite or its equivalent); work from it and mark each item done as it finishes.
 
-A lightweight edit runs one pass: build, its check, one review (step 6), then the short `workflow-deliver`. Before the first change, record the baseline once: `python -X utf8 -I ../workflow-deliver/scripts/completion_check.py baseline <project-root> <task-folder>`.
+A lightweight edit runs one pass: build, its check, one review (step 6), then the short `workflow-deliver`.
 
 **Briefs.** Every subagent brief starts with "The bar in this brief is the whole bar: add no check, gate or review round above it.", then gives what its step lists, pointing to files rather than copying them. A worker gets the ticket, acceptance, seams, allowed files, rules, FINDINGS documents, UI authority, output folder and starting `git status`. A builder quotes the runner's verbatim summary line for every test count (for unittest, `Ran N tests … OK`) and gives a file:line for every claim about existing behaviour. Subagents return evidence; you write the records.
 

@@ -280,6 +280,16 @@ class LightweightOffers(unittest.TestCase):
                                  offers.presentation(offers.load(self.task, 1), self.task))
 
 
+class FolderPaths(unittest.TestCase):
+
+    def test_a_folder_entry_covers_the_folder_itself_and_what_is_inside(self):
+        # Hooqd retro (2026-11-27): `rm -r docs/plans/t/tmp` was refused under an offer listing docs/plans/t/tmp/.
+        for scope, entry, covered in (("a/b/", "a/b", True), ("a/b/", "a/b/c.txt", True), ("a/b/", "a/b/", True),
+                                      ("a/b/", "a/bc", False), ("a/b/", "a", False), ("a/b", "a/b/c.txt", False)):
+            with self.subTest(scope=scope, entry=entry):
+                self.assertEqual(offers._covers(scope, entry), covered)
+
+
 class ChildOffers(unittest.TestCase):
     """C-OFFER-6: a child gets a checked subset of what the parent lists as delegable, and inherits its limits."""
 

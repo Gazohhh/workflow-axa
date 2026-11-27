@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "presentation_format": 4,
+  "id": 1,
+  "task": "2026-11-27-retro-fixes",
+  "created": "2026-11-27T12:59:14+00:00",
+  "canonical": {
+    "behaviour": "Apply the four retro fixes of agreement 1 in this worktree (branch retro-fixes), with a test for each that fails before and passes after. First, a message marked as sent by a T3 agent can no longer approve, narrow, withdraw, pause or resume an offer, and narrowing words inside fenced code or > quotes are ignored; the owner's own messages are read as today. Second, with several worktrees the hook stops refusing sh -n, PowerShell 2>$null, the text after adb shell, git commit -m messages and heredoc bodies fed to programs such as record.py; an offer's folder/ also covers the folder itself; --name: counts as CSS only in files that can carry CSS; an approved offer can list run: <exact command> for a project's test runner, and workflow-specify documents that. Third, workflow-execute names the completion baseline step under Before you start, and open_items.py --task warns when implementation started without completion.json. Fourth, session start reports a missing ~/.workflow-axa/settings.json or ARTIFACTS.md. Nothing is committed, pushed, released or installed.",
+    "paths": [
+      "hooks/approval.py",
+      "hooks/duplicate_skills.py",
+      "hooks/phase_gate.py",
+      "skills/workflow-execute/SKILL.md",
+      "skills/workflow-specify/SKILL.md",
+      "skills/workflow/scripts/offers.py",
+      "skills/workflow/scripts/open_items.py",
+      "tests/test_approval_hook.py",
+      "tests/test_duplicate_skills_hook.py",
+      "tests/test_offers.py",
+      "tests/test_open_items.py"
+    ],
+    "operations": [],
+    "delegable_paths": [],
+    "delegable_operations": [],
+    "exclusions": [
+      "C:/Users/Cem/.workflow-axa/ (ARTIFACTS.md is reported missing, not recreated)",
+      "CHANGELOG, VALIDATION.md, version bump, commit, push, release and install",
+      "D:/workflow-axa (the live plugin checkout) and every other worktree",
+      "proposal fixes 3 and 5"
+    ],
+    "conditions": [
+      "hook changes stay in this worktree; live sessions keep loading hooks from D:/workflow-axa",
+      "no existing test assertion is weakened"
+    ],
+    "checks": [
+      "each new test fails on ee0e979 and passes after the change",
+      "python -X utf8 -B -m unittest discover -s tests -p \"test_*.py\" with counts compared to the baseline (1727 ran, OK, 14 skipped)",
+      "python -X utf8 -B tools/validate.py"
+    ],
+    "parent": null,
+    "parent_provenance": null
+  },
+  "hash": "cb12000e32d57753",
+  "display": "",
+  "state": "approved",
+  "presentation_decision": "chat",
+  "decision": {
+    "session": "b7506a41-b8f7-4d60-bed7-961ca1f9d0fe",
+    "turn": "8c0d712a-ce60-445f-b50d-fbd538b5697b",
+    "presentation": "4672b045-d461-4429-8c15-d2bff13770ab",
+    "recorded": "2026-11-27T13:00:41+00:00"
+  },
+  "supersedes": null,
+  "superseded_by": null
+}

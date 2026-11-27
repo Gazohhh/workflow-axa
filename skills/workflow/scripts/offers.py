@@ -216,7 +216,7 @@ def _covers(scope: str, entry: str) -> bool:
     if scope == entry:
         return True
     if scope.endswith("/"):
-        return entry.startswith(scope)
+        return entry.startswith(scope) or entry == scope.rstrip("/")
     if "*" in scope or "?" in scope:
         if "*" in entry or "?" in entry or entry.endswith("/"):
             return False

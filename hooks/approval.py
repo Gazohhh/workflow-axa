@@ -307,7 +307,7 @@ def read_events(path: Path, root: Path | None = None) -> list[Event]:
     return events
 
 
-ENTRIES_VERSION = 3
+ENTRIES_VERSION = 4
 
 
 def entry_of(line: str) -> list | None:
@@ -407,6 +407,9 @@ def strings(value) -> str:
 def words(text: str) -> str:
     g = gate()
     return g.bare(g.clean(text))
+
+
+QUOTED = re.compile(r"^[ \t]*(`{3,}|~{3,})[^\n]*\n.*?^[ \t]*\1[ \t]*$|^[ \t]*>[^\n]*$", re.M | re.S)
 
 
 def command(text: str) -> tuple[str, str] | None:
@@ -523,8 +526,9 @@ def decide(events: list[Event], rendering: Shown, offer_id: int, report_shown, t
                                       "approval forms; a conditional answer needs a narrowed offer, presented again"])
                 presented = None
             intent = g.control_intent(event.text)
+            spoken = words(QUOTED.sub(" ", event.text))
             kind = "pause" if intent == "pause" else "resume" if intent == "resume" else \
-                "revoke" if g.REVOKED.search(said) else "restrict" if g.RESTRICTS.search(said) else None
+                "revoke" if g.REVOKED.search(said) else "restrict" if g.RESTRICTS.search(spoken) else None
             if kind and (on == task or (on is None and here)):
                 out.facts.append([event.time, kind, said[:80]])
     at_event += [len(events) - 1] * (len(out.facts) - len(at_event))
@@ -705,7 +709,7 @@ def other_sessions(folder: Path, offer: dict, rendering: Shown, transcript: Path
         stat = path.stat()
         if stat.st_mtime < created - 60:
             continue  # last changed before the offer existed
-        key = g.digest(f"facts-9|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
+        key = g.digest(f"facts-10|{path.resolve()}|{stat.st_size}|{stat.st_mtime_ns}|{rendering.legacy}|{rendering.text}|"
                        f"{rendering.question}".encode("utf-8"))
         cache = g.CACHE_DIR / "offer-history" / f"{key}.json"
         try:
@@ -853,13 +857,18 @@ STYLE_REGIONS = [re.compile(p, re.S | re.I) for p in (
 )]
 
 
-def styled_lines(text: str) -> set[int]:
+CSS_CAPABLE = re.compile(r"\.(?:css|scss|sass|less|styl)(?:\.\w+)?$|\.(?:html?|vue|svelte|astro|mdx|[cm]?[jt]sx?|blade\.php)$",
+                         re.I)
+
+
+def styled_lines(text: str, rel: str = "") -> set[int]:
     """The numbers of the lines that carry style: a line with a style cue (inline/runtime style, CSS-in-JS, visual
-    props, custom properties), and every line of a multi-line style region (a <style> block, a CSS-in-JS template, a
-    style object, StyleSheet.create ...). DESIGN.md "What counts as styling"."""
+    props, custom properties in a file that can carry CSS), and every line of a multi-line style region (a <style>
+    block, a CSS-in-JS template, a style object, StyleSheet.create ...). DESIGN.md "What counts as styling"."""
     g = gate()
     cues = g.ui_cues()
-    patterns = [cues[c] for c in g.STYLE_CUES if c in cues] + [VISUAL_PROP, CUSTOM_PROPERTY]
+    patterns = [cues[c] for c in g.STYLE_CUES if c in cues] + [VISUAL_PROP] \
+        + ([CUSTOM_PROPERTY] if not rel or CSS_CAPABLE.search(rel) else [])
     lines = {n for n, line in enumerate(text.splitlines()) if any(p.search(line) for p in patterns)}
     for region in STYLE_REGIONS:
         for found in region.finditer(text):
@@ -892,11 +901,11 @@ def proposed_texts(event: dict, path: str) -> tuple[str, str]:
     return current, new
 
 
-def changes_style_lines(old: str, new: str) -> bool:
+def changes_style_lines(old: str, new: str, rel: str = "") -> bool:
     """Whether a changed, added or removed line is a style line before or after the call."""
     import difflib
     a, b = old.splitlines(), new.splitlines()
-    before, after = styled_lines(old), styled_lines(new)
+    before, after = styled_lines(old, rel), styled_lines(new, rel)
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
         if tag == "equal":
             continue
@@ -933,7 +942,7 @@ def touches_styling(event: dict, path: str, rel: str, root: Path) -> bool:
         return False
     if STYLE_PATH.search(rel):
         return True
-    return changes_style_lines(old, new) or new_utility_classes(old, new, root)
+    return changes_style_lines(old, new, rel) or new_utility_classes(old, new, root)
 
 
 def settings_answer(current: list[Event], value: str) -> str | None:
@@ -1237,7 +1246,7 @@ GIT_REDIRECT = re.compile(r'(?:^|[\s;&|(])(?:--git-dir|--work-tree)\b'
                           r'|\bGIT_(?:DIR|WORK_TREE|COMMON_DIR|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES'
                           r'|NAMESPACE|CONFIG\w*)\s*=|-c\s*core\.(?:worktree|bare)\b', re.I)
 RUN_TIME = r'(?:\$|%\w+%|`)'
-RUN_TIME_REDIRECT = re.compile(r'>\s*\S*' + RUN_TIME)
+RUN_TIME_REDIRECT = re.compile(r'>\s*(?!\$null(?:[\s;&|)]|$))\S*' + RUN_TIME, re.I)
 WRAPPERS = re.compile(r'^(?:sudo|command|exec|env|nohup|time|builtin)$|^\w+=\S*$', re.I)
 EVERY_ARGUMENT = {"rm", "rmdir", "truncate", "tee", "touch", "dd", "shred", "unlink", "chmod", "chown", "new-item",
                   "remove-item", "clear-content", "rename-item", "del", "erase", "rd", "mkdir", "md"}
@@ -1253,11 +1262,53 @@ FIRST_IS_NOT_A_FILE = {"chmod", "chown"}
 GIT_READS = {"status", "log", "diff", "show", "blame", "grep", "rev-parse", "ls-files", "ls-tree", "cat-file", "describe",
              "shortlog", "rev-list", "for-each-ref", "name-rev", "merge-base", "help", "version"}
 INDIRECT_WRITE = re.compile(
-    r'\b(?:bash|sh|zsh|dash|pwsh|powershell)(?:\.exe)?\s+(?:-\w+\s+)*[^\s;&|-]\S*\.(?:sh|ps1)\b'
+    r'\b(?:(?:bash|sh|zsh|dash)(?:\.exe)?\s+(?!-n\s)|(?:pwsh|powershell)(?:\.exe)?\s+)(?:-\w+\s+)*[^\s;&|-]\S*'
+    r'\.(?:sh|ps1)\b'
     r'|(?:^|[;&|]\s*)(?:source\s+|\.\s+|&\s*)\S+\.(?:sh|ps1)\b'
     r'|\b(?:python3?|py|node|ruby|perl)(?:\.exe)?\b[^;&|\n]*\s-(?:c|e)\s[^\n]*'
     r'(?:\.write\(|write_text|write_bytes|writeFile|appendFile|open\([^)]*[\'"][wax+]|unlink|remove\(|rmdir|rename\(|'
     r'replace\(|shutil\.|rmSync|copyFile|truncate\(|File\.write|IO\.write)', re.I)
+WORD = r'''(?:'[^']*'|"(?:[^"\\]|\\.)*"|[^\s'";&|<>`]+)'''
+QUIET_DOUBLE_QUOTED = r'''"(?:[^"\\$`]|\\.|\$(?!\())*"'''
+COMMIT_MESSAGE = re.compile(r'((?:\A|(?<=[;&|(\n]))[ \t]*(?:\S*[\\/])?git(?:\.exe)?(?:[ \t]+' + WORD + r')*?[ \t]+commit\b'
+                            r'(?:[ \t]+' + WORD + r')*?[ \t]+(?:-[a-zA-Z]*m|--message)(?:=|[ \t]+))'
+                            r"('[^']*'|" + QUIET_DOUBLE_QUOTED + ')')
+ON_DEVICE = re.compile(r'\badb(?:\.exe)?(?:\s+-[sHPt]\s+\S+|\s+-[deg])*\s+shell\b(?:[^;&|\n>$`]|\$(?!\())*', re.I)
+DATA_ONLY_HEREDOC = re.compile(
+    r'''\A\s*(?:(?:python3?|py)(?:\.exe)?(?:\s+-X\s+\S+|\s+-[A-Za-z]+)*\s+["']?[^\s;&|<>'"`]*record\.py["']?'''
+    r'''|git(?:\s+-C\s+''' + WORD + r''')?\s+commit\b(?:\s+-[\w-]+)*\s+-F\s*-)'''
+    r'''(?:\s+(?:'[^']*'|''' + QUIET_DOUBLE_QUOTED + r'''|[^\s;&|<>`'"]+))*?\s*<<-?\s*(?P<quote>['"]?)\w+['"]?\s*\Z''')
+
+
+def placed_text(command: str) -> str:
+    """The command as the placement checks read it: a commit message and what `adb shell` runs on the device are not
+    places on this machine, and a heredoc body is left out only when one record.py call or `git commit -F -` reads
+    it as data."""
+    text, bodies = gate().split_bodies(command)
+    reader = DATA_ONLY_HEREDOC.match(text) if bodies and "$(" not in text and not gate().HERE_STRING.search(command) \
+        else None
+    data_only = reader is not None and (bool(reader["quote"]) or not any("$(" in b or "`" in b for b in bodies))
+    for _ in range(8):
+        blanked = COMMIT_MESSAGE.sub(r"\1''", text)
+        if blanked == text:
+            break
+        text = blanked
+    text = ON_DEVICE.sub("adb shell", text)
+    return text if data_only or not bodies else text + "\n" + "\n".join(bodies)
+
+
+def run_approved(command: str, project, event: dict) -> bool:
+    """An approved offer lists this exact command, case and spacing included, as `run: <command>` (a project's own
+    test runner)."""
+    root = Path(project.root or project.cwd)
+    transcript = Path(str(event.get("transcript_path") or ""))
+    found, _ = project_offers(root)
+    wanted = f"run: {command.strip()}"
+    listing = [(folder, offer) for folder, offer in found if wanted in offer["canonical"]["operations"]]
+    if not listing:
+        return False
+    current = read_events(transcript, root)
+    return any(validated(folder, offer, transcript, current)[0] for folder, offer in listing)
 
 
 def shell_words(segment: str) -> list[str]:
@@ -1472,7 +1523,8 @@ def another_worktree(event: dict, targets: list, project, g) -> str | None:
     if not common:
         return None
     command = shell_command(event)
-    if command and cannot_place(command) and other_worktrees_exist(own_tree, common):
+    if command and cannot_place(placed_text(command)) and other_worktrees_exist(own_tree, common) \
+            and not run_approved(command, project, event):
         return ("workflow-axa: this command writes to a place known only while it runs (a variable, command output, "
                 "xargs, find -exec, a script it runs or an inline program), so the checker can't tell which worktree "
                 "it changes; this repository has more than one. Write each destination as an explicit path in a plain "
@@ -1482,7 +1534,7 @@ def another_worktree(event: dict, targets: list, project, g) -> str | None:
     only_records = all(kind == "path" and project.is_record(where) for kind, where, _ in targets)
     if command and targets and (MAKES_LINK.search(command) or not only_records):
         cwd = str(event.get("cwd") or project.cwd)
-        for word in PATH_WORD.findall(command):
+        for word in PATH_WORD.findall(placed_text(command)):
             word = re.sub(r'^-[\w-]+:', '', word)
             if ('/' in word or '\\' in word) and '$' not in word:
                 places.append((word if g.is_absolute(word) else g.absolute(word, cwd), f"`{word}` in this command",

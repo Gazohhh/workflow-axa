@@ -697,6 +697,45 @@ class OfferStates(ApprovalHookCase):
                 rows.owner(message)
                 self.allowed(rows)
 
+    T3_AGENT = '[T3 Code: the agent in T3 thread "90c9636a-5ce3-401c-940e-95c4986e9ec5" sent this message, not the user.]'
+
+    def test_a_message_another_agent_sent_through_t3_is_never_the_owner(self):
+        """The Hooqd and Xerocast retro (2026-11-27): a coordinator agent's message arrives as a plain user message
+        that opens with T3's marker; it narrowed approved offers and its "yes" would have approved one."""
+        with self.subTest("it cannot approve"):
+            rows = self.presented()
+            rows.owner(self.T3_AGENT + "\n\nyes")
+            self.denied(rows)
+        for words in ("Only the tests, but never the database.", "I revoke that, not approved", "stop"):
+            with self.subTest("it cannot narrow, withdraw or pause", words=words):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.owner(self.T3_AGENT + "\n\n" + words)
+                self.allowed(rows)
+        with self.subTest("the owner quoting the marker later in a message still speaks"):
+            rows = self.presented()
+            rows.owner("yes")
+            rows.owner("only the tests; the agent wrote " + self.T3_AGENT)
+            self.denied(rows, "may narrow it")
+
+    def test_narrowing_words_in_a_fenced_or_quoted_paste_do_not_narrow_an_approval(self):
+        for paste in ("here is the output:\n```\nonly 3 failed, but the rest passed\n```",
+                      "the log says\n~~~text\nnothing in src changed, except vat.ts\n~~~\nlooks fine",
+                      "> only the tests ran, but never mind\nthanks"):
+            with self.subTest(paste=paste[:20]):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.owner(paste)
+                self.allowed(rows)
+        for words, fragment in (("only the tests\n```\nlog\n```", "may narrow it"),
+                                ("Can you change only the tests?", "may narrow it"),
+                                ("```\nlog\n```\nI revoke that", "withdraws it")):
+            with self.subTest(words=words[:20]):
+                rows = self.presented()
+                rows.owner("yes")
+                rows.owner(words)
+                self.denied(rows, fragment)
+
     def test_the_owners_message_inside_a_host_notice_still_counts(self):
         for words, fragment in (("stop", "stopped the work"), ("only change the tests", "may narrow it"),
                                 ("I revoke that", "withdraws it")):
@@ -1299,6 +1338,27 @@ class ProtectedOperations(ApprovalHookCase):
         text = {"file_path": str(self.repo / "src/vat.ts"), "old_string": "<b>x</b>", "new_string": "<b>y</b>"}
         self.allowed(self.approved(), data=text)  # text only
 
+    def test_a_console_signature_in_php_is_not_a_custom_property(self):
+        """Hooqd retro (2026-11-27): Laravel's `{--force : …}` and `--sha256: 64` read as CSS custom properties."""
+        offers.revise(self.folder, self.offer["id"], {**OFFER, "paths": [*OFFER["paths"], "app/Console/Sync.php"]})
+        rows = self.presented(offer=offers.load(self.folder, 2))
+        rows.owner("yes")
+        (self.repo / "app/Console").mkdir(parents=True)
+        (self.repo / "app/Console/Sync.php").write_text("<?php\nprotected $signature = 'sync';\n", encoding="utf-8")
+        for new in ("protected $signature = 'sync {--dry-run : Only show} {--force : Skip}';",
+                    "// --sha256: 64 hex characters"):
+            with self.subTest(new=new):
+                change = {"file_path": str(self.repo / "app/Console/Sync.php"),
+                          "old_string": "protected $signature = 'sync';", "new_string": new}
+                self.allowed(rows, data=change)
+        same = {"file_path": str(self.repo / "src/vat.ts"), "old_string": "export const vat = 1;",
+                "new_string": "const theme = `--brand: #f00;`;"}
+        self.denied(rows, "changes styling", data=same)
+        sheet = {"file_path": str(self.repo / "src/styles/vat.css"), "content": ".vat { --dry-run: 1; }\n"}
+        self.denied(rows, "changes styling", tool="Write", data=sheet)
+        self.assertTrue(load_hook().styled_lines(":root { --brand: #f00; }", "assets/theme.css.liquid"))
+        self.assertFalse(load_hook().styled_lines("{--force : Skip}", "app/Console/Sync.php"))
+
     def test_reusing_an_existing_class_combination_is_not_styling(self):
         (self.repo / ".git").rmdir()
         (self.repo / "src/card.tsx").write_text('<div className="bg-red-500 p-4">a</div>\n', encoding="utf-8")
@@ -1630,6 +1690,58 @@ class ApprovalsStayInTheirWorktree(ApprovalHookCase):
                                        ".write_text('x')\"")):
             with self.subTest(command=command):
                 self.denied(self.approved(), tool=tool, data={"command": command})
+
+    def test_commands_that_write_nothing_here_pass_with_several_worktrees(self):
+        """Hooqd and Xerocast retro (2026-11-27): each of these was refused as a place known only at run time."""
+        record = (self.folder / "FINDINGS.md").as_posix()
+        for tool, command in (("Bash", "sh -n deploy/jenkins/tests/run.sh"),
+                              ("PowerShell", "grep -n 'foo$' src/vat.ts 2>$null"),
+                              ("PowerShell", "rg -n 'x$' src 2>$NULL"),
+                              ("Bash", "adb shell sh /data/local/tmp/x.sh"),
+                              ("Bash", "adb -s emulator-5554 shell 'sh /data/local/tmp/x.sh; echo $?'"),
+                              ("Bash", f'git commit -m "see {self.linked.as_posix()} for sh x.sh"'),
+                              ("Bash", f"python -X utf8 -I skills/workflow/scripts/record.py append {record} - <<'EOF'\n"
+                                       "- V5: sh -n x.sh -> $5\nEOF")):
+            with self.subTest(command=command):
+                self.allowed(self.approved(), tool=tool, data={"command": command})
+
+    def test_a_shell_or_interpreter_that_reads_a_heredoc_is_still_judged_by_it(self):
+        for command in ("bash <<'EOF'\nrm \"$p\"\nEOF", "sh <<'EOF'\necho x > \"$p\"\nEOF", "cat <<'EOF' | bash\nrm \"$p\"\nEOF",
+                        "sh deploy/jenkins/tests/run.sh", "sh -x deploy/jenkins/tests/run.sh",
+                        "git commit -m x; echo 2 > \"$p\"",
+                        "/bin/bash <<'EOF'\nrm \"$p\"\nEOF", "/usr/bin/sh -s <<'EOF'\nrm \"$p\"\nEOF",
+                        ". /dev/stdin <<'EOF'\nrm \"$p\"\nEOF", "source /dev/stdin <<'EOF'\nrm \"$p\"\nEOF",
+                        "ksh <<'EOF'\nrm \"$p\"\nEOF", "bash -s record.py <<'EOF'\nrm \"$p\"\nEOF",
+                        "eval \"$(cat <<'EOF'\nrm \"$p\"\nEOF\n)\"",
+                        "python record.py x; bash <<'EOF'\nrm \"$p\"\nEOF",
+                        "python record.py append f.md - $(true) <<'EOF'\nrm \"$p\"\nEOF",
+                        'git commit -m "$(true; rm $p)"', 'git commit -m "`true; rm $p`"',
+                        'git commit -m x; touch -m "$p"', 'git log --grep commit; touch -m "$p"',
+                        'git commit -m "x" && rm "$p"', 'adb shell ls; rm "$p"',
+                        "echo x >$null$p", "echo x >$null/$p", "echo x 2>$nullx$p",
+                        "python -X utf8 -I skills/workflow/scripts/record.py append f - <<EOF\n$(true; rm $p)\nEOF",
+                        "git commit -F - <<EOF\n$(true; rm $p)\nEOF", "git commit -F - <<EOF\n`true; rm $p`\nEOF",
+                        "git commit -q\ntouch -m \"$p\"", "git commit -a\ntouch -m \"$p\"",
+                        'touch git commit -m "$p"',
+                        "python -X utf8 -I skills/workflow/scripts/record.py append f - @\"\n$(true; rm $p)\n\"@ "
+                        "<<'EOF'\ndata\nEOF"):
+            with self.subTest(command=command):
+                self.denied(self.approved(), "explicit path", tool="Bash", data={"command": command})
+
+    def test_an_approved_run_operation_lets_that_exact_command_through(self):
+        offers.revise(self.folder, self.offer["id"], {**OFFER, "operations": ["git commit",
+                                                                              "run: sh deploy/jenkins/tests/run.sh"]})
+        rows = self.presented(offer=offers.load(self.folder, 2))
+        rows.owner("yes")
+        self.allowed(rows, tool="Bash", data={"command": "sh deploy/jenkins/tests/run.sh"})
+        for command in ("sh deploy/jenkins/tests/other.sh", "sh deploy/jenkins/tests/run.sh; rm \"$p\"",
+                        "SH Deploy/Jenkins/Tests/RUN.sh", "sh  deploy/jenkins/tests/run.sh",
+                        "sh deploy/jenkins/tests/run.sh && echo x > \"$p\""):
+            with self.subTest(command=command):
+                self.denied(rows, "explicit path", tool="Bash", data={"command": command})
+        with self.subTest("an unapproved offer lists it"):
+            rows = self.presented(offer=offers.load(self.folder, 2))
+            self.denied(rows, "explicit path", tool="Bash", data={"command": "sh deploy/jenkins/tests/run.sh"})
 
     def test_a_variable_that_is_only_read_still_works(self):
         for tool, command in (("Bash", 'cp "$SRC" src/vat.ts'), ("Bash", 'sed -n "$EXPR" src/vat.ts'),

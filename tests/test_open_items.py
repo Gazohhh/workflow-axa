@@ -63,6 +63,25 @@ class OpenItemsTests(unittest.TestCase):
         self.assertIn("FINDINGS.md: mixed line endings", out)
         self.assertEqual(run("--task", self.root / "missing").returncode, 2)
 
+    def test_task_view_warns_when_implementation_started_without_the_review_baseline(self):
+        # Hooqd retro (2026-11-27): the review check stopped with "no baseline" at delivery.
+        for state, warned in (("in progress", True), ("implemented", True), ("partial", True),
+                              ("Partial — T2 open", True), ("partially built", True), ("not started", False),
+                              ("complete in the isolated 2.6.0 package", False)):
+            with self.subTest(state=state):
+                name = f"t-{len(list(self.root.iterdir()))}"
+                self.task(name, "- [ ] T1 — open\n", f"# T\n\n## Current checkpoint\n- Implementation: {state}\n")
+                out = run("--task", self.root / name).stdout
+                self.assertEqual("completion.json is missing" in out, warned, out)
+        name = "t-outside-checkpoint"
+        self.task(name, "- [ ] T1 — open\n", "# T\n\n## Current checkpoint\n- Implementation: not started\n\n"
+                  "## Outcome\n- Implementation: in progress (an old note)\n")
+        self.assertNotIn("completion.json is missing", run("--task", self.root / name).stdout)
+        name = "t-with-baseline"
+        self.task(name, "- [ ] T1 — open\n", "# T\n\n## Current checkpoint\n- Implementation: in progress\n")
+        (self.root / name / "completion.json").write_text("{}", encoding="utf-8")
+        self.assertNotIn("completion.json is missing", run("--task", self.root / name).stdout)
+
     def test_non_ascii_output_survives_a_cp1252_console(self):
         # Design loop: open_items crashed on a Windows console because an Outcome contained "−".
         self.task("t", "- [ ] T1 — open\n", "# T\n\n## Current checkpoint\n- Next safe action: x − y\n")

@@ -902,7 +902,7 @@ def targets_of(event: dict) -> list[tuple[str, str, str]]:
 # WORKFLOW_AXA_GATE_CACHE at their own temporary folder).
 CACHE_DIR = Path(os.environ.get('WORKFLOW_AXA_GATE_CACHE') or Path(tempfile.gettempdir()) / 'workflow-axa-gate')
 CACHE_DAYS = 14
-STATE_VERSION = 28  # 26: T7 waiver and unnumbered chat presentations; 27: small offers keep their root; 28: T3 host messages
+STATE_VERSION = 29  # 26: T7 waiver and unnumbered chat presentations; 27: small offers keep their root; 28: T3 host messages; 29: T3 agent-sent messages
 REFUSAL = re.compile(r"(?<!\w)(?:no|not|don'?t|niet|nee)(?!\w)")
 TASK_REVIEW = re.compile(r'docs/plans/([A-Za-z0-9][\w.-]*?)/(?:reviews/)?([\w.-]+\.html)\b')
 BARE_REVIEW = re.compile(r'(?<![\w/.-])reviews/([\w.-]+\.html)\b')
@@ -956,6 +956,7 @@ def user_text(entry: dict) -> str | None:
 DELEGATE_REPORT = re.compile(r'\A\s*Delegated task node:delegated-task:\S+ \(.*\)(?: in child thread \S+)? '
                              r'\[[^\]\n]+\]:')
 HOST_NOTICE = re.compile(r'\A\s*(?:Context handoff \(|Note: the T3 server restarted,)')
+AGENT_SENT = re.compile(r'\A\s*\[T3 Code: the agent in T3 thread "[^"\n]+" sent this message, not the user\.\]')
 WRAPPED_MESSAGE = '\n\nUser message:\n'
 
 
@@ -970,7 +971,7 @@ def human_words(text: str) -> str | None:
     text = IDE_TEXT.sub(' ', re.sub(r'<system-reminder>.*?</system-reminder>', ' ', text, flags=re.S))
     if HOST_NOTICE.match(text):
         return human_words(text.split(WRAPPED_MESSAGE, 1)[1]) if WRAPPED_MESSAGE in text else None
-    return None if DELEGATE_REPORT.match(text) else text
+    return None if DELEGATE_REPORT.match(text) or AGENT_SENT.match(text) else text
 
 
 def queued_text(entry: dict) -> str | None:

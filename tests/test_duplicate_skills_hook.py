@@ -277,6 +277,27 @@ class DuplicateSkillsHookTests(unittest.TestCase):
         if os.name == "nt":  # elsewhere the home folder comes from the user database and may hold real skills
             self.assertEqual(result.stdout, "")
 
+    def test_missing_machine_files_are_named_when_the_global_claude_md_uses_them(self):
+        """Hooqd retro (2026-11-27): ARTIFACTS.md was gone while the global CLAUDE.md imported it, and a missing
+        settings.json silently reads as CSS off; nothing said so."""
+        saved = os.environ.pop("WORKFLOW_AXA_SETTINGS", None)
+        self.addCleanup(lambda: saved is None or os.environ.__setitem__("WORKFLOW_AXA_SETTINGS", saved))
+        machine = self.home / ".workflow-axa"
+        write(self.config / "CLAUDE.md", "# Global\n\n@" + machine.as_posix() + "/ARTIFACTS.md\n")
+        note = self.message()
+        self.assertIn(str(machine / "ARTIFACTS.md"), note)
+        self.assertIn(str(machine / "settings.json"), note)
+        self.assertIn(str(self.plugin / "skills/workflow/scripts/global_policy.py") + " --check", note)
+        write(machine / "settings.json", '{"css": "off"}')
+        note = self.message()
+        self.assertIn(str(machine / "ARTIFACTS.md"), note)
+        self.assertNotIn(str(machine / "settings.json"), note)
+        write(machine / "ARTIFACTS.md", "# Artifacts")
+        self.assertEqual(self.fire(), (0, ""))
+        (machine / "ARTIFACTS.md").unlink()
+        write(self.config / "CLAUDE.md", "# Global instructions without the machine folder\n")
+        self.assertEqual(self.fire(), (0, ""))
+
     def snapshot(self):
         return {str(path.relative_to(self.base)): path.read_bytes() if path.is_file() else None
                 for path in sorted(self.base.rglob("*"))}
