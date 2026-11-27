@@ -47,9 +47,14 @@
   },
   "hash": "1ac1ca1101648226",
   "display": "",
-  "state": "draft",
+  "state": "approved",
   "presentation_decision": "chat",
-  "decision": null,
+  "decision": {
+    "session": "b7506a41-b8f7-4d60-bed7-961ca1f9d0fe",
+    "turn": "95b9d9a3-230a-41c1-88c5-fd45c18a383e",
+    "presentation": "7b5d5cb7-4244-4d22-97be-1c40a24e3ada",
+    "recorded": "2026-11-27T13:43:37+00:00"
+  },
   "supersedes": null,
   "superseded_by": null
 }
